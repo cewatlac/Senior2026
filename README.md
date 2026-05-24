@@ -1,5 +1,7 @@
 # Senior2026
 
+![Coach Academy](assets/images/coach-academy-logo.png)
+
 ## Coach Abdelwahab & Ashraf Senior 2026 Competitive Programming Library
 
 Senior2026 is a public Competitive Programming learning portal for Senior 2026 training, prepared by Coach Abdelwahab and Ashraf under Coach Academy.
@@ -55,7 +57,19 @@ http://localhost:8000/
 
 ## GitHub Pages
 
-The repository is ready for GitHub Pages. It can be published from the `main` branch at the repository root, or through the included GitHub Actions Pages workflow after Pages is enabled for the repository.
+The repository is ready for GitHub Pages through the included GitHub Actions workflow.
+
+For a free GitHub account, the repository must be public before GitHub Pages can deploy. If the repository is private, GitHub will show:
+
+```text
+Upgrade or make this repository public to enable Pages.
+```
+
+Enable deployment with these repository settings:
+
+1. Settings → General → Danger Zone → Change repository visibility → Make public
+2. Settings → Pages → Build and deployment → Source → GitHub Actions
+3. Re-run the `Deploy GitHub Pages` workflow from the Actions tab
 
 All internal paths are relative so the site works correctly under the `/Senior2026/` project path.
 

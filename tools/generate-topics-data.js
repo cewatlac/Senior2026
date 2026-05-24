@@ -226,7 +226,7 @@ function header(prefix) {
   return `<header class="site-header">
       <div class="nav-wrap">
         <a class="brand-link" href="${prefix}index.html" aria-label="Senior 2026 CP Library home">
-          <span class="brand-mark">CA</span>
+          <span class="brand-logo-surface"><img class="brand-logo" src="${prefix}assets/images/coach-academy-logo.png" alt="Coach Academy logo"></span>
           <span class="brand-name"><strong>Senior 2026 CP Library</strong><span>Coach Academy</span></span>
         </a>
         <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false">Menu</button>
@@ -246,6 +246,7 @@ function footer(prefix) {
   return `<footer class="footer">
       <div class="container footer-grid">
         <div>
+          <img class="footer-logo" src="${prefix}assets/images/coach-academy-logo.png" alt="Coach Academy logo">
           <strong>Coach Abdelwahab &amp; Ashraf Senior 2026 Competitive Programming Library</strong>
           <p>© 2026 Coach Academy. All rights reserved.</p>
         </div>
@@ -318,6 +319,9 @@ function buildIndex(topics, categories) {
         <div class="container hero-grid">
           <div>
             <p class="eyebrow">Coach Abdelwahab · Ashraf · Coach Academy</p>
+            <div class="hero-logo-panel">
+              <img src="assets/images/coach-academy-logo.png" alt="Coach Academy logo">
+            </div>
             <h1>Coach Abdelwahab &amp; Ashraf Senior 2026 Competitive Programming Library</h1>
             <p class="lead">A structured public competitive programming learning portal for Senior 2026 training, organized into navigable HTML tutorials, video slots, and expansion-ready tracks.</p>
             <div class="actions">
@@ -475,9 +479,9 @@ function buildAbout() {
       </section>
       <section class="section">
         <div class="container roadmap-grid">
+          <article class="card brand-card"><img src="assets/images/coach-academy-logo.png" alt="Coach Academy logo"><h2>Coach Academy</h2><p>Senior 2026 training library prepared by Coach Abdelwahab and Ashraf.</p></article>
           <article class="card"><h2>Prepared By</h2><p>Coach Abdelwahab and Ashraf for Coach Academy's Senior 2026 Competitive Programming training program.</p></article>
           <article class="card"><h2>Purpose</h2><p>The library organizes algorithm, graph, data structure, paradigm, and geometry HTML tutorials into a searchable learning portal.</p></article>
-          <article class="card"><h2>Expansion</h2><p>The structure is ready for future videos, topic prerequisites, problem sets, sheets, contests, editorials, and learning tracks.</p></article>
         </div>
       </section>
       <section class="section">
