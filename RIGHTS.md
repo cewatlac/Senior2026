@@ -11,5 +11,4 @@ Access to this repository or website does not transfer ownership or grant a lice
 For permission requests, contact:
 
 - coach@coach-academy.net
-- wahab@acpc.global
-- m.abdelwahab@fci-cu.edu.eg
+- a.ashraf@coach-academy.net

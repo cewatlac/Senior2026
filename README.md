@@ -2,66 +2,46 @@
 
 ## Coach Abdelwahab & Ashraf Senior 2026 Competitive Programming Library
 
-Senior2026 is a public static Competitive Programming tutorial portal prepared for Senior 2026 training by Coach Abdelwahab and Ashraf under Coach Academy.
+Senior2026 is a public Competitive Programming learning portal for Senior 2026 training, prepared by Coach Abdelwahab and Ashraf under Coach Academy.
 
-The portal organizes algorithm, data structure, paradigm, graph, and geometry HTML tutorials into a searchable, navigable, GitHub Pages-ready learning library. The original tutorial HTML files are imported unchanged, and the public website adds only non-destructive wrapper pages, metadata, search, navigation, and video catalog pages around them.
+The website collects standalone HTML tutorials into one searchable, navigable GitHub Pages library while preserving the original tutorial files exactly as imported.
 
-## Prepared By
+## Website
 
-- Coach Abdelwahab
-- Ashraf
-- Coach Academy
-
-## Repository Structure
+The public site is designed to run on GitHub Pages:
 
 ```text
-Senior2026/
-  index.html
-  topics.html
-  about.html
-  roadmap.html
-  videos.html
-  404.html
-  README.md
-  RIGHTS.md
-  assets/
-    css/
-      portal.css
-    js/
-      portal.js
-      topics-data.js
-      search.js
-    data/
-      topics.json
-      videos.json
-      tutorial-checksums.json
-  learn/
-    generated tutorial wrapper pages
-  tutorials/
-    graphs/
-    paradigms/
-    data-structures/
-    geometry/
-  tools/
-    import-tutorials.js
-    generate-topics-data.js
-    validate-links.js
-    validation-report.json
-  .github/
-    workflows/
-      pages.yml
+https://cewatlac.github.io/Senior2026/
 ```
 
-## Topic Categories
+## Library Contents
 
 - Graphs
 - Paradigms
 - Data Structures
 - Geometry
+- Video catalog with available recordings and reserved future slots
+- Topic browser with search, categories, and sequence navigation
 
-## Running Locally
+## Repository Layout
 
-Use any static file server from the repository root:
+```text
+index.html              Main landing page
+topics.html             Searchable topic browser
+videos.html             Video catalog
+about.html              Program and contact information
+roadmap.html            Public expansion roadmap
+404.html                GitHub Pages not-found page
+assets/                 Portal CSS, JavaScript, and metadata
+learn/                  Navigation wrapper pages for tutorials
+tutorials/              Original imported tutorial HTML files
+tools/                  Validation and generation utilities
+RIGHTS.md               All Rights Reserved notice
+```
+
+## Local Preview
+
+The site is fully static. To preview it locally:
 
 ```bash
 python3 -m http.server 8000
@@ -73,112 +53,34 @@ Then open:
 http://localhost:8000/
 ```
 
-The site is static and does not require a backend.
+## GitHub Pages
 
-## Importing Tutorials
+The repository is ready for GitHub Pages. It can be published from the `main` branch at the repository root, or through the included GitHub Actions Pages workflow after Pages is enabled for the repository.
 
-To re-import tutorials from the original ZIP while preserving content exactly:
+All internal paths are relative so the site works correctly under the `/Senior2026/` project path.
 
-```bash
-node tools/import-tutorials.js /path/to/HTML.zip
-```
+## Content Integrity
 
-This copies HTML files into normalized folders under `tutorials/` and writes `assets/data/tutorial-checksums.json`. The checksum file is used to confirm that imported tutorial content has not changed after import.
+The tutorial files under `tutorials/` are preserved as standalone HTML lessons. The portal adds navigation, search, metadata, and wrapper pages around them without rewriting the educational content.
 
-## Regenerating Topic Metadata and Pages
-
-After importing tutorials or editing video metadata, regenerate the topic data and wrapper pages:
-
-```bash
-node tools/generate-topics-data.js
-```
-
-This updates:
-
-- `assets/data/topics.json`
-- `assets/js/topics-data.js`
-- `learn/*.html`
-- the main portal pages
-
-Topic titles, descriptions, tags, and search metadata are derived from filenames and category names only.
-
-## Adding a New Tutorial
-
-1. Add the new standalone HTML tutorial to the correct category folder in the source `HTML.zip`.
-2. Run the import command again.
-3. Run the generator command again.
-4. Run validation.
-
-The generator will discover the new file, infer metadata from its filename, create a wrapper page, and add it to the topic browser.
-
-## Adding or Updating Video Links
-
-Edit `assets/data/videos.json`:
-
-```json
-{
-  "order": 24,
-  "category": "Data Structure",
-  "title": "Example Topic",
-  "url": "https://youtu.be/example"
-}
-```
-
-Then run:
-
-```bash
-node tools/generate-topics-data.js
-node tools/validate-links.js
-```
-
-The generator matches videos to tutorials by normalized title keys and known filename mappings.
-
-## Validation
-
-Run:
-
-```bash
-node tools/validate-links.js
-```
-
-The validation script checks that:
-
-- Every tutorial HTML file exists.
-- Every topic in `topics.json` points to an existing tutorial.
-- Every tutorial file is represented in `topics.json`.
-- Every video URL uses the expected YouTube short-link format.
-- Generated internal links are relative and resolve correctly.
-- Categories are present and valid.
-- Topic numbers are not duplicated.
-- Tutorial file checksums still match the original imported bytes.
-
-The script writes `tools/validation-report.json`.
-
-## GitHub Pages Deployment
-
-This repository includes `.github/workflows/pages.yml`, which deploys the repository root to GitHub Pages whenever changes are pushed to `main`.
-
-Expected public URL format:
+Validation output is stored in:
 
 ```text
-https://USERNAME.github.io/Senior2026/
+tools/validation-report.json
 ```
-
-All links are relative, so the portal works correctly under the `/Senior2026/` project path.
 
 ## Contact
 
 - coach@coach-academy.net
-- wahab@acpc.global
-- m.abdelwahab@fci-cu.edu.eg
+- a.ashraf@coach-academy.net
 
 LinkedIn:
 
 - Ashraf / Coach Academy: https://www.linkedin.com/in/cewatlac/
 - Coach Abdelwahab: https://www.linkedin.com/in/mohamed-mahmoud-abd-el-wahab-mohamed-abd-el-moneim-mahmoud-6944152/
 
-## Rights Notice
+## Rights
 
 © 2026 Coach Academy. All rights reserved.
 
-This project and its tutorial content are copyrighted. The content may not be copied, redistributed, modified, republished, or reused without prior written permission from Coach Academy. See `RIGHTS.md`.
+The tutorial content and portal materials may not be copied, redistributed, modified, republished, or reused without prior written permission from Coach Academy. See `RIGHTS.md`.
