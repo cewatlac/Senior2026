@@ -1,4 +1,4 @@
-name: Build Senior2026 GitHub Pages portal
+name: Deploy GitHub Pages
 
 on:
   push:
@@ -26,9 +26,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v6
+        uses: actions/configure-pages@v5
         with:
           enablement: true
+
+      - name: Validate static site
+        run: |
+          echo "Validating required files..."
+          test -f index.html
+          test -f topics.html
+          test -f videos.html
+          test -f about.html
+          test -f roadmap.html
+          test -f 404.html
+          test -d assets
+          test -d tutorials || test -d learn
+          node tools/validate-links.js
+          echo "Required files exist and portal validation passed."
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
