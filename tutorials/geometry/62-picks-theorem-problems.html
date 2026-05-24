@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 08 · Pick's Theorem Problems</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">▦</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 08 · Pick's Theorem</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Lattice polygons</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Counting dots</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Interior · boundary</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>Shoelace · gcd · Pick</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Doubled area is exact</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>2A → B → I</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Integer-exact contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Shoelace · gcd · Pick</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(n log C) per polygon</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Stay in integers</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The integer toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every routine explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>CW · repeats · degenerate</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>Overflow · gcd+1 · float</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Triangles · holes</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>CSES area &amp; lattice</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">▦</div>
+    <div class="sf-text">Coach Academy · Geometry Class 08<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">▦</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 08 — Pick's Theorem Problems</h1>
+        <div class="subtitle">A polygon drawn on graph paper hides a beautiful arithmetic identity: its area is determined entirely by counting dots. Pick's theorem ties the area of a lattice polygon to the lattice points strictly inside it and on its boundary. We compute area exactly with the integer shoelace formula, count boundary points with <span class="inlineCode">gcd</span>, and recover the interior count — all without ever touching a floating-point number.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Pick's theorem applies to a <b>simple polygon whose vertices are all at integer coordinates</b> — a lattice polygon. It relates three integers: the polygon's area <span class="inlineCode">A</span>, the number of lattice points strictly <i>inside</i> it <span class="inlineCode">I</span>, and the number of lattice points on its <i>boundary</i> <span class="inlineCode">B</span>. The theorem states</p>
+    <div class="callout"><b>Pick's theorem.</b> <span class="inlineCode">A = I + B/2 − 1</span> for a simple polygon with integer vertices.</div>
+    <p>This is remarkable: the continuous quantity (area) is pinned down exactly by two discrete counts. It runs both ways. Given the polygon we can compute <span class="inlineCode">A</span> and <span class="inlineCode">B</span> directly and then solve for <span class="inlineCode">I</span>, which is how the CSES "Polygon Lattice Points" problem is solved.</p>
+    <div class="chips">
+      <span class="chip">Area of a lattice polygon?</span>
+      <span class="chip">How many points strictly inside?</span>
+      <span class="chip">How many points on the boundary?</span>
+      <span class="chip">All three from integer arithmetic only</span>
+    </div>
+    <div class="callout warn">
+      <b>Assumptions, stated up front.</b> The polygon must be <b>simple</b> (edges do not cross and touch only at shared vertices), its vertices must be <b>integer</b> coordinates, and it must have <b>nonzero area</b> (not degenerate to a line or point). Pick's theorem fails if any of these is violated. We handle clockwise and counterclockwise input identically by taking the absolute area.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — Why dots can measure area</h3>
+    <p>Picture the plane tiled by unit cells, one lattice point at each corner. Each interior lattice point "owns" a full unit of area around it; each boundary point owns only a fraction because part of its surrounding cell spills outside the polygon; and going all the way around the boundary you lose exactly one unit of area to the turning. That bookkeeping is precisely <span class="inlineCode">A = I + B/2 − 1</span> — interior points count fully, boundary points count half, and the constant <span class="inlineCode">−1</span> accounts for the full turn around a simple closed curve.</p>
+
+    <h3>2.2 — Area without trusting fractions</h3>
+    <p>The shoelace formula gives a polygon's area as a sum of cross products of consecutive vertices, divided by two. With integer vertices every cross product is an integer, so the sum before dividing — the <b>doubled area</b> <span class="inlineCode">2A</span> — is always an exact integer. We keep that doubled value and never divide early, sidestepping floating-point error entirely. Pick's theorem cooperates: multiplying through by two turns <span class="inlineCode">A = I + B/2 − 1</span> into <span class="inlineCode">2A = 2I + B − 2</span>, an identity purely among integers.</p>
+
+    <h3>2.3 — Counting boundary points with gcd</h3>
+    <p>On a single edge from <span class="inlineCode">a</span> to <span class="inlineCode">b</span>, the lattice points lying on it are evenly spaced. The number of equal steps between the endpoints is <span class="inlineCode">gcd(|dx|, |dy|)</span>, where <span class="inlineCode">dx, dy</span> are the edge's coordinate differences. That is the key fact that turns boundary counting into a few gcd calls.</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — A lattice polygon and its two kinds of points</h3>
+    <p>Every lattice point is either strictly inside the polygon, exactly on its boundary, or outside. Pick's theorem only needs the first two counts.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · A lattice polygon on the grid: interior vs boundary points</div></div>
+      <svg class="graphsvg" viewBox="0 0 720 440" preserveAspectRatio="xMidYMid meet">
+        <!-- grid -->
+        <g stroke="var(--border)" stroke-width="1" opacity="0.6">
+          <line x1="80" y1="40" x2="80" y2="400"/><line x1="160" y1="40" x2="160" y2="400"/>
+          <line x1="240" y1="40" x2="240" y2="400"/><line x1="320" y1="40" x2="320" y2="400"/>
+          <line x1="400" y1="40" x2="400" y2="400"/><line x1="480" y1="40" x2="480" y2="400"/>
+          <line x1="560" y1="40" x2="560" y2="400"/>
+          <line x1="80" y1="40" x2="560" y2="40"/><line x1="80" y1="120" x2="560" y2="120"/>
+          <line x1="80" y1="200" x2="560" y2="200"/><line x1="80" y1="280" x2="560" y2="280"/>
+          <line x1="80" y1="360" x2="560" y2="360"/><line x1="80" y1="400" x2="560" y2="400"/>
+        </g>
+        <!-- polygon: (0,0)->(4,0)->(4,3)->(0,3) scaled by 80, origin at (80,360) y-up -->
+        <polygon points="80,360 400,360 400,120 80,120" fill="rgba(37,99,235,.10)" stroke="var(--accent2)" stroke-width="3"/>
+        <!-- boundary points (on edges) in warn -->
+        <g fill="var(--warn)">
+          <circle cx="80" cy="360" r="7"/><circle cx="160" cy="360" r="7"/><circle cx="240" cy="360" r="7"/><circle cx="320" cy="360" r="7"/><circle cx="400" cy="360" r="7"/>
+          <circle cx="400" cy="280" r="7"/><circle cx="400" cy="200" r="7"/><circle cx="400" cy="120" r="7"/>
+          <circle cx="320" cy="120" r="7"/><circle cx="240" cy="120" r="7"/><circle cx="160" cy="120" r="7"/><circle cx="80" cy="120" r="7"/>
+          <circle cx="80" cy="200" r="7"/><circle cx="80" cy="280" r="7"/>
+        </g>
+        <!-- interior points in good -->
+        <g fill="var(--good)">
+          <circle cx="160" cy="200" r="7"/><circle cx="240" cy="200" r="7"/><circle cx="320" cy="200" r="7"/>
+          <circle cx="160" cy="280" r="7"/><circle cx="240" cy="280" r="7"/><circle cx="320" cy="280" r="7"/>
+        </g>
+        <text x="120" y="425" font-size="17" font-weight="900" fill="var(--warn)">● boundary (B)</text>
+        <text x="320" y="425" font-size="17" font-weight="900" fill="var(--good)">● interior (I)</text>
+      </svg>
+    </div>
+
+    <p>For the 4×3 rectangle above: area <span class="inlineCode">A = 12</span>, boundary points <span class="inlineCode">B = 14</span>, interior points <span class="inlineCode">I = 6</span>. Check: <span class="inlineCode">I + B/2 − 1 = 6 + 7 − 1 = 12 = A</span>. The theorem holds exactly.</p>
+
+    <h3>3.2 — Separating interior from boundary</h3>
+    <p>The single distinction Pick's theorem rests on is whether a lattice point lies strictly inside the polygon or exactly on an edge or vertex. Interior points each count as a full unit; boundary points count as a half. The diagram below isolates the two classes for a small triangle.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Interior vs boundary lattice points of a triangle</div></div>
+      <svg class="graphsvg" viewBox="0 0 640 420" preserveAspectRatio="xMidYMid meet">
+        <!-- grid -->
+        <g stroke="var(--border)" stroke-width="1" opacity="0.55">
+          <line x1="80" y1="60" x2="80" y2="380"/><line x1="160" y1="60" x2="160" y2="380"/>
+          <line x1="240" y1="60" x2="240" y2="380"/><line x1="320" y1="60" x2="320" y2="380"/>
+          <line x1="400" y1="60" x2="400" y2="380"/><line x1="480" y1="60" x2="480" y2="380"/>
+          <line x1="80" y1="60" x2="480" y2="60"/><line x1="80" y1="140" x2="480" y2="140"/>
+          <line x1="80" y1="220" x2="480" y2="220"/><line x1="80" y1="300" x2="480" y2="300"/>
+          <line x1="80" y1="380" x2="480" y2="380"/>
+        </g>
+        <!-- triangle (0,0)->(4,0)->(0,4) scaled by 80, origin bottom-left at (80,380), y-up -->
+        <polygon points="80,380 400,380 80,60" fill="rgba(37,99,235,.10)" stroke="var(--accent2)" stroke-width="3"/>
+        <!-- boundary points: legs + hypotenuse, B=12 -->
+        <g fill="var(--warn)">
+          <circle cx="80" cy="380" r="8"/><circle cx="160" cy="380" r="8"/><circle cx="240" cy="380" r="8"/><circle cx="320" cy="380" r="8"/><circle cx="400" cy="380" r="8"/>
+          <circle cx="80" cy="300" r="8"/><circle cx="80" cy="220" r="8"/><circle cx="80" cy="140" r="8"/><circle cx="80" cy="60" r="8"/>
+          <circle cx="320" cy="300" r="8"/><circle cx="240" cy="220" r="8"/><circle cx="160" cy="140" r="8"/>
+        </g>
+        <!-- interior points: I=3 -> (1,1),(1,2),(2,1) at grid step 80 from origin (80,380) -->
+        <g fill="var(--good)">
+          <circle cx="160" cy="300" r="8"/><circle cx="160" cy="220" r="8"/><circle cx="240" cy="300" r="8"/>
+        </g>
+        <text x="100" y="408" font-size="17" font-weight="900" fill="var(--warn)">● boundary B=12</text>
+        <text x="320" y="408" font-size="17" font-weight="900" fill="var(--good)">● interior I=3</text>
+      </svg>
+    </div>
+
+    <h3>3.3 — Pick's theorem made visible</h3>
+    <p>The rectangle and triangle above both satisfy the identity exactly. The structure below shows how the three quantities combine.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Pick's theorem: A = I + B/2 − 1</div></div>
+      <svg class="graphsvg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+        <rect x="40" y="120" width="150" height="80" rx="14" fill="rgba(15,118,110,.12)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="115" y="155" font-size="20" font-weight="950" fill="var(--good)" text-anchor="middle">I</text>
+        <text x="115" y="182" font-size="15" font-weight="800" fill="var(--muted)" text-anchor="middle">interior, counts 1 each</text>
+        <text x="210" y="168" font-size="28" font-weight="950" fill="var(--text)" text-anchor="middle">+</text>
+        <rect x="240" y="120" width="150" height="80" rx="14" fill="rgba(180,83,9,.12)" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="315" y="155" font-size="20" font-weight="950" fill="var(--warn)" text-anchor="middle">B / 2</text>
+        <text x="315" y="182" font-size="15" font-weight="800" fill="var(--muted)" text-anchor="middle">boundary, counts ½ each</text>
+        <text x="410" y="168" font-size="28" font-weight="950" fill="var(--text)" text-anchor="middle">−</text>
+        <rect x="440" y="120" width="120" height="80" rx="14" fill="rgba(185,28,28,.10)" stroke="var(--bad)" stroke-width="2.5"/>
+        <text x="500" y="155" font-size="20" font-weight="950" fill="var(--bad)" text-anchor="middle">1</text>
+        <text x="500" y="182" font-size="15" font-weight="800" fill="var(--muted)" text-anchor="middle">the full turn</text>
+        <text x="585" y="168" font-size="28" font-weight="950" fill="var(--text)" text-anchor="middle">=</text>
+        <rect x="615" y="120" width="150" height="80" rx="14" fill="rgba(37,99,235,.10)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="690" y="155" font-size="20" font-weight="950" fill="var(--accent2)" text-anchor="middle">A</text>
+        <text x="690" y="182" font-size="15" font-weight="800" fill="var(--muted)" text-anchor="middle">polygon area</text>
+        <text x="400" y="250" font-size="18" font-weight="900" fill="var(--text)" text-anchor="middle">example: 6 + 14/2 − 1 = 6 + 7 − 1 = 12</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — The shoelace formula (signed and doubled)</h3>
+    <p>For vertices <span class="inlineCode">P₀, P₁, …, P_{n−1}</span> in order (indices mod <span class="inlineCode">n</span>), the signed doubled area is</p>
+<pre><code>2A_signed = Σ (xᵢ · yᵢ₊₁ − xᵢ₊₁ · yᵢ)</code></pre>
+    <p>The sign encodes orientation: positive for counterclockwise, negative for clockwise. The true area is <span class="inlineCode">|2A_signed| / 2</span>. Keeping the doubled, signed integer is the exact-arithmetic foundation for everything else.</p>
+
+    <h3>4.2 — Boundary lattice points by gcd</h3>
+    <p>An edge from <span class="inlineCode">a</span> to <span class="inlineCode">b</span> with differences <span class="inlineCode">dx = b.x − a.x</span>, <span class="inlineCode">dy = b.y − a.y</span> passes through <span class="inlineCode">gcd(|dx|, |dy|) + 1</span> lattice points counting both endpoints, hence <span class="inlineCode">gcd(|dx|, |dy|)</span> equal steps. We assign each edge its <span class="inlineCode">gcd(|dx|, |dy|)</span> — that counts the start vertex plus the strictly-interior edge points, but <i>not</i> the end vertex, which is the next edge's start. Summing over all edges therefore counts every boundary point exactly once:</p>
+<pre><code>B = Σ gcd(|dxᵢ|, |dyᵢ|)        // over all n edges</code></pre>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · One edge's boundary points counted by gcd(|dx|, |dy|)</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 520" preserveAspectRatio="xMidYMid meet">
+        <!-- square grid: step = 70, origin at (80,440), y-up -->
+        <g stroke="var(--border)" stroke-width="1" opacity="0.55">
+          <line x1="80" y1="160" x2="500" y2="160"/><line x1="80" y1="230" x2="500" y2="230"/>
+          <line x1="80" y1="300" x2="500" y2="300"/><line x1="80" y1="370" x2="500" y2="370"/>
+          <line x1="80" y1="440" x2="500" y2="440"/>
+          <line x1="80" y1="160" x2="80" y2="440"/><line x1="150" y1="160" x2="150" y2="440"/>
+          <line x1="220" y1="160" x2="220" y2="440"/><line x1="290" y1="160" x2="290" y2="440"/>
+          <line x1="360" y1="160" x2="360" y2="440"/><line x1="430" y1="160" x2="430" y2="440"/>
+          <line x1="500" y1="160" x2="500" y2="440"/>
+        </g>
+
+        <!-- edge (0,0)->(6,4): start (80,440), midpoint (290,300), end (500,160) -->
+        <line x1="80" y1="440" x2="500" y2="160" stroke="var(--accent2)" stroke-width="3"/>
+        <circle cx="80" cy="440" r="9" fill="var(--warn)"/>
+        <text x="58" y="468" font-size="16" font-weight="900" fill="var(--warn)">a=(0,0)</text>
+
+        <circle cx="290" cy="300" r="9" fill="var(--good)"/>
+        <text x="302" y="304" font-size="15" font-weight="900" fill="var(--good)">midpoint (3,2)</text>
+
+        <circle cx="500" cy="160" r="9" fill="var(--warn)"/>
+        <text x="510" y="152" font-size="16" font-weight="900" fill="var(--warn)">b=(6,4)</text>
+
+        <text x="120" y="90" font-size="16" font-weight="850" fill="var(--muted)">dx=6, dy=4, gcd(6,4)=2 → 2 steps, 1 interior edge point</text>
+        <text x="120" y="118" font-size="15" font-weight="800" fill="var(--muted)">lattice points on segment: (0,0), (3,2), (6,4)</text>
+      </svg>
+    </div>
+
+    <h3>4.3 — Pick's theorem in doubled form</h3>
+    <p>Multiply <span class="inlineCode">A = I + B/2 − 1</span> by two to clear the fraction:</p>
+<pre><code>2A = 2I + B − 2          ⇒          2I = 2A − B + 2          ⇒          I = (2A − B + 2) / 2</code></pre>
+    <p>Because <span class="inlineCode">2A</span> and <span class="inlineCode">B</span> are integers and the identity guarantees <span class="inlineCode">2A − B + 2</span> is even, the final division is exact in integer arithmetic.</p>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Doubled area is exactly integer.</b> Each shoelace cross product of integer points is an integer, so <span class="inlineCode">2A</span> needs no float; divide by two only at the very end, if ever.</li>
+      <li><b>O2 — Orientation is just the sign of 2A.</b> Positive means counterclockwise, negative clockwise; taking the absolute value normalizes both inputs without reordering vertices.</li>
+      <li><b>O3 — Each edge contributes gcd, not gcd + 1.</b> Counting <span class="inlineCode">gcd(|dx|,|dy|)</span> per edge attributes the start vertex to that edge and leaves the end vertex for the next edge, so vertices are never double-counted.</li>
+      <li><b>O4 — Pick converts one unknown into arithmetic.</b> With <span class="inlineCode">2A</span> and <span class="inlineCode">B</span> known, <span class="inlineCode">I</span> is a single exact integer division — no geometry search.</li>
+      <li><b>O5 — The −1 is the global turn.</b> The constant in Pick's theorem comes from going once around a simple closed boundary; it does not depend on the polygon's shape or size.</li>
+      <li><b>O6 — Overflow, not precision, is the real risk.</b> The danger in integer geometry is a cross product exceeding 64 bits, addressed with a wider accumulator, never rounding.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — The pipeline: vertices → 2A → B → I</h3>
+    <p>The whole computation is one linear pass that accumulates two quantities, then one arithmetic step:</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Doubled-area arithmetic flow: polygon vertices → 2A → B → I</div></div>
+      <svg class="graphsvg" viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid meet">
+        <rect x="30" y="120" width="180" height="74" rx="14" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="120" y="150" font-size="16" font-weight="900" fill="var(--text)" text-anchor="middle">polygon vertices</text>
+        <text x="120" y="174" font-size="14" font-weight="800" fill="var(--muted)" text-anchor="middle">integer P₀…Pₙ₋₁</text>
+
+        <line x1="210" y1="157" x2="260" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+
+        <rect x="260" y="120" width="190" height="74" rx="14" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="355" y="150" font-size="16" font-weight="900" fill="var(--text)" text-anchor="middle">2A = Σ cross</text>
+        <text x="355" y="174" font-size="14" font-weight="800" fill="var(--muted)" text-anchor="middle">signed, then |·|</text>
+
+        <line x1="450" y1="157" x2="500" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+
+        <rect x="500" y="120" width="250" height="74" rx="14" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="625" y="149" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">B = Σ gcd(|dx|, |dy|)</text>
+        <text x="625" y="174" font-size="14" font-weight="800" fill="var(--muted)" text-anchor="middle">over all edges</text>
+
+        <line x1="750" y1="157" x2="800" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+
+        <rect x="800" y="120" width="170" height="74" rx="14" fill="rgba(15,118,110,.12)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="885" y="149" font-size="15" font-weight="900" fill="var(--good)" text-anchor="middle">I = (2A−B+2)/2</text>
+        <text x="885" y="174" font-size="14" font-weight="800" fill="var(--muted)" text-anchor="middle">exact integer</text>
+
+        <text x="500" y="265" font-size="17" font-weight="850" fill="var(--muted)" text-anchor="middle">one O(n) pass accumulates 2A and B together; I is a single exact division</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — Shoelace area visualization</h3>
+    <p>Each term <span class="inlineCode">xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ</span> is twice the signed area of the triangle formed by the origin and the edge <span class="inlineCode">(Pᵢ, Pᵢ₊₁)</span>. Summing these signed triangles sweeps out the polygon: areas outside cancel, areas inside accumulate, and the total is the signed doubled area.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Shoelace as a sum of signed triangles from the origin</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <polygon points="180,300 560,260 480,80 220,140" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="3"/>
+        <circle cx="120" cy="320" r="7" fill="var(--bad)"/><text x="90" y="340" font-size="16" font-weight="900" fill="var(--bad)">O</text>
+        <!-- signed triangles from O to each edge -->
+        <g stroke="var(--good)" stroke-width="1.5" opacity="0.55" fill="none">
+          <polygon points="120,320 180,300 560,260"/>
+          <polygon points="120,320 560,260 480,80"/>
+          <polygon points="120,320 480,80 220,140"/>
+          <polygon points="120,320 220,140 180,300"/>
+        </g>
+        <circle cx="180" cy="300" r="7" fill="var(--accent)"/><text x="158" y="322" font-size="15" font-weight="900" fill="var(--accent)">P₀</text>
+        <circle cx="560" cy="260" r="7" fill="var(--accent)"/><text x="568" y="262" font-size="15" font-weight="900" fill="var(--accent)">P₁</text>
+        <circle cx="480" cy="80" r="7" fill="var(--accent)"/><text x="488" y="78" font-size="15" font-weight="900" fill="var(--accent)">P₂</text>
+        <circle cx="220" cy="140" r="7" fill="var(--accent)"/><text x="196" y="135" font-size="15" font-weight="900" fill="var(--accent)">P₃</text>
+        <text x="280" y="345" font-size="16" font-weight="850" fill="var(--muted)">signed triangle areas from O cancel outside, sum inside</text>
+      </svg>
+    </div>
+
+    <h3>6.3 — Clockwise versus counterclockwise input</h3>
+    <p>The signed doubled area is positive for counterclockwise vertex order and negative for clockwise. Neither the boundary count nor the interior count depends on orientation, so we take the absolute value of the signed sum and proceed; the polygon need not be re-sorted.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Signed area: counterclockwise (+) vs clockwise (−)</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 320" preserveAspectRatio="xMidYMid meet">
+        <g>
+          <polygon points="120,250 280,250 200,90" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="3"/>
+          <path d="M 200 200 m -36 0 a 36 36 0 1 0 72 0" fill="none" stroke="var(--good)" stroke-width="2.5" marker-end="url(#arrow1)"/>
+          <text x="200" y="295" font-size="18" font-weight="950" fill="var(--good)" text-anchor="middle">CCW: 2A &gt; 0</text>
+        </g>
+        <g>
+          <polygon points="480,250 640,250 560,90" fill="rgba(185,28,28,.08)" stroke="var(--bad)" stroke-width="3"/>
+          <path d="M 560 200 m 36 0 a 36 36 0 1 1 -72 0" fill="none" stroke="var(--bad)" stroke-width="2.5" marker-end="url(#arrow1)"/>
+          <text x="560" y="295" font-size="18" font-weight="950" fill="var(--bad)" text-anchor="middle">CW: 2A &lt; 0</text>
+        </g>
+        <text x="380" y="50" font-size="17" font-weight="850" fill="var(--muted)" text-anchor="middle">|2A| is the same; take the absolute value</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Everything stays integer.</b> <span class="inlineCode">2A</span> and <span class="inlineCode">B</span> are integers throughout; no floating-point value is ever formed.</li>
+      <li><b>I2 — The accumulator never overflows.</b> Cross products use a wide enough type (<span class="inlineCode">long long</span>, or <span class="inlineCode">__int128</span> for large coordinates) so the running sum is exact.</li>
+      <li><b>I3 — Boundary count is orientation-free.</b> <span class="inlineCode">gcd(|dx|,|dy|)</span> uses absolute differences, so it is identical for an edge traversed either way.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Each edge adds its start vertex once.</b> Attributing <span class="inlineCode">gcd</span> (not <span class="inlineCode">gcd + 1</span>) to an edge means the shared vertex between consecutive edges is counted exactly once across the whole loop.</li>
+      <li><b>I5 — Parity is preserved.</b> <span class="inlineCode">2A − B + 2</span> is always even for a valid lattice polygon, so the interior division is exact and the result is a non-negative integer.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Both the area and boundary sums are single passes over <span class="inlineCode">n</span> edges, so the computation is one linear loop. Counting arithmetic operations, the pipeline is <span class="inlineCode">O(n)</span>. In the bit-cost model the per-edge <span class="inlineCode">gcd</span> dominates each step, so the exact integer pipeline is <span class="inlineCode">O(n log C)</span>, with <span class="inlineCode">C</span> the maximum coordinate magnitude.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> If the polygon is not simple, self-intersects, has non-integer vertices, or has zero area, Pick's theorem does not apply and the computed <span class="inlineCode">I</span> is meaningless. The code assumes a valid simple integer polygon as a stated precondition.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Why the shoelace formula gives the area</h3>
+    <p>Each term <span class="inlineCode">xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ</span> equals twice the signed area of the triangle <span class="inlineCode">(O, Pᵢ, Pᵢ₊₁)</span> with <span class="inlineCode">O</span> the origin — it is the 2D cross product of the two position vectors. Summing over the closed boundary, the contributions outside the polygon cancel in pairs while those inside add up, leaving exactly twice the signed polygon area. The sign is positive when the boundary is traversed counterclockwise.</p>
+
+    <h3>8.2 — Why an edge contributes exactly gcd(|dx|, |dy|)</h3>
+    <p>Let <span class="inlineCode">g = gcd(|dx|, |dy|)</span> for an edge from <span class="inlineCode">a</span> to <span class="inlineCode">b</span>. Writing <span class="inlineCode">dx = g·px</span>, <span class="inlineCode">dy = g·py</span> with <span class="inlineCode">gcd(|px|,|py|) = 1</span>, the lattice points on the edge are exactly <span class="inlineCode">a + k·(px, py)</span> for <span class="inlineCode">k = 0, 1, …, g</span> — that is <span class="inlineCode">g + 1</span> points including both ends, because a step of the primitive vector <span class="inlineCode">(px, py)</span> never skips a lattice point and never lands on a non-lattice point. So the edge has <span class="inlineCode">g</span> equal steps. Assigning the count <span class="inlineCode">g</span> to the edge counts its <span class="inlineCode">g + 1</span> points minus the shared end vertex, i.e. the start vertex and the <span class="inlineCode">g − 1</span> strictly-interior edge points.</p>
+
+    <h3>8.3 — Why summing gcd counts each boundary point exactly once</h3>
+    <p>Around the closed polygon, edge <span class="inlineCode">i</span> ends where edge <span class="inlineCode">i+1</span> begins. By counting each edge's start vertex (via the <span class="inlineCode">g</span>, not <span class="inlineCode">g + 1</span>, attribution) and its strictly-interior points, every vertex is owned by exactly one edge — the one for which it is the start — and every non-vertex boundary point lies on exactly one edge. Therefore <span class="inlineCode">B = Σ gcd(|dxᵢ|, |dyᵢ|)</span> counts all boundary lattice points once, with no omissions or duplicates.</p>
+
+    <h3>8.4 — Pick's theorem and its doubled form</h3>
+    <p>Pick's theorem itself is proved by additivity: it holds for a primitive lattice triangle of area <span class="inlineCode">½</span>, where <span class="inlineCode">I = 0</span> and <span class="inlineCode">B = 3</span>. When two lattice polygons are glued along a shared lattice edge, their areas add, and the lattice points on the glued edge stop being boundary points of the combined region; the identity is preserved by this bookkeeping. A simple lattice polygon can be subdivided into primitive lattice triangles after allowing lattice points inside the polygon and on its edges to be used as additional subdivision vertices. Therefore the identity extends to every simple lattice polygon. Doubling gives <span class="inlineCode">2A = 2I + B − 2</span>, and solving for the interior count yields <span class="inlineCode">I = (2A − B + 2)/2</span>, which is exact because the right side is even.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Doubled area (shoelace)</td><td>O(n)</td><td>One pass of integer cross products.</td></tr>
+        <tr><td>Boundary points</td><td>O(n log C)</td><td>One <span class="inlineCode">gcd</span> per edge; <span class="inlineCode">C</span> is the coordinate magnitude.</td></tr>
+        <tr><td>Interior points</td><td>O(1)</td><td>A single exact integer division after the two sums.</td></tr>
+        <tr><td>Orientation</td><td>O(n)</td><td>Sign of the signed shoelace sum.</td></tr>
+        <tr><td>Whole pipeline</td><td>O(n log C)</td><td>Dominated by the per-edge gcd; area and boundary share one loop.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">For <span class="inlineCode">n</span> up to a few hundred thousand, this is effectively instantaneous. The only scaling concern is the size of the doubled-area accumulator, addressed in the implementation notes below.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Stay in integers.</b> Lattice geometry is exact; introducing <span class="inlineCode">double</span> only invites rounding error where none is needed.</li>
+      <li><b>Keep area doubled.</b> Carry <span class="inlineCode">2A</span> and divide by two only at the final step, so the shoelace sum is always an exact integer.</li>
+      <li><b>Count boundary with gcd, attribute the start vertex.</b> Use <span class="inlineCode">gcd(|dx|,|dy|)</span> per edge — never <span class="inlineCode">+1</span> — so vertices are counted once.</li>
+      <li><b>Normalize orientation by magnitude.</b> Take <span class="inlineCode">|2A|</span> rather than reordering vertices for clockwise input.</li>
+      <li><b>Guard the accumulator, not the precision.</b> Choose a type wide enough for the largest cross product; reach for <span class="inlineCode">__int128</span> when coordinates are large.</li>
+      <li><b>State the polygon's preconditions.</b> Simple, integer-vertexed, nonzero area — make these explicit so misuse is obvious.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Library/template block; compiles as a translation unit with <span class="inlineCode">g++ -std=c++17 -c</span>, or after adding a <span class="inlineCode">main</span>. Everything is integer-exact: the doubled area is carried in <span class="inlineCode">__int128</span> to guard against overflow on large coordinates, and the interior count is recovered by Pick's theorem with an exact division.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// ===================================================================
+// CLASS 08 — Pick's theorem substrate: EXACT INTEGER geometry.
+// Coordinates are integers; we keep everything in integers and use
+// DOUBLED area so the half in Pick's theorem never needs a fraction.
+// ===================================================================
+using ll  = long long;
+using lll = __int128_t;          // overflow-safe accumulator for large coords
+
+struct P { ll x, y; };
+
+// signed doubled area of a simple polygon via the shoelace formula.
+// Returns 2*A with sign: positive if vertices are counterclockwise,
+// negative if clockwise. Using __int128 guards against overflow.
+lll shoelaceDoubled(const vector&lt;P&gt;&amp; poly) {
+    int n = (int)poly.size();
+    lll s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const P&amp; a = poly[i];
+        const P&amp; b = poly[(i + 1) % n];
+        s += (lll)a.x * b.y - (lll)b.x * a.y;
+    }
+    return s;                    // = 2A (signed)
+}
+
+// absolute doubled area = |2A|, always non-negative.
+lll doubledArea(const vector&lt;P&gt;&amp; poly) {
+    lll s = shoelaceDoubled(poly);
+    return s &lt; 0 ? -s : s;
+}
+
+// boundary lattice points: each edge from a to b contributes
+// gcd(|dx|,|dy|) NEW boundary points (counting its start, not its end).
+// Summed over all edges, every vertex is counted exactly once.
+ll boundaryPoints(const vector&lt;P&gt;&amp; poly) {
+    int n = (int)poly.size();
+    ll B = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const P&amp; a = poly[i];
+        const P&amp; b = poly[(i + 1) % n];
+        ll dx = llabs(b.x - a.x);
+        ll dy = llabs(b.y - a.y);
+        B += std::gcd(dx, dy);   // gcd(0,0)=0 for a repeated vertex: contributes nothing
+    }
+    return B;
+}
+
+// interior lattice points via Pick's theorem.
+// Pick:        A = I + B/2 - 1
+// doubled:    2A = 2I + B - 2   =&gt;   2I = 2A - B + 2   =&gt;   I = (2A - B + 2)/2
+// 2A - B + 2 is always even, so the division is exact.
+lll interiorPoints(const vector&lt;P&gt;&amp; poly) {
+    lll twoA = doubledArea(poly);
+    ll  B    = boundaryPoints(poly);
+    lll twoI = twoA - (lll)B + 2;
+    return twoI / 2;
+}
+
+// Pick's-theorem area reconstruction from I and B (returns doubled area).
+// 2A = 2I + B - 2.  Useful as a sanity check that Pick inverts cleanly.
+lll areaDoubledFromPick(lll I, ll B) {
+    return 2 * I + (lll)B - 2;
+}
+
+// signed-area orientation: +1 CCW, -1 CW, 0 degenerate (zero area).
+int orientation(const vector&lt;P&gt;&amp; poly) {
+    lll s = shoelaceDoubled(poly);
+    return (s &gt; 0) - (s &lt; 0);
+}
+</code></pre>
+    <div class="callout">
+      <b>Why <span class="inlineCode">__int128</span> for the area.</b> A single cross product <span class="inlineCode">x·y</span> with coordinates up to <span class="inlineCode">10⁹</span> reaches <span class="inlineCode">10¹⁸</span>, near the <span class="inlineCode">long long</span> limit; summing <span class="inlineCode">n</span> of them can overflow 64 bits. Accumulating in <span class="inlineCode">__int128</span> keeps the doubled area exact. If coordinates fit in <span class="inlineCode">10⁴</span> or so, plain <span class="inlineCode">long long</span> is enough.
+    </div>
+    <div class="callout">
+      <b>One rotation helper, never a macro.</b> Although this class is integer-only and does not rotate, the family convention still holds: if a rotation is ever needed it is the typed helper <span class="inlineCode">Point rot(const Point&amp; v, T t)</span>, never a <span class="inlineCode">rotate</span> macro (which would collide with <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>shoelaceDoubled <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">lll s = 0;</div><div class="lineExpl">Accumulate the signed doubled area in a 128-bit integer so large coordinates never overflow.</div>
+        <div class="lineNo">2</div><div class="lineCode">const P&amp; b = poly[(i + 1) % n];</div><div class="lineExpl">Wrap to the first vertex after the last, closing the polygon implicitly.</div>
+        <div class="lineNo">3</div><div class="lineCode">s += (lll)a.x*b.y - (lll)b.x*a.y;</div><div class="lineExpl">The 2D cross product of consecutive vertices — twice the signed triangle area from the origin.</div>
+        <div class="lineNo">4</div><div class="lineCode">return s;</div><div class="lineExpl">Returns signed <span class="inlineCode">2A</span>; the sign carries the orientation.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>boundaryPoints <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">ll dx = llabs(b.x - a.x);</div><div class="lineExpl">Absolute horizontal span of the edge — orientation does not matter for counting.</div>
+        <div class="lineNo">2</div><div class="lineCode">ll dy = llabs(b.y - a.y);</div><div class="lineExpl">Absolute vertical span.</div>
+        <div class="lineNo">3</div><div class="lineCode">B += std::gcd(dx, dy);</div><div class="lineExpl">Each edge adds <span class="inlineCode">gcd(|dx|,|dy|)</span>: its start vertex plus interior edge points, never the end vertex. A repeated vertex gives <span class="inlineCode">gcd(0,0)=0</span> and adds nothing.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>interiorPoints (Pick) <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">lll twoA = doubledArea(poly);</div><div class="lineExpl">Absolute doubled area <span class="inlineCode">|2A|</span>, normalizing clockwise and counterclockwise input alike.</div>
+        <div class="lineNo">2</div><div class="lineCode">ll B = boundaryPoints(poly);</div><div class="lineExpl">Total boundary lattice points via the gcd sum.</div>
+        <div class="lineNo">3</div><div class="lineCode">lll twoI = twoA - (lll)B + 2;</div><div class="lineExpl">The doubled interior count from Pick: <span class="inlineCode">2I = 2A − B + 2</span>.</div>
+        <div class="lineNo">4</div><div class="lineCode">return twoI / 2;</div><div class="lineExpl">Exact halving — the right side is always even for a valid lattice polygon.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Clockwise input</td><td>Signed area is negative.</td><td><span class="inlineCode">doubledArea</span> takes the absolute value; <span class="inlineCode">B</span> and <span class="inlineCode">I</span> are unaffected.</td></tr>
+        <tr><td>Counterclockwise input</td><td>Signed area is positive.</td><td>Same path; the sign is read only by <span class="inlineCode">orientation</span>.</td></tr>
+        <tr><td>Axis-aligned edge</td><td>One of <span class="inlineCode">dx, dy</span> is zero.</td><td><span class="inlineCode">gcd(d, 0) = d</span>, so a horizontal or vertical edge of length <span class="inlineCode">d</span> contributes <span class="inlineCode">d</span> boundary steps.</td></tr>
+        <tr><td>Edge with gcd &gt; 1</td><td>The edge passes through interior lattice points.</td><td><span class="inlineCode">gcd(|dx|,|dy|)</span> counts those intermediate points correctly.</td></tr>
+        <tr><td>Repeated first/last vertex</td><td>An edge of length zero appears.</td><td><span class="inlineCode">gcd(0,0)=0</span> contributes nothing to <span class="inlineCode">B</span>, and the zero cross product adds nothing to <span class="inlineCode">2A</span> — a duplicated closing vertex is harmless.</td></tr>
+        <tr><td>Degenerate polygon (collinear, zero area)</td><td>Pick's theorem does not apply.</td><td><span class="inlineCode">orientation</span> returns <span class="inlineCode">0</span>; treat as invalid input (precondition violated).</td></tr>
+        <tr><td>Triangle</td><td>Smallest non-degenerate polygon.</td><td>All three routines work unchanged; a primitive triangle gives <span class="inlineCode">I=0, B=3, A=½</span>.</td></tr>
+        <tr><td>Large coordinates (up to 10⁹)</td><td>Cross products approach <span class="inlineCode">10¹⁸</span>.</td><td>The <span class="inlineCode">__int128</span> accumulator keeps the sum exact; <span class="inlineCode">long long</span> alone could overflow.</td></tr>
+        <tr><td>Non-integer vertices</td><td>Pick's theorem is undefined.</td><td>Out of scope — the input contract requires integer coordinates.</td></tr>
+        <tr><td>Self-intersecting polygon</td><td>Not simple.</td><td>Out of scope — the shoelace area becomes a signed mix and Pick fails.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Counting <span class="inlineCode">gcd + 1</span> per edge.</b> Adding the end vertex too makes every vertex counted twice, inflating <span class="inlineCode">B</span> by <span class="inlineCode">n</span>. Attribute only <span class="inlineCode">gcd(|dx|,|dy|)</span> to each edge.</li>
+      <li><b>P2 — Dividing the area by two too early.</b> Halving the shoelace sum before it is complete reintroduces fractions; carry <span class="inlineCode">2A</span> and divide only at the end.</li>
+      <li><b>P3 — 64-bit overflow on the cross product.</b> With coordinates near <span class="inlineCode">10⁹</span>, a product reaches <span class="inlineCode">10¹⁸</span> and the running sum can exceed <span class="inlineCode">long long</span>; accumulate in <span class="inlineCode">__int128</span>.</li>
+      <li><b>P4 — Forgetting the absolute value for clockwise input.</b> A negative signed area used directly in Pick gives a nonsensical interior count; take <span class="inlineCode">|2A|</span>.</li>
+      <li><b>P5 — Using floating-point area.</b> A <span class="inlineCode">double</span> shoelace can round <span class="inlineCode">2A</span> off by one, breaking the exact parity that Pick's division relies on. Stay integer.</li>
+      <li><b>P6 — Assuming the polygon is simple without checking the source.</b> Pick's theorem silently produces wrong numbers for self-intersecting input; confirm the problem guarantees simplicity.</li>
+      <li><b>P7 — Mishandling a duplicated closing vertex.</b> Some inputs repeat the first vertex at the end. The zero-length edge is harmless here (<span class="inlineCode">gcd(0,0)=0</span>), but be sure not to also add a phantom extra edge.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>Need the area of a lattice polygon?</td><td><span class="inlineCode">doubledArea</span>, then divide by two (or report <span class="inlineCode">2A</span> if asked).</td></tr>
+        <tr><td>Need boundary lattice points?</td><td><span class="inlineCode">boundaryPoints</span> = <span class="inlineCode">Σ gcd(|dx|,|dy|)</span>.</td></tr>
+        <tr><td>Need interior lattice points?</td><td><span class="inlineCode">interiorPoints</span> via Pick: <span class="inlineCode">I = (2A − B + 2)/2</span>.</td></tr>
+        <tr><td>Need orientation (CW/CCW)?</td><td><span class="inlineCode">orientation</span> = sign of signed <span class="inlineCode">2A</span>.</td></tr>
+        <tr><td>Coordinates up to 10⁹?</td><td>Accumulate area in <span class="inlineCode">__int128</span>.</td></tr>
+        <tr><td>Coordinates small (≤ 10⁴)?</td><td>Plain <span class="inlineCode">long long</span> suffices.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Area: keep it doubled, divide last.</span>
+      <span class="chip good">Boundary: Σ gcd(|dx|,|dy|), never gcd+1.</span>
+      <span class="chip good">Interior: I = (2A − B + 2)/2, exact.</span>
+      <span class="chip good">Orientation: just the sign of 2A.</span>
+      <span class="chip warn">Big coords ⇒ __int128 accumulator.</span>
+      <span class="chip warn">Pick needs a simple integer polygon.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"Each edge has gcd + 1 lattice points, so B = Σ (gcd + 1)."</b> The <span class="inlineCode">+1</span> double-counts shared vertices. An edge has <span class="inlineCode">gcd + 1</span> points <i>including both ends</i>, but the end is the next edge's start, so per-edge we add only <span class="inlineCode">gcd</span>. The total is <span class="inlineCode">B = Σ gcd</span>.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Lattice points strictly inside a single triangle</h3>
+    <p>For one triangle you can apply Pick directly: compute its doubled area and boundary points, then <span class="inlineCode">I = (2A − B + 2)/2</span>. <b>When to use:</b> counting interior points of a triangular region without enumerating cells.</p>
+<pre><code>// Interior lattice points of triangle (a,b,c) via Pick.
+lll triangleInterior(P a, P b, P c) {
+    lll twoA = doubledArea({a, b, c});
+    ll  B    = boundaryPoints({a, b, c});
+    return (twoA - (lll)B + 2) / 2;
+}</code></pre>
+
+    <h3>16.2 — Polygons with holes (Pick for regions with genus)</h3>
+    <p>If a polygon encloses <span class="inlineCode">h</span> polygonal holes, the generalized identity is <span class="inlineCode">A = I + B/2 − 1 + h</span>, where <span class="inlineCode">B</span> counts boundary points of the outer and all inner boundaries and <span class="inlineCode">I</span> counts points in the region between them. <b>When to use:</b> annular or perforated lattice regions.</p>
+
+    <h3>16.3 — Number of lattice points on a segment</h3>
+    <p>A standalone use of the gcd fact: the count of lattice points on a segment from <span class="inlineCode">a</span> to <span class="inlineCode">b</span>, including both endpoints, is <span class="inlineCode">gcd(|dx|,|dy|) + 1</span>. <b>When to use:</b> digital line problems, visibility along a grid, or counting collinear lattice points.</p>
+<pre><code>// Lattice points on segment [a,b], inclusive of both endpoints.
+ll latticePointsOnSegment(P a, P b) {
+    ll dx = llabs(b.x - a.x), dy = llabs(b.y - a.y);
+    return std::gcd(dx, dy) + 1;
+}</code></pre>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications</h2>
+
+    <details open><summary>CSES — Polygon Area <span class="rightHint">shoelace, output 2A</span></summary>
+    <div class="detailsBody">
+      <p><b>Problem URL.</b> <a href="https://cses.fi/problemset/task/2191" target="_blank" rel="noopener">https://cses.fi/problemset/task/2191</a></p>
+      <p><b>Story.</b> Given the <span class="inlineCode">n</span> vertices of a simple polygon in order, output twice its area. Reporting the doubled area keeps the answer an exact integer.</p>
+      <p><b>Abstraction.</b> Accumulate the signed shoelace sum, take its absolute value, and print it. No division is needed because the problem asks for <span class="inlineCode">2A</span>.</p>
+      <p><b>Why this geometry model fits.</b> The shoelace formula is exact on integer vertices (§8.1), and the absolute value normalizes either orientation (§6.3).</p>
+      <p><b>Algorithm.</b> Read the vertices; sum <span class="inlineCode">xᵢ·yᵢ₊₁ − xᵢ₊₁·yᵢ</span> in <span class="inlineCode">__int128</span>; print <span class="inlineCode">|sum|</span>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;ll&gt; x(n), y(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; x[i] &gt;&gt; y[i];
+
+    lll s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int j = (i + 1) % n;
+        s += (lll)x[i] * y[j] - (lll)x[j] * y[i];
+    }
+    if (s &lt; 0) s = -s;                 // |2A|
+
+    // print __int128
+    if (s == 0) { cout &lt;&lt; 0 &lt;&lt; "\n"; return 0; }
+    string out;
+    while (s) { out += char('0' + (int)(s % 10)); s /= 10; }
+    reverse(out.begin(), out.end());
+    cout &lt;&lt; out &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log C)</span>, integer-exact — one linear pass over <span class="inlineCode">n</span> edges, with one <span class="inlineCode">gcd</span> per edge in <span class="inlineCode">O(log C)</span>.</p>
+      <p><b>Pitfalls.</b> Output is twice the area, so do not divide; accumulate in <span class="inlineCode">__int128</span> for coordinates up to <span class="inlineCode">10⁹</span>.</p>
+    </div>
+    </details>
+
+    <details><summary>CSES — Polygon Lattice Points <span class="rightHint">Pick's theorem: print I and B</span></summary>
+    <div class="detailsBody">
+      <p><b>Problem URL.</b> <a href="https://cses.fi/problemset/task/2193" target="_blank" rel="noopener">https://cses.fi/problemset/task/2193</a></p>
+      <p><b>Story.</b> Given a simple polygon with integer vertices, output the number of lattice points strictly inside it and the number on its boundary.</p>
+      <p><b>Abstraction.</b> This is Pick's theorem directly: compute <span class="inlineCode">|2A|</span> with the shoelace sum, <span class="inlineCode">B</span> with the gcd sum, then <span class="inlineCode">I = (2A − B + 2)/2</span>.</p>
+      <p><b>Why this geometry model fits.</b> Both counts are exact integer quantities (§8.2–8.4); Pick converts the area and boundary into the interior count with one division.</p>
+      <p><b>Algorithm.</b> One pass accumulates the signed area and the boundary gcd sum; take the absolute area; solve Pick for <span class="inlineCode">I</span>; print <span class="inlineCode">I</span> and <span class="inlineCode">B</span>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;ll&gt; x(n), y(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; x[i] &gt;&gt; y[i];
+
+    lll twoA = 0;
+    ll  B    = 0;
+    for (int i = 0; i &lt; n; i++) {
+        int j = (i + 1) % n;
+        twoA += (lll)x[i] * y[j] - (lll)x[j] * y[i];
+        ll dx = llabs(x[j] - x[i]);
+        ll dy = llabs(y[j] - y[i]);
+        B += std::gcd(dx, dy);
+    }
+    if (twoA &lt; 0) twoA = -twoA;        // |2A|
+
+    // Pick: 2I = 2A - B + 2  ->  I = (2A - B + 2)/2  (exact, even)
+    lll I = (twoA - (lll)B + 2) / 2;
+
+    // print I then B
+    auto pr = [&amp;](lll v) {
+        if (v == 0) { cout &lt;&lt; 0; return; }
+        string o;
+        while (v) { o += char('0' + (int)(v % 10)); v /= 10; }
+        reverse(o.begin(), o.end());
+        cout &lt;&lt; o;
+    };
+    pr(I); cout &lt;&lt; " " &lt;&lt; B &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log C)</span>, integer-exact.</p>
+      <p><b>Pitfalls.</b> Print <span class="inlineCode">I</span> before <span class="inlineCode">B</span>; keep the area doubled; accumulate in <span class="inlineCode">__int128</span> for safety on large coordinates.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — interior points of a triangle <span class="rightHint">Pick on a single triangle, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A focused drill applying Pick to one triangle, not a standalone contest problem.</p>
+      <p><b>Story.</b> Given three integer vertices, output how many lattice points lie strictly inside the triangle.</p>
+      <p><b>Abstraction.</b> Compute the triangle's <span class="inlineCode">|2A|</span> and <span class="inlineCode">B</span>, then <span class="inlineCode">I = (2A − B + 2)/2</span>.</p>
+      <p><b>Why this geometry model fits.</b> A triangle is a simple polygon, so Pick applies verbatim.</p>
+      <p><b>Algorithm.</b> Reuse the shoelace and gcd sums for three edges; solve Pick.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    ll x0, y0, x1, y1, x2, y2;
+    if (!(cin &gt;&gt; x0 &gt;&gt; y0 &gt;&gt; x1 &gt;&gt; y1 &gt;&gt; x2 &gt;&gt; y2)) return 0;
+    ll X[3] = { x0, x1, x2 }, Y[3] = { y0, y1, y2 };
+
+    lll twoA = 0;
+    ll  B    = 0;
+    for (int i = 0; i &lt; 3; i++) {
+        int j = (i + 1) % 3;
+        twoA += (lll)X[i] * Y[j] - (lll)X[j] * Y[i];
+        B += std::gcd(llabs(X[j] - X[i]), llabs(Y[j] - Y[i]));
+    }
+    if (twoA &lt; 0) twoA = -twoA;
+    if (twoA == 0) { cout &lt;&lt; "DEGENERATE\n"; return 0; }   // collinear: not a triangle
+
+    lll I = (twoA - (lll)B + 2) / 2;
+    auto pr = [&amp;](lll v) {
+        if (v == 0) { cout &lt;&lt; 0; return; }
+        string o;
+        while (v) { o += char('0' + (int)(v % 10)); v /= 10; }
+        reverse(o.begin(), o.end());
+        cout &lt;&lt; o;
+    };
+    pr(I); cout &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> — three edges.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">DEGENERATE</span> is printed when the three points are collinear (zero area, not a valid triangle); otherwise the count of strictly-interior lattice points.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Pick's theorem</b>: <span class="inlineCode">A = I + B/2 − 1</span>.</li>
+          <li><b>Doubled form</b>: <span class="inlineCode">2A = 2I + B − 2</span>, all integers.</li>
+          <li><b>Area</b>: shoelace sum of integer cross products, kept doubled.</li>
+          <li><b>Boundary</b>: <span class="inlineCode">B = Σ gcd(|dx|,|dy|)</span>, one per edge.</li>
+          <li><b>Interior</b>: <span class="inlineCode">I = (2A − B + 2)/2</span>, an exact division.</li>
+          <li><b>Orientation</b>: the sign of the signed <span class="inlineCode">2A</span>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Stay integer; never form a <span class="inlineCode">double</span> area.</li>
+          <li>Count <span class="inlineCode">gcd</span> per edge, never <span class="inlineCode">gcd + 1</span>.</li>
+          <li>Take <span class="inlineCode">|2A|</span> so clockwise input is fine.</li>
+          <li>Use <span class="inlineCode">__int128</span> when coordinates are large.</li>
+          <li>Pick needs a simple, integer-vertexed, nonzero-area polygon.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 08 turns counting into measurement: the shoelace formula gives exact area, <span class="inlineCode">gcd</span> counts boundary points, and Pick's theorem recovers the interior — all in pure integer arithmetic. These exact-area and lattice-counting tools carry directly into polygon-cutting and convex-hull area work.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 09 takes up polygon cutting and the convex hull, where the same signed-area machinery decides which side of a line a region falls on and bounds a point set with its tightest convex polygon.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using these Pick's-theorem routines in a contest solution, verify each item below. The Class 01–07 numeric and geometric checklists still apply underneath where relevant.</p>
+
+    <h4>Area &amp; boundary</h4>
+    <ul class="checklist">
+      <li>The shoelace sum is accumulated in an integer type wide enough for the largest cross product (<span class="inlineCode">__int128</span> for coordinates up to <span class="inlineCode">10⁹</span>).</li>
+      <li>The area is kept doubled and only halved at the very end, if at all.</li>
+      <li>The absolute value of the signed area is taken, so clockwise and counterclockwise input behave identically.</li>
+      <li>Each edge contributes <span class="inlineCode">gcd(|dx|,|dy|)</span> to <span class="inlineCode">B</span> — never <span class="inlineCode">gcd + 1</span> — so vertices are not double-counted.</li>
+    </ul>
+
+    <h4>Pick &amp; preconditions</h4>
+    <ul class="checklist">
+      <li>The interior count uses <span class="inlineCode">I = (2A − B + 2)/2</span>, an exact integer division.</li>
+      <li>The polygon is simple, has integer vertices, and has nonzero area before Pick is applied.</li>
+      <li>A repeated closing vertex is handled (its zero-length edge contributes <span class="inlineCode">gcd(0,0)=0</span> and a zero cross product).</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li>Unit square <span class="inlineCode">(0,0),(1,0),(1,1),(0,1)</span>: <span class="inlineCode">2A = 2</span>, <span class="inlineCode">B = 4</span>, <span class="inlineCode">I = 0</span>.</li>
+      <li>4×4 square <span class="inlineCode">(0,0),(4,0),(4,4),(0,4)</span>: <span class="inlineCode">2A = 32</span>, <span class="inlineCode">B = 16</span>, <span class="inlineCode">I = 9</span> (and <span class="inlineCode">16 = 9 + 8 − 1</span>).</li>
+      <li>Right triangle <span class="inlineCode">(0,0),(4,0),(0,4)</span>: <span class="inlineCode">2A = 16</span>, <span class="inlineCode">B = 12</span>, <span class="inlineCode">I = 3</span>.</li>
+      <li>Clockwise version of that triangle gives <span class="inlineCode">orientation = −1</span> but the same <span class="inlineCode">I = 3</span>.</li>
+      <li>Segment <span class="inlineCode">(0,0)→(6,4)</span>: <span class="inlineCode">gcd(6,4) = 2</span> steps, so <span class="inlineCode">3</span> lattice points including endpoints.</li>
+      <li>CSES Polygon Area on a 3×3 square prints <span class="inlineCode">18</span> (twice the area).</li>
+      <li>CSES Polygon Lattice Points on the 4×4 square prints <span class="inlineCode">9 16</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 08</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Pick's theorem &amp; lattice polygons · Counting becomes measurement.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

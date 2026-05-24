@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — std::valarray: Zero to Hero</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.5;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 12px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:24px 0 12px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900;color:var(--accent)}
+h4{margin:18px 0 8px;font-size:22px;font-weight:900}
+section{scroll-margin-top:16px;margin-bottom:40px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);max-width:1400px}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06)}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:24px;line-height:1.1}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;margin-top:4px}
+.brand-title .t3{font-size:13px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 30px}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:18px 8px 8px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:14px}
+.nav a{display:block;padding:9px 12px;border-radius:12px;border:2px solid transparent;
+  font-weight:700;color:var(--text);margin:3px 5px;font-size:16px;line-height:1.3}
+.nav a small{display:block;font-weight:600;color:var(--muted);font-size:13px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:6px;padding-left:56px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:8px 14px;border-radius:999px;font-weight:900;font-size:16px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card.tight{padding:14px 20px}
+.card.accent{border-color:var(--accent2);background:linear-gradient(180deg,var(--panel),var(--panel2))}
+pre{background:var(--codebg);color:var(--codetext);padding:18px 20px;border-radius:14px;
+  overflow-x:auto;font-size:17px;line-height:1.55;margin:12px 0;
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace}
+code{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:.92em;background:var(--chip);padding:2px 7px;border-radius:6px;color:var(--accent)}
+pre code{background:transparent;color:inherit;padding:0;font-size:inherit}
+.kw{color:#c084fc;font-weight:700}.ty{color:#7dd3fc}.fn{color:#fcd34d}
+.str{color:#86efac}.num{color:#fda4af}.cm{color:#94a3b8;font-style:italic}.op{color:#f1f5f9}
+.tip,.warn,.note,.analogy{padding:14px 18px;border-radius:14px;margin:14px 0;border:2.5px solid;display:flex;gap:14px;align-items:flex-start}
+.tip{background:rgba(15,118,110,.10);border-color:var(--good);color:var(--text)}
+.warn{background:rgba(180,83,9,.12);border-color:var(--warn);color:var(--text)}
+.note{background:rgba(37,99,235,.10);border-color:var(--accent2);color:var(--text)}
+.analogy{background:rgba(192,132,252,.10);border-color:#9333ea;color:var(--text)}
+.tip strong,.warn strong,.note strong,.analogy strong{display:block;margin-bottom:4px;font-size:18px}
+.tip .ico,.warn .ico,.note .ico,.analogy .ico{font-size:24px;flex:0 0 auto;line-height:1}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:18px}
+th,td{border:2px solid var(--border);padding:10px 14px;text-align:left;vertical-align:top}
+th{background:var(--panel2);font-weight:900;color:var(--accent)}
+tr:nth-child(even) td{background:rgba(241,244,255,.4)}
+[data-theme="dark"] tr:nth-child(even) td{background:rgba(15,35,71,.3)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800;
+  border:2px solid;margin-right:4px}
+.b-O1{background:rgba(15,118,110,.18);border-color:var(--good);color:var(--good)}
+.b-Ologn{background:rgba(180,83,9,.18);border-color:var(--warn);color:var(--warn)}
+.b-On{background:rgba(185,28,28,.18);border-color:var(--bad);color:var(--bad)}
+.b-Onlogn{background:rgba(192,132,252,.18);border-color:#9333ea;color:#9333ea}
+.b-info{background:rgba(37,99,235,.18);border-color:var(--accent2);color:var(--accent)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.viz{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.viz-title{font-weight:900;font-size:20px;margin-bottom:10px;color:var(--accent)}
+.viz-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.viz-controls button,.viz-controls input{font:inherit;font-size:16px;padding:8px 16px;
+  border:2.5px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);
+  cursor:pointer;font-weight:700}
+.viz-controls input{cursor:text;width:80px}
+.viz-controls button:hover{background:var(--accent2);color:white;border-color:var(--accent)}
+.viz-stage{padding:18px;background:var(--panel2);border-radius:12px;min-height:80px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:Consolas,monospace;font-size:18px}
+.cell{min-width:50px;height:50px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:2.5px solid var(--border);border-radius:8px;font-weight:800;
+  transition:all .35s ease;position:relative}
+.cell.new{background:var(--accent2);color:white;border-color:var(--accent);transform:scale(1.15)}
+.cell.picked{background:var(--good);color:white;border-color:var(--good)}
+.cell.empty{background:transparent;border-style:dashed;color:var(--muted)}
+.cell-idx{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--muted);font-weight:700}
+.viz-info{margin-top:10px;font-size:16px;color:var(--muted);font-weight:700}
+.viz-info span{color:var(--accent);font-weight:900}
+.kbd{display:inline-block;padding:2px 8px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--panel2);font-family:Consolas,monospace;font-size:.9em;font-weight:700}
+ul,ol{margin:8px 0 14px 0;padding-left:28px}
+li{margin:4px 0}
+hr{border:none;height:2px;background:var(--border);margin:30px 0}
+.toc-card{background:var(--panel2);border:2px dashed var(--accent2);border-radius:14px;padding:16px 22px;margin:18px 0}
+.toc-card h4{margin-top:0;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<button class="sidebar-toggle open" id="sbToggle" aria-label="Toggle sidebar">
+  <span class="burger-icon"><span></span><span></span><span></span></span>
+</button>
+<div class="sidebar-overlay" id="sbOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">std::valarray: Zero to Hero</div>
+      <div class="t3">SENIOR TRAINING · 2026</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="grpTitle">Part 0 — Foundations</div>
+    <a href="#why">Why valarray exists</a>
+    <a href="#vs-vector">vs vector</a>
+    <a href="#first">Your first program</a>
+
+    <div class="grpTitle">Part 1 — Construction</div>
+    <a href="#construct">All 6 ways to build</a>
+    <a href="#assign">Assignment & resize</a>
+
+    <div class="grpTitle">Part 2 — Element-wise Math</div>
+    <a href="#arith">Arithmetic + - * / %</a>
+    <a href="#compound">+= −= *= /=</a>
+    <a href="#unary">Unary operators</a>
+    <a href="#broadcast">Scalar broadcasting</a>
+
+    <div class="grpTitle">Part 3 — Math Functions</div>
+    <a href="#mathfns">sqrt · pow · sin · log …</a>
+
+    <div class="grpTitle">Part 4 — Comparisons</div>
+    <a href="#compare">== != &lt; &lt;= &gt; &gt;=</a>
+    <a href="#logic">Logical &amp;&amp; ||</a>
+    <a href="#bool-arrays">Boolean arrays</a>
+
+    <div class="grpTitle">Part 5 — Reductions</div>
+    <a href="#reduce">sum · min · max · apply</a>
+
+    <div class="grpTitle">Part 6 — Slicing</div>
+    <a href="#slice">slice (1D)</a>
+    <a href="#gslice">gslice (multi-D)</a>
+    <a href="#mask">mask_array (boolean)</a>
+    <a href="#indirect">indirect_array (custom)</a>
+
+    <div class="grpTitle">Part 7 — Shifting</div>
+    <a href="#shift">shift &amp; cshift</a>
+
+    <div class="grpTitle">Part 8 — 2D &amp; Matrix</div>
+    <a href="#matrix">Building a matrix</a>
+    <a href="#matrix-ops">Transpose · multiply · stats</a>
+
+    <div class="grpTitle">Part 9 — CP Patterns</div>
+    <a href="#patterns">10 worked patterns</a>
+
+    <div class="grpTitle">Part 10 — Reference</div>
+    <a href="#cheat">Cheat sheet</a>
+    <a href="#pitfalls">Top 10 pitfalls</a>
+    <a href="#decision">When to use what</a>
+  </nav>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div>
+      <h1>std::valarray: Zero to Hero</h1>
+      <div class="subtitle">The forgotten C++ array that does math on entire vectors at once.</div>
+    </div>
+    <div class="btnRow">
+      <span class="pill">📘 Beginner-friendly</span>
+      <span class="pill">⚡ CP-grade depth</span>
+      <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- PART 0 — WHY VALARRAY                                      -->
+  <!-- ========================================================== -->
+
+  <section id="why">
+    <h2>Part 0 · Why valarray Exists</h2>
+
+    <div class="card">
+      <p>You have two arrays of 1,000,000 numbers, and you want their <em>element-wise sum</em>. With a normal vector you write:</p>
+      <pre><code><span class="ty">vector</span>&lt;<span class="ty">double</span>&gt; c(a.<span class="fn">size</span>());
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; (<span class="ty">int</span>)a.<span class="fn">size</span>(); ++i) c[i] = a[i] + b[i];</code></pre>
+      <p>With <code>valarray</code> you write:</p>
+      <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; c = a + b;</code></pre>
+      <p>One line. No loop. No index arithmetic. And the standard library is allowed (and most implementations actually do) <strong>auto-vectorize</strong> it with SIMD instructions — meaning your CPU adds 4 or 8 numbers in a single instruction.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <code>vector</code> is a list of items. A <code>valarray</code> is a <em>NumPy array for C++</em>: a chunk of numbers that you treat as one mathematical object. You add it, multiply it, take its sin, slice it, mask it — without ever writing a loop.</div>
+    </div>
+
+    <h3 id="vs-vector">valarray vs vector — when to pick which</h3>
+    <table>
+      <tr><th></th><th>vector</th><th>valarray</th></tr>
+      <tr><td>Built for</td><td>General-purpose dynamic array</td><td>Heavy element-wise numeric math</td></tr>
+      <tr><td>Element-wise <code>a + b</code>?</td><td>❌ write a loop</td><td>✅ built in</td></tr>
+      <tr><td><code>sqrt(a)</code> on every element?</td><td>❌ <code>transform</code> + lambda</td><td>✅ just <code>sqrt(a)</code></td></tr>
+      <tr><td>Insert / erase in the middle?</td><td>✅ supported</td><td>❌ not supported</td></tr>
+      <tr><td><code>push_back</code>?</td><td>✅ amortized O(1)</td><td>❌ no — must <code>resize</code> (and lose data!)</td></tr>
+      <tr><td>Iteration with STL algorithms?</td><td>✅ first-class</td><td>⚠️ works (C++11+) but awkward</td></tr>
+      <tr><td>Slicing patterns (every 2nd element, 3D submatrix)?</td><td>❌ manual loops</td><td>✅ <code>slice</code> / <code>gslice</code></td></tr>
+      <tr><td>Boolean masking <code>v[v &gt; 0]</code>?</td><td>❌ manual loop</td><td>✅ built in</td></tr>
+      <tr><td>SIMD / auto-vectorization?</td><td>compiler-dependent</td><td>library-blessed, often faster</td></tr>
+    </table>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>Rule of thumb</strong>
+      Reach for <code>valarray</code> when your program does a <em>lot</em> of math on entire arrays — image processing, signal processing, matrix work, simulations, statistics. Stick with <code>vector</code> when you need to insert/erase, or when you'll be iterating with STL algorithms.</div>
+    </div>
+
+    <h3 id="first">Your first valarray program</h3>
+    <pre><code><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">using namespace</span> std;
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; b = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; c = a + b;          <span class="cm">// {11, 22, 33, 44, 55}</span>
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; d = <span class="fn">sqrt</span>(a) * <span class="num">2.0</span>;   <span class="cm">// {2, 2.83, 3.46, 4, 4.47}</span>
+
+    cout &lt;&lt; c.<span class="fn">sum</span>() &lt;&lt; <span class="str">'\n'</span>;             <span class="cm">// 165</span>
+    cout &lt;&lt; c.<span class="fn">min</span>() &lt;&lt; <span class="str">' '</span> &lt;&lt; c.<span class="fn">max</span>();    <span class="cm">// 11 55</span>
+
+    <span class="cm">// Print all elements</span>
+    <span class="kw">for</span> (<span class="ty">double</span> x : c) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;  <span class="cm">// 11 22 33 44 55</span>
+}</code></pre>
+
+    <p>Notice everything you didn't write:</p>
+    <ul>
+      <li>No <code>for</code> loop to add the arrays.</li>
+      <li>No <code>transform</code> with a lambda for <code>sqrt</code>.</li>
+      <li>No manual <code>min_element</code>/<code>max_element</code>.</li>
+      <li>No <code>accumulate</code> for the sum.</li>
+    </ul>
+
+    <div class="toc-card">
+      <h4>Reading order</h4>
+      <p>Read Parts 0–4 in order — that's the foundation. Parts 5–7 (slicing, shifting) are the killer features. Part 8 (matrix patterns) and Part 9 (worked CP problems) are where you put it all together.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 1 — CONSTRUCTION                                      -->
+  <!-- ========================================================== -->
+
+  <section id="construct">
+    <h2>Part 1 · Construction & Initialization</h2>
+
+    <h3>The 6 ways to build a valarray</h3>
+    <pre><code><span class="cm">// 1) Empty (size 0). Useless until you resize() it.</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v1;
+
+<span class="cm">// 2) Size only — value-initialized to zero.</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v2(<span class="num">5</span>);                  <span class="cm">// {0, 0, 0, 0, 0}</span>
+
+<span class="cm">// 3) Size + fill value — N copies of x. NOTE the order: (value, count)!</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v3(<span class="num">7</span>, <span class="num">5</span>);               <span class="cm">// {7, 7, 7, 7, 7}  ← five 7s, not seven 5s</span>
+
+<span class="cm">// 4) Initializer list (C++11+) — most common in modern code.</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v4 = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+
+<span class="cm">// 5) From a raw C array + length.</span>
+<span class="ty">int</span> raw[] = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v5(raw, <span class="num">3</span>);
+
+<span class="cm">// 6) Copy from another valarray.</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v6(v4);                <span class="cm">// {1, 2, 3, 4, 5}
+// or
+valarray&lt;int&gt; v7 = v4;</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>The fill-constructor argument order is BACKWARDS from vector!</strong>
+      <code>vector&lt;int&gt;(7, 5)</code> means "7 copies of the value 5".
+      <code>valarray&lt;int&gt;(7, 5)</code> means <em>"the value 7, repeated 5 times"</em>.
+      This trips up everyone exactly once.</div>
+    </div>
+
+    <h3 id="assign">Assignment, copy, and resize</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; b;
+
+<span class="cm">// Copy assignment — b is resized to match a, then values copied.</span>
+b = a;                              <span class="cm">// b is now {1, 2, 3}</span>
+
+<span class="cm">// Scalar-broadcast assignment — overwrites EVERY element.</span>
+a = <span class="num">7.5</span>;                          <span class="cm">// a is now {7.5, 7.5, 7.5}</span>
+
+<span class="cm">// Resize — REPLACES contents, does NOT preserve old values.</span>
+a.<span class="fn">resize</span>(<span class="num">5</span>);                       <span class="cm">// {0, 0, 0, 0, 0}  ← old data is GONE</span>
+a.<span class="fn">resize</span>(<span class="num">5</span>, <span class="num">99</span>);                   <span class="cm">// {99, 99, 99, 99, 99}</span>
+
+cout &lt;&lt; a.<span class="fn">size</span>();                <span class="cm">// 5</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>resize() destroys data.</strong>
+      Unlike <code>vector::resize</code>, <code>valarray::resize</code> reinitializes <em>everything</em> — even the elements you already had. There is no way to grow a valarray while keeping its old contents. If you need that, use <code>vector</code>.</div>
+    </div>
+
+    <h3>Element access</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+cout &lt;&lt; v[<span class="num">2</span>];           <span class="cm">// 30  (no bounds check, like a raw array)</span>
+v[<span class="num">2</span>] = <span class="num">99</span>;              <span class="cm">// {10, 20, 99, 40, 50}</span>
+
+cout &lt;&lt; v.<span class="fn">size</span>();      <span class="cm">// 5
+
+// Iteration (C++11+ — std::begin / std::end work on valarray)</span>
+<span class="kw">for</span> (<span class="ty">int</span> x : v) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;</code></pre>
+
+    <div class="note">
+      <span class="ico">📘</span>
+      <div><strong>No bounds checking.</strong> valarray is built for speed. There's no <code>at()</code>. If you index out of bounds, behavior is undefined. Use this knowing your indices are always valid.</div>
+    </div>
+
+    <div class="viz" id="va-viz">
+      <div class="viz-title">🔬 Interactive: build a valarray, watch it apply ops</div>
+      <div class="viz-controls">
+        <input id="va-array" value="1, 2, 3, 4, 5" style="width:240px"/>
+        <button onclick="vaShow('id')">show array</button>
+        <button onclick="vaShow('add5')">+ 5 (broadcast)</button>
+        <button onclick="vaShow('mul2')">× 2</button>
+        <button onclick="vaShow('sqr')">square (a*a)</button>
+        <button onclick="vaShow('sqrt')">sqrt</button>
+      </div>
+      <div class="viz-stage" id="va-stage"></div>
+      <div class="viz-info" id="va-info">enter values comma-separated, then click an op</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 2 — ELEMENT-WISE MATH                                 -->
+  <!-- ========================================================== -->
+
+  <section id="arith">
+    <h2>Part 2 · Element-wise Arithmetic</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      Think of two valarrays as two columns in a spreadsheet. <code>a + b</code> is "add column A to column B, row by row, into a third column" — all done at once.</div>
+    </div>
+
+    <h3>The basic five: + − * / %</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; b = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>};
+
+<span class="kw">auto</span> add = a + b;       <span class="cm">// {11, 22, 33, 44}</span>
+<span class="kw">auto</span> sub = a - b;       <span class="cm">// {9, 18, 27, 36}</span>
+<span class="kw">auto</span> mul = a * b;       <span class="cm">// {10, 40, 90, 160}</span>
+<span class="kw">auto</span> div = a / b;       <span class="cm">// {10, 10, 10, 10}</span>
+<span class="kw">auto</span> mod = a % b;       <span class="cm">// {0, 0, 0, 0}</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Sizes must match.</strong>
+      Element-wise ops on two valarrays of different sizes are undefined behavior. valarray does NOT broadcast different sizes (NumPy does, valarray doesn't).</div>
+    </div>
+
+    <h3 id="compound">In-place: += −= *= /= %=</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+v += <span class="num">10</span>;        <span class="cm">// {11, 12, 13}  ← scalar broadcast</span>
+v *= <span class="num">2</span>;         <span class="cm">// {22, 24, 26}</span>
+v -= v;         <span class="cm">// {0, 0, 0}    ← element-wise self-subtraction</span>
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; b = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>};
+a += b;                            <span class="cm">// a = {11, 22, 33, 44}</span></code></pre>
+
+    <h3 id="unary">Unary operators: + − ~ !</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">1</span>, -<span class="num">2</span>, <span class="num">3</span>, -<span class="num">4</span>};
+
+<span class="kw">auto</span> p = +a;      <span class="cm">// no-op: {1, -2, 3, -4}</span>
+<span class="kw">auto</span> n = -a;      <span class="cm">// negate every element: {-1, 2, -3, 4}</span>
+<span class="kw">auto</span> b = ~a;      <span class="cm">// bitwise NOT: useful for int valarrays</span>
+<span class="kw">auto</span> l = !a;      <span class="cm">// logical NOT: returns valarray&lt;bool&gt;: {0, 0, 0, 0}  (zero=true after !)</span></code></pre>
+
+    <h3 id="broadcast">Scalar broadcasting (the magic shortcut)</h3>
+    <p>Mixing a valarray with a scalar applies the scalar to every element. The scalar can be on either side.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>};
+
+<span class="kw">auto</span> r1 = a + <span class="num">10</span>;          <span class="cm">// {11, 12, 13, 14}</span>
+<span class="kw">auto</span> r2 = <span class="num">10</span> + a;          <span class="cm">// {11, 12, 13, 14}  ← also valid</span>
+<span class="kw">auto</span> r3 = a * <span class="num">0.5</span>;         <span class="cm">// {0.5, 1, 1.5, 2}</span>
+<span class="kw">auto</span> r4 = <span class="num">100</span> - a;         <span class="cm">// {99, 98, 97, 96}</span>
+<span class="kw">auto</span> r5 = <span class="num">1.0</span> / a;         <span class="cm">// {1, 0.5, 0.333, 0.25}  ← reciprocals</span></code></pre>
+
+    <h3>Bitwise ops on integer valarrays</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">0b1100</span>, <span class="num">0b1010</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; b = {<span class="num">0b1010</span>, <span class="num">0b0101</span>};
+
+<span class="kw">auto</span> _and = a &amp; b;        <span class="cm">// {0b1000, 0b0000}</span>
+<span class="kw">auto</span> _or  = a | b;        <span class="cm">// {0b1110, 0b1111}</span>
+<span class="kw">auto</span> _xor = a ^ b;        <span class="cm">// {0b0110, 0b1111}</span>
+<span class="kw">auto</span> _shl = a &lt;&lt; <span class="num">2</span>;       <span class="cm">// shift left every element by 2 bits</span>
+<span class="kw">auto</span> _shr = a &gt;&gt; <span class="num">1</span>;       <span class="cm">// shift right by 1 bit</span></code></pre>
+
+    <h3>Real CP use: scaled vector with offset</h3>
+    <pre><code><span class="cm">// Convert raw sensor readings (0..1023) into volts (0..5V)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; raw = readSensors();
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; volts = raw * (<span class="num">5.0</span> / <span class="num">1023.0</span>);
+
+<span class="cm">// Centering: subtract mean</span>
+<span class="ty">double</span> mean = raw.<span class="fn">sum</span>() / raw.<span class="fn">size</span>();
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; centered = raw - mean;
+
+<span class="cm">// Affine transform: y = m*x + c, in one line</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; y = m * x + c;</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 3 — MATH FUNCTIONS                                    -->
+  <!-- ========================================================== -->
+
+  <section id="mathfns">
+    <h2>Part 3 · Math Functions (element-wise)</h2>
+
+    <p>Every cmath function has a valarray overload that applies element-wise. No <code>transform</code>, no lambda — just call it.</p>
+
+    <h3>The full list</h3>
+    <table>
+      <tr><th>Function</th><th>What it does (per element)</th><th>Example use</th></tr>
+      <tr><td><code>sqrt(a)</code></td><td>Square root</td><td>Magnitude of vectors</td></tr>
+      <tr><td><code>abs(a)</code></td><td>Absolute value</td><td>Distance from zero</td></tr>
+      <tr><td><code>pow(a, k)</code> / <code>pow(a, b)</code></td><td>a^k, or element-wise a[i]^b[i]</td><td>Polynomial terms</td></tr>
+      <tr><td><code>exp(a)</code></td><td>e^x</td><td>Softmax, probabilities</td></tr>
+      <tr><td><code>log(a)</code></td><td>natural log</td><td>Log-likelihoods</td></tr>
+      <tr><td><code>log10(a)</code></td><td>log base 10</td><td>dB conversion</td></tr>
+      <tr><td><code>sin / cos / tan</code></td><td>trig</td><td>FFT, geometry</td></tr>
+      <tr><td><code>asin / acos / atan</code></td><td>inverse trig</td><td>Angle from coords</td></tr>
+      <tr><td><code>atan2(y, x)</code></td><td>angle of (x,y)</td><td>Polar coordinates</td></tr>
+      <tr><td><code>sinh / cosh / tanh</code></td><td>hyperbolic</td><td>Activation functions</td></tr>
+    </table>
+
+    <h3>Working examples</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">1</span>, <span class="num">4</span>, <span class="num">9</span>, <span class="num">16</span>, <span class="num">25</span>};
+<span class="kw">auto</span> r1 = <span class="fn">sqrt</span>(v);           <span class="cm">// {1, 2, 3, 4, 5}</span>
+<span class="kw">auto</span> r2 = <span class="fn">log</span>(v);            <span class="cm">// natural logs</span>
+
+<span class="cm">// Vector magnitude: |v| = sqrt(x² + y²)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; xs = {<span class="num">3</span>, <span class="num">5</span>, <span class="num">8</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; ys = {<span class="num">4</span>, <span class="num">12</span>, <span class="num">15</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; mag = <span class="fn">sqrt</span>(xs*xs + ys*ys);   <span class="cm">// {5, 13, 17}</span>
+
+<span class="cm">// Polar angles for points (x[i], y[i])</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; ang = <span class="fn">atan2</span>(ys, xs);
+
+<span class="cm">// Softmax (NumPy-style)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; logits = {<span class="num">1.0</span>, <span class="num">2.0</span>, <span class="num">3.0</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; e = <span class="fn">exp</span>(logits - logits.<span class="fn">max</span>());   <span class="cm">// numerical stability</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; soft = e / e.<span class="fn">sum</span>();                <span class="cm">// {0.09, 0.244, 0.665}</span>
+
+<span class="cm">// dB conversion: 20*log10(amplitude)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; amp = {<span class="num">0.1</span>, <span class="num">0.5</span>, <span class="num">1.0</span>, <span class="num">2.0</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dB = <span class="num">20.0</span> * <span class="fn">log10</span>(amp);
+
+<span class="cm">// Element-wise power (different exponent per element)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; bases = {<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; exps  = {<span class="num">10</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="kw">auto</span> r = <span class="fn">pow</span>(bases, exps);   <span class="cm">// {1024, 9, 64}</span></code></pre>
+
+    <h3>Custom functions: apply()</h3>
+    <p>Need a function that's not in cmath? <code>apply()</code> takes a function pointer or lambda and runs it on every element.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">-3</span>, <span class="num">-1</span>, <span class="num">2</span>, <span class="num">5</span>};
+
+<span class="cm">// apply with a lambda: clamp negatives to zero (ReLU)</span>
+<span class="kw">auto</span> relu = v.<span class="fn">apply</span>([](<span class="ty">int</span> x){ <span class="kw">return</span> x &lt; <span class="num">0</span> ? <span class="num">0</span> : x; });
+<span class="cm">// relu = {0, 0, 2, 5}</span>
+
+<span class="cm">// apply with a free function</span>
+<span class="ty">int</span> <span class="fn">cube</span>(<span class="ty">int</span> x) { <span class="kw">return</span> x*x*x; }
+<span class="kw">auto</span> c = v.<span class="fn">apply</span>(cube);   <span class="cm">// {-27, -1, 8, 125}</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>apply() returns a NEW valarray</strong> — it does not modify <code>v</code> in place. If you want in-place, do <code>v = v.apply(fn);</code></div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 4 — COMPARISONS                                       -->
+  <!-- ========================================================== -->
+
+  <section id="compare">
+    <h2>Part 4 · Comparisons & Boolean Arrays</h2>
+
+    <p>Comparing two valarrays element-wise produces a <code>valarray&lt;bool&gt;</code> — one bool per element. This is the foundation of <strong>masking</strong> (Part 6.3).</p>
+
+    <h3>Element-wise comparisons</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">1</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">8</span>, <span class="num">2</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; b = {<span class="num">2</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">7</span>, <span class="num">9</span>};
+
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; eq  = (a == b);    <span class="cm">// {0, 1, 0, 0, 0}</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; lt  = (a &lt;  b);    <span class="cm">// {1, 0, 0, 0, 1}</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; ge  = (a &gt;= b);    <span class="cm">// {0, 1, 1, 1, 0}</span>
+
+<span class="cm">// With a scalar</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; pos = (a &gt; <span class="num">0</span>);     <span class="cm">// which elements are positive?</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; nz  = (a != <span class="num">0</span>);    <span class="cm">// non-zero?</span></code></pre>
+
+    <h3 id="logic">Logical AND / OR on bool arrays</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">5</span>, <span class="num">15</span>, <span class="num">25</span>, <span class="num">35</span>, <span class="num">45</span>};
+
+<span class="cm">// Mask of values in [10, 30]</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; m = (v &gt;= <span class="num">10</span>) &amp;&amp; (v &lt;= <span class="num">30</span>);
+<span class="cm">// m = {0, 1, 1, 0, 0}</span>
+
+<span class="cm">// At least one of the conditions</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; m2 = (v &lt; <span class="num">10</span>) || (v &gt; <span class="num">30</span>);
+<span class="cm">// m2 = {1, 0, 0, 1, 1}</span></code></pre>
+
+    <h3 id="bool-arrays">Reducing a bool array to a single answer</h3>
+    <p>To check "are all positive?" or "any element &gt; 100?", build a bool valarray and reduce it. Since <code>valarray&lt;bool&gt;</code> doesn't have <code>any()</code>/<code>all()</code> built in, use this idiom:</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">3</span>, <span class="num">7</span>, <span class="num">1</span>, <span class="num">9</span>};
+
+<span class="cm">// "Are all positive?"</span>
+<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt; pos = (v &gt; <span class="num">0</span>);
+<span class="ty">bool</span> all_pos = pos.<span class="fn">min</span>();        <span class="cm">// min of bools: 1 only if every bool is 1</span>
+
+<span class="cm">// "Is any &gt; 100?"</span>
+<span class="ty">bool</span> any_big = (v &gt; <span class="num">100</span>).<span class="fn">max</span>();   <span class="cm">// max of bools: 1 if any bool is 1</span>
+
+<span class="cm">// "How many even?"</span>
+<span class="ty">int</span> evens = ((v % <span class="num">2</span>) == <span class="num">0</span>).<span class="fn">sum</span>(); <span class="cm">// each true counts as 1</span></code></pre>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>The "count where" pattern</strong>
+      <code>(condition).sum()</code> counts how many elements satisfy <code>condition</code>. This is the valarray equivalent of NumPy's <code>np.sum(condition)</code>.</div>
+    </div>
+
+    <h3>The "where" trick (selecting via mask)</h3>
+    <p>Once you have a bool valarray, you can use it to <em>index</em> the original (covered in detail in Part 6.3 — mask_array).</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; big = v[v &gt; <span class="num">25</span>];          <span class="cm">// {30, 40, 50}</span>
+v[v &gt; <span class="num">25</span>] = <span class="num">0</span>;                            <span class="cm">// {10, 20, 0, 0, 0} — zero out the bigs</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 5 — REDUCTIONS                                        -->
+  <!-- ========================================================== -->
+
+  <section id="reduce">
+    <h2>Part 5 · Reductions — Whole Array → One Number</h2>
+
+    <p>A reduction collapses the whole valarray to a single value. valarray gives you exactly four built-in reductions plus the <code>apply()</code> escape hatch.</p>
+
+    <table>
+      <tr><th>Method</th><th>Returns</th><th>Equivalent</th></tr>
+      <tr><td><code>v.size()</code></td><td>Number of elements</td><td><code>vector::size()</code></td></tr>
+      <tr><td><code>v.sum()</code></td><td>Sum of all elements</td><td><code>accumulate(...)</code></td></tr>
+      <tr><td><code>v.min()</code></td><td>Smallest element</td><td><code>*min_element(...)</code></td></tr>
+      <tr><td><code>v.max()</code></td><td>Largest element</td><td><code>*max_element(...)</code></td></tr>
+    </table>
+
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">3.5</span>, <span class="num">1.2</span>, <span class="num">8.7</span>, <span class="num">5.0</span>, <span class="num">0.3</span>};
+
+cout &lt;&lt; v.<span class="fn">sum</span>();          <span class="cm">// 18.7</span>
+cout &lt;&lt; v.<span class="fn">min</span>();          <span class="cm">// 0.3</span>
+cout &lt;&lt; v.<span class="fn">max</span>();          <span class="cm">// 8.7</span>
+cout &lt;&lt; v.<span class="fn">size</span>();         <span class="cm">// 5</span>
+
+<span class="ty">double</span> mean = v.<span class="fn">sum</span>() / v.<span class="fn">size</span>();   <span class="cm">// 3.74</span>
+<span class="ty">double</span> rng  = v.<span class="fn">max</span>() - v.<span class="fn">min</span>();    <span class="cm">// 8.4</span></code></pre>
+
+    <h3>The "compose your own" reduction (variance, std, product, …)</h3>
+    <p>For anything beyond sum/min/max, build it from element-wise ops + sum.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">2</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>};
+
+<span class="cm">// Mean</span>
+<span class="ty">double</span> mu = v.<span class="fn">sum</span>() / v.<span class="fn">size</span>();        <span class="cm">// 5.0</span>
+
+<span class="cm">// Variance: mean of squared deviations</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dev = v - mu;
+<span class="ty">double</span> var = (dev * dev).<span class="fn">sum</span>() / v.<span class="fn">size</span>(); <span class="cm">// 4.0</span>
+<span class="ty">double</span> std = <span class="fn">sqrt</span>(var);                    <span class="cm">// 2.0</span>
+
+<span class="cm">// Product (no built-in, use exp+log trick or fall back to a loop)</span>
+<span class="ty">double</span> prod = <span class="fn">exp</span>(<span class="fn">log</span>(v).<span class="fn">sum</span>());            <span class="cm">// log-product trick (positive values only)</span>
+
+<span class="cm">// L2 norm: |v|</span>
+<span class="ty">double</span> norm = <span class="fn">sqrt</span>((v * v).<span class="fn">sum</span>());
+
+<span class="cm">// Dot product of two valarrays</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}, b = {<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>};
+<span class="ty">double</span> dot = (a * b).<span class="fn">sum</span>();              <span class="cm">// 32</span></code></pre>
+
+    <h3>Index of min/max</h3>
+    <p>valarray's <code>min()</code>/<code>max()</code> return the value, not the index. To get the index, fall back to STL:</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">9</span>, <span class="num">5</span>, <span class="num">7</span>};
+<span class="ty">size_t</span> argmax = <span class="fn">distance</span>(<span class="fn">begin</span>(v),
+                          <span class="fn">max_element</span>(<span class="fn">begin</span>(v), <span class="fn">end</span>(v)));
+<span class="cm">// argmax = 2 (index of the 9)</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 6 — SLICING                                           -->
+  <!-- ========================================================== -->
+
+  <section id="slice">
+    <h2>Part 6.1 · slice — 1-D Arithmetic Slicing</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <code>slice</code> is "give me elements at positions <em>start, start+stride, start+2·stride, …</em>" Like Python's <code>v[start::stride]</code> with a count.</div>
+    </div>
+
+    <h3>Anatomy of a slice</h3>
+    <pre><code>slice(start, count, stride)</code></pre>
+    <ul>
+      <li><strong>start</strong> — the first index to pick.</li>
+      <li><strong>count</strong> — how many to pick.</li>
+      <li><strong>stride</strong> — the gap between picks.</li>
+    </ul>
+
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">11</span>, <span class="num">12</span>, <span class="num">13</span>, <span class="num">14</span>, <span class="num">15</span>, <span class="num">16</span>, <span class="num">17</span>};
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; even = v[<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">4</span>, <span class="num">2</span>)];
+<span class="cm">// indices: 0, 2, 4, 6 → values: {10, 12, 14, 16}</span>
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; odd  = v[<span class="fn">slice</span>(<span class="num">1</span>, <span class="num">4</span>, <span class="num">2</span>)];
+<span class="cm">// indices: 1, 3, 5, 7 → values: {11, 13, 15, 17}</span>
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; first3 = v[<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">3</span>, <span class="num">1</span>)];   <span class="cm">// {10, 11, 12}</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; rev3   = v[<span class="fn">slice</span>(<span class="num">7</span>, <span class="num">3</span>, -<span class="num">1</span>)];  <span class="cm">// {17, 16, 15}</span></code></pre>
+
+    <div class="viz" id="slice-viz">
+      <div class="viz-title">🔬 Interactive: slice picker</div>
+      <div class="viz-controls">
+        start <input id="sl-start" value="0" type="number" min="0" style="width:60px"/>
+        count <input id="sl-count" value="4" type="number" min="1" style="width:60px"/>
+        stride <input id="sl-stride" value="2" type="number" style="width:60px"/>
+        <button onclick="sliceShow()">apply slice</button>
+      </div>
+      <div class="viz-stage" id="sl-stage" style="min-height:90px"></div>
+      <div class="viz-info" id="sl-info">picks v[start], v[start+stride], v[start+2·stride], … (count times)</div>
+    </div>
+
+    <h3>Writing through a slice</h3>
+    <p>Slices are <em>views</em> — assigning to one writes back into the original valarray.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">8</span>};
+
+v[<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">4</span>, <span class="num">2</span>)] = <span class="num">0</span>;       <span class="cm">// zero every other element starting at 0</span>
+<span class="cm">// v = {0, 2, 0, 4, 0, 6, 0, 8}</span>
+
+v[<span class="fn">slice</span>(<span class="num">1</span>, <span class="num">4</span>, <span class="num">2</span>)] = <span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt;{<span class="num">100</span>, <span class="num">200</span>, <span class="num">300</span>, <span class="num">400</span>};
+<span class="cm">// v = {0, 100, 0, 200, 0, 300, 0, 400}</span>
+
+<span class="cm">// You can do compound ops on a slice too</span>
+v[<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">4</span>, <span class="num">2</span>)] += <span class="num">5</span>;       <span class="cm">// add 5 to elements 0, 2, 4, 6</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="gslice">
+    <h2>Part 6.2 · gslice — Multidimensional Slicing</h2>
+
+    <p>A <code>gslice</code> ("generalized slice") is a slice with multiple stride dimensions — perfect for picking submatrices out of a flat valarray that represents 2D / 3D data.</p>
+
+    <h3>Anatomy</h3>
+    <pre><code>gslice(start, {sizes...}, {strides...})</code></pre>
+    <p>It generates indices by nesting loops, outermost first. With <code>{s1, s2}</code> and <code>{d1, d2}</code>:</p>
+    <pre><code><span class="kw">for</span> i = <span class="num">0</span>..s1:
+    <span class="kw">for</span> j = <span class="num">0</span>..s2:
+        emit(start + i*d1 + j*d2)</code></pre>
+
+    <h3>Picking a row from a 4×5 matrix</h3>
+    <p>Imagine a 4-row × 5-column matrix stored row-major in a flat valarray of size 20.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; m(<span class="num">20</span>);
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; <span class="num">20</span>; ++i) m[i] = i;
+<span class="cm">// m = {0,1,2,3,4, 5,6,7,8,9, 10,11,12,13,14, 15,16,17,18,19}</span>
+
+<span class="cm">// Row 2 (zero-based): elements at indices 10..14 — same as slice(10, 5, 1)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; row2 = m[<span class="fn">slice</span>(<span class="num">2</span>*<span class="num">5</span>, <span class="num">5</span>, <span class="num">1</span>)];
+
+<span class="cm">// Column 1: elements 1, 6, 11, 16 — gap of 5 (one full row)</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; col1 = m[<span class="fn">slice</span>(<span class="num">1</span>, <span class="num">4</span>, <span class="num">5</span>)];</code></pre>
+
+    <h3>Picking a 2×3 submatrix with gslice</h3>
+    <p>Top-left 2-row × 3-column submatrix of our 4×5 matrix. Outer dim: 2 rows, stride 5 (one row). Inner dim: 3 cols, stride 1.</p>
+    <pre><code><span class="kw">auto</span> sub = m[<span class="fn">gslice</span>(<span class="num">0</span>, {<span class="num">2</span>, <span class="num">3</span>}, {<span class="num">5</span>, <span class="num">1</span>})];
+<span class="cm">// indices: 0,1,2,  5,6,7
+// values:  {0,1,2, 5,6,7}</span>
+
+<span class="cm">// Pick rows 1..2, cols 2..4 → starts at (1,2) = index 7</span>
+<span class="kw">auto</span> sub2 = m[<span class="fn">gslice</span>(<span class="num">7</span>, {<span class="num">2</span>, <span class="num">3</span>}, {<span class="num">5</span>, <span class="num">1</span>})];
+<span class="cm">// indices: 7,8,9,  12,13,14
+// values:  {7, 8, 9, 12, 13, 14}</span></code></pre>
+
+    <h3>Anti-diagonal of a 4×4 matrix</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; m(<span class="num">16</span>);  iota(<span class="fn">begin</span>(m), <span class="fn">end</span>(m), <span class="num">0</span>);
+<span class="cm">// 0  1  2  3
+//  4  5  6  7
+//  8  9 10 11
+// 12 13 14 15</span>
+
+<span class="cm">// Anti-diagonal: 3, 6, 9, 12 — start=3, stride=3</span>
+<span class="kw">auto</span> anti = m[<span class="fn">slice</span>(<span class="num">3</span>, <span class="num">4</span>, <span class="num">3</span>)];
+<span class="cm">// {3, 6, 9, 12}</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="mask">
+    <h2>Part 6.3 · mask_array — Boolean Filtering</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A mask is a stencil. Holes (true) let elements through, solid spots (false) hide them. NumPy users will recognize <code>v[v > 0]</code> instantly.</div>
+    </div>
+
+    <h3>Filtering elements</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">-3</span>, <span class="num">25</span>, <span class="num">7</span>, <span class="num">-1</span>, <span class="num">42</span>};
+
+<span class="cm">// Keep only positives</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; pos = v[v &gt; <span class="num">0</span>];
+<span class="cm">// pos = {10, 25, 7, 42}</span>
+
+<span class="cm">// Keep only multiples of 5</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; m5 = v[(v % <span class="num">5</span>) == <span class="num">0</span>];
+<span class="cm">// m5 = {10, 25}</span></code></pre>
+
+    <h3>Modifying through a mask (the "where" assignment)</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">-3</span>, <span class="num">25</span>, <span class="num">7</span>, <span class="num">-1</span>, <span class="num">42</span>};
+
+<span class="cm">// Replace negatives with 0 (ReLU in one line)</span>
+v[v &lt; <span class="num">0</span>] = <span class="num">0</span>;
+<span class="cm">// v = {10, 0, 25, 7, 0, 42}</span>
+
+<span class="cm">// Cap large values at 100</span>
+v[v &gt; <span class="num">100</span>] = <span class="num">100</span>;
+
+<span class="cm">// Negate elements above the mean</span>
+<span class="ty">double</span> mean = v.<span class="fn">sum</span>() / v.<span class="fn">size</span>();
+v[v &gt; mean] *= -<span class="num">1</span>;</code></pre>
+
+    <h3>Combining masks (AND / OR)</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; ages = {<span class="num">5</span>, <span class="num">17</span>, <span class="num">22</span>, <span class="num">35</span>, <span class="num">68</span>, <span class="num">90</span>};
+
+<span class="cm">// Adults: 18 ≤ age ≤ 65</span>
+<span class="kw">auto</span> adult = (ages &gt;= <span class="num">18</span>) &amp;&amp; (ages &lt;= <span class="num">65</span>);
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; pick = ages[adult];
+<span class="cm">// pick = {22, 35}</span>
+
+<span class="cm">// Either children or seniors</span>
+<span class="kw">auto</span> dep = (ages &lt; <span class="num">18</span>) || (ages &gt; <span class="num">65</span>);
+cout &lt;&lt; dep.<span class="fn">sum</span>() &lt;&lt; <span class="str">" dependents\n"</span>;</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="indirect">
+    <h2>Part 6.4 · indirect_array — Custom Index List</h2>
+
+    <p>An <code>indirect_array</code> picks elements at <em>arbitrary</em> indices that you supply yourself in a <code>valarray&lt;size_t&gt;</code>.</p>
+
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>, <span class="num">60</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">size_t</span>&gt; idx = {<span class="num">5</span>, <span class="num">2</span>, <span class="num">0</span>, <span class="num">3</span>};
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; pick = v[idx];
+<span class="cm">// pick = {60, 30, 10, 40}  ← in the requested order, can repeat</span>
+
+<span class="cm">// Repeats are allowed</span>
+<span class="ty">valarray</span>&lt;<span class="ty">size_t</span>&gt; idx2 = {<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; rep = v[idx2];      <span class="cm">// {10, 10, 10}</span>
+
+<span class="cm">// Write through indirect_array</span>
+v[idx] = <span class="num">0</span>;
+<span class="cm">// v = {0, 20, 0, 0, 50, 0}</span></code></pre>
+
+    <h3>Use case: shuffle, reorder, gather</h3>
+    <pre><code><span class="cm">// Sort a *copy* by sorting indices instead of the array</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">30</span>, <span class="num">10</span>, <span class="num">50</span>, <span class="num">20</span>, <span class="num">40</span>};
+<span class="ty">vector</span>&lt;<span class="ty">size_t</span>&gt; ord(v.<span class="fn">size</span>());
+<span class="fn">iota</span>(ord.<span class="fn">begin</span>(), ord.<span class="fn">end</span>(), <span class="num">0</span>);
+<span class="fn">sort</span>(ord.<span class="fn">begin</span>(), ord.<span class="fn">end</span>(), [&amp;](<span class="ty">size_t</span> a, <span class="ty">size_t</span> b){ <span class="kw">return</span> v[a] &lt; v[b]; });
+
+<span class="ty">valarray</span>&lt;<span class="ty">size_t</span>&gt; idx(ord.<span class="fn">data</span>(), ord.<span class="fn">size</span>());
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; sorted = v[idx];
+<span class="cm">// sorted = {10, 20, 30, 40, 50}, original v unchanged</span></code></pre>
+
+    <h3>Side-by-side: the four selectors</h3>
+    <table>
+      <tr><th>Selector</th><th>Index pattern</th><th>Use it for…</th></tr>
+      <tr><td><code>slice(s,c,t)</code></td><td>arithmetic sequence</td><td>every k-th element, rows, columns</td></tr>
+      <tr><td><code>gslice(s,{c…},{t…})</code></td><td>nested arithmetic</td><td>2D / 3D submatrices</td></tr>
+      <tr><td><code>v[bool_array]</code></td><td>positions where bool is true</td><td>conditional filtering</td></tr>
+      <tr><td><code>v[size_t_array]</code></td><td>any indices, in any order, with repeats</td><td>gather, scatter, reorder</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 7 — SHIFT                                             -->
+  <!-- ========================================================== -->
+
+  <section id="shift">
+    <h2>Part 7 · Shifting (shift &amp; cshift)</h2>
+
+    <h3>shift(k) — slide and zero-fill</h3>
+    <p>Positive k moves elements LEFT (toward smaller indices); the freed slots at the right are zero-filled. Negative k moves RIGHT.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+
+v.<span class="fn">shift</span>(<span class="num">2</span>);   <span class="cm">// {3, 4, 5, 0, 0}  ← shifted left by 2</span>
+v.<span class="fn">shift</span>(-<span class="num">1</span>);  <span class="cm">// {0, 3, 4, 5, 0}  ← shifted right by 1</span></code></pre>
+
+    <h3>cshift(k) — circular shift (rotate)</h3>
+    <p>Same idea but wraps around — nothing is lost.</p>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+
+v.<span class="fn">cshift</span>(<span class="num">2</span>);    <span class="cm">// {3, 4, 5, 1, 2}</span>
+v.<span class="fn">cshift</span>(-<span class="num">1</span>);   <span class="cm">// {5, 1, 2, 3, 4}</span></code></pre>
+
+    <h3>Use case: discrete derivative (forward difference)</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">1</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">10</span>, <span class="num">15</span>};
+
+<span class="cm">// d[i] = v[i+1] - v[i] for i = 0..n-2; last element becomes 0</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; d = v.<span class="fn">shift</span>(<span class="num">1</span>) - v;
+<span class="cm">// shift(1) = {3, 6, 10, 15, 0}
+//      v   = {1, 3,  6, 10, 1.5}
+// diff      = {2, 3,  4,  5, ...}</span></code></pre>
+
+    <h3>Use case: pairwise sums (sliding window of 2)</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+<span class="cm">// pairs[i] = v[i] + v[i+1]; last entry will be just v[n-1]+0</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; pairs = v + v.<span class="fn">shift</span>(<span class="num">1</span>);
+<span class="cm">// pairs = {30, 50, 70, 90, 50}</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 8 — 2D & MATRICES                                     -->
+  <!-- ========================================================== -->
+
+  <section id="matrix">
+    <h2>Part 8.1 · Building a Matrix on Top of valarray</h2>
+
+    <p>valarray is 1-D, but with a small wrapper you get a tight, fast 2D matrix. This is the idiomatic way to do matrix work without pulling in a heavy library.</p>
+
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">class</span> Mat {
+    <span class="ty">size_t</span> R, C;
+    <span class="ty">valarray</span>&lt;T&gt; data;
+<span class="kw">public</span>:
+    <span class="fn">Mat</span>(<span class="ty">size_t</span> r, <span class="ty">size_t</span> c, T init = T{}) : R(r), C(c), data(init, r*c) {}
+
+    <span class="ty">size_t</span> <span class="fn">rows</span>() <span class="kw">const</span> { <span class="kw">return</span> R; }
+    <span class="ty">size_t</span> <span class="fn">cols</span>() <span class="kw">const</span> { <span class="kw">return</span> C; }
+
+    <span class="cm">// Element access</span>
+    T&amp; <span class="fn">operator</span>()(<span class="ty">size_t</span> r, <span class="ty">size_t</span> c)       { <span class="kw">return</span> data[r*C + c]; }
+    <span class="kw">const</span> T&amp; <span class="fn">operator</span>()(<span class="ty">size_t</span> r, <span class="ty">size_t</span> c) <span class="kw">const</span> { <span class="kw">return</span> data[r*C + c]; }
+
+    <span class="cm">// Row r as a slice (length C, stride 1)</span>
+    <span class="ty">valarray</span>&lt;T&gt; <span class="fn">row</span>(<span class="ty">size_t</span> r) <span class="kw">const</span> { <span class="kw">return</span> data[<span class="fn">slice</span>(r*C, C, <span class="num">1</span>)]; }
+
+    <span class="cm">// Column c as a slice (length R, stride C)</span>
+    <span class="ty">valarray</span>&lt;T&gt; <span class="fn">col</span>(<span class="ty">size_t</span> c) <span class="kw">const</span> { <span class="kw">return</span> data[<span class="fn">slice</span>(c, R, C)]; }
+
+    <span class="cm">// Raw access for advanced ops</span>
+    <span class="ty">valarray</span>&lt;T&gt;&amp; <span class="fn">flat</span>() { <span class="kw">return</span> data; }
+};</code></pre>
+
+    <h3>Using it</h3>
+    <pre><code>Mat&lt;<span class="ty">int</span>&gt; M(<span class="num">3</span>, <span class="num">4</span>, <span class="num">0</span>);            <span class="cm">// 3×4 matrix of zeros</span>
+M(<span class="num">1</span>, <span class="num">2</span>) = <span class="num">99</span>;
+cout &lt;&lt; M(<span class="num">1</span>, <span class="num">2</span>);              <span class="cm">// 99</span>
+
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; r1 = M.<span class="fn">row</span>(<span class="num">1</span>);   <span class="cm">// view of row 1</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; c2 = M.<span class="fn">col</span>(<span class="num">2</span>);   <span class="cm">// view of column 2</span>
+
+<span class="cm">// Scale every element of the whole matrix</span>
+M.<span class="fn">flat</span>() *= <span class="num">2</span>;</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="matrix-ops">
+    <h2>Part 8.2 · Matrix Operations</h2>
+
+    <h3>Transpose (with gslice)</h3>
+    <pre><code><span class="cm">// Transpose a flat row-major R×C matrix into a C×R one</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; <span class="fn">transpose</span>(<span class="kw">const</span> <span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt;&amp; m, <span class="ty">size_t</span> R, <span class="ty">size_t</span> C) {
+    <span class="cm">// Pick m by walking columns first: stride 1 between rows of T = stride C in m</span>
+    <span class="kw">return</span> m[<span class="fn">gslice</span>(<span class="num">0</span>, {C, R}, {<span class="num">1</span>, C})];
+}</code></pre>
+
+    <h3>Matrix × vector</h3>
+    <pre><code><span class="cm">// y[i] = sum_j M(i,j) * x[j]</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; <span class="fn">matvec</span>(Mat&lt;<span class="ty">double</span>&gt;&amp; M, <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; x) {
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; y(M.<span class="fn">rows</span>());
+    <span class="kw">for</span> (<span class="ty">size_t</span> i = <span class="num">0</span>; i &lt; M.<span class="fn">rows</span>(); ++i)
+        y[i] = (M.<span class="fn">row</span>(i) * x).<span class="fn">sum</span>();    <span class="cm">// dot product per row</span>
+    <span class="kw">return</span> y;
+}</code></pre>
+
+    <h3>Matrix × matrix</h3>
+    <pre><code>Mat&lt;<span class="ty">double</span>&gt; <span class="fn">matmul</span>(Mat&lt;<span class="ty">double</span>&gt;&amp; A, Mat&lt;<span class="ty">double</span>&gt;&amp; B) {
+    <span class="kw">assert</span>(A.<span class="fn">cols</span>() == B.<span class="fn">rows</span>());
+    Mat&lt;<span class="ty">double</span>&gt; C(A.<span class="fn">rows</span>(), B.<span class="fn">cols</span>(), <span class="num">0.0</span>);
+    <span class="kw">for</span> (<span class="ty">size_t</span> i = <span class="num">0</span>; i &lt; A.<span class="fn">rows</span>(); ++i)
+        <span class="kw">for</span> (<span class="ty">size_t</span> j = <span class="num">0</span>; j &lt; B.<span class="fn">cols</span>(); ++j)
+            C(i, j) = (A.<span class="fn">row</span>(i) * B.<span class="fn">col</span>(j)).<span class="fn">sum</span>();
+    <span class="kw">return</span> C;
+}</code></pre>
+
+    <h3>Per-row stats</h3>
+    <pre><code><span class="cm">// Mean of every row</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; means(M.<span class="fn">rows</span>());
+<span class="kw">for</span> (<span class="ty">size_t</span> i = <span class="num">0</span>; i &lt; M.<span class="fn">rows</span>(); ++i)
+    means[i] = M.<span class="fn">row</span>(i).<span class="fn">sum</span>() / M.<span class="fn">cols</span>();
+
+<span class="cm">// Max of every column</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; col_max(M.<span class="fn">cols</span>());
+<span class="kw">for</span> (<span class="ty">size_t</span> j = <span class="num">0</span>; j &lt; M.<span class="fn">cols</span>(); ++j)
+    col_max[j] = M.<span class="fn">col</span>(j).<span class="fn">max</span>();</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 9 — CP PATTERNS                                       -->
+  <!-- ========================================================== -->
+
+  <section id="patterns">
+    <h2>Part 9 · 10 Practical CP Patterns with valarray</h2>
+
+    <h3>Pattern 1 · Histogram / counting buckets</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">5</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">2</span>};
+
+<span class="cm">// Count occurrences of each value 1..5</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; hist(<span class="num">6</span>);            <span class="cm">// indices 0..5</span>
+<span class="kw">for</span> (<span class="ty">int</span> x : v) ++hist[x];
+<span class="cm">// hist = {0, 2, 2, 2, 0, 3}</span></code></pre>
+
+    <h3>Pattern 2 · Min-max normalization to [0, 1]</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v = {<span class="num">5</span>, <span class="num">10</span>, <span class="num">3</span>, <span class="num">15</span>, <span class="num">8</span>};
+<span class="ty">double</span> lo = v.<span class="fn">min</span>(), hi = v.<span class="fn">max</span>();
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; n = (v - lo) / (hi - lo);
+<span class="cm">// n is in [0, 1]</span></code></pre>
+
+    <h3>Pattern 3 · Z-score standardization</h3>
+    <pre><code><span class="ty">double</span> mu  = v.<span class="fn">sum</span>() / v.<span class="fn">size</span>();
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dev = v - mu;
+<span class="ty">double</span> sd  = <span class="fn">sqrt</span>((dev*dev).<span class="fn">sum</span>() / v.<span class="fn">size</span>());
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; z   = dev / sd;</code></pre>
+
+    <h3>Pattern 4 · Polynomial evaluation (Horner's method)</h3>
+    <pre><code><span class="cm">// Evaluate p(x) = c[0] + c[1]*x + c[2]*x² + ... + c[n-1]*x^(n-1) at many xs</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; <span class="fn">polyEval</span>(<span class="ty">vector</span>&lt;<span class="ty">double</span>&gt;&amp; coef, <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; xs) {
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; y(coef.<span class="fn">back</span>(), xs.<span class="fn">size</span>());      <span class="cm">// y = c[n-1]</span>
+    <span class="kw">for</span> (<span class="ty">int</span> i = (<span class="ty">int</span>)coef.<span class="fn">size</span>() - <span class="num">2</span>; i &gt;= <span class="num">0</span>; --i)
+        y = y * xs + coef[i];                              <span class="cm">// vectorized!</span>
+    <span class="kw">return</span> y;
+}</code></pre>
+
+    <h3>Pattern 5 · Discrete convolution (manual, but vectorized inner)</h3>
+    <pre><code><span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; <span class="fn">conv</span>(<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; a, <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; k) {
+    <span class="ty">size_t</span> n = a.<span class="fn">size</span>(), m = k.<span class="fn">size</span>();
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; y(n + m - <span class="num">1</span>);
+    <span class="kw">for</span> (<span class="ty">size_t</span> i = <span class="num">0</span>; i &lt; n; ++i) {
+        <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; scaled = k * a[i];                 <span class="cm">// vectorized</span>
+        y[<span class="fn">slice</span>(i, m, <span class="num">1</span>)] += scaled;                       <span class="cm">// vectorized add into window</span>
+    }
+    <span class="kw">return</span> y;
+}</code></pre>
+
+    <h3>Pattern 6 · Sliding window sum (using shift)</h3>
+    <pre><code><span class="cm">// Window of size 3 — sum of (v[i] + v[i+1] + v[i+2])</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">8</span>};
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; w3 = v + v.<span class="fn">shift</span>(<span class="num">1</span>) + v.<span class="fn">shift</span>(<span class="num">2</span>);
+<span class="cm">// w3[0..n-3] holds the window sums; the last 2 entries are partial (treat as garbage)</span></code></pre>
+
+    <h3>Pattern 7 · Gather-then-scatter (via indirect_array)</h3>
+    <pre><code><span class="cm">// "Read inputs, place them at the indices given by perm[]"</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; v(n), out(n);
+<span class="ty">valarray</span>&lt;<span class="ty">size_t</span>&gt; perm = readPermutation();   <span class="cm">// 0..n-1 in some order</span>
+out[perm] = v;                                <span class="cm">// scatter v into out at perm positions</span></code></pre>
+
+    <h3>Pattern 8 · "Where" with multiple branches (np.where equivalent)</h3>
+    <pre><code><span class="cm">// out[i] = (cond[i] ? a[i] : b[i])</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; <span class="fn">where</span>(<span class="ty">valarray</span>&lt;<span class="ty">bool</span>&gt;&amp; cond,
+                       <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; a,
+                       <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;&amp; b) {
+    <span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; out = b;        <span class="cm">// start with b everywhere</span>
+    out[cond] = (<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt;)a[cond];   <span class="cm">// overwrite where cond is true</span>
+    <span class="kw">return</span> out;
+}</code></pre>
+
+    <h3>Pattern 9 · Distance matrix between point sets</h3>
+    <pre><code><span class="cm">// Given xs, ys (size n) and a single query (qx, qy):</span>
+<span class="cm">// distance from query to each point — fully vectorized.</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dx = xs - qx;
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dy = ys - qy;
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; dist = <span class="fn">sqrt</span>(dx*dx + dy*dy);
+
+<span class="cm">// Index of nearest point</span>
+<span class="ty">size_t</span> nearest = <span class="fn">distance</span>(<span class="fn">begin</span>(dist),
+                           <span class="fn">min_element</span>(<span class="fn">begin</span>(dist), <span class="fn">end</span>(dist)));</code></pre>
+
+    <h3>Pattern 10 · Bitmask DP precompute (popcount on int valarray)</h3>
+    <pre><code><span class="cm">// For all masks 0..(1&lt;&lt;n)-1, build popcount[mask].</span>
+<span class="ty">valarray</span>&lt;<span class="ty">int</span>&gt; pc(<span class="num">1</span> &lt;&lt; n);
+<span class="kw">for</span> (<span class="ty">int</span> m = <span class="num">1</span>; m &lt; (<span class="num">1</span> &lt;&lt; n); ++m)
+    pc[m] = pc[m &gt;&gt; <span class="num">1</span>] + (m &amp; <span class="num">1</span>);
+<span class="cm">// pc is now usable in vectorized comparisons: pc &gt; k, etc.</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 10 — REFERENCE                                        -->
+  <!-- ========================================================== -->
+
+  <section id="cheat">
+    <h2>Part 10.1 · Cheat Sheet</h2>
+
+    <h3>Headers and types</h3>
+    <pre><code><span class="kw">#include</span> &lt;valarray&gt;     <span class="cm">// or use bits/stdc++.h</span>
+<span class="ty">valarray</span>&lt;<span class="ty">double</span>&gt; v;</code></pre>
+
+    <h3>Construction</h3>
+    <table>
+      <tr><th>Form</th><th>Meaning</th></tr>
+      <tr><td><code>valarray&lt;T&gt; v(n)</code></td><td>n value-initialized elements</td></tr>
+      <tr><td><code>valarray&lt;T&gt; v(x, n)</code></td><td>n copies of x &nbsp;<strong>(value first!)</strong></td></tr>
+      <tr><td><code>valarray&lt;T&gt; v = {…}</code></td><td>initializer list</td></tr>
+      <tr><td><code>valarray&lt;T&gt; v(p, n)</code></td><td>copy n elements from raw pointer p</td></tr>
+    </table>
+
+    <h3>Element-wise operators</h3>
+    <table>
+      <tr><th>Group</th><th>Operators</th></tr>
+      <tr><td>Arithmetic</td><td><code>+ - * / %</code> and compound <code>+= -= *= /= %=</code></td></tr>
+      <tr><td>Bitwise</td><td><code>&amp; | ^ ~ &lt;&lt; &gt;&gt;</code></td></tr>
+      <tr><td>Comparison</td><td><code>== != &lt; &lt;= &gt; &gt;=</code></td></tr>
+      <tr><td>Logical</td><td><code>&amp;&amp; || !</code></td></tr>
+    </table>
+
+    <h3>Math (free functions)</h3>
+    <p><code>abs · sqrt · pow · exp · log · log10 · sin · cos · tan · asin · acos · atan · atan2 · sinh · cosh · tanh</code></p>
+
+    <h3>Reductions (member functions)</h3>
+    <p><code>v.size() · v.sum() · v.min() · v.max() · v.apply(fn)</code></p>
+
+    <h3>Slicing</h3>
+    <table>
+      <tr><th>Form</th><th>Meaning</th></tr>
+      <tr><td><code>v[slice(start, count, stride)]</code></td><td>Arithmetic-progression indices</td></tr>
+      <tr><td><code>v[gslice(start, {sizes}, {strides})]</code></td><td>Multidimensional</td></tr>
+      <tr><td><code>v[bool_valarray]</code></td><td>Mask filter</td></tr>
+      <tr><td><code>v[size_t_valarray]</code></td><td>Custom indices (gather/scatter)</td></tr>
+    </table>
+
+    <h3>Shifting</h3>
+    <table>
+      <tr><th>Form</th><th>Meaning</th></tr>
+      <tr><td><code>v.shift(k)</code></td><td>Slide by k, zero-fill freed slots (returns new valarray)</td></tr>
+      <tr><td><code>v.cshift(k)</code></td><td>Circular shift (rotate)</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="pitfalls">
+    <h2>Part 10.2 · Top 10 valarray Pitfalls</h2>
+
+    <ol>
+      <li><strong>Constructor argument order is reversed.</strong> <code>valarray&lt;int&gt;(7, 5)</code> = "value 7, repeated 5 times" — opposite of vector. <em>Fix:</em> just remember "value first, count second".</li>
+      <li><strong><code>resize()</code> wipes data.</strong> Unlike vector, it reinitializes everything. <em>Fix:</em> if you need growth-with-data, use vector.</li>
+      <li><strong>No bounds checking.</strong> <code>v[i]</code> for invalid <code>i</code> is undefined behavior, no <code>at()</code>. <em>Fix:</em> validate indices yourself.</li>
+      <li><strong>Sizes must match for binary ops.</strong> <code>a + b</code> where <code>a.size() != b.size()</code> is UB. valarray does NOT broadcast different sizes. <em>Fix:</em> assert sizes equal before ops.</li>
+      <li><strong>Slice expressions are <em>not</em> valarrays.</strong> <code>v[slice(...)]</code> returns <code>slice_array&lt;T&gt;</code>, a proxy. To use it as a value (e.g., pass to a function), construct: <code>valarray&lt;T&gt;(v[slice(...)])</code>.</li>
+      <li><strong><code>apply()</code> returns a copy.</strong> It does NOT modify in place. <em>Fix:</em> reassign — <code>v = v.apply(fn)</code>.</li>
+      <li><strong>No <code>any()</code> / <code>all()</code> directly.</strong> Use <code>(cond).max()</code> for any, <code>(cond).min()</code> for all.</li>
+      <li><strong><code>shift()</code>'s sign is the opposite of what some expect.</strong> Positive k moves LEFT (toward index 0), negative k moves RIGHT.</li>
+      <li><strong><code>gslice</code> generates indices in row-major order.</strong> The OUTERMOST size/stride pair is the slowest-changing. Get the order wrong → wrong elements.</li>
+      <li><strong>SIMD vectorization is not guaranteed.</strong> The standard ALLOWS it, doesn't REQUIRE it. Compile with <code>-O2</code> or higher (often <code>-O3 -march=native</code>) to actually get the speedup.</li>
+    </ol>
+  </section>
+
+  <hr>
+
+  <section id="decision">
+    <h2>Part 10.3 · When to Use What</h2>
+
+    <table>
+      <tr><th>If your code does…</th><th>Pick…</th></tr>
+      <tr><td>Insert / erase / push_back</td><td><code>vector</code></td></tr>
+      <tr><td>Sort, find, custom STL algos</td><td><code>vector</code></td></tr>
+      <tr><td>Heavy element-wise math (sums, products, sin/cos)</td><td><code>valarray</code></td></tr>
+      <tr><td>Need slicing patterns (every k-th, submatrix)</td><td><code>valarray</code></td></tr>
+      <tr><td>Boolean masking (<code>v[v &gt; 0]</code>)</td><td><code>valarray</code></td></tr>
+      <tr><td>Matrix work without an external library</td><td><code>valarray</code> + thin wrapper</td></tr>
+      <tr><td>Just storing things you'll iterate once</td><td><code>vector</code></td></tr>
+      <tr><td>Implementing FFT, signal processing, simulations</td><td><code>valarray</code></td></tr>
+    </table>
+
+    <div class="card accent">
+      <h3 style="margin-top:0">🏁 You are now valarray-fluent</h3>
+      <p>You can write entire numeric programs without a single explicit loop. Practice the 10 patterns above on toy problems until each one is reflex. Then graduate to PBDS (file 27) for tree- and hash-based data structures with order-statistics powers.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sb = document.getElementById('sidebar');
+const tog = document.getElementById('sbToggle');
+const ov = document.getElementById('sbOverlay');
+function toggleSidebar(){
+  sb.classList.toggle('collapsed');
+  tog.classList.toggle('open');
+  document.body.classList.toggle('sb-closed');
+  if (window.innerWidth <= 1300 && !sb.classList.contains('collapsed')) ov.classList.add('show');
+  else ov.classList.remove('show');
+}
+tog.addEventListener('click', toggleSidebar);
+ov.addEventListener('click', toggleSidebar);
+document.getElementById('themeSwitch').addEventListener('click',()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur==='dark'?'':'dark');
+});
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+  });
+});
+
+/* ---------- valarray viz ---------- */
+function vaParse(){
+  return document.getElementById('va-array').value
+    .split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+}
+function vaRender(arr, label){
+  const stage = document.getElementById('va-stage');
+  stage.innerHTML = '';
+  arr.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = Number.isInteger(v) ? v : v.toFixed(2);
+    const tag = document.createElement('div');
+    tag.className = 'cell-idx';
+    tag.textContent = i;
+    c.appendChild(tag);
+    stage.appendChild(c);
+  });
+  document.getElementById('va-info').textContent = label;
+}
+function vaShow(op){
+  const a = vaParse();
+  let result, label;
+  if (op === 'id')      { result = a.slice();           label = 'a = {' + a.join(', ') + '}'; }
+  else if (op === 'add5'){ result = a.map(x => x + 5);  label = 'a + 5 → broadcasting scalar over the array'; }
+  else if (op === 'mul2'){ result = a.map(x => x * 2);  label = 'a * 2'; }
+  else if (op === 'sqr') { result = a.map(x => x * x);  label = 'a * a → element-wise square'; }
+  else if (op === 'sqrt'){ result = a.map(x => Math.sqrt(x)); label = 'sqrt(a)'; }
+  vaRender(result, label);
+}
+vaShow('id');
+
+/* ---------- slice picker viz ---------- */
+function sliceShow(){
+  // a fixed source array 0..15 so the user can see the picks visually
+  const src = Array.from({length:16}, (_, i) => i + 10);  // {10,11,12,...25}
+  const start  = parseInt(document.getElementById('sl-start').value)  || 0;
+  const count  = parseInt(document.getElementById('sl-count').value)  || 1;
+  const stride = parseInt(document.getElementById('sl-stride').value) || 1;
+
+  // compute picked indices
+  const picks = new Set();
+  const orderPicks = [];
+  for (let k = 0; k < count; ++k){
+    const idx = start + k * stride;
+    if (idx >= 0 && idx < src.length){
+      picks.add(idx);
+      orderPicks.push(src[idx]);
+    }
+  }
+
+  const stage = document.getElementById('sl-stage');
+  stage.innerHTML = '';
+  src.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = v;
+    if (picks.has(i)) c.classList.add('picked');
+    const tag = document.createElement('div');
+    tag.className = 'cell-idx';
+    tag.textContent = i;
+    c.appendChild(tag);
+    stage.appendChild(c);
+  });
+  document.getElementById('sl-info').innerHTML =
+    `slice(${start}, ${count}, ${stride}) picks indices ` +
+    `<span>${[...picks].join(', ') || '(none)'}</span> · ` +
+    `values <span>{${orderPicks.join(', ')}}</span>`;
+}
+sliceShow();
+</script>
+</body>
+</html>

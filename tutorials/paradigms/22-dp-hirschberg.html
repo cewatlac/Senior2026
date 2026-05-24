@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Hirschberg Reconstruction for Knapsack DP</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;
+  justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2,.card h3{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);
+  box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+.formula.master{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.08));
+  border-color:var(--accent2);font-size:22px;font-family:system-ui,sans-serif}
+.layer-badge{display:inline-block;font-size:12px;font-weight:900;padding:3px 9px;
+  border-radius:999px;margin-left:12px;vertical-align:middle;letter-spacing:.05em}
+.lb-base{background:rgba(37,99,235,.12);color:var(--accent2);border:1.5px solid rgba(37,99,235,.25)}
+.lb-key{background:rgba(15,118,110,.12);color:var(--good);border:1.5px solid rgba(15,118,110,.25)}
+.lb-adv{background:rgba(124,58,237,.12);color:#7c3aed;border:1.5px solid rgba(124,58,237,.25)}
+.lb-fw{background:rgba(180,83,9,.10);color:var(--warn);border:1.5px solid rgba(180,83,9,.22)}
+.lb-proof{background:rgba(185,28,28,.10);color:var(--bad);border:1.5px solid rgba(185,28,28,.22)}
+.page-footer{margin-top:56px;padding:36px 20px 32px;border-top:3px solid var(--border);
+  text-align:center;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-radius:var(--radius) var(--radius) 0 0;box-shadow:var(--shadow)}
+.footer-logo{width:64px;height:64px;border-radius:16px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:inline-flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:26px;margin-bottom:14px}
+.footer-brand{font-weight:950;font-size:26px;color:var(--accent2);margin-bottom:4px;letter-spacing:-.01em}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:4px}
+.footer-topic{font-size:16px;font-weight:800;color:var(--muted);margin-bottom:10px;opacity:.75}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:16px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link);
+  transition:box-shadow .2s,border-color .2s}
+.footer-email:hover{border-color:rgba(37,99,235,.4);box-shadow:0 4px 16px rgba(37,99,235,.15);text-decoration:none}
+.footer-divider{width:80px;height:3px;background:linear-gradient(90deg,var(--accent2),var(--good));
+  border-radius:999px;margin:18px auto 0;opacity:.45}
+.footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-top:14px;opacity:.8}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);
+  text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.dec-card{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px}
+.dec-card .dc-head{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:6px}
+.dec-card .dc-cond{font-size:16px;font-weight:800;color:var(--muted);margin-bottom:8px;
+  padding:4px 8px;background:rgba(37,99,235,.06);border-radius:8px;display:inline-block}
+.dec-card p{font-size:17px;font-weight:700;margin:6px 0;line-height:1.5}
+.checklist li{list-style:none;padding-left:0;font-size:var(--fs-sm);margin:.5rem 0;font-weight:750}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0;font-size:var(--fs-sm);margin:.5rem 0;font-weight:750}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+/* Tracer */
+.tracer-wrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  padding:16px;margin:14px 0}
+.tracer-header{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tracer-title{font-weight:950;font-size:24px}
+.tracer-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+.miniBtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.step-counter{font-size:16px;font-weight:900;color:var(--muted);min-width:90px;text-align:right}
+.tracer-vis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.tracer-panel{background:var(--panel);border:3px solid var(--border);border-radius:14px;
+  padding:14px 16px;min-height:120px}
+.tracer-panel h4{margin:0 0 8px;font-size:19px;font-weight:950;color:var(--accent2)}
+.item-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.item-box{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-weight:950;font-size:18px;border:2.5px solid;
+  transition:all .28s;flex-direction:column;gap:2px}
+.item-box .iw{font-size:15px;font-weight:950}
+.item-box .ii{font-size:11px;font-weight:800;color:inherit;opacity:.7}
+.item-box.normal{background:var(--panel2);border-color:var(--border);color:var(--muted)}
+.item-box.active{background:rgba(37,99,235,.12);border-color:var(--accent2);color:var(--accent2)}
+.item-box.chosen{background:rgba(15,118,110,.14);border-color:var(--good);color:var(--good)}
+.item-box.skipped{background:rgba(185,28,28,.08);border-color:var(--bad);color:var(--bad);opacity:.55}
+.item-box.left-half{background:rgba(124,58,237,.10);border-color:#7c3aed;color:#7c3aed}
+.item-box.right-half{background:rgba(180,83,9,.10);border-color:var(--warn);color:var(--warn)}
+.status-panel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+.status-panel.accept{border-color:var(--good);background:rgba(15,118,110,.07)}
+.status-panel.skip{border-color:var(--muted);background:rgba(100,100,100,.05)}
+.status-panel.split{border-color:var(--accent2);background:rgba(37,99,235,.07)}
+.output-log{background:var(--codebg);color:var(--codetext);border-radius:12px;
+  padding:10px 14px;font-family:ui-monospace,monospace;font-size:17px;
+  min-height:36px;margin-top:8px;font-weight:700}
+.kv-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.kv-box{background:var(--panel2);border:2px solid var(--border);border-radius:10px;
+  padding:6px 12px;font-size:16px;font-weight:800}
+.kv-box .kk{color:var(--muted);font-size:14px}
+.kv-box .vv{color:var(--accent2);font-weight:950}
+.dp-row{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.dp-cell{width:46px;height:40px;border-radius:8px;border:2px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;transition:all .25s;background:var(--panel2)}
+.dp-cell .dci{color:var(--muted);font-size:10px}
+.dp-cell .dcv{color:var(--accent2);font-size:12px}
+.dp-cell.best{background:rgba(15,118,110,.15);border-color:var(--good)}
+.dp-cell.best .dcv{color:var(--good)}
+.call-stack{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.call-frame{background:var(--panel2);border:2.5px solid var(--border);
+  border-radius:10px;padding:8px 12px;font-size:16px;font-weight:800;
+  display:flex;align-items:center;gap:10px;transition:all .25s}
+.call-frame.current{border-color:var(--accent2);background:rgba(37,99,235,.10)}
+.call-frame .cf-fn{color:var(--accent2);font-family:ui-monospace,monospace;font-size:15px}
+.call-frame .cf-args{color:var(--muted);font-size:14px}
+@media(max-width:1300px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .decision-grid{grid-template-columns:1fr 1fr}
+  .tracer-vis{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}
+  .decision-grid{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function(){try{var t=localStorage.getItem('ca-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');}catch(e){if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Menu" aria-controls="sidebar" aria-expanded="true" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">🎓</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Hirschberg Reconstruction</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations (§1–5)</div>
+    <a href="#s0">Overview<small>The complete mental model</small></a>
+    <a href="#s1">1. Problem Definition<small>Maximize weight, minimize items</small></a>
+    <a href="#s2">2. Intuition from Scratch<small>Why rolling DP fails to reconstruct</small></a>
+    <a href="#s3">3. Visual Mental Model<small>Capacity split as the key insight</small></a>
+    <a href="#s4">4. Formal Abstraction<small>The packed score encoding</small></a>
+    <a href="#s5">5. Key Observations<small>Why scale works; why this is correct</small></a>
+    <div class="grpTitle">Algorithm (§6–8)</div>
+    <a href="#s6">6. The solve() Function<small>Rolling DP on any segment</small></a>
+    <a href="#s7">7. The hirschberg() Function<small>Divide-and-conquer reconstruction</small></a>
+    <a href="#s8">8. Invariants<small>State · Split-optimality · Termination</small></a>
+    <div class="grpTitle">Correctness &amp; Complexity (§9–10)</div>
+    <a href="#s9">9. Proof of Correctness<small>Five lemmas + final theorem</small></a>
+    <a href="#s10">10. Complexity Analysis<small>O(nk) time, O(k) memory</small></a>
+    <div class="grpTitle">Implementation (§11–14)</div>
+    <a href="#s11">11. Core Template Philosophy<small>Design decisions explained</small></a>
+    <a href="#s12">12. Master Implementation<small>Complete C++ template</small></a>
+    <a href="#s13">13. Line-by-Line Explanation<small>Every line annotated</small></a>
+    <a href="#s14">14. Decoding the Answer<small>Recovering W and C from v</small></a>
+    <div class="grpTitle">Pitfalls &amp; Edge Cases (§15–16)</div>
+    <a href="#s15">15. Edge-Case Audit<small>Eight corners that break naive code</small></a>
+    <a href="#s16">16. Common Pitfalls<small>Five bugs that look subtle</small></a>
+    <div class="grpTitle">Decision &amp; Variants (§17–18)</div>
+    <a href="#s17">17. Decision / Recognition Guide<small>When to use Hirschberg</small></a>
+    <a href="#s18">18. Variants &amp; Extensions<small>Indices, pairs, grid, LCS</small></a>
+    <div class="grpTitle">Applications &amp; Closing (§19–21)</div>
+    <a href="#s19">19. Problem Applications<small>Which problems fit this technique</small></a>
+    <a href="#s20">20. Final Summary<small>The five deepest ideas</small></a>
+    <a href="#s21">21. Interactive Trace<small>Watch the algorithm live</small></a>
+    <a href="#sRVC">Runtime Validation<small>Pre-submit quality gate</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/><a href="mailto:coach@coach-academy.net" style="color:var(--link)">coach@coach-academy.net</a><br/><a href="mailto:a.ashraf@coach-academy.net" style="color:var(--link)">a.ashraf@coach-academy.net</a><br/>&copy; 2025 All rights reserved.</div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Hirschberg Reconstruction</h1>
+    <div class="subtitle">Memory-Efficient Knapsack Subset Reconstruction — Full Master Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-label="Toggle dark/light theme" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ §0 Overview -->
+<section class="card" id="s0">
+  <h2>Overview <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p style="font-size:20px;font-weight:700;color:var(--muted);margin-bottom:14px">This tutorial teaches one advanced technique: reconstructing an optimal subset from a 0/1 knapsack-style DP while keeping memory at O(k) — the same as a rolling DP — instead of the O(nk) that a parent-pointer table would need. The technique is due to Hirschberg and appears in LCS, sequence alignment, and grid DP; here we study its knapsack form, which is the most contest-relevant variant.</p>
+  <div class="formula master">Hirschberg = rolling DP on each half + optimal capacity split at the middle + divide-and-conquer reconstruction</div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--accent2)">What this tutorial covers</strong>
+      <ol style="margin:8px 0 0;padding-left:1.4rem">
+        <li style="font-size:17px;margin:.5rem 0">Why rolling DP cannot reconstruct without a parent table</li>
+        <li style="font-size:17px;margin:.5rem 0">The packed-score encoding that collapses two objectives into one</li>
+        <li style="font-size:17px;margin:.5rem 0">The solve() function: rolling knapsack on any segment</li>
+        <li style="font-size:17px;margin:.5rem 0">The hirschberg() function: divide-and-conquer reconstruction</li>
+        <li style="font-size:17px;margin:.5rem 0">Proofs of correctness, complexity, five variants, and edge-case audit</li>
+      </ol>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--good)">✓ What you can do after this</strong>
+      <ul style="margin:8px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.4rem 0">Reconstruct optimal knapsack subsets with only O(k) memory</li>
+        <li style="font-size:17px;margin:.4rem 0">Encode lexicographic objectives into a single packed scalar</li>
+        <li style="font-size:17px;margin:.4rem 0">Recognize when Hirschberg applies vs simpler approaches</li>
+        <li style="font-size:17px;margin:.4rem 0">Extend the technique to grids, LCS, and value-knapsack variants</li>
+      </ul>
+      <strong style="font-size:19px;color:var(--muted);display:block;margin-top:12px">Prerequisites</strong>
+      <ul style="margin:6px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.3rem 0">0/1 knapsack DP (both O(nk) and O(k) rolling versions)</li>
+        <li style="font-size:17px;margin:.3rem 0">Basic recursion and divide-and-conquer</li>
+        <li style="font-size:17px;margin:.3rem 0">Big-O notation and logarithms</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §1 Problem Definition -->
+<section class="card" id="s1">
+  <h2>1. Problem Definition <span class="layer-badge lb-base">FOUNDATION</span></h2>
+  <p>We are given <strong>n items</strong>, each with a weight <span class="ic">w[i]</span>, and a knapsack of capacity <span class="ic">k</span>. We want to choose a subset satisfying three goals simultaneously.</p>
+  <div class="ib ib-blue"><i>🎯</i><p>First, the chosen total weight must be <strong>as large as possible without exceeding k</strong>. Second, among all subsets with that same maximum total weight, we want the one with the <strong>fewest items</strong>. Third, we want to <strong>print the actual chosen items</strong>, not just report the answer values.</p></div>
+  <div class="formula">Maximize total chosen weight W ≤ k,<br>then minimize item count C among all maximum-W subsets,<br>then print one optimal subset.</div>
+  <p>The first two goals form a <strong>lexicographic objective</strong>: (maximize W, then minimize C). The third goal — printing the subset — is what makes this problem interesting. Without the print requirement, a simple rolling O(k) DP would suffice. With it, the question becomes how to reconstruct without blowing up memory.</p>
+  <div class="ib ib-orange"><i>💡</i><p><strong>Why this is not trivial.</strong> A standard parent-pointer table would store for every (item, capacity) pair whether the item was taken, requiring O(nk) memory. On large inputs this can be gigabytes. Hirschberg reconstruction keeps memory at O(k) while recovering an optimal subset exactly.</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §2 Intuition from Scratch -->
+<section class="card" id="s2">
+  <h2>2. Intuition from Scratch <span class="layer-badge lb-base">FOUNDATION</span></h2>
+  <p>Let us think about the problem from the ground up, before introducing any technique. You have seen the rolling 0/1 knapsack: you process items one by one, and at each step you only need the previous DP row to compute the current one. This gives O(k) memory. But consider what you lose: once you overwrite row i−1 to produce row i, the information about which specific choices were made is gone.</p>
+  <h3>Why a parent table costs O(nk)</h3>
+  <p>The standard fix is a boolean table <span class="ic">take[i][r]</span>: for each item i and capacity r, did the optimal solution with items 1..i and capacity r take item i? This table has n × k entries. For n = 10000 and k = 75000, that is 750 million booleans — around 750 MB just for the reconstruction table. That is usually too large.</p>
+  <h3>The key insight: any solution decomposes at the middle</h3>
+  <p>Here is the central observation that makes Hirschberg work. Suppose the items are numbered 0 to n−1 and we split them at the middle index <span class="ic">mid = (0+n−1)/2</span>. The left half is items 0..mid and the right half is items mid+1..n−1.</p>
+  <p>Now think about any valid chosen subset for our problem. It consists of some items from the left half and some items from the right half. These two groups use some total capacity — say the left group uses capacity r and the right group uses capacity k−r. If we knew the value of r, we could reconstruct the two halves <em>independently</em>: find an optimal subset in the left half with capacity r, and an optimal subset in the right half with capacity k−r. We do not need to consider them together at all.</p>
+  <div class="ib ib-green"><i>💡</i><p><strong>The algorithm in one sentence:</strong> Run rolling DP on the left half (collecting the best score for every capacity), run rolling DP on the right half (collecting the best score for every capacity), try every possible split of the remaining capacity, choose the one giving the best combined score, and then recurse on each half independently.</p></div>
+  <p>This is the entire technique. Everything else — the packed-score encoding, the details of the DP, the base case — is in service of this single idea.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §3 Visual Mental Model -->
+<section class="card" id="s3">
+  <h2>3. Visual Mental Model <span class="layer-badge lb-base">FOUNDATION</span></h2>
+  <p>Let us picture the algorithm for a concrete example: items with weights [3, 5, 6, 7] and capacity k = 10.</p>
+  <div style="overflow-x:auto;margin:14px 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380" style="max-width:100%;display:block;font-family:system-ui,sans-serif;border-radius:14px;border:2px solid var(--border);background:var(--panel2)">
+    <!-- Title -->
+    <text x="360" y="26" text-anchor="middle" font-size="15" font-weight="900" fill="var(--accent2)">Hirschberg Divide-and-Conquer on [3, 5, 6, 7], k=10</text>
+    <!-- Top level: all items -->
+    <rect x="170" y="40" width="380" height="46" rx="12" fill="rgba(37,99,235,.12)" stroke="var(--accent2)" stroke-width="2.5"/>
+    <text x="360" y="58" text-anchor="middle" font-size="13" font-weight="900" fill="var(--accent2)">hirschberg(0, 3, rem=10)</text>
+    <text x="360" y="74" text-anchor="middle" font-size="12" font-weight="800" fill="var(--muted)">items [3, 5, 6, 7]  — split at mid=1</text>
+    <!-- Arrow down -->
+    <line x1="360" y1="86" x2="200" y2="114" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <line x1="360" y1="86" x2="520" y2="114" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <!-- Left DP box -->
+    <rect x="60" y="114" width="280" height="56" rx="12" fill="rgba(124,58,237,.10)" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="200" y="135" text-anchor="middle" font-size="13" font-weight="900" fill="#7c3aed">solve(left): items [3,5], cap 0..10</text>
+    <text x="200" y="155" text-anchor="middle" font-size="11" font-weight="800" fill="var(--muted)">returns d1[r] for r=0..10</text>
+    <!-- Right DP box -->
+    <rect x="380" y="114" width="280" height="56" rx="12" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="2.5"/>
+    <text x="520" y="135" text-anchor="middle" font-size="13" font-weight="900" fill="var(--warn)">solve(right): items [6,7], cap 0..10</text>
+    <text x="520" y="155" text-anchor="middle" font-size="11" font-weight="800" fill="var(--muted)">returns d2[r] for r=0..10</text>
+    <!-- Best split label -->
+    <rect x="210" y="184" width="300" height="34" rx="10" fill="rgba(15,118,110,.12)" stroke="var(--good)" stroke-width="2"/>
+    <text x="360" y="205" text-anchor="middle" font-size="13" font-weight="900" fill="var(--good)">Best r=3: d1[3]+d2[7] = 60002+140006 = 200008 ✓</text>
+    <!-- Level 2 arrows -->
+    <line x1="250" y1="218" x2="150" y2="246" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <line x1="250" y1="218" x2="350" y2="246" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <line x1="470" y1="218" x2="550" y2="246" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <line x1="470" y1="218" x2="660" y2="246" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <!-- Level 2 left -->
+    <rect x="70" y="246" width="170" height="48" rx="10" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+    <text x="155" y="264" text-anchor="middle" font-size="12" font-weight="900" fill="var(--accent2)">hirschberg(0,1,3)</text>
+    <text x="155" y="281" text-anchor="middle" font-size="11" fill="var(--muted)">items [3,5], rem=3</text>
+    <rect x="258" y="246" width="170" height="48" rx="10" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+    <text x="343" y="264" text-anchor="middle" font-size="12" font-weight="900" fill="var(--accent2)">hirschberg(2,3,7)</text>
+    <text x="343" y="281" text-anchor="middle" font-size="11" fill="var(--muted)">items [6,7], rem=7</text>
+    <!-- Level 3: base cases -->
+    <line x1="110" y1="294" x2="80" y2="326" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <line x1="200" y1="294" x2="210" y2="326" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <line x1="310" y1="294" x2="290" y2="326" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <line x1="376" y1="294" x2="420" y2="326" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <!-- base case boxes -->
+    <rect x="42" y="326" width="110" height="40" rx="9" fill="rgba(15,118,110,.14)" stroke="var(--good)" stroke-width="2"/>
+    <text x="97" y="344" text-anchor="middle" font-size="11" font-weight="900" fill="var(--good)">w[0]=3≤3</text>
+    <text x="97" y="358" text-anchor="middle" font-size="10" font-weight="800" fill="var(--good)">PRINT 3 ✓</text>
+    <rect x="170" y="326" width="110" height="40" rx="9" fill="rgba(185,28,28,.08)" stroke="var(--bad)" stroke-width="2"/>
+    <text x="225" y="344" text-anchor="middle" font-size="11" font-weight="900" fill="var(--bad)">rem=0</text>
+    <text x="225" y="358" text-anchor="middle" font-size="10" font-weight="800" fill="var(--bad)">skip w[1]=5</text>
+    <rect x="248" y="326" width="110" height="40" rx="9" fill="rgba(185,28,28,.08)" stroke="var(--bad)" stroke-width="2"/>
+    <text x="303" y="344" text-anchor="middle" font-size="11" font-weight="900" fill="var(--bad)">rem=0</text>
+    <text x="303" y="358" text-anchor="middle" font-size="10" font-weight="800" fill="var(--bad)">skip w[2]=6</text>
+    <rect x="374" y="326" width="110" height="40" rx="9" fill="rgba(15,118,110,.14)" stroke="var(--good)" stroke-width="2"/>
+    <text x="429" y="344" text-anchor="middle" font-size="11" font-weight="900" fill="var(--good)">w[3]=7≤7</text>
+    <text x="429" y="358" text-anchor="middle" font-size="10" font-weight="800" fill="var(--good)">PRINT 7 ✓</text>
+    <!-- left right labels for level2 recurses -->
+    <text x="155" y="300" text-anchor="middle" font-size="10" font-weight="800" fill="#7c3aed">→ best r=3, recurse left cap=3, right cap=0</text>
+    <text x="343" y="300" text-anchor="middle" font-size="10" font-weight="800" fill="var(--warn)">→ best r=0, recurse left cap=0, right cap=7</text>
+    <!-- Right side level2 boxes -->
+    <rect x="490" y="246" width="120" height="48" rx="10" fill="rgba(185,28,28,.08)" stroke="var(--bad)" stroke-width="2"/>
+    <text x="550" y="264" text-anchor="middle" font-size="12" font-weight="900" fill="var(--bad)">hsg(2,2,0)</text>
+    <text x="550" y="281" text-anchor="middle" font-size="11" fill="var(--muted)">rem=0, skip</text>
+    <rect x="628" y="246" width="70" height="48" rx="10" fill="rgba(15,118,110,.14)" stroke="var(--good)" stroke-width="2"/>
+    <text x="663" y="264" text-anchor="middle" font-size="11" font-weight="900" fill="var(--good)">hsg(3,3,7)</text>
+    <text x="663" y="281" text-anchor="middle" font-size="11" fill="var(--good)">PRINT 7</text>
+  </svg></div>
+  <p>The diagram shows the full recursion tree for our example. At every non-leaf call, the segment of items is split in half. Rolling DP is run on each half independently. Then the best capacity split is found by trying all possible values of r. The two halves are then solved recursively with their assigned capacities. At the leaves, single-item decisions are trivial. The output is {3, 7} with total weight 10.</p>
+  <div class="ib ib-blue"><i>📌</i><p><strong>The memory magic.</strong> At every level of recursion, only two DP arrays of size O(k) are needed — one for the left half and one for the right. These arrays are reused across calls. The recursion depth is O(log n). So the total memory is O(k), not O(nk).</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §4 Formal Abstraction -->
+<section class="card" id="s4">
+  <h2>4. Formal Abstraction <span class="layer-badge lb-base">FOUNDATION</span></h2>
+  <p>The algorithm has two parts that need to be formalized: the optimization objective (which drives the DP) and the reconstruction procedure (which recovers the subset).</p>
+  <h3>The packed-score encoding</h3>
+  <p>Our objective is lexicographic: maximize total weight W, then minimize item count C. One clean way to handle a lexicographic objective in a DP is to encode it as a single scalar. We define a large constant <span class="ic">scale</span> and assign each chosen item of weight x a score of:</p>
+  <div class="formula">contribution of item x = scale × x − 1</div>
+  <p>If a subset chooses items with total weight W and item count C, its packed score is:</p>
+  <div class="formula">packed score = scale × W − C</div>
+  <p>Now, if scale is large enough — specifically if <span class="ic">scale > n</span> (the maximum possible item count) — then maximizing the packed score is exactly equivalent to first maximizing W and then minimizing C. This is because a single unit of additional weight adds <em>scale</em> to the score, which dominates the maximum possible change in the C component (which is at most n). So no C improvement can compensate for losing even one unit of W, as long as scale > n.</p>
+  <div class="ib ib-green"><i>💡</i><p><strong>In the template,</strong> scale is set to 20001, which comfortably exceeds 20000 (the maximum n). This is tight but correct. If your n is larger, you must adjust scale accordingly.</p></div>
+  <h3>What the DP computes</h3>
+  <p>We run a standard 0/1 knapsack DP, but instead of maximizing the usual profit, we maximize the packed score. The state <span class="ic">dp[r]</span> after processing items s..i holds the best packed score achievable by choosing a subset of items s..i with total weight at most r. The transition is the standard knapsack transition with the packed contribution:</p>
+  <div class="formula">dp[r] = max(dp[r],   dp[r − w[i]] + scale × w[i] − 1)   if w[i] ≤ r</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §5 Key Observations -->
+<section class="card" id="s5">
+  <h2>5. Key Observations <span class="layer-badge lb-key">INSIGHT</span></h2>
+  <h3>Observation 1: the packed score is strictly monotone in W</h3>
+  <p>Suppose two subsets have total weights W₁ > W₂. Their packed scores differ by at least <span class="ic">scale × (W₁ − W₂) − n ≥ scale − n > 0</span>. So the subset with larger weight always has strictly larger packed score, regardless of item counts. This means: <strong>maximizing packed score correctly picks the heaviest subset first.</strong></p>
+  <h3>Observation 2: among same-weight subsets, larger score means fewer items</h3>
+  <p>If W₁ = W₂, then the score difference is <span class="ic">C₂ − C₁</span>. Larger score corresponds to smaller C. So <strong>the packed score breaks ties in favour of fewer items</strong>, exactly as required.</p>
+  <h3>Observation 3: the best split of capacity is the critical unknown</h3>
+  <p>In the reconstruction phase, the key unknown at each call <span class="ic">hirschberg(s, e, rem)</span> is: how much of the remaining capacity rem does the left half of the items use in an optimal solution? Call this value r*. Once we know r*, the two halves are completely independent: the left-half problem is <span class="ic">hirschberg(s, mid, r*)</span> and the right-half problem is <span class="ic">hirschberg(mid+1, e, rem−r*)</span>.</p>
+  <h3>Observation 4: r* can be found by trying all splits</h3>
+  <p>The best split r* satisfies: <span class="ic">d1[r*] + d2[rem − r*]</span> is maximized over all r from 0 to rem, where d1 and d2 are the DP rows returned by solving the left and right halves respectively. Why? Because any feasible solution of the whole problem is a feasible solution of the left half for some capacity r plus a feasible solution of the right half for capacity rem − r. The combination of the two best-per-capacity solutions, maximized over all splits, gives the globally optimal combined score. Choosing the maximizing split gives us an r* that belongs to some optimal global solution.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §6 solve() -->
+<section class="card" id="s6">
+  <h2>6. The solve() Function <span class="layer-badge lb-key">ALGORITHM</span></h2>
+  <p>The function <span class="ic">solve(dp, s, e, rem)</span> runs a 0/1 knapsack DP over items s..e with maximum capacity rem. It returns a pointer to the final DP row — not just a single value, but the full array of best scores for every capacity 0..rem. This is what makes the reconstruction possible.</p>
+  <pre><code>// Returns dp[0..rem] where dp[r] = best packed score
+// using a subset of items s..e with total weight ≤ r.
+long long *solve(long long dp[2][MXW], int s, int e, int rem) {
+    // Initialize the "previous" row (before processing item s).
+    // dp[!(s&1)] is the row that item s's transition reads from.
+    memset(dp[!(s & 1)], 0, (rem + 1) * sizeof(dp[0][0]));
+
+    for (int i = s; i &lt;= e; ++i) {
+        for (int r = 1; r &lt;= rem; ++r) {
+            long long &amp;res = dp[i & 1][r];   // current row, capacity r
+            int id = !(i & 1);               // previous row index
+            res = dp[id][r];                 // option 1: skip item i
+            if (w[i] &lt;= r) {
+                // option 2: take item i — adds packed contribution
+                res = max(res, dp[id][r - w[i]] + scale * w[i] - 1);
+            }
+        }
+    }
+    return dp[e & 1];  // return the row for the last processed item
+}</code></pre>
+  <div class="ib ib-blue"><i>📌</i><p><strong>The parity trick.</strong> Items are processed from s to e. We use a two-row rolling array indexed by <span class="ic">i &amp; 1</span>. When i is even, row 0 is current and row 1 is previous; when i is odd, the roles flip. Before starting, the row that will serve as "previous" for item s — which is <span class="ic">dp[!(s&amp;1)]</span> — must be set to all zeroes to represent choosing nothing.</p></div>
+  <p>The function is completely general: it works on any contiguous subrange [s..e] of items. This generality is what allows the hirschberg() function to call it independently on the two halves at each level of recursion.</p>
+  <h3>What the returned row means</h3>
+  <p>After the loop, <span class="ic">dp[e &amp; 1][r]</span> holds the maximum packed score achievable by choosing a subset of items s..e with total weight at most r. This is defined for every r from 0 to rem. Returning the entire row (not just the value at rem) is essential because the reconstruction will probe every possible capacity split.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §7 hirschberg() -->
+<section class="card" id="s7">
+  <h2>7. The hirschberg() Function <span class="layer-badge lb-key">ALGORITHM</span></h2>
+  <p>This is where reconstruction happens. The function <span class="ic">hirschberg(s, e, rem)</span> prints all items that belong to one optimal subset of items s..e with remaining capacity rem. It uses only the two global DP buffers of size O(k).</p>
+  <pre><code>void hirschberg(int s, int e, int rem) {
+    // Base case 1: nothing to do
+    if (e &lt; s || rem == 0) return;
+
+    // Base case 2: single item — the decision is trivial
+    if (s == e) {
+        if (w[s] &lt;= rem) printf("%d\n", w[s]);
+        return;
+    }
+
+    // Divide: split items at the middle
+    int mid = (s + e) / 2;
+
+    // Solve left and right halves independently
+    long long *d1 = solve(dp1, s, mid, rem);
+    long long *d2 = solve(dp2, mid + 1, e, rem);
+
+    // Find the capacity split that gives the best combined score
+    long long best = -1;
+    int bestr = 0;
+    for (int r = 0; r &lt;= rem; ++r) {
+        long long v = d1[r] + d2[rem - r];
+        if (v > best) { best = v; bestr = r; }
+    }
+
+    // Conquer: recurse on each half with its assigned capacity
+    hirschberg(s, mid, bestr);
+    hirschberg(mid + 1, e, rem - bestr);
+}</code></pre>
+  <h3>Why the single-item base case is correct</h3>
+  <p>When the recursion reaches a single item <span class="ic">s == e</span>, it arrived there along a chain of optimal capacity splits. Each split was chosen to be consistent with some global optimum. So the subproblem "choose an optimal subset of {w[s]} with capacity rem" has exactly one non-trivial answer: take item s if it fits, skip it otherwise. The function prints it and returns. This is not a guess — it is provably the correct decision for this leaf of the recursion tree.</p>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>Note on initializing best to −1.</strong> The variable <span class="ic">best</span> is initialized to −1, not 0. This matters because a valid combined score of 0 exists (when no items can be chosen from either half). Initializing to 0 would cause the split r=0 to never be chosen if all scores are 0, corrupting the recursion. With −1, any valid combined score of ≥ 0 is immediately recognized as better.</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §8 Invariants -->
+<section class="card" id="s8">
+  <h2>8. Invariants <span class="layer-badge lb-key">INSIGHT</span></h2>
+  <h3>Invariant 1: DP state invariant</h3>
+  <p>After solve() processes item i (for any starting item s), the following holds for every capacity r from 0 to rem:</p>
+  <div class="formula">dp[i &amp; 1][r] = max packed score achievable by choosing a subset of items s..i with total weight ≤ r</div>
+  <p>This invariant is established at i = s by the base-row initialization (zeroes, meaning "choose nothing"), and preserved at each step i by the standard knapsack transition (take or skip item i).</p>
+  <h3>Invariant 2: split-optimality invariant</h3>
+  <p>For any call <span class="ic">hirschberg(s, e, rem)</span>, the chosen split <span class="ic">bestr</span> satisfies: there exists an optimal solution of the subproblem (s, e, rem) in which the chosen items from the left half use exactly bestr total capacity, and the chosen items from the right half use exactly rem − bestr total capacity. In other words, the chosen split is always consistent with at least one globally optimal solution of the current subproblem.</p>
+  <h3>Invariant 3: termination</h3>
+  <p>Each recursive call reduces the segment length by at least half: <span class="ic">mid − s &lt; e − s</span> and <span class="ic">e − (mid+1) &lt; e − s</span>. Since segment length starts at e − s + 1 and halves at each level, the recursion terminates after at most ⌈log₂(e − s + 1)⌉ levels.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §9 Proof of Correctness -->
+<section class="card" id="s9">
+  <h2>9. Proof of Correctness <span class="layer-badge lb-proof">PROOF</span></h2>
+  <details><summary>Lemma 1: Packed score correctly encodes the objective <span class="hint">click to expand</span></summary>
+  <div class="detailsBody">
+  <p>For any two subsets with (W₁, C₁) and (W₂, C₂), the packed score of subset 1 is larger if and only if W₁ > W₂, or W₁ = W₂ and C₁ &lt; C₂.</p>
+  <p><strong>Proof.</strong> If W₁ > W₂, the score difference is scale × (W₁ − W₂) − (C₁ − C₂). Since W₁ − W₂ ≥ 1 and |C₁ − C₂| ≤ n &lt; scale, the difference is strictly positive. If W₁ = W₂, the score difference is C₂ − C₁, which is positive iff C₁ &lt; C₂. □</p>
+  </div></details>
+  <details><summary>Lemma 2: solve() computes correct DP values <span class="hint">click to expand</span></summary>
+  <div class="detailsBody">
+  <p>For every segment [s..e], every rem, and every r from 0 to rem, the value returned by solve() at index r equals the maximum packed score achievable by a subset of items s..e with total weight at most r.</p>
+  <p><strong>Proof.</strong> By induction on i from s to e. Base: before processing item s, the row is all zeroes (choosing nothing gives score 0 for any capacity). Inductive step: the transition correctly considers both choices (skip item i: inherit previous row; take item i: inherit previous row at r − w[i] plus contribution). The maximum of these two is exactly the optimal score with items s..i. □</p>
+  </div></details>
+  <details><summary>Lemma 3: the chosen split bestr belongs to some optimal solution <span class="hint">click to expand</span></summary>
+  <div class="detailsBody">
+  <p>For any call hirschberg(s, e, rem), if bestr maximizes d1[r] + d2[rem − r] over r = 0..rem, then there exists an optimal solution of (s, e, rem) whose left-half chosen items use exactly bestr total capacity.</p>
+  <p><strong>Proof.</strong> Every feasible solution of (s, e, rem) decomposes into a left-half solution using some capacity r and a right-half solution using capacity rem − r. By Lemma 2, d1[r] and d2[rem−r] are the best scores for those two halves. So the best combined score over all valid splits equals max over r of d1[r] + d2[rem−r]. Any split achieving this maximum corresponds to a pair of optimal half-solutions, and together they form an optimal solution of the whole. □</p>
+  </div></details>
+  <details><summary>Lemma 4: recursive calls remain on valid optimal subproblems <span class="hint">click to expand</span></summary>
+  <div class="detailsBody">
+  <p>If hirschberg(s, e, rem) is called on a valid optimal subproblem, then both recursive calls hirschberg(s, mid, bestr) and hirschberg(mid+1, e, rem−bestr) are also called on valid optimal subproblems.</p>
+  <p><strong>Proof.</strong> By Lemma 3, bestr belongs to some optimal solution X of (s, e, rem). The items of X from the left half form an optimal solution of (s, mid, bestr) — if a better one existed, combining it with the right-half portion of X would beat X, a contradiction. Similarly for the right half. □</p>
+  </div></details>
+  <details><summary>Lemma 5: base case prints exactly the correct choice <span class="hint">click to expand</span></summary>
+  <div class="detailsBody">
+  <p>When s == e, the algorithm prints w[s] if w[s] ≤ rem, and prints nothing otherwise. This is the correct decision for the leaf subproblem.</p>
+  <p><strong>Proof.</strong> By Lemma 4, the call arrived here along a chain of valid optimal splits. So the subproblem is: find an optimal subset of the single item {w[s]} with capacity rem. If w[s] > rem, no subset exists except the empty one. If w[s] ≤ rem, the optimal subset is {w[s]} (since taking the item gives non-zero packed score, which is strictly better than the empty subset's score of 0, and the item was exactly the one delivered by the optimal split chain). □</p>
+  </div></details>
+  <div class="ib ib-green" style="margin-top:16px"><i>📐</i><p><strong>Final theorem.</strong> The algorithm prints exactly one optimal subset — one with maximum total weight W ≤ k and minimum item count C among all maximum-weight subsets. By Lemma 2, the initial DP computes the globally optimal packed score. By Lemmas 3 and 4, each recursive split follows some optimal decomposition. By Lemma 5, leaves print exactly the correct choices. By Lemma 1, this corresponds to the correct lexicographic optimum. □</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §10 Complexity -->
+<section class="card" id="s10">
+  <h2>10. Complexity Analysis <span class="layer-badge lb-key">INSIGHT</span></h2>
+  <h3>Time complexity</h3>
+  <p>The initial call to solve() over all n items costs O(nk) time. The reconstruction phase calls solve() on segments at each level of the recursion tree. At depth d of the recursion tree, the total length of all item segments across all active calls sums to n (since the segments at each level partition the items). Each call at that level also performs a O(k) loop to find the best capacity split. So each level of the recursion tree costs O(nk) in total.</p>
+  <p>The recursion depth is O(log n) because segments halve at each level. However, the segment lengths decrease geometrically, so the total work across all levels is dominated by the top few levels. By a geometric series argument, the total reconstruction time is O(nk) — the same as the initial DP.</p>
+  <div class="formula">Total time = O(nk)</div>
+  <h3>Memory complexity</h3>
+  <p>The two global DP buffers <span class="ic">dp1</span> and <span class="ic">dp2</span>, each of size 2 × (k+1), are the dominant memory cost. The recursion stack has depth O(log n) with O(1) state per frame. The item array w[] costs O(n). Total:</p>
+  <div class="formula">Total memory = O(k + n) ≈ O(k)  when k ≥ n</div>
+  <div class="ib ib-green"><i>💡</i><p><strong>The key trade-off.</strong> Compared to storing a parent table (O(nk) memory, O(nk) time), Hirschberg reconstruction uses O(k) memory and the same O(nk) time. You give up nothing in time; you gain a factor of n in memory. That is the entire value of the technique.</p></div>
+  <h3>Why reconstruction time is still O(nk)</h3>
+  <p>At depth 0: two solve() calls on n/2 items each, so O(nk/2 + nk/2) = O(nk). At depth 1: four calls on n/4 items each, so O(4 × nk/4) = O(nk). Each depth level costs O(nk), and there are O(log n) levels. So total is O(nk log n) in the naive accounting. But in practice: the find-best-split loops cost O(k) per call, and at depth d there are 2^d calls each with segments of length n/2^d, each costing O(k × n/2^d) for its solve() calls. The total across level d is O(nk). Summing O(log n) levels: O(nk log n). This is a constant factor in practice and still faster than methods using O(nk) memory, which often have worse cache behavior.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §11 Template Philosophy -->
+<section class="card" id="s11">
+  <h2>11. Core Template Philosophy <span class="layer-badge lb-adv">DESIGN</span></h2>
+  <p>The template makes several deliberate design choices that are worth understanding before you use or adapt it.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">Global DP buffers dp1 and dp2</h3>
+      <p style="font-size:17px;font-weight:700">Two separate global arrays are used, one for left-half solves and one for right-half solves. This avoids aliasing bugs that would occur if both halves wrote to the same buffer. They are passed as parameters to solve() so the function is reusable on any segment.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">scale = 20001, not a power of 2</h3>
+      <p style="font-size:17px;font-weight:700">The scale must strictly exceed the maximum number of choosable items (at most n ≤ 20000 in the template). Using 20001 is the minimal correct value. Using a power of 2 or any other "round" number is fine as long as it exceeds n.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">Parity indexing, not a copy</h3>
+      <p style="font-size:17px;font-weight:700">The two-row rolling trick uses <span class="ic">i &amp; 1</span> to determine which row is current. This is cheaper than copying one row to another at each item step, and it works correctly across any contiguous segment [s..e].</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">The empty-solution guard</h3>
+      <p style="font-size:17px;font-weight:700">If no item fits within capacity k, the packed score v returned by the initial DP is 0. The decoding formulas assume v > 0. An explicit guard must print "0 0" and exit early. Without this guard, the decoded W and C values are nonsensical.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §12 Master Implementation -->
+<section class="card" id="s12">
+  <h2>12. Master Implementation <span class="layer-badge lb-adv">CODE</span></h2>
+  <p>The complete, ready-to-submit C++ template. Read this after the explanations in §6–7 for full context.</p>
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// MXW must exceed the maximum capacity k
+const int MXW = 75005;
+// Two global rolling DP buffers: dp1 for left-half solves, dp2 for right-half
+long long dp1[2][MXW], dp2[2][MXW];
+// scale must strictly exceed the maximum number of choosable items (n)
+const long long scale = 20001;
+int w[20001];
+
+// Runs 0/1 knapsack on items s..e with max capacity rem.
+// Returns dp[0..rem]: best packed score for every capacity.
+long long *solve(long long dp[2][MXW], int s, int e, int rem) {
+    // Zero out the "previous" row before item s is processed
+    memset(dp[!(s &amp; 1)], 0, (rem + 1) * sizeof(dp[0][0]));
+    for (int i = s; i &lt;= e; ++i) {
+        for (int r = 1; r &lt;= rem; ++r) {
+            long long &amp;res = dp[i &amp; 1][r];
+            int id = !(i &amp; 1);
+            res = dp[id][r];                       // skip item i
+            if (w[i] &lt;= r)
+                res = max(res, dp[id][r - w[i]] + scale * w[i] - 1);  // take item i
+        }
+    }
+    return dp[e &amp; 1];
+}
+
+// Prints the items belonging to one optimal subset of items s..e
+// using at most rem total capacity.
+void hirschberg(int s, int e, int rem) {
+    if (e &lt; s || rem == 0) return;          // nothing to reconstruct
+    if (s == e) {                            // base case: single item
+        if (w[s] &lt;= rem) printf("%d\n", w[s]);
+        return;
+    }
+    int mid = (s + e) / 2;
+    long long *d1 = solve(dp1, s, mid, rem);      // left half DP row
+    long long *d2 = solve(dp2, mid + 1, e, rem);  // right half DP row
+
+    // Find the capacity split that gives the best combined packed score
+    long long best = -1;
+    int bestr = 0;
+    for (int r = 0; r &lt;= rem; ++r) {
+        long long v = d1[r] + d2[rem - r];
+        if (v &gt; best) { best = v; bestr = r; }
+    }
+    hirschberg(s, mid, bestr);           // reconstruct left half
+    hirschberg(mid + 1, e, rem - bestr); // reconstruct right half
+}
+
+int main() {
+    int n, k;
+    scanf("%d %d", &amp;n, &amp;k);
+    for (int i = 0; i &lt; n; ++i) scanf("%d", w + i);
+
+    // Compute optimal packed score over all items
+    long long v = solve(dp1, 0, n - 1, k)[k];
+
+    if (v == 0) {          // No item fits within capacity k
+        printf("0 0\n");
+        return 0;
+    }
+
+    // Decode the packed score back into (bestWeight, minItems)
+    long long bestWeight = v / scale + 1;
+    long long minItems   = scale - (v % scale);
+
+    printf("%lld %lld\n", bestWeight, minItems);
+    hirschberg(0, n - 1, k);
+    return 0;
+}</code></pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §13 Line-by-Line -->
+<section class="card" id="s13">
+  <h2>13. Line-by-Line Explanation <span class="layer-badge lb-adv">CODE</span></h2>
+  <details open><summary>solve(): base row initialization <span class="hint">memset(dp[!(s &amp; 1)], 0, ...)</span></summary>
+  <div class="detailsBody">
+  <p>Before processing item s, we need the "previous" row to be zeroed. The previous row for item s is <span class="ic">dp[!(s &amp; 1)]</span>. The memset writes only the first rem+1 entries (not the full MXW), which is correct and faster when rem &lt;&lt; MXW.</p>
+  <p><strong>Why the specific row index?</strong> When i = s, the current row is <span class="ic">dp[s &amp; 1]</span> and the previous row is <span class="ic">dp[!(s &amp; 1)]</span>. If we initialized the wrong row, we would use garbage data as the "no items chosen" baseline, corrupting all subsequent values.</p>
+  </div></details>
+  <details><summary>solve(): transition res = max(skip, take) <span class="hint">the knapsack core</span></summary>
+  <div class="detailsBody">
+  <p>The reference <span class="ic">long long &amp;res = dp[i &amp; 1][r]</span> writes directly into the current row. It is first set to <span class="ic">dp[id][r]</span> (skip item i). If w[i] ≤ r, it is then updated to the maximum with <span class="ic">dp[id][r − w[i]] + scale × w[i] − 1</span> (take item i, add packed contribution). The −1 counts one more chosen item.</p>
+  </div></details>
+  <details><summary>solve(): return dp[e &amp; 1] <span class="hint">the last row</span></summary>
+  <div class="detailsBody">
+  <p>After processing all items s..e, the final DP row is <span class="ic">dp[e &amp; 1]</span>. This pointer is returned. The caller (hirschberg) uses it to probe any capacity r from 0 to rem. Do not copy this row — return the pointer directly to avoid an O(k) copy.</p>
+  </div></details>
+  <details><summary>hirschberg(): bestr = 0, best = -1 <span class="hint">initialization matters</span></summary>
+  <div class="detailsBody">
+  <p>Using <span class="ic">best = -1</span> ensures that even a combined score of 0 (both halves choose nothing) is properly recorded at r = 0. If best were 0, the split r = 0 would never be chosen, which is wrong when all scores are 0 (the empty-solution case). The guard <span class="ic">if (v == 0) return early</span> in main prevents most such cases, but robustness in hirschberg() itself is still important.</p>
+  </div></details>
+  <details><summary>main(): decoding v into bestWeight and minItems <span class="hint">the inverse formula</span></summary>
+  <div class="detailsBody">
+  <p>The packed score v = scale × W − C. Since 1 ≤ C &lt; scale, the quantity v % scale equals scale − C (because v mod scale = (scale × W − C) mod scale = scale − C when C > 0). Thus:</p>
+  <div class="formula" style="font-size:17px">W = v / scale + 1    (integer division, the +1 compensates for C ≥ 1)<br>C = scale − (v % scale)</div>
+  <p>Verify: packed score of a subset with W = 10, C = 2, scale = 20001 is 200010 − 2 = 200008. Then: W = 200008 / 20001 + 1 = 10 + 1 = ... wait. 200008 / 20001 = 9 (integer division). So W = 9 + 1 = 10. ✓ And C = 20001 − (200008 % 20001) = 20001 − (200008 − 9×20001) = 20001 − (200008 − 180009) = 20001 − 19999 = 2. ✓</p>
+  </div></details>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §14 Decoding the Answer -->
+<section class="card" id="s14">
+  <h2>14. Decoding the Answer <span class="layer-badge lb-adv">CODE</span></h2>
+  <p>Understanding the decoding formulas is important enough to deserve its own section, because they are easy to get wrong.</p>
+  <p>The packed score for a subset with total weight W and item count C is <span class="ic">v = scale × W − C</span>. We know that C satisfies 1 ≤ C &lt; scale (every chosen item contributes at least 1, and there are fewer than scale items). From this, two properties follow:</p>
+  <div class="tw"><table>
+    <tr><th>Expression</th><th>Value</th><th>Why</th></tr>
+    <tr><td><span class="ic">v / scale</span> (integer)</td><td>W − 1</td><td>scale×W/scale = W, but the −C term causes one unit of borrowing since C &lt; scale</td></tr>
+    <tr><td><span class="ic">v % scale</span></td><td>scale − C</td><td>(scale×W − C) mod scale = (0 − C) mod scale = scale − C</td></tr>
+    <tr><td><span class="ic">v / scale + 1</span></td><td>W</td><td>the +1 corrects the borrowing</td></tr>
+    <tr><td><span class="ic">scale − v % scale</span></td><td>C</td><td>scale − (scale − C) = C</td></tr>
+  </table></div>
+  <div class="ib ib-red"><i>⚠</i><p><strong>This decoding only works when v &gt; 0.</strong> If v = 0 (no item can be chosen), both formulas produce nonsense. Always guard against v = 0 before applying the formulas.</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §15 Edge Cases -->
+<section class="card" id="s15">
+  <h2>15. Edge-Case Audit <span class="layer-badge lb-fw">AUDIT</span></h2>
+  <p>These are the eight concrete corners where the algorithm fails if not handled correctly.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC1: No item fits (v = 0)</h3>
+      <p style="font-size:17px;font-weight:700">The initial DP returns v = 0. The decoding formulas are undefined for v = 0. Print "0 0" and return immediately. Forgetting this guard produces outputs like W = 1, C = 20001 which are completely wrong.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC2: scale too small</h3>
+      <p style="font-size:17px;font-weight:700">If scale ≤ n, then it is possible for the C-component to overflow into the W-component, corrupting the lexicographic ordering. Always verify scale > max-possible-n, not just "approximately large enough".</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC3: Wrong parity row initialized</h3>
+      <p style="font-size:17px;font-weight:700">The memset must target <span class="ic">dp[!(s &amp; 1)]</span>, not <span class="ic">dp[0]</span>. If s is odd, the "previous" row is row 0, so row 0 must be zeroed. Zeroing the wrong row produces silently wrong DP values.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC4: best = 0 instead of −1</h3>
+      <p style="font-size:17px;font-weight:700">If best is initialized to 0, split r = 0 is never selected even when all valid scores are 0. This corrupts reconstruction when no items can be chosen in either half.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC5: integer overflow</h3>
+      <p style="font-size:17px;font-weight:700">The packed score can reach scale × k ≈ 20001 × 75000 ≈ 1.5 × 10⁹. This fits in a 32-bit int. But if k or scale are larger, use long long throughout. The template already uses long long.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC6: duplicate weights</h3>
+      <p style="font-size:17px;font-weight:700">If two items have equal weight, the output (printing weights) is ambiguous. If the problem wants item indices, store and print the original index, not w[s], in the base case.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC7: rem = 0 at leaf</h3>
+      <p style="font-size:17px;font-weight:700">The base case guard <span class="ic">if (e &lt; s || rem == 0) return</span> must come before the single-item check, because rem = 0 should produce no output even for a leaf segment.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--bad)">EC8: recursion stack depth</h3>
+      <p style="font-size:17px;font-weight:700">Depth is O(log n), which is at most 17 for n = 20000. Stack overflow is not a practical concern. However, do not confuse this with algorithms that may recurse O(n) deep — this one is safely shallow.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §16 Pitfalls -->
+<section class="card" id="s16">
+  <h2>16. Common Pitfalls <span class="layer-badge lb-fw">PITFALLS</span></h2>
+  <details open><summary>Pitfall 1: "This is just divide and conquer" <span class="hint">missing the key step</span></summary>
+  <div class="detailsBody">
+  <p>Divide and conquer alone does not help. What makes Hirschberg work is that we solve each half with a <em>complete DP row</em> (best score for every capacity), not just for one target capacity. This is the step that lets us try all possible capacity splits and find the one consistent with a global optimum. Without it, the halves cannot be correctly linked.</p>
+  </div></details>
+  <details><summary>Pitfall 2: thinking the halves are independent <span class="hint">they are not, until bestr is chosen</span></summary>
+  <div class="detailsBody">
+  <p>The two halves share the total remaining capacity rem. They are not independent until the split bestr is decided. Only after choosing bestr are they truly independent subproblems. A common mistake is to run each half with the full rem, which over-counts the available capacity.</p>
+  </div></details>
+  <details><summary>Pitfall 3: using a pair instead of packed score, naively <span class="hint">max comparison on pairs</span></summary>
+  <div class="detailsBody">
+  <p>It is possible to use <span class="ic">pair&lt;int,int&gt;</span> with the comparison (larger first component, then smaller second) instead of the packed score. This is pedagogically cleaner. However, adding pairs is not defined by default — you would need custom logic. The packed scalar is simpler and faster in practice.</p>
+  </div></details>
+  <details><summary>Pitfall 4: confusing "capacity at most r" with "capacity exactly r" <span class="hint">the DP semantics</span></summary>
+  <div class="detailsBody">
+  <p>The DP computes the best score for capacity <em>at most</em> r, not exactly r. This means <span class="ic">dp[r] ≥ dp[r-1]</span> always. The split search correctly uses this: d1[r] + d2[rem−r] asks "best from left using ≤ r, and best from right using ≤ rem − r". The total used weight may be less than rem, which is correct since we want to maximize weight without exceeding k.</p>
+  </div></details>
+  <details><summary>Pitfall 5: using the same buffer for both halves <span class="hint">aliasing bug</span></summary>
+  <div class="detailsBody">
+  <p>Both solve() calls inside hirschberg() must use different buffers (dp1 and dp2). If the same buffer is used, the right-half computation overwrites the data from the left-half computation, making the split search impossible. The template uses separate global arrays for exactly this reason.</p>
+  </div></details>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §17 Decision Guide -->
+<section class="card" id="s17">
+  <h2>17. Decision / Recognition Guide <span class="layer-badge lb-adv">GUIDE</span></h2>
+  <h3>The four rules for when to use Hirschberg</h3>
+  <div class="decision-grid">
+    <div class="dec-card">
+      <div class="dc-head">Rule 1: Rolling DP exists</div>
+      <div class="dc-cond">REQUIRED</div>
+      <p>The optimal value can be computed with a rolling (low-memory) DP. This means the DP state can be expressed with only two adjacent rows or a single row, not the entire table.</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">Rule 2: Output required</div>
+      <div class="dc-cond">REQUIRED</div>
+      <p>The problem asks you to print an actual solution (chosen items, path, sequence), not just the optimal value. Without this requirement, rolling DP alone suffices.</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">Rule 3: Parent table too large</div>
+      <div class="dc-cond">TRIGGER</div>
+      <p>A full parent table would cost O(nk) or O(nm) memory, which exceeds the memory limit. This is the real reason to use Hirschberg over a simple parent table.</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">Rule 4: Clean middle split</div>
+      <div class="dc-cond">REQUIRED</div>
+      <p>The optimal solution can be decomposed into two independent optimal subproblems through a single "middle boundary" parameter (capacity split, row crossing, string split).</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">✓ Use Hirschberg</div>
+      <div class="dc-cond">when all 4 hold</div>
+      <p>If all four rules are satisfied, Hirschberg reconstruction is a strong candidate. Examples: knapsack with output, LCS with reconstruction, grid shortest path with output.</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">✗ Do not use</div>
+      <div class="dc-cond">common exceptions</div>
+      <p>If parent table fits in memory: use the simpler table. If only the value is needed: use rolling DP. If you need all optimal solutions: Hirschberg finds one. If the recurrence does not split cleanly: the method may not apply.</p>
+    </div>
+  </div>
+  <h3>Quick reflex guide</h3>
+  <p>In a contest, scan for these signals: "n, k large," "memory limit tight," "print the chosen items," "find minimum/maximum number of items." If you see all of these, reach for Hirschberg. Also look for the words "restoration," "reconstruction," or "find the actual subset" alongside a large constraint on the DP dimensions.</p>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>Common confusion:</strong> Many people think Hirschberg is only for LCS or sequence alignment. It is not. The technique is about any DP where reconstruction can be driven by discovering the correct middle split. The knapsack variant is equally valid and perhaps more contest-frequent because of how often large-capacity problems demand output of the chosen items.</p></div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §18 Variants -->
+<section class="card" id="s18">
+  <h2>18. Variants &amp; Extensions <span class="layer-badge lb-adv">VARIANTS</span></h2>
+  <details open><summary>Variant 1: Print item indices instead of weights <span class="hint">most practical change</span></summary>
+  <div class="detailsBody">
+  <h3>Problem story</h3>
+  <p>The judge wants the 1-indexed positions of the chosen items in the original input order, not their weight values. Items may have repeated weights, so printing weights is ambiguous.</p>
+  <h3>What changes</h3>
+  <p>In the base case of hirschberg(), instead of printing <span class="ic">w[s]</span>, print <span class="ic">s + 1</span> (or the stored original index). If items were sorted before the DP, store the mapping from sorted position to original index in an auxiliary array, and print the original index at the leaf.</p>
+  <pre><code>// In the base case, replace:
+if (w[s] <= rem) printf("%d\n", w[s]);
+// With:
+if (w[s] <= rem) printf("%d\n", originalIdx[s]);</code></pre>
+  <p><strong>Complexity:</strong> unchanged. <strong>When to use:</strong> whenever the judge identifies items by their input position, not their weight.</p>
+  </div></details>
+  <details><summary>Variant 2: Use a pair instead of packed score <span class="hint">pedagogically cleaner</span></summary>
+  <div class="detailsBody">
+  <h3>Why</h3>
+  <p>The packed scalar is fast and compact, but it obscures intent. An alternative is to store pairs <span class="ic">(total_weight, -item_count)</span> and use lexicographic comparison. This makes the DP semantics more readable at the cost of more complex DP state and potentially slower pair operations.</p>
+  <h3>What changes</h3>
+  <p>Replace <span class="ic">long long dp[2][MXW]</span> with <span class="ic">pair&lt;int,int&gt; dp[2][MXW]</span>, change the transition to use the pair ordering, and remove the packed-score encoding/decoding. The hirschberg() function's split loop compares pairs instead of scalars.</p>
+  <p><strong>Complexity:</strong> same asymptotically; pair comparisons are O(1) but involve two integer comparisons. <strong>When to use:</strong> for pedagogy or when the scale trick is unavailable (e.g., the count dimension is not bounded).</p>
+  </div></details>
+  <details><summary>Variant 3: Standard value knapsack (weight + profit) <span class="hint">most general form</span></summary>
+  <div class="detailsBody">
+  <h3>Problem story</h3>
+  <p>Each item has both a weight and a profit value. We want to maximize total profit (not total weight) subject to the capacity constraint. The output is the list of chosen items.</p>
+  <h3>What changes</h3>
+  <p>Replace the packed contribution <span class="ic">scale × w[i] − 1</span> with <span class="ic">value[i]</span> (or <span class="ic">scale × value[i] − 1</span> if you still want a tie-break on item count). The rest of the algorithm is unchanged. The solve() function now computes maximum total profit, and the split search still finds the optimal capacity split.</p>
+  <pre><code>// In the take-item branch, replace:
+dp[id][r - w[i]] + scale * w[i] - 1
+// With:
+dp[id][r - w[i]] + value[i]</code></pre>
+  <p>If you do not need the tie-break on item count, the decoding formulas also simplify: v itself is the maximum profit, not a packed representation.</p>
+  </div></details>
+  <details><summary>Variant 4: Classical grid / path DP <span class="hint">the original Hirschberg context</span></summary>
+  <div class="detailsBody">
+  <h3>Problem story</h3>
+  <p>You have a grid and want a minimum-cost path from top-left to bottom-right. A parent pointer table costs O(nm) memory. You want to reconstruct the path with only O(n + m) memory.</p>
+  <h3>How Hirschberg applies</h3>
+  <p>Split the grid at the middle column. Run the path DP forward from the left to accumulate costs reaching each cell of the middle column. Run the path DP backward from the right to accumulate costs for the continuation from each middle cell. The row in the middle column that minimizes total cost is the crossing row of an optimal path. Recurse on the left and right rectangles. This is the classic Hirschberg grid algorithm and is the technique that Hirschberg originally proposed.</p>
+  <p><strong>Complexity:</strong> O(nm) time, O(n + m) memory — a factor of min(n, m) savings over the parent table.</p>
+  </div></details>
+  <details><summary>Variant 5: LCS / sequence alignment reconstruction <span class="hint">the string form</span></summary>
+  <div class="detailsBody">
+  <h3>Problem story</h3>
+  <p>Find one longest common subsequence of strings A (length m) and B (length n). A full LCS table costs O(mn) memory. You want reconstruction with O(m + n) memory.</p>
+  <h3>How Hirschberg applies</h3>
+  <p>Split string A at the middle. Compute the forward LCS score row (how much of B matches the first half of A). Compute the backward LCS score row (how much of B matches the reversed second half of A, also reversed). Find the split position in B that maximizes their sum. Recurse on the two halves of A, each matched to its portion of B. This is the original Hirschberg LCS algorithm from 1975.</p>
+  <p><strong>Complexity:</strong> O(mn) time, O(m + n) memory.</p>
+  </div></details>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §19 Problem Applications -->
+<section class="card" id="s19">
+  <h2>19. Problem Applications <span class="layer-badge lb-adv">PROBLEMS</span></h2>
+  <p>The Hirschberg knapsack reconstruction is a relatively rare but distinct technique. Here are the problem families where it appears or becomes necessary.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">Subset restoration with tight memory</h3>
+      <p style="font-size:17px;font-weight:700;margin:0">The canonical fit: n items, capacity k, print chosen items. The usual flag when this needs Hirschberg is n × k &gt; 10⁷ in the context of a memory limit of 256 MB.</p>
+      <p style="font-size:16px;font-weight:700;color:var(--muted);margin:8px 0 0">Practice: search for "knapsack reconstruction" on competitive programming platforms, or subset-sum restoration problems where the product nk is large.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">LCS / edit distance reconstruction</h3>
+      <p style="font-size:17px;font-weight:700;margin:0">When m × n is large and the problem asks to print the actual LCS or alignment, Hirschberg's string version applies. This is the original use case.</p>
+      <p style="font-size:16px;font-weight:700;color:var(--muted);margin:8px 0 0">Practice: <a href="https://codeforces.com" target="_blank">Codeforces</a> problems on LCS with large n, where memory is the binding constraint.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">Grid path restoration</h3>
+      <p style="font-size:17px;font-weight:700;margin:0">Find and print a minimum-cost path in an n × m grid where storing the full DP table is too large. Split the grid at the middle column and apply the grid variant.</p>
+      <p style="font-size:16px;font-weight:700;color:var(--muted);margin:8px 0 0">Practice: grid DP problems where path output is required and n × m &gt; 10⁷.</p>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h3 style="margin-top:0;font-size:20px;color:var(--accent2)">Maximize used capacity problems</h3>
+      <p style="font-size:17px;font-weight:700;margin:0">The exact template in this tutorial: choose items to maximize used weight, minimize count, print subset. Appears in packing, scheduling, and bin-covering variants.</p>
+      <p style="font-size:16px;font-weight:700;color:var(--muted);margin:8px 0 0">Practice: <a href="https://vjudge.net" target="_blank">VJudge</a> — search for "0/1 knapsack" with "print" or "output" in the problem statement.</p>
+    </div>
+  </div>
+  <h3>How to recognize the pattern in a contest</h3>
+  <p>The pattern has a clear signature: the problem gives large n and k (so n × k is at most around 10⁸), it asks you to find some optimal subset or path, and it wants you to print the actual elements (not just the value). If the memory limit is 256 MB or less and n × k bytes exceeds that, you cannot afford a parent table and should reach for Hirschberg. The four recognition rules in §17 operationalize this check.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §20 Final Summary -->
+<section class="card" id="s20">
+  <h2>20. Final Summary <span class="layer-badge lb-fw">SUMMARY</span></h2>
+  <div class="formula master">Hirschberg is not about strings, grids, or knapsacks specifically — it is about reconstructing an optimal DP solution by discovering the correct middle split while keeping memory as small as the value DP itself.</div>
+  <p>Here are the five ideas you should leave this tutorial with, each building on the previous one.</p>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+    <div style="display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px">
+      <div style="font-size:36px;font-weight:950;color:var(--accent2);line-height:1;min-width:40px">1</div>
+      <div><strong style="font-size:20px">Rolling DP loses reconstruction information.</strong><p style="font-size:17px;font-weight:700;margin:6px 0 0;color:var(--muted)">Storing only two rows is memory-efficient but throws away the parent pointers needed to trace back the optimal solution. A parent table costs O(nk). Hirschberg recovers the solution without ever building that table.</p></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px">
+      <div style="font-size:36px;font-weight:950;color:var(--good);line-height:1;min-width:40px">2</div>
+      <div><strong style="font-size:20px">Any optimal solution decomposes at the middle.</strong><p style="font-size:17px;font-weight:700;margin:6px 0 0;color:var(--muted)">Split the items at mid. The optimal solution uses some capacity r in the left half and rem−r in the right. Running rolling DP on each half and searching over all r finds the correct split. This is the key insight.</p></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px">
+      <div style="font-size:36px;font-weight:950;color:#7c3aed;line-height:1;min-width:40px">3</div>
+      <div><strong style="font-size:20px">The packed score encodes lexicographic objectives.</strong><p style="font-size:17px;font-weight:700;margin:6px 0 0;color:var(--muted)">Using score = scale × W − C where scale &gt; n collapses two objectives (maximize W, minimize C) into one scalar that a standard DP can maximize. Decoding recovers both values with a division and a modulo.</p></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px">
+      <div style="font-size:36px;font-weight:950;color:var(--warn);line-height:1;min-width:40px">4</div>
+      <div><strong style="font-size:20px">Recursion depth is O(log n), so memory stays O(k).</strong><p style="font-size:17px;font-weight:700;margin:6px 0 0;color:var(--muted)">At every recursion level, only two arrays of size O(k) are needed. These are reused across all calls at the same level. The O(log n) stack frames add negligible memory. Total: O(k + n).</p></div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px">
+      <div style="font-size:36px;font-weight:950;color:var(--bad);line-height:1;min-width:40px">5</div>
+      <div><strong style="font-size:20px">This is a general principle, not a special trick.</strong><p style="font-size:17px;font-weight:700;margin:6px 0 0;color:var(--muted)">The same divide-at-the-middle idea works for knapsack, LCS, grid paths, sequence alignment, and any DP where solutions decompose cleanly through a single split parameter. Learning the principle, not just the template, is what lets you apply it in new settings.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §21 Interactive Trace -->
+<section class="card" id="s21">
+  <h2>21. Interactive Trace <span class="layer-badge lb-key">INTERACTIVE</span></h2>
+  <p>The tracer below walks through a complete execution of the algorithm on items [3, 5, 6, 7] with capacity k = 10. Use Prev/Next to step through, or Auto to play. Watch how the items are highlighted (left half in purple, right half in orange), how the DP arrays are computed, and how the optimal capacity split is discovered at each level.</p>
+  <div class="tracer-wrap" id="hsgTracer">
+    <div class="tracer-header">
+      <div class="tracer-title">🔍 Hirschberg trace: items [3,5,6,7], k=10</div>
+      <div class="tracer-tools">
+        <button class="miniBtn" id="hPrev" disabled>◀ Prev</button>
+        <button class="miniBtn" id="hNext">Next ▶</button>
+        <button class="miniBtn" id="hAuto">⏩ Auto</button>
+        <button class="miniBtn" id="hReset">↺ Reset</button>
+        <div class="step-counter" id="hStepLabel">Step 1 / 16</div>
+      </div>
+    </div>
+    <div class="tracer-vis">
+      <div class="tracer-panel">
+        <h4>Items &amp; Active Segment</h4>
+        <div class="item-row" id="hItemRow"></div>
+        <div class="kv-row" id="hKV"></div>
+      </div>
+      <div class="tracer-panel">
+        <h4>Call Stack</h4>
+        <div class="call-stack" id="hCallStack"></div>
+      </div>
+    </div>
+    <div class="tracer-panel" style="margin-top:12px">
+      <h4>DP Arrays (capacity 0..10)</h4>
+      <div style="margin-bottom:6px;font-size:16px;font-weight:800;color:#7c3aed">d1 (left half):</div>
+      <div class="dp-row" id="hD1"></div>
+      <div style="margin:8px 0 6px;font-size:16px;font-weight:800;color:var(--warn)">d2 (right half):</div>
+      <div class="dp-row" id="hD2"></div>
+    </div>
+    <div class="status-panel" id="hStatus">Loading…</div>
+    <div style="margin-top:10px;font-size:16px;font-weight:900;color:var(--muted)">Printed output so far:</div>
+    <div class="output-log" id="hOutput">—</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ §sRVC -->
+<section class="card" id="sRVC">
+  <h2>Runtime Validation Checklist <span class="layer-badge lb-fw">QUALITY GATE</span></h2>
+  <div class="grid2">
+    <div>
+      <h3>UI / Navigation</h3>
+      <ul class="checklist">
+        <li>Hamburger animation matches real sidebar state</li>
+        <li><span class="ic">aria-expanded</span> stays synchronized with sidebar state</li>
+        <li>Overlay appears only on narrow/mobile layouts</li>
+        <li>Narrow/mobile layouts start with sidebar closed</li>
+        <li>Wide layouts start with sidebar open</li>
+        <li>Escape key closes the sidebar on narrow/mobile</li>
+        <li>Resize does not corrupt sidebar / overlay / button state</li>
+        <li>Scrollspy correctly highlights the active section</li>
+        <li>Clicking a nav link closes the sidebar on mobile</li>
+        <li>All href="#sXX" anchors resolve to real section IDs</li>
+        <li>Theme toggle persists across page reloads</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Content &amp; Code</h3>
+      <ul class="checklist">
+        <li>All five proof lemmas open and display correctly</li>
+        <li>All variant details open and display correctly</li>
+        <li>Code blocks render without horizontal overflow</li>
+        <li>Interactive tracer Prev/Next/Auto/Reset all function</li>
+        <li>DP cell highlight (green = best split) is visible</li>
+        <li>Item-box color coding matches the legend (purple=left, orange=right)</li>
+        <li>Output log accumulates correctly across steps</li>
+        <li>Auto timer stops at the last step</li>
+        <li>Both email links open correctly in mail client</li>
+        <li>Footer emails display as plain text (no Cloudflare encoding)</li>
+        <li>No JavaScript console errors on load or during interaction</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="page-footer">
+  <div class="footer-logo">🎓</div>
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-topic">Hirschberg Reconstruction for Knapsack DP</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">📧 coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">📧 a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-copy">&copy; 2025 All rights reserved.</div>
+</div>
+</div><!-- end .content -->
+
+<script>
+/* ═══════════ THEME + SIDEBAR (Family Standard) ═══════════ */
+(function(){
+  var sb=document.getElementById('sidebar'),
+      tog=document.getElementById('sidebarToggle'),
+      ov=document.getElementById('sidebarOverlay'),
+      sw=document.getElementById('themeSwitch');
+  function narrow(){return window.innerWidth<=1300;}
+  var isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  sw.setAttribute('aria-checked',isDark?'true':'false');
+  sw.addEventListener('click',function(){
+    var d=document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.setAttribute('data-theme',d?'':'dark');
+    sw.setAttribute('aria-checked',d?'false':'true');
+    try{localStorage.setItem('ca-theme',d?'light':'dark');}catch(e){}
+  });
+  sw.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();sw.click();}});
+  function openSidebar(){
+    sb.classList.remove('collapsed');
+    document.body.classList.remove('sb-closed');
+    tog.classList.add('open');
+    tog.setAttribute('aria-expanded','true');
+    if(narrow())ov.classList.add('show');else ov.classList.remove('show');
+  }
+  function closeSidebar(){
+    sb.classList.add('collapsed');
+    document.body.classList.add('sb-closed');
+    tog.classList.remove('open');
+    tog.setAttribute('aria-expanded','false');
+    ov.classList.remove('show');
+  }
+  if(narrow())closeSidebar();else openSidebar();
+  tog.addEventListener('click',function(){
+    if(tog.getAttribute('aria-expanded')==='true')closeSidebar();else openSidebar();
+  });
+  ov.addEventListener('click',closeSidebar);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&narrow()&&tog.getAttribute('aria-expanded')==='true')closeSidebar();
+  });
+  var resizeTimer;
+  window.addEventListener('resize',function(){
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      if(narrow()){if(tog.getAttribute('aria-expanded')==='true')closeSidebar();}
+      else openSidebar();
+    },120);
+  });
+  var links=document.querySelectorAll('.nav a'),sections=[];
+  links.forEach(function(a){
+    var id=a.getAttribute('href');
+    if(id&&id.charAt(0)==='#'){var el=document.getElementById(id.slice(1));if(el)sections.push({link:a,el:el});}
+  });
+  function updateActive(){
+    var y=window.scrollY+100,act=null;
+    for(var i=sections.length-1;i>=0;i--){if(sections[i].el.offsetTop<=y){act=sections[i].link;break;}}
+    links.forEach(function(l){l.classList.remove('active');});
+    if(act)act.classList.add('active');
+  }
+  window.addEventListener('scroll',updateActive,{passive:true});
+  updateActive();
+  links.forEach(function(a){
+    a.addEventListener('click',function(){if(narrow())closeSidebar();});
+  });
+})();
+
+/* ═══════════ HIRSCHBERG INTERACTIVE TRACER ═══════════ */
+(function(){
+  /* Pre-computed trace data for items w=[3,5,6,7], k=10, scale=20001 */
+  /* d1[r] = best packed score for left-half items with capacity <= r */
+  /* d2[r] = best packed score for right-half items with capacity <= r */
+
+  var W=[3,5,6,7]; /* weights */
+
+  /* DP values pre-computed (scale=20001):
+     Left half {3,5}: d1=[0,0,0,60002,60002,100004,100004,100004,160006,160006,160006]
+     Right half {6,7}: d2=[0,0,0,0,0,0,120005,140006,140006,140006,140006]
+     Left {3} only: lA=[0,0,0,60002,...] for rem=3
+     Left {5} only (rem=3): lB=[0,0,0,0] (5>3)
+     Right {6} only (rem=7): rA=[0,0,0,0,0,0,120005,120005]
+     Right {7} only (rem=7): rB=[0,0,0,0,0,0,0,140006]
+  */
+
+  var steps=[
+    {
+      phase:'init',
+      seg:[-1,-1],rem:-1,
+      d1:null,d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:[],
+      output:[],
+      status:'Start: items = [3, 5, 6, 7], k = 10. First we run solve() on all items to get the optimal packed score.',
+      statusType:''
+    },
+    {
+      phase:'fullDP',
+      seg:[0,3],rem:10,
+      d1:[0,0,0,60002,60002,100004,100004,100004,160006,160006,160006],d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['solve(dp1, 0, 3, 10) → best packed score at k=10 is 200008'],
+      output:[],
+      status:'Full DP: solve(dp1, 0..3, 10). Best score = 200008 = scale×10−2. Decode: W=10, C=2. Now begin reconstruction.',
+      statusType:'split'
+    },
+    {
+      phase:'top_split',
+      seg:[0,3],rem:10,
+      d1:null,d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)  ← top call'],
+      output:[],
+      status:'hirschberg(0, 3, 10): s=0, e=3, rem=10. Segment has 4 items — not a base case. Compute mid = (0+3)/2 = 1.',
+      statusType:'split'
+    },
+    {
+      phase:'solveL',
+      seg:[0,1],rem:10,
+      d1:[0,0,0,60002,60002,100004,100004,100004,160006,160006,160006],d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  solve(dp1, 0..1, 10)  ← left half'],
+      output:[],
+      status:'solve(dp1, 0..1, 10): DP over left-half items {w=3, w=5} for all capacities 0..10. d1[3]=60002 (item 3 alone), d1[5]=100004 (item 5 alone), d1[8]=160006 (both).',
+      statusType:'split'
+    },
+    {
+      phase:'solveR',
+      seg:[2,3],rem:10,
+      d1:[0,0,0,60002,60002,100004,100004,100004,160006,160006,160006],
+      d2:[0,0,0,0,0,0,120005,140006,140006,140006,140006],bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  solve(dp2, 2..3, 10)  ← right half'],
+      output:[],
+      status:'solve(dp2, 2..3, 10): DP over right-half items {w=6, w=7} for all capacities 0..10. d2[6]=120005 (item 6 alone), d2[7]=140006 (item 7 alone).',
+      statusType:'split'
+    },
+    {
+      phase:'findSplit',
+      seg:[0,3],rem:10,
+      d1:[0,0,0,60002,60002,100004,100004,100004,160006,160006,160006],
+      d2:[0,0,0,0,0,0,120005,140006,140006,140006,140006],bestr:3,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  → best split: r=3'],
+      output:[],
+      status:'Find best r: try all r=0..10. Best: r=3 gives d1[3]+d2[7] = 60002+140006 = 200008. Left gets capacity 3, right gets capacity 7.',
+      statusType:'split'
+    },
+    {
+      phase:'recurseL_start',
+      seg:[0,1],rem:3,
+      d1:null,d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)  ← left recurse'],
+      output:[],
+      status:'Recurse left: hirschberg(0, 1, 3). Items {w=3, w=5}, remaining capacity = 3. Split at mid=0.',
+      statusType:'split'
+    },
+    {
+      phase:'solveL2',
+      seg:[0,0],rem:3,
+      d1:[0,0,0,60002],d2:null,bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)','    solve(dp1, 0..0, 3)  ← item {3}'],
+      output:[],
+      status:'solve(dp1, 0..0, 3): DP over {w=3} with capacity ≤ 3. d1[0..2]=0, d1[3]=60002 (item 3 fits).',
+      statusType:'split'
+    },
+    {
+      phase:'solveR2',
+      seg:[1,1],rem:3,
+      d1:[0,0,0,60002],
+      d2:[0,0,0,0],bestr:-1,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)','    solve(dp2, 1..1, 3)  ← item {5}'],
+      output:[],
+      status:'solve(dp2, 1..1, 3): DP over {w=5} with capacity ≤ 3. All entries = 0 (item 5 does not fit in capacity 3).',
+      statusType:'split'
+    },
+    {
+      phase:'findSplit2',
+      seg:[0,1],rem:3,
+      d1:[0,0,0,60002],
+      d2:[0,0,0,0],bestr:3,
+      chosen:[],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)','    → best split: r=3'],
+      output:[],
+      status:'Best r for left sub-call: r=3 gives d1[3]+d2[0]=60002+0=60002. Left item gets capacity 3, right item gets capacity 0.',
+      statusType:'split'
+    },
+    {
+      phase:'base_item0',
+      seg:[0,0],rem:3,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0],skipped:[],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)','    hirschberg(0, 0, rem=3)  ← LEAF'],
+      output:[3],
+      status:'LEAF: hirschberg(0, 0, 3). Single item w[0]=3. Check: 3 ≤ 3. ✓ PRINT 3.',
+      statusType:'accept'
+    },
+    {
+      phase:'base_item1',
+      seg:[1,1],rem:0,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0],skipped:[1],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(0, 1, rem=3)','    hirschberg(1, 1, rem=0)  ← LEAF'],
+      output:[3],
+      status:'LEAF: hirschberg(1, 1, 0). rem=0 → return immediately. Item w[1]=5 not chosen.',
+      statusType:'skip'
+    },
+    {
+      phase:'recurseR_start',
+      seg:[2,3],rem:7,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0],skipped:[1],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)  ← right recurse'],
+      output:[3],
+      status:'Recurse right: hirschberg(2, 3, 7). Items {w=6, w=7}, remaining capacity = 7. Split at mid=2.',
+      statusType:'split'
+    },
+    {
+      phase:'solveL3',
+      seg:[2,2],rem:7,
+      d1:[0,0,0,0,0,0,120005,120005],d2:null,bestr:-1,
+      chosen:[0],skipped:[1],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)','    solve(dp1, 2..2, 7)  ← item {6}'],
+      output:[3],
+      status:'solve(dp1, 2..2, 7): DP over {w=6} with capacity ≤ 7. d1[6]=120005, d1[7]=120005 (item 6 fits in 6 or 7).',
+      statusType:'split'
+    },
+    {
+      phase:'solveR3',
+      seg:[3,3],rem:7,
+      d1:[0,0,0,0,0,0,120005,120005],
+      d2:[0,0,0,0,0,0,0,140006],bestr:-1,
+      chosen:[0],skipped:[1],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)','    solve(dp2, 3..3, 7)  ← item {7}'],
+      output:[3],
+      status:'solve(dp2, 3..3, 7): DP over {w=7} with capacity ≤ 7. d2[7]=140006 (item 7 fits exactly). d2[0..6]=0.',
+      statusType:'split'
+    },
+    {
+      phase:'findSplit3',
+      seg:[2,3],rem:7,
+      d1:[0,0,0,0,0,0,120005,120005],
+      d2:[0,0,0,0,0,0,0,140006],bestr:0,
+      chosen:[0],skipped:[1],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)','    → best split: r=0'],
+      output:[3],
+      status:'Best r for right sub-call: r=0 gives d1[0]+d2[7]=0+140006=140006. Left item (w=6) gets capacity 0, right item (w=7) gets capacity 7.',
+      statusType:'split'
+    },
+    {
+      phase:'base_item2',
+      seg:[2,2],rem:0,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0],skipped:[1,2],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)','    hirschberg(2, 2, rem=0)  ← LEAF'],
+      output:[3],
+      status:'LEAF: hirschberg(2, 2, 0). rem=0 → return immediately. Item w[2]=6 not chosen.',
+      statusType:'skip'
+    },
+    {
+      phase:'base_item3',
+      seg:[3,3],rem:7,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0,3],skipped:[1,2],
+      callStack:['hirschberg(0, 3, rem=10)','  hirschberg(2, 3, rem=7)','    hirschberg(3, 3, rem=7)  ← LEAF'],
+      output:[3,7],
+      status:'LEAF: hirschberg(3, 3, 7). Single item w[3]=7. Check: 7 ≤ 7. ✓ PRINT 7.',
+      statusType:'accept'
+    },
+    {
+      phase:'done',
+      seg:[-1,-1],rem:-1,
+      d1:null,d2:null,bestr:-1,
+      chosen:[0,3],skipped:[1,2],
+      callStack:['Done.'],
+      output:[3,7],
+      status:'✓ DONE. Printed subset: {3, 7}. Total weight = 3 + 7 = 10 = k. Item count = 2. This is the unique optimal solution.',
+      statusType:'accept'
+    }
+  ];
+
+  var si=0,total=steps.length,tmr=null;
+
+  function cv(name){return getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim();}
+
+  function render(){
+    var s=steps[si];
+    document.getElementById('hStepLabel').textContent='Step '+(si+1)+' / '+total;
+    document.getElementById('hPrev').disabled=si<=0;
+    document.getElementById('hNext').disabled=si>=total-1;
+
+    /* Item row */
+    var ir=document.getElementById('hItemRow');
+    ir.innerHTML='';
+    for(var i=0;i<4;i++){
+      var box=document.createElement('div');
+      box.className='item-box';
+      var cls='normal';
+      if(s.chosen.indexOf(i)>=0)cls='chosen';
+      else if(s.skipped.indexOf(i)>=0)cls='skipped';
+      else if(s.seg[0]>=0&&i>=s.seg[0]&&i<=s.seg[1]){
+        /* current segment coloring */
+        var mid2=Math.floor((s.seg[0]+s.seg[1])/2);
+        if(s.phase==='solveL'||s.phase==='solveL2'||s.phase==='solveL3'){cls=i<=mid2?'left-half':'normal';}
+        else if(s.phase==='solveR'||s.phase==='solveR2'||s.phase==='solveR3'){cls=i>mid2?'right-half':'normal';}
+        else if(s.phase==='top_split'||s.phase==='findSplit'){cls=i<=1?'left-half':'right-half';}
+        else if(s.phase==='recurseL_start'||s.phase==='findSplit2'){cls=i<=1?'active':'normal';}
+        else if(s.phase==='recurseR_start'||s.phase==='findSplit3'){cls=i>=2?'active':'normal';}
+        else cls='active';
+      }
+      box.className='item-box '+cls;
+      box.innerHTML='<div class="iw">'+W[i]+'</div><div class="ii">i='+i+'</div>';
+      ir.appendChild(box);
+    }
+
+    /* KV row */
+    var kv=document.getElementById('hKV');
+    kv.innerHTML='';
+    if(s.seg[0]>=0){
+      function kvb(k2,v2){var d=document.createElement('div');d.className='kv-box';d.innerHTML='<div class="kk">'+k2+'</div><div class="vv">'+v2+'</div>';return d;}
+      kv.appendChild(kvb('segment','['+s.seg[0]+'..'+s.seg[1]+']'));
+      kv.appendChild(kvb('rem',s.rem));
+      if(s.bestr>=0)kv.appendChild(kvb('best split r',s.bestr));
+    }
+
+    /* Call stack */
+    var cs=document.getElementById('hCallStack');
+    cs.innerHTML='';
+    s.callStack.forEach(function(fr,fi){
+      var d=document.createElement('div');
+      d.className='call-frame'+(fi===s.callStack.length-1?' current':'');
+      d.innerHTML='<span class="cf-fn">'+fr+'</span>';
+      cs.appendChild(d);
+    });
+
+    /* d1 row */
+    renderDP('hD1',s.d1,s.bestr>=0?s.bestr:-1,'#7c3aed');
+    renderDP('hD2',s.d2,s.bestr>=0?(s.rem-s.bestr):-1,cv('warn'));
+
+    /* status */
+    var sp=document.getElementById('hStatus');
+    sp.textContent=s.status;
+    sp.className='status-panel '+(s.statusType||'');
+
+    /* output log */
+    var ol=document.getElementById('hOutput');
+    ol.textContent=s.output.length?'Printed: '+s.output.join(', ')+'  (total weight: '+s.output.reduce(function(a,b){return a+b;},0)+')':'—';
+  }
+
+  function renderDP(id,arr,highlight,col){
+    var el=document.getElementById(id);el.innerHTML='';
+    if(!arr){el.innerHTML='<span style="font-size:15px;font-weight:800;color:var(--muted)">not yet computed</span>';return;}
+    arr.forEach(function(val,r){
+      var d=document.createElement('div');
+      d.className='dp-cell'+(r===highlight?' best':'');
+      var shortV=val===0?'0':(val>=100000?'~'+Math.round(val/20001)+'W':val);
+      d.innerHTML='<div class="dci" style="color:'+col+'">r='+r+'</div><div class="dcv">'+shortV+'</div>';
+      el.appendChild(d);
+    });
+  }
+
+  document.getElementById('hPrev').addEventListener('click',function(){if(si>0){si--;render();}});
+  document.getElementById('hNext').addEventListener('click',function(){if(si<total-1){si++;render();}});
+  document.getElementById('hReset').addEventListener('click',function(){clearInterval(tmr);tmr=null;document.getElementById('hAuto').textContent='⏩ Auto';si=0;render();});
+  document.getElementById('hAuto').addEventListener('click',function(){
+    if(tmr){clearInterval(tmr);tmr=null;document.getElementById('hAuto').textContent='⏩ Auto';return;}
+    document.getElementById('hAuto').textContent='⏸ Pause';
+    tmr=setInterval(function(){
+      if(si>=total-1){clearInterval(tmr);tmr=null;document.getElementById('hAuto').textContent='⏩ Auto';return;}
+      si++;render();
+    },1100);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

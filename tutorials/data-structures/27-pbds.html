@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — PBDS: Zero to Hero</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.5;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 12px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:24px 0 12px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900;color:var(--accent)}
+h4{margin:18px 0 8px;font-size:22px;font-weight:900}
+section{scroll-margin-top:16px;margin-bottom:40px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);max-width:1400px}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06)}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:24px;line-height:1.1}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;margin-top:4px}
+.brand-title .t3{font-size:13px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 30px}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:18px 8px 8px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:14px}
+.nav a{display:block;padding:9px 12px;border-radius:12px;border:2px solid transparent;
+  font-weight:700;color:var(--text);margin:3px 5px;font-size:16px;line-height:1.3}
+.nav a small{display:block;font-weight:600;color:var(--muted);font-size:13px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:6px;padding-left:56px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:8px 14px;border-radius:999px;font-weight:900;font-size:16px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card.tight{padding:14px 20px}
+.card.accent{border-color:var(--accent2);background:linear-gradient(180deg,var(--panel),var(--panel2))}
+pre{background:var(--codebg);color:var(--codetext);padding:18px 20px;border-radius:14px;
+  overflow-x:auto;font-size:17px;line-height:1.55;margin:12px 0;
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace}
+code{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:.92em;background:var(--chip);padding:2px 7px;border-radius:6px;color:var(--accent)}
+pre code{background:transparent;color:inherit;padding:0;font-size:inherit}
+.kw{color:#c084fc;font-weight:700}.ty{color:#7dd3fc}.fn{color:#fcd34d}
+.str{color:#86efac}.num{color:#fda4af}.cm{color:#94a3b8;font-style:italic}.op{color:#f1f5f9}
+.tip,.warn,.note,.analogy{padding:14px 18px;border-radius:14px;margin:14px 0;border:2.5px solid;display:flex;gap:14px;align-items:flex-start}
+.tip{background:rgba(15,118,110,.10);border-color:var(--good);color:var(--text)}
+.warn{background:rgba(180,83,9,.12);border-color:var(--warn);color:var(--text)}
+.note{background:rgba(37,99,235,.10);border-color:var(--accent2);color:var(--text)}
+.analogy{background:rgba(192,132,252,.10);border-color:#9333ea;color:var(--text)}
+.tip strong,.warn strong,.note strong,.analogy strong{display:block;margin-bottom:4px;font-size:18px}
+.tip .ico,.warn .ico,.note .ico,.analogy .ico{font-size:24px;flex:0 0 auto;line-height:1}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:18px}
+th,td{border:2px solid var(--border);padding:10px 14px;text-align:left;vertical-align:top}
+th{background:var(--panel2);font-weight:900;color:var(--accent)}
+tr:nth-child(even) td{background:rgba(241,244,255,.4)}
+[data-theme="dark"] tr:nth-child(even) td{background:rgba(15,35,71,.3)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800;
+  border:2px solid;margin-right:4px}
+.b-O1{background:rgba(15,118,110,.18);border-color:var(--good);color:var(--good)}
+.b-Ologn{background:rgba(180,83,9,.18);border-color:var(--warn);color:var(--warn)}
+.b-On{background:rgba(185,28,28,.18);border-color:var(--bad);color:var(--bad)}
+.b-Onlogn{background:rgba(192,132,252,.18);border-color:#9333ea;color:#9333ea}
+.b-info{background:rgba(37,99,235,.18);border-color:var(--accent2);color:var(--accent)}
+.viz{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.viz-title{font-weight:900;font-size:20px;margin-bottom:10px;color:var(--accent)}
+.viz-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.viz-controls button,.viz-controls input{font:inherit;font-size:16px;padding:8px 16px;
+  border:2.5px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);
+  cursor:pointer;font-weight:700}
+.viz-controls input{cursor:text;width:80px}
+.viz-controls button:hover{background:var(--accent2);color:white;border-color:var(--accent)}
+.viz-stage{padding:18px;background:var(--panel2);border-radius:12px;min-height:80px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:Consolas,monospace;font-size:18px}
+.cell{min-width:50px;height:50px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:2.5px solid var(--border);border-radius:8px;font-weight:800;
+  transition:all .35s ease;position:relative}
+.cell.new{background:var(--accent2);color:white;border-color:var(--accent);transform:scale(1.15)}
+.cell.picked{background:var(--good);color:white;border-color:var(--good)}
+.cell-idx{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--muted);font-weight:700}
+.viz-info{margin-top:10px;font-size:16px;color:var(--muted);font-weight:700}
+.viz-info span{color:var(--accent);font-weight:900}
+.kbd{display:inline-block;padding:2px 8px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--panel2);font-family:Consolas,monospace;font-size:.9em;font-weight:700}
+ul,ol{margin:8px 0 14px 0;padding-left:28px}
+li{margin:4px 0}
+hr{border:none;height:2px;background:var(--border);margin:30px 0}
+.toc-card{background:var(--panel2);border:2px dashed var(--accent2);border-radius:14px;padding:16px 22px;margin:18px 0}
+.toc-card h4{margin-top:0;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<button class="sidebar-toggle open" id="sbToggle" aria-label="Toggle sidebar">
+  <span class="burger-icon"><span></span><span></span><span></span></span>
+</button>
+<div class="sidebar-overlay" id="sbOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">PBDS: Zero to Hero</div>
+      <div class="t3">SENIOR TRAINING · 2026</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="grpTitle">Part 0 — Foundations</div>
+    <a href="#why">Why PBDS exists</a>
+    <a href="#headers">Headers & namespace</a>
+    <a href="#first">Your first program</a>
+
+    <div class="grpTitle">Part 1 — ordered_set</div>
+    <a href="#ordered-set">The killer alias</a>
+    <a href="#order-stats">order_of_key & find_by_order</a>
+    <a href="#ordered-ops">All operations</a>
+
+    <div class="grpTitle">Part 2 — ordered_map</div>
+    <a href="#ordered-map">Key→Value with order stats</a>
+
+    <div class="grpTitle">Part 3 — Multi-set tricks</div>
+    <a href="#multi">ordered_multiset (pair trick)</a>
+    <a href="#multi-ops">Count less / less-equal / kth</a>
+
+    <div class="grpTitle">Part 4 — Custom comparators</div>
+    <a href="#custom-cmp">Sort by anything</a>
+
+    <div class="grpTitle">Part 5 — gp_hash_table</div>
+    <a href="#gp-hash">The fast unordered_map</a>
+    <a href="#gp-custom">Custom hash (anti-hack)</a>
+
+    <div class="grpTitle">Part 6 — PBDS Priority Queue</div>
+    <a href="#pbds-pq">Mutable heap with modify()</a>
+
+    <div class="grpTitle">Part 7 — Trie</div>
+    <a href="#trie">Prefix data structure</a>
+
+    <div class="grpTitle">Part 8 — CP Patterns</div>
+    <a href="#patterns">10 worked patterns</a>
+
+    <div class="grpTitle">Part 9 — Reference</div>
+    <a href="#cheat">Cheat sheet</a>
+    <a href="#pitfalls">Top 10 pitfalls</a>
+    <a href="#decision">When to use PBDS</a>
+  </nav>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div>
+      <h1>PBDS: Zero to Hero</h1>
+      <div class="subtitle">GCC's secret data-structure library — the one that gives you indexed sets and unhackable hash maps.</div>
+    </div>
+    <div class="btnRow">
+      <span class="pill">📘 Beginner-friendly</span>
+      <span class="pill">⚡ ICPC weapon</span>
+      <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- PART 0 — WHY PBDS                                          -->
+  <!-- ========================================================== -->
+
+  <section id="why">
+    <h2>Part 0 · Why PBDS Exists</h2>
+
+    <div class="card">
+      <p>You're doing a problem and need to answer:</p>
+      <ul>
+        <li><strong>"How many elements in my set are less than x?"</strong></li>
+        <li><strong>"What's the 5th smallest element in my set?"</strong></li>
+      </ul>
+      <p>With a regular <code>std::set</code> you can't do either in O(log n). You'd have to scan, or layer a Fenwick tree on top, or write a balanced BST by hand.</p>
+      <p>Or — you add <strong>two lines</strong>:</p>
+      <pre><code><span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;
+<span class="kw">using namespace</span> __gnu_pbds;</code></pre>
+      <p>And suddenly you have <code>ordered_set</code>: a balanced tree that answers both questions in <span class="badge b-Ologn">O(log n)</span>.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      Imagine your <code>std::set</code> grew two new superpowers overnight: a built-in counter that tells you how many elements are smaller than any value, and an indexer that lets you jump to the k-th element instantly. That's PBDS.</div>
+    </div>
+
+    <h3>What PBDS gives you</h3>
+    <table>
+      <tr><th>Tool</th><th>Equivalent of…</th><th>Superpower</th></tr>
+      <tr><td><code>ordered_set</code></td><td><code>std::set</code></td><td>+ <code>find_by_order(k)</code> and <code>order_of_key(x)</code> in <span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>ordered_map</code></td><td><code>std::map</code></td><td>same superpowers on maps</td></tr>
+      <tr><td><code>gp_hash_table</code></td><td><code>std::unordered_map</code></td><td>Faster, easier to harden against anti-hash attacks</td></tr>
+      <tr><td>PBDS <code>priority_queue</code></td><td><code>std::priority_queue</code></td><td>Iterators are <em>stable</em>, has <code>modify()</code></td></tr>
+      <tr><td><code>trie</code></td><td>Manual trie</td><td>Built-in prefix search</td></tr>
+    </table>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>GCC-only.</strong> PBDS lives in GCC's <code>__gnu_pbds</code> namespace. It works on Codeforces, AtCoder, and any judge using GCC/Clang. It does NOT work on MSVC. Don't use it for production code.</div>
+    </div>
+
+    <h3 id="headers">Headers and namespace</h3>
+    <pre><code><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;     <span class="cm">// for tree, gp_hash_table</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/tree_policy.hpp&gt;          <span class="cm">// for tree_order_statistics_node_update</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/priority_queue.hpp&gt;       <span class="cm">// for the mutable priority_queue</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/trie_policy.hpp&gt;          <span class="cm">// for trie</span>
+
+<span class="kw">using namespace</span> std;
+<span class="kw">using namespace</span> __gnu_pbds;</code></pre>
+
+    <h3 id="first">Your first PBDS program</h3>
+    <pre><code><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;
+<span class="kw">#include</span> &lt;ext/pb_ds/tree_policy.hpp&gt;
+<span class="kw">using namespace</span> std;
+<span class="kw">using namespace</span> __gnu_pbds;
+
+<span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_set = tree&lt;T, null_type, <span class="ty">less</span>&lt;T&gt;,
+                          rb_tree_tag,
+                          tree_order_statistics_node_update&gt;;
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    ordered_set&lt;<span class="ty">int</span>&gt; s;
+    s.<span class="fn">insert</span>(<span class="num">5</span>);
+    s.<span class="fn">insert</span>(<span class="num">2</span>);
+    s.<span class="fn">insert</span>(<span class="num">8</span>);
+    s.<span class="fn">insert</span>(<span class="num">3</span>);
+    s.<span class="fn">insert</span>(<span class="num">9</span>);
+    <span class="cm">// Sorted: {2, 3, 5, 8, 9}</span>
+
+    cout &lt;&lt; *s.<span class="fn">find_by_order</span>(<span class="num">0</span>) &lt;&lt; <span class="str">'\n'</span>;   <span class="cm">// 2  (smallest)</span>
+    cout &lt;&lt; *s.<span class="fn">find_by_order</span>(<span class="num">2</span>) &lt;&lt; <span class="str">'\n'</span>;   <span class="cm">// 5  (3rd smallest)</span>
+
+    cout &lt;&lt; s.<span class="fn">order_of_key</span>(<span class="num">5</span>) &lt;&lt; <span class="str">'\n'</span>;    <span class="cm">// 2  (number of elements &lt; 5)</span>
+    cout &lt;&lt; s.<span class="fn">order_of_key</span>(<span class="num">7</span>) &lt;&lt; <span class="str">'\n'</span>;    <span class="cm">// 3  (2,3,5 are &lt; 7)</span>
+}</code></pre>
+
+    <div class="toc-card">
+      <h4>Reading order</h4>
+      <p>Read Parts 0–2 first — that's the foundation everyone uses. Part 3 (multiset trick) is essential for sliding-window-of-distinct-values problems. Parts 5–7 (hash, mutable PQ, trie) are situational power tools.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 1 — ordered_set                                       -->
+  <!-- ========================================================== -->
+
+  <section id="ordered-set">
+    <h2>Part 1 · ordered_set — Set with Order Statistics</h2>
+
+    <h3>The full type breakdown</h3>
+    <pre><code>tree&lt;
+    Key,                                  <span class="cm">// type stored</span>
+    null_type,                            <span class="cm">// "no mapped value" — this is a SET, not a MAP</span>
+    less&lt;Key&gt;,                            <span class="cm">// comparator (use greater&lt;Key&gt; for descending)</span>
+    rb_tree_tag,                          <span class="cm">// red-black tree (other: splay_tree_tag)</span>
+    tree_order_statistics_node_update     <span class="cm">// the magic that gives find_by_order/order_of_key</span>
+&gt;</code></pre>
+
+    <h3>The standard alias</h3>
+    <p>Type all of that once and forget it. From now on use <code>ordered_set&lt;T&gt;</code>:</p>
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_set =
+    tree&lt;T, null_type, <span class="ty">less</span>&lt;T&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+<span class="cm">// Descending variant</span>
+<span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_set_desc =
+    tree&lt;T, null_type, <span class="ty">greater</span>&lt;T&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;</code></pre>
+
+    <h3 id="order-stats">The two superpowers</h3>
+    <table>
+      <tr><th>Operation</th><th>What it does</th><th>Complexity</th></tr>
+      <tr><td><code>s.find_by_order(k)</code></td><td>Iterator to the k-th smallest element (0-indexed). Returns <code>end()</code> if k ≥ size.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.order_of_key(x)</code></td><td>Number of elements <strong>strictly less than</strong> x. (x doesn't have to be in the set.)</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+    </table>
+
+    <pre><code>ordered_set&lt;<span class="ty">int</span>&gt; s = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+<span class="cm">// Indexing into a sorted "array"</span>
+cout &lt;&lt; *s.<span class="fn">find_by_order</span>(<span class="num">0</span>);   <span class="cm">// 10  (1st smallest)</span>
+cout &lt;&lt; *s.<span class="fn">find_by_order</span>(<span class="num">3</span>);   <span class="cm">// 40  (4th smallest)</span>
+<span class="kw">if</span> (s.<span class="fn">find_by_order</span>(<span class="num">5</span>) == s.<span class="fn">end</span>()) cout &lt;&lt; <span class="str">"out of range"</span>;
+
+<span class="cm">// Counting</span>
+cout &lt;&lt; s.<span class="fn">order_of_key</span>(<span class="num">25</span>);    <span class="cm">// 2  (10 and 20 are &lt; 25)</span>
+cout &lt;&lt; s.<span class="fn">order_of_key</span>(<span class="num">10</span>);    <span class="cm">// 0  (nothing is &lt; 10)</span>
+cout &lt;&lt; s.<span class="fn">order_of_key</span>(<span class="num">99</span>);    <span class="cm">// 5  (everyone is &lt; 99)</span></code></pre>
+
+    <div class="viz" id="os-viz">
+      <div class="viz-title">🔬 Interactive: ordered_set with order_of_key &amp; find_by_order</div>
+      <div class="viz-controls">
+        <input id="os-input" placeholder="value" value="42"/>
+        <button onclick="osInsert()">insert</button>
+        <button onclick="osErase()">erase</button>
+        <button onclick="osQueryOrder()">order_of_key(value)</button>
+        <button onclick="osQueryKth()">find_by_order(value)</button>
+        <button onclick="osReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="os-stage" style="min-height:90px"></div>
+      <div class="viz-info" id="os-info">size: <span id="os-size">0</span> · last: <span>idle</span></div>
+    </div>
+
+    <h3 id="ordered-ops">All other operations (inherited from std::set)</h3>
+    <pre><code>ordered_set&lt;<span class="ty">int</span>&gt; s;
+
+s.<span class="fn">insert</span>(<span class="num">5</span>);                                  <span class="cm">// O(log n)</span>
+s.<span class="fn">erase</span>(<span class="num">5</span>);                                   <span class="cm">// erase by value</span>
+s.<span class="fn">erase</span>(s.<span class="fn">find</span>(<span class="num">5</span>));                          <span class="cm">// erase by iterator</span>
+
+<span class="kw">auto</span> it = s.<span class="fn">find</span>(<span class="num">5</span>);                          <span class="cm">// O(log n)</span>
+<span class="kw">if</span> (it != s.<span class="fn">end</span>()) cout &lt;&lt; *it;
+
+cout &lt;&lt; s.<span class="fn">size</span>();
+cout &lt;&lt; s.<span class="fn">empty</span>();
+
+<span class="cm">// lower_bound / upper_bound</span>
+<span class="kw">auto</span> lo = s.<span class="fn">lower_bound</span>(<span class="num">10</span>);
+<span class="kw">auto</span> hi = s.<span class="fn">upper_bound</span>(<span class="num">20</span>);
+
+<span class="cm">// Iterate in sorted order</span>
+<span class="kw">for</span> (<span class="ty">int</span> x : s) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;</code></pre>
+
+    <h3>Killer use #1 — count elements in a value range</h3>
+    <pre><code>ordered_set&lt;<span class="ty">int</span>&gt; s = {<span class="num">3</span>, <span class="num">7</span>, <span class="num">12</span>, <span class="num">15</span>, <span class="num">20</span>, <span class="num">25</span>, <span class="num">30</span>};
+
+<span class="cm">// How many elements are in [L, R]?</span>
+<span class="ty">int</span> L = <span class="num">10</span>, R = <span class="num">22</span>;
+<span class="ty">int</span> cnt = s.<span class="fn">order_of_key</span>(R + <span class="num">1</span>) - s.<span class="fn">order_of_key</span>(L);
+<span class="cm">// cnt = 3  (12, 15, 20 are in [10, 22])</span></code></pre>
+
+    <h3>Killer use #2 — counting inversions in O(n log n)</h3>
+    <pre><code><span class="cm">// Count pairs (i, j) with i &lt; j and a[i] &gt; a[j]</span>
+<span class="ty">long long</span> <span class="fn">countInversions</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; a) {
+    ordered_set&lt;<span class="ty">int</span>&gt; s;
+    <span class="ty">long long</span> inv = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = (<span class="ty">int</span>)a.<span class="fn">size</span>() - <span class="num">1</span>; i &gt;= <span class="num">0</span>; --i) {
+        inv += s.<span class="fn">order_of_key</span>(a[i]);   <span class="cm">// how many already-seen values are &lt; a[i]</span>
+        s.<span class="fn">insert</span>(a[i]);
+    }
+    <span class="kw">return</span> inv;
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 2 — ordered_map                                       -->
+  <!-- ========================================================== -->
+
+  <section id="ordered-map">
+    <h2>Part 2 · ordered_map — Map with Order Statistics</h2>
+
+    <p>Replace <code>null_type</code> with the value type, and you've got the map version.</p>
+
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> Key, <span class="kw">class</span> Value&gt;
+<span class="kw">using</span> ordered_map =
+    tree&lt;Key, Value, <span class="ty">less</span>&lt;Key&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+<span class="cm">// Use it like std::map</span>
+ordered_map&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; m;
+m[<span class="str">"alice"</span>] = <span class="num">30</span>;
+m[<span class="str">"bob"</span>]   = <span class="num">25</span>;
+m[<span class="str">"carol"</span>] = <span class="num">28</span>;
+
+cout &lt;&lt; m[<span class="str">"bob"</span>];               <span class="cm">// 25</span>
+
+<span class="cm">// Order statistics work on KEYS</span>
+cout &lt;&lt; m.<span class="fn">find_by_order</span>(<span class="num">0</span>)-&gt;first;   <span class="cm">// "alice" (lex-smallest key)</span>
+cout &lt;&lt; m.<span class="fn">order_of_key</span>(<span class="str">"bob"</span>);        <span class="cm">// 1 (only "alice" is &lt; "bob")</span></code></pre>
+
+    <h3>Use case: leaderboard with rank lookup</h3>
+    <pre><code><span class="cm">// score → player_name. Sorted by score.</span>
+ordered_map&lt;<span class="ty">int</span>, <span class="ty">string</span>&gt; board;
+
+board[<span class="num">95</span>] = <span class="str">"alice"</span>;
+board[<span class="num">88</span>] = <span class="str">"bob"</span>;
+board[<span class="num">72</span>] = <span class="str">"carol"</span>;
+
+<span class="cm">// What's the score of the 2nd-lowest?</span>
+cout &lt;&lt; board.<span class="fn">find_by_order</span>(<span class="num">1</span>)-&gt;first;   <span class="cm">// 88</span>
+
+<span class="cm">// How many players have score &lt; 90?</span>
+cout &lt;&lt; board.<span class="fn">order_of_key</span>(<span class="num">90</span>);          <span class="cm">// 2</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 3 — MULTI-SET TRICK                                   -->
+  <!-- ========================================================== -->
+
+  <section id="multi">
+    <h2>Part 3 · ordered_multiset (the pair-with-counter trick)</h2>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>PBDS doesn't have an ordered_multiset out of the box.</strong>
+      The <code>tree</code> template <em>requires uniqueness</em> — if you try to insert a duplicate it silently fails. The trick is to make every key <em>artificially unique</em> by pairing it with a counter or timestamp.</div>
+    </div>
+
+    <h3>The trick</h3>
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_multiset =
+    tree&lt;<span class="ty">pair</span>&lt;T, <span class="ty">int</span>&gt;, null_type, <span class="ty">less</span>&lt;<span class="ty">pair</span>&lt;T, <span class="ty">int</span>&gt;&gt;,
+         rb_tree_tag, tree_order_statistics_node_update&gt;;</code></pre>
+
+    <p>Each insert gets a unique tie-breaker integer. Pairs are compared lexicographically — same value with different tie-breakers count as distinct nodes, but they sort together.</p>
+
+    <pre><code>ordered_multiset&lt;<span class="ty">int</span>&gt; ms;
+<span class="ty">int</span> tick = <span class="num">0</span>;                         <span class="cm">// monotonically increasing tie-breaker</span>
+
+ms.<span class="fn">insert</span>({<span class="num">5</span>, tick++});                <span class="cm">// (5, 0)</span>
+ms.<span class="fn">insert</span>({<span class="num">5</span>, tick++});                <span class="cm">// (5, 1) — counts as distinct node</span>
+ms.<span class="fn">insert</span>({<span class="num">3</span>, tick++});                <span class="cm">// (3, 2)</span>
+ms.<span class="fn">insert</span>({<span class="num">5</span>, tick++});                <span class="cm">// (5, 3)</span>
+
+cout &lt;&lt; ms.<span class="fn">size</span>();                  <span class="cm">// 4 — three 5s and one 3</span></code></pre>
+
+    <h3 id="multi-ops">The four "must-know" multiset operations</h3>
+
+    <h4>1) Count of elements strictly less than x</h4>
+    <pre><code><span class="cm">// Smallest possible tie-breaker → ignore everything with value == x</span>
+<span class="ty">int</span> cnt_less = ms.<span class="fn">order_of_key</span>({x, INT_MIN});</code></pre>
+
+    <h4>2) Count of elements ≤ x (i.e., strictly less than x+1)</h4>
+    <pre><code><span class="ty">int</span> cnt_le = ms.<span class="fn">order_of_key</span>({x, INT_MAX});</code></pre>
+
+    <h4>3) Erase exactly one copy of x</h4>
+    <pre><code><span class="cm">// lower_bound on (x, INT_MIN) lands on the first node with key x (any tie-breaker)</span>
+<span class="kw">auto</span> it = ms.<span class="fn">lower_bound</span>({x, INT_MIN});
+<span class="kw">if</span> (it != ms.<span class="fn">end</span>() &amp;&amp; it-&gt;first == x) ms.<span class="fn">erase</span>(it);</code></pre>
+
+    <h4>4) Get the k-th smallest value (ignoring duplicates? No, including them)</h4>
+    <pre><code><span class="ty">int</span> kth = ms.<span class="fn">find_by_order</span>(k)-&gt;first;</code></pre>
+
+    <h3>Putting it together — a wrapper class</h3>
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">struct</span> Multiset {
+    tree&lt;<span class="ty">pair</span>&lt;T, <span class="ty">int</span>&gt;, null_type, <span class="ty">less</span>&lt;<span class="ty">pair</span>&lt;T, <span class="ty">int</span>&gt;&gt;,
+         rb_tree_tag, tree_order_statistics_node_update&gt; t;
+    <span class="ty">int</span> tick = <span class="num">0</span>;
+
+    <span class="ty">void</span> <span class="fn">insert</span>(T x)             { t.<span class="fn">insert</span>({x, tick++}); }
+    <span class="ty">void</span> <span class="fn">erase_one</span>(T x) {
+        <span class="kw">auto</span> it = t.<span class="fn">lower_bound</span>({x, INT_MIN});
+        <span class="kw">if</span> (it != t.<span class="fn">end</span>() &amp;&amp; it-&gt;first == x) t.<span class="fn">erase</span>(it);
+    }
+    <span class="ty">int</span>  <span class="fn">count_less</span>(T x)        { <span class="kw">return</span> t.<span class="fn">order_of_key</span>({x, INT_MIN}); }
+    <span class="ty">int</span>  <span class="fn">count_le</span>(T x)          { <span class="kw">return</span> t.<span class="fn">order_of_key</span>({x, INT_MAX}); }
+    <span class="ty">int</span>  <span class="fn">count_eq</span>(T x)          { <span class="kw">return</span> <span class="fn">count_le</span>(x) - <span class="fn">count_less</span>(x); }
+    T    <span class="fn">kth</span>(<span class="ty">int</span> k)              { <span class="kw">return</span> t.<span class="fn">find_by_order</span>(k)-&gt;first; }
+    <span class="ty">int</span>  <span class="fn">size</span>()                 { <span class="kw">return</span> t.<span class="fn">size</span>(); }
+};</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 4 — CUSTOM COMPARATORS                                -->
+  <!-- ========================================================== -->
+
+  <section id="custom-cmp">
+    <h2>Part 4 · Custom Comparators</h2>
+
+    <p>The third template parameter of <code>tree</code> is the comparator. Anything that works for <code>std::set</code> works here.</p>
+
+    <h3>Descending order</h3>
+    <pre><code><span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_set_desc =
+    tree&lt;T, null_type, <span class="ty">greater</span>&lt;T&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+ordered_set_desc&lt;<span class="ty">int</span>&gt; s = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>};
+cout &lt;&lt; *s.<span class="fn">find_by_order</span>(<span class="num">0</span>);     <span class="cm">// 9 (largest is now "first")</span></code></pre>
+
+    <h3>Custom struct comparator: sort pairs by .second</h3>
+    <pre><code><span class="kw">struct</span> BySecond {
+    <span class="ty">bool</span> <span class="fn">operator</span>()(<span class="kw">const</span> <span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&amp; a,
+                    <span class="kw">const</span> <span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&amp; b) <span class="kw">const</span> {
+        <span class="kw">if</span> (a.second != b.second) <span class="kw">return</span> a.second &lt; b.second;
+        <span class="kw">return</span> a.first &lt; b.first;       <span class="cm">// tie-break by first</span>
+    }
+};
+
+tree&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;, null_type, BySecond,
+     rb_tree_tag, tree_order_statistics_node_update&gt; s;
+
+s.<span class="fn">insert</span>({<span class="num">10</span>, <span class="num">5</span>});  s.<span class="fn">insert</span>({<span class="num">3</span>, <span class="num">2</span>});  s.<span class="fn">insert</span>({<span class="num">7</span>, <span class="num">8</span>});
+<span class="cm">// Sorted by .second: (3,2), (10,5), (7,8)</span>
+
+cout &lt;&lt; s.<span class="fn">find_by_order</span>(<span class="num">0</span>)-&gt;first;   <span class="cm">// 3  (.second=2 is smallest)</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Comparator gotcha</strong>
+      The comparator must define a <em>strict weak ordering</em> — same rule as <code>std::sort</code>. Returning <code>true</code> for equal elements (using <code>&lt;=</code> instead of <code>&lt;</code>) silently corrupts the tree.</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 5 — gp_hash_table                                     -->
+  <!-- ========================================================== -->
+
+  <section id="gp-hash">
+    <h2>Part 5 · gp_hash_table — A Faster, Harder unordered_map</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      <code>gp_hash_table</code> is <code>std::unordered_map</code> on espresso. Same interface (mostly), faster constants, and trivial to harden against adversarial test cases.</div>
+    </div>
+
+    <h3>Basic use — drop-in replacement</h3>
+    <pre><code><span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;
+<span class="kw">using namespace</span> __gnu_pbds;
+
+gp_hash_table&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; mp;
+
+mp[<span class="num">5</span>] = <span class="num">100</span>;
+mp[<span class="num">3</span>] = <span class="num">200</span>;
+cout &lt;&lt; mp[<span class="num">5</span>];                <span class="cm">// 100</span>
+<span class="kw">if</span> (mp.<span class="fn">find</span>(<span class="num">5</span>) != mp.<span class="fn">end</span>()) cout &lt;&lt; <span class="str">"present"</span>;
+mp.<span class="fn">erase</span>(<span class="num">3</span>);
+cout &lt;&lt; mp.<span class="fn">size</span>();             <span class="cm">// 1</span>
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [k, v] : mp) cout &lt;&lt; k &lt;&lt; <span class="str">"->"</span> &lt;&lt; v &lt;&lt; <span class="str">'\n'</span>;</code></pre>
+
+    <h3>Why it's faster</h3>
+    <table>
+      <tr><th></th><th>std::unordered_map</th><th>gp_hash_table</th></tr>
+      <tr><td>Collision strategy</td><td>Separate chaining (linked lists)</td><td>Open addressing (probing)</td></tr>
+      <tr><td>Cache locality</td><td>Bad — list nodes are scattered</td><td>Good — flat array</td></tr>
+      <tr><td>Constant factor</td><td>Baseline</td><td>~2–4× faster typically</td></tr>
+      <tr><td>Memory overhead</td><td>One pointer per element</td><td>One slot per element</td></tr>
+    </table>
+
+    <h3 id="gp-custom">Hardening against anti-hash attacks (CRUCIAL)</h3>
+    <p>Codeforces test setters know exactly which inputs blow up GCC's default integer hash to O(n). Defend yourself in <strong>3 lines</strong>:</p>
+    <pre><code><span class="kw">struct</span> custom_hash {
+    <span class="kw">static</span> <span class="ty">uint64_t</span> <span class="fn">splitmix64</span>(<span class="ty">uint64_t</span> x) {
+        x += <span class="num">0x9e3779b97f4a7c15ULL</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">30</span>)) * <span class="num">0xbf58476d1ce4e5b9ULL</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">27</span>)) * <span class="num">0x94d049bb133111ebULL</span>;
+        <span class="kw">return</span> x ^ (x &gt;&gt; <span class="num">31</span>);
+    }
+    <span class="ty">size_t</span> <span class="fn">operator</span>()(<span class="ty">uint64_t</span> x) <span class="kw">const</span> {
+        <span class="kw">static</span> <span class="kw">const</span> <span class="ty">uint64_t</span> SEED =
+            chrono::steady_clock::now().time_since_epoch().count();
+        <span class="kw">return</span> <span class="fn">splitmix64</span>(x + SEED);
+    }
+};
+
+gp_hash_table&lt;<span class="ty">long long</span>, <span class="ty">int</span>, custom_hash&gt; safe_mp;</code></pre>
+
+    <h3>Hashing pairs</h3>
+    <pre><code><span class="kw">struct</span> pair_hash {
+    <span class="ty">size_t</span> <span class="fn">operator</span>()(<span class="kw">const</span> <span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&amp; p) <span class="kw">const</span> {
+        <span class="kw">return</span> custom_hash{}(((<span class="ty">long long</span>)p.first &lt;&lt; <span class="num">32</span>) | (<span class="ty">unsigned</span>)p.second);
+    }
+};
+
+gp_hash_table&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;, <span class="ty">int</span>, pair_hash&gt; coord_count;
+coord_count[{<span class="num">3</span>, <span class="num">5</span>}]++;</code></pre>
+
+    <h3>Use case: 2D coordinate frequency in a grid problem</h3>
+    <pre><code><span class="cm">// Count visited cells</span>
+gp_hash_table&lt;<span class="ty">long long</span>, <span class="ty">int</span>, custom_hash&gt; cells;
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [x, y] : moves)
+    cells[((<span class="ty">long long</span>)x &lt;&lt; <span class="num">32</span>) | (<span class="ty">unsigned</span>)y]++;
+cout &lt;&lt; cells.<span class="fn">size</span>() &lt;&lt; <span class="str">" distinct cells\n"</span>;</code></pre>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>The default vs custom hash speedup</strong>
+      In contest benchmarks, <code>gp_hash_table&lt;long long, int, custom_hash&gt;</code> is often <strong>5–10× faster</strong> than <code>unordered_map&lt;long long, int&gt;</code> on adversarial inputs that would otherwise TLE.</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 6 — PBDS PRIORITY QUEUE                               -->
+  <!-- ========================================================== -->
+
+  <section id="pbds-pq">
+    <h2>Part 6 · PBDS priority_queue — A Mutable Heap</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      <code>std::priority_queue</code> is a black box — you can only push, pop, and peek the top. PBDS's version gives you <em>handles</em> (iterators) into the heap that <strong>survive across pushes and pops</strong>, and a <code>modify()</code> operation to change a node's priority in place.</div>
+    </div>
+
+    <h3>Basic use</h3>
+    <pre><code><span class="kw">#include</span> &lt;ext/pb_ds/priority_queue.hpp&gt;
+<span class="kw">using namespace</span> __gnu_pbds;
+
+<span class="cm">// Max-heap (default), pairing-heap implementation</span>
+__gnu_pbds::priority_queue&lt;<span class="ty">int</span>, <span class="ty">less</span>&lt;<span class="ty">int</span>&gt;, pairing_heap_tag&gt; pq;
+
+pq.<span class="fn">push</span>(<span class="num">5</span>);  pq.<span class="fn">push</span>(<span class="num">2</span>);  pq.<span class="fn">push</span>(<span class="num">9</span>);
+cout &lt;&lt; pq.<span class="fn">top</span>();    <span class="cm">// 9</span>
+pq.<span class="fn">pop</span>();
+cout &lt;&lt; pq.<span class="fn">top</span>();    <span class="cm">// 5</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Use the full name <code>__gnu_pbds::priority_queue</code></strong> to avoid clashing with <code>std::priority_queue</code>.</div>
+    </div>
+
+    <h3>The killer feature: modify() and erase(it)</h3>
+    <pre><code>__gnu_pbds::priority_queue&lt;<span class="ty">int</span>&gt; pq;
+<span class="kw">auto</span> h1 = pq.<span class="fn">push</span>(<span class="num">5</span>);     <span class="cm">// returns an iterator (handle)</span>
+<span class="kw">auto</span> h2 = pq.<span class="fn">push</span>(<span class="num">2</span>);
+<span class="kw">auto</span> h3 = pq.<span class="fn">push</span>(<span class="num">9</span>);
+
+<span class="cm">// Increase the priority of node h2 from 2 to 100</span>
+pq.<span class="fn">modify</span>(h2, <span class="num">100</span>);
+cout &lt;&lt; pq.<span class="fn">top</span>();         <span class="cm">// 100</span>
+
+<span class="cm">// Erase a specific node (not just the top)</span>
+pq.<span class="fn">erase</span>(h3);             <span class="cm">// removes the 9</span></code></pre>
+
+    <h3>Heap implementations (the 5 tags)</h3>
+    <table>
+      <tr><th>Tag</th><th>push</th><th>pop</th><th>modify</th><th>Best for</th></tr>
+      <tr><td><code>pairing_heap_tag</code></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><strong>Default — usually fastest in practice</strong></td></tr>
+      <tr><td><code>thin_heap_tag</code></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-O1">O(1)</span> if priority increases</td><td>Dijkstra (many decrease-key)</td></tr>
+      <tr><td><code>binomial_heap_tag</code></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td>Theoretical interest only</td></tr>
+      <tr><td><code>rc_binomial_heap_tag</code></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td>Same; rarely used</td></tr>
+      <tr><td><code>binary_heap_tag</code></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><strong>not supported</strong></td><td>Plain heap, no handles</td></tr>
+    </table>
+
+    <h3>Use case: Dijkstra with proper decrease-key</h3>
+    <pre><code><span class="kw">using</span> PQ = __gnu_pbds::priority_queue&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;,
+                                       <span class="ty">greater</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt;,
+                                       thin_heap_tag&gt;;
+
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">dijkstra</span>(<span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt;&gt;&amp; g, <span class="ty">int</span> src) {
+    <span class="ty">int</span> n = g.<span class="fn">size</span>();
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; dist(n, INT_MAX);
+    <span class="ty">vector</span>&lt;PQ::point_iterator&gt; handle(n);    <span class="cm">// stable handles</span>
+    PQ pq;
+
+    dist[src] = <span class="num">0</span>;
+    handle[src] = pq.<span class="fn">push</span>({<span class="num">0</span>, src});
+
+    <span class="kw">while</span> (!pq.<span class="fn">empty</span>()) {
+        <span class="kw">auto</span> [d, u] = pq.<span class="fn">top</span>();  pq.<span class="fn">pop</span>();
+        <span class="kw">for</span> (<span class="kw">auto</span>&amp; [v, w] : g[u]) {
+            <span class="kw">if</span> (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                <span class="kw">if</span> (handle[v] == PQ::point_iterator())
+                    handle[v] = pq.<span class="fn">push</span>({dist[v], v});
+                <span class="kw">else</span>
+                    pq.<span class="fn">modify</span>(handle[v], {dist[v], v});  <span class="cm">// no stale entries!</span>
+            }
+        }
+    }
+    <span class="kw">return</span> dist;
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 7 — TRIE                                              -->
+  <!-- ========================================================== -->
+
+  <section id="trie">
+    <h2>Part 7 · PBDS Trie — Built-in Prefix Search</h2>
+
+    <p>PBDS ships a <code>trie</code> with a built-in prefix-search policy. Less commonly used than a hand-rolled trie but extremely concise.</p>
+
+    <pre><code><span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;
+<span class="kw">#include</span> &lt;ext/pb_ds/trie_policy.hpp&gt;
+<span class="kw">using namespace</span> __gnu_pbds;
+
+<span class="kw">typedef</span> trie&lt;<span class="ty">string</span>, null_type, trie_string_access_traits&lt;&gt;,
+             pat_trie_tag, trie_prefix_search_node_update&gt; pref_trie;
+
+pref_trie t;
+t.<span class="fn">insert</span>(<span class="str">"apple"</span>);
+t.<span class="fn">insert</span>(<span class="str">"app"</span>);
+t.<span class="fn">insert</span>(<span class="str">"application"</span>);
+t.<span class="fn">insert</span>(<span class="str">"banana"</span>);
+
+<span class="cm">// All strings starting with "app"</span>
+<span class="kw">auto</span> [first, last] = t.<span class="fn">prefix_range</span>(<span class="str">"app"</span>);
+<span class="kw">for</span> (<span class="kw">auto</span> it = first; it != last; ++it)
+    cout &lt;&lt; *it &lt;&lt; <span class="str">'\n'</span>;          <span class="cm">// "app", "apple", "application"</span></code></pre>
+
+    <h3>Use case: autocomplete</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">string</span>&gt; <span class="fn">complete</span>(pref_trie&amp; t, <span class="ty">string</span> q) {
+    <span class="ty">vector</span>&lt;<span class="ty">string</span>&gt; out;
+    <span class="kw">auto</span> [a, b] = t.<span class="fn">prefix_range</span>(q);
+    <span class="kw">for</span> (<span class="kw">auto</span> it = a; it != b; ++it) out.<span class="fn">push_back</span>(*it);
+    <span class="kw">return</span> out;
+}</code></pre>
+
+    <div class="note">
+      <span class="ico">📘</span>
+      <div><strong>When to prefer a hand-rolled trie</strong>
+      The PBDS trie has overhead. For tight inner loops (e.g., XOR-tries with millions of operations), a hand-rolled <code>int children[2]</code> array trie is often 3–5× faster. PBDS trie is best when you want to write code <em>fast</em>, not when you want code that <em>runs</em> fast.</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 8 — CP PATTERNS                                       -->
+  <!-- ========================================================== -->
+
+  <section id="patterns">
+    <h2>Part 8 · 10 Worked CP Patterns with PBDS</h2>
+
+    <h3>Pattern 1 · K-th smallest in a dynamic set</h3>
+    <pre><code>ordered_set&lt;<span class="ty">int</span>&gt; s;
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; q : queries) {
+    <span class="kw">if</span> (q.type == INSERT) s.<span class="fn">insert</span>(q.x);
+    <span class="kw">else if</span> (q.type == ERASE)  s.<span class="fn">erase</span>(q.x);
+    <span class="kw">else</span> <span class="kw">if</span> (q.type == KTH)    cout &lt;&lt; *s.<span class="fn">find_by_order</span>(q.k - <span class="num">1</span>) &lt;&lt; <span class="str">'\n'</span>;
+}
+<span class="cm">// Each operation: O(log n)</span></code></pre>
+
+    <h3>Pattern 2 · Count inversions in O(n log n)</h3>
+    <p>Already shown in Part 1. Reverse-scan with <code>order_of_key</code>.</p>
+
+    <h3>Pattern 3 · "Number of elements in [L, R]" rolling queries</h3>
+    <pre><code>ordered_set&lt;<span class="ty">int</span>&gt; s;
+<span class="kw">auto</span> <span class="fn">count_in_range</span> = [&amp;](<span class="ty">int</span> L, <span class="ty">int</span> R) {
+    <span class="kw">return</span> s.<span class="fn">order_of_key</span>(R + <span class="num">1</span>) - s.<span class="fn">order_of_key</span>(L);
+};</code></pre>
+
+    <h3>Pattern 4 · Sliding-window median</h3>
+    <pre><code><span class="cm">// Maintain a multiset; median = element at position k/2 or average of two middles</span>
+Multiset&lt;<span class="ty">int</span>&gt; ms;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; ++i) {
+    ms.<span class="fn">insert</span>(a[i]);
+    <span class="kw">if</span> (i &gt;= k) ms.<span class="fn">erase_one</span>(a[i - k]);
+    <span class="kw">if</span> (i &gt;= k - <span class="num">1</span>) {
+        <span class="ty">int</span> mid = ms.<span class="fn">kth</span>(k / <span class="num">2</span>);
+        cout &lt;&lt; mid &lt;&lt; <span class="str">' '</span>;
+    }
+}</code></pre>
+
+    <h3>Pattern 5 · Distinct elements seen so far (online)</h3>
+    <pre><code>gp_hash_table&lt;<span class="ty">long long</span>, <span class="ty">int</span>, custom_hash&gt; seen;
+<span class="ty">int</span> distinct = <span class="num">0</span>;
+<span class="kw">for</span> (<span class="ty">long long</span> x : stream) {
+    <span class="kw">if</span> (seen.<span class="fn">find</span>(x) == seen.<span class="fn">end</span>()) ++distinct;
+    seen[x]++;
+}</code></pre>
+
+    <h3>Pattern 6 · Order of first occurrence (insertion-order map)</h3>
+    <pre><code><span class="cm">// "Was x seen before? If so, when?"</span>
+gp_hash_table&lt;<span class="ty">int</span>, <span class="ty">int</span>, custom_hash&gt; first_seen;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; ++i)
+    <span class="kw">if</span> (first_seen.<span class="fn">find</span>(a[i]) == first_seen.<span class="fn">end</span>())
+        first_seen[a[i]] = i;</code></pre>
+
+    <h3>Pattern 7 · Online rank queries (CSES "Salary Queries" pattern)</h3>
+    <pre><code><span class="cm">// Three operation types: insert salary, change salary, count in [L, R]</span>
+Multiset&lt;<span class="ty">int</span>&gt; ms;
+ms.<span class="fn">insert</span>(salary);
+ms.<span class="fn">erase_one</span>(old_salary);  ms.<span class="fn">insert</span>(new_salary);
+cout &lt;&lt; (ms.<span class="fn">count_le</span>(R) - ms.<span class="fn">count_less</span>(L));</code></pre>
+
+    <h3>Pattern 8 · Top-K queries with mutable PQ</h3>
+    <pre><code>__gnu_pbds::priority_queue&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; pq;
+<span class="ty">vector</span>&lt;<span class="kw">decltype</span>(pq)::point_iterator&gt; handle(n);
+
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; ++i) handle[i] = pq.<span class="fn">push</span>({score[i], i});
+
+<span class="cm">// Bump player i's score</span>
+score[i] += <span class="num">10</span>;
+pq.<span class="fn">modify</span>(handle[i], {score[i], i});
+
+<span class="cm">// Drop player j</span>
+pq.<span class="fn">erase</span>(handle[j]);</code></pre>
+
+    <h3>Pattern 9 · Anti-hash-attack hash map</h3>
+    <pre><code><span class="cm">// One-line replacement that survives Codeforces anti-hash test cases</span>
+gp_hash_table&lt;<span class="ty">long long</span>, <span class="ty">int</span>, custom_hash&gt; mp;
+<span class="kw">for</span> (<span class="ty">long long</span> x : a) mp[x]++;</code></pre>
+
+    <h3>Pattern 10 · Dictionary autocomplete (PBDS trie)</h3>
+    <pre><code>pref_trie t;
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; w : dictionary) t.<span class="fn">insert</span>(w);
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; q : queries) {
+    <span class="kw">auto</span> [a, b] = t.<span class="fn">prefix_range</span>(q);
+    <span class="ty">int</span> matches = <span class="fn">distance</span>(a, b);   <span class="cm">// number of completions</span>
+    cout &lt;&lt; matches &lt;&lt; <span class="str">'\n'</span>;
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 9 — REFERENCE                                         -->
+  <!-- ========================================================== -->
+
+  <section id="cheat">
+    <h2>Part 9.1 · Cheat Sheet</h2>
+
+    <h3>Headers</h3>
+    <pre><code><span class="kw">#include</span> &lt;ext/pb_ds/assoc_container.hpp&gt;     <span class="cm">// tree, gp_hash_table</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/tree_policy.hpp&gt;          <span class="cm">// tree_order_statistics_node_update</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/priority_queue.hpp&gt;       <span class="cm">// mutable PQ</span>
+<span class="kw">#include</span> &lt;ext/pb_ds/trie_policy.hpp&gt;          <span class="cm">// trie</span>
+<span class="kw">using namespace</span> __gnu_pbds;</code></pre>
+
+    <h3>The 5 must-know aliases</h3>
+    <pre><code><span class="cm">// 1. ordered_set</span>
+<span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_set =
+    tree&lt;T, null_type, <span class="ty">less</span>&lt;T&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+<span class="cm">// 2. ordered_map</span>
+<span class="kw">template</span>&lt;<span class="kw">class</span> K, <span class="kw">class</span> V&gt;
+<span class="kw">using</span> ordered_map =
+    tree&lt;K, V, <span class="ty">less</span>&lt;K&gt;, rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+<span class="cm">// 3. ordered_multiset (pair trick)</span>
+<span class="kw">template</span>&lt;<span class="kw">class</span> T&gt;
+<span class="kw">using</span> ordered_multiset =
+    tree&lt;<span class="ty">pair</span>&lt;T,<span class="ty">int</span>&gt;, null_type, <span class="ty">less</span>&lt;<span class="ty">pair</span>&lt;T,<span class="ty">int</span>&gt;&gt;,
+         rb_tree_tag, tree_order_statistics_node_update&gt;;
+
+<span class="cm">// 4. fast hash map</span>
+<span class="kw">using</span> fast_map = gp_hash_table&lt;<span class="ty">long long</span>, <span class="ty">int</span>, custom_hash&gt;;
+
+<span class="cm">// 5. mutable priority_queue</span>
+<span class="kw">using</span> mPQ = __gnu_pbds::priority_queue&lt;<span class="ty">int</span>, <span class="ty">less</span>&lt;<span class="ty">int</span>&gt;, pairing_heap_tag&gt;;</code></pre>
+
+    <h3>Order-stat operations (tree only)</h3>
+    <table>
+      <tr><th>Call</th><th>Returns</th></tr>
+      <tr><td><code>s.find_by_order(k)</code></td><td>Iterator to k-th smallest (0-indexed)</td></tr>
+      <tr><td><code>s.order_of_key(x)</code></td><td>Number of elements strictly less than x</td></tr>
+    </table>
+
+    <h3>Mutable PQ ops (in addition to push/pop/top)</h3>
+    <table>
+      <tr><th>Call</th><th>Effect</th></tr>
+      <tr><td><code>auto h = pq.push(x)</code></td><td>Returns a handle that stays valid</td></tr>
+      <tr><td><code>pq.modify(h, x_new)</code></td><td>Change priority in place</td></tr>
+      <tr><td><code>pq.erase(h)</code></td><td>Remove that specific node</td></tr>
+      <tr><td><code>pq.join(other)</code></td><td>Merge another PQ into this one (other becomes empty)</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="pitfalls">
+    <h2>Part 9.2 · Top 10 PBDS Pitfalls</h2>
+
+    <ol>
+      <li><strong>Forgetting the headers.</strong> <code>&lt;bits/stdc++.h&gt;</code> does NOT pull in PBDS. Add <code>&lt;ext/pb_ds/assoc_container.hpp&gt;</code> and <code>&lt;ext/pb_ds/tree_policy.hpp&gt;</code> explicitly.</li>
+      <li><strong>Forgetting <code>using namespace __gnu_pbds;</code></strong> — or qualifying half the types with it and not the other half.</li>
+      <li><strong><code>tree</code> rejects duplicates silently.</strong> Insert returns a pair&lt;iterator, bool&gt; — bool is false when duplicate. Use the pair-trick for multiset behavior.</li>
+      <li><strong>order_of_key is STRICTLY less.</strong> To count "≤ x" do <code>order_of_key(x + 1)</code> for ints, or use the multiset pair trick.</li>
+      <li><strong>find_by_order(size())</strong> returns <code>end()</code> — always check before dereferencing.</li>
+      <li><strong>Erasing in a multiset by VALUE</strong> does <em>not</em> remove all duplicates from a tree-based multiset (unlike <code>std::multiset::erase</code>) — and on the pair-trick version it doesn't even compile because keys aren't of type T. Always erase via <code>lower_bound</code>.</li>
+      <li><strong>gp_hash_table with default hash is hackable.</strong> ALWAYS use a custom hash with a random seed for <code>long long</code> keys on Codeforces.</li>
+      <li><strong>__gnu_pbds::priority_queue handle becomes invalid after pop()</strong> if it pointed at the popped element. Track which ones you've popped manually.</li>
+      <li><strong>binary_heap_tag does NOT support modify() or erase(it).</strong> If you need them, pick <code>pairing_heap_tag</code> or <code>thin_heap_tag</code>.</li>
+      <li><strong>PBDS is GCC-only.</strong> Don't paste it into MSVC code or production projects. It's purely a contest weapon.</li>
+    </ol>
+  </section>
+
+  <hr>
+
+  <section id="decision">
+    <h2>Part 9.3 · When to Reach for PBDS</h2>
+
+    <table>
+      <tr><th>Need</th><th>Tool</th></tr>
+      <tr><td>k-th smallest in a dynamic set</td><td><code>ordered_set::find_by_order</code></td></tr>
+      <tr><td>How many elements &lt; x?</td><td><code>ordered_set::order_of_key</code></td></tr>
+      <tr><td>Count inversions online</td><td><code>ordered_set</code> reverse scan</td></tr>
+      <tr><td>Duplicate-allowing version of above</td><td>Pair-trick <code>ordered_multiset</code></td></tr>
+      <tr><td>Hash map that survives anti-hash inputs</td><td><code>gp_hash_table</code> + custom_hash</td></tr>
+      <tr><td>Dijkstra with proper decrease-key</td><td><code>pbds::priority_queue&lt;..., thin_heap_tag&gt;</code></td></tr>
+      <tr><td>Modify priority in a heap, in place</td><td><code>pbds::priority_queue::modify</code></td></tr>
+      <tr><td>Quick autocomplete prefix queries</td><td>PBDS <code>trie</code></td></tr>
+      <tr><td>Sliding window median</td><td>Pair-trick multiset + <code>find_by_order</code></td></tr>
+      <tr><td>Range count queries on integer values</td><td><code>ordered_set</code>; or Fenwick if dense</td></tr>
+    </table>
+
+    <div class="card accent">
+      <h3 style="margin-top:0">🏁 You're now PBDS-fluent</h3>
+      <p>You've seen every PBDS data structure that matters in CP, plus the cleanest way to use each one. The two highest-ROI items here are:</p>
+      <ol>
+        <li><code>ordered_set</code> — order_of_key + find_by_order solve a huge class of problems that would otherwise need a Fenwick tree.</li>
+        <li><code>gp_hash_table</code> + custom hash — copy this template, paste into every contest, never lose a problem to anti-hash again.</li>
+      </ol>
+      <p>Next: head back to the algorithm files (<code>06-bfs</code> through <code>21-divide-conquer</code>) and start re-solving problems with these tools in your toolbox.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sb = document.getElementById('sidebar');
+const tog = document.getElementById('sbToggle');
+const ov = document.getElementById('sbOverlay');
+function toggleSidebar(){
+  sb.classList.toggle('collapsed');
+  tog.classList.toggle('open');
+  document.body.classList.toggle('sb-closed');
+  if (window.innerWidth <= 1300 && !sb.classList.contains('collapsed')) ov.classList.add('show');
+  else ov.classList.remove('show');
+}
+tog.addEventListener('click', toggleSidebar);
+ov.addEventListener('click', toggleSidebar);
+document.getElementById('themeSwitch').addEventListener('click',()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur==='dark'?'':'dark');
+});
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+  });
+});
+
+/* ---------- ordered_set viz ---------- */
+let osData = [];
+function osRender(action, highlight){
+  const stage = document.getElementById('os-stage');
+  stage.innerHTML = '';
+  if (osData.length === 0){
+    stage.innerHTML = '<span style="color:var(--muted)">empty ordered_set</span>';
+  } else {
+    osData.forEach((v, i) => {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.textContent = v;
+      if (highlight !== undefined && i === highlight) c.classList.add('picked');
+      const tag = document.createElement('div');
+      tag.className = 'cell-idx';
+      tag.textContent = 'k=' + i;
+      c.appendChild(tag);
+      stage.appendChild(c);
+    });
+  }
+  document.getElementById('os-size').textContent = osData.length;
+  document.getElementById('os-info').innerHTML =
+    'size: <span>' + osData.length + '</span> · last: <span>' + (action || 'idle') + '</span>';
+}
+function osInsert(){
+  const v = parseInt(document.getElementById('os-input').value);
+  if (isNaN(v)){ osRender('invalid input'); return; }
+  if (osData.includes(v)){ osRender('insert(' + v + ') — already present'); return; }
+  osData.push(v); osData.sort((a,b)=>a-b);
+  osRender('insert(' + v + ')');
+}
+function osErase(){
+  const v = parseInt(document.getElementById('os-input').value);
+  const i = osData.indexOf(v);
+  if (i < 0){ osRender('erase(' + v + ') — not found'); return; }
+  osData.splice(i,1);
+  osRender('erase(' + v + ')');
+}
+function osQueryOrder(){
+  const v = parseInt(document.getElementById('os-input').value);
+  const cnt = osData.filter(x => x < v).length;
+  osRender('order_of_key(' + v + ') = ' + cnt + ' (elements strictly less than ' + v + ')');
+}
+function osQueryKth(){
+  const k = parseInt(document.getElementById('os-input').value);
+  if (k < 0 || k >= osData.length){ osRender('find_by_order(' + k + ') = end() (out of range)'); return; }
+  osRender('find_by_order(' + k + ') → value ' + osData[k], k);
+}
+function osReset(){ osData = []; osRender('reset'); }
+osRender();
+</script>
+</body>
+</html>

@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — Persistent Treap (Path Copying)</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --link:#1d4ed8;
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --node-blue:#2563eb; --node-green:#0f766e; --node-amber:#b45309; --node-red:#b91c1c; --node-purple:#7c3aed;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --link:#93c5fd;
+      --node-blue:#4f8cff; --node-green:#34d399; --node-amber:#fbbf24; --node-red:#fb7185; --node-purple:#a78bfa;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;cursor:pointer;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";float:right;font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:17px;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;white-space:pre;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .goodRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--good);border-radius:0 var(--radius) var(--radius) 0;background:rgba(15,118,110,.08);}
+    .gLabel{font-weight:950;font-size:24px;color:var(--good);margin-bottom:6px;}
+    .gDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .plink{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:8px 12px;border-radius:12px;font-weight:900;font-size:18px;color:var(--accent2);margin-top:6px;}
+    .stepper{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;margin:18px 0;box-shadow:var(--shadow);}
+    .stepper-title{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:10px;}
+    .stepper-svg{width:100%;height:auto;display:block;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+    .stepper-desc{margin-top:14px;padding:14px 18px;background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;font-weight:800;font-size:21px;line-height:1.4;color:var(--text);min-height:70px;}
+    .stepper-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+    .stepper-btn{padding:10px 18px;border-radius:12px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:18px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .stepper-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(37,99,235,.08);}
+    .stepper-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .stepper-btn.primary{background:var(--accent2);color:white;border-color:var(--accent2);}
+    .stepper-btn.primary:hover:not(:disabled){background:var(--accent);}
+    .stepper-counter{font-weight:900;font-size:20px;color:var(--muted);min-width:120px;text-align:center;}
+    .tree-edge{stroke:var(--muted);stroke-width:2.5;fill:none;transition:all .35s ease;}
+    .tree-edge.path{stroke:var(--accent2);stroke-width:5;}
+    .tree-edge.new{stroke:var(--good);stroke-width:5;}
+    .tree-edge.faded{stroke:var(--border);stroke-width:2;opacity:.4;}
+    .tree-edge.shared{stroke:var(--node-purple);stroke-width:4;stroke-dasharray:6,4;}
+    .tree-node circle{stroke:var(--panel);stroke-width:3;transition:all .35s ease;}
+    .tree-node text{fill:white;text-anchor:middle;font-family:system-ui,sans-serif;font-weight:900;dominant-baseline:central;}
+    .tree-node.highlight circle{stroke:var(--accent2);stroke-width:6;}
+    .tree-node.target circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.doomed circle{stroke:var(--bad);stroke-width:6;stroke-dasharray:5,3;}
+    .tree-node.new-node circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.faded{opacity:.5;}
+    .tree-label{fill:var(--text);text-anchor:middle;font-weight:800;font-size:18px;font-family:system-ui,sans-serif;}
+    .tree-caption{fill:var(--muted);text-anchor:middle;font-weight:750;font-size:14px;font-family:system-ui,sans-serif;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle"><span></span><span></span><span></span></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Persistent Treap (Path Copying)</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundations</div>
+    <a class="navlink active" onclick="navTo('problem')">01 · Problem Definition<small>Time-travel queries</small></a>
+    <a class="navlink" onclick="navTo('intuition')">02 · Intuition from Scratch<small>Why copy-on-write</small></a>
+    <a class="navlink" onclick="navTo('visual')">03 · Visual Mental Model<small>Shared subtrees</small></a>
+    <a class="navlink" onclick="navTo('formal')">04 · Formal Abstraction<small>Path-copying invariant</small></a>
+    <a class="navlink" onclick="navTo('observations')">05 · Key Observations<small>Old roots are immortal</small></a>
+    <div class="groupTitle">Algorithm</div>
+    <a class="navlink" onclick="navTo('algorithm')">06 · Algorithm<small>clone, split, merge</small></a>
+    <a class="navlink" onclick="navTo('invariants')">07 · Invariants<small>Immutability promise</small></a>
+    <a class="navlink" onclick="navTo('proof')">08 · Proof of Correctness<small>Old roots untouched</small></a>
+    <a class="navlink" onclick="navTo('complexity')">09 · Complexity<small>O(log n) time & space</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a class="navlink" onclick="navTo('philosophy')">10 · Template Philosophy<small>No parent pointers</small></a>
+    <a class="navlink" onclick="navTo('master')">11 · Master Template<small>Full ready-to-submit code</small></a>
+    <a class="navlink" onclick="navTo('lineByLine')">12 · Line-by-Line<small>Code walkthrough</small></a>
+    <div class="groupTitle">Mastery</div>
+    <a class="navlink" onclick="navTo('edges')">13 · Edge Cases<small>Audit</small></a>
+    <a class="navlink" onclick="navTo('pitfalls')">14 · Common Pitfalls<small>Sharing traps</small></a>
+    <a class="navlink" onclick="navTo('decision')">15 · Decision Guide<small>When persistence pays</small></a>
+    <a class="navlink" onclick="navTo('variants')">16 · Variants<small>Confluent, snapshot, GC</small></a>
+    <a class="navlink" onclick="navTo('problems')">17 · Problem Set<small>VJudge-ready</small></a>
+    <a class="navlink" onclick="navTo('summary')">18 · Final Summary<small>One-page recap</small></a>
+    <a class="navlink" onclick="navTo('contact')">19 · Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">
+      Coach Academy<br>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br>© 2026 All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>Persistent Treap (Path Copying)</h1>
+      <div class="subtitle">The implicit treap of tutorial 28, augmented so that every mutation clones the spine instead of overwriting it. The old root remains a valid handle to the pre-mutation version forever; mutations produce new roots while sharing untouched subtrees with prior versions. Result: a time-travel-capable sequence container in O(log n) per operation.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill">Theme<div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div></div>
+    </div>
+  </div>
+
+  <div id="sec-problem" class="section">
+  <section id="problem" class="card scroll-reveal">
+    <h2>📌 01 · Problem Definition</h2>
+    <p class="note">Maintain a sequence (or an ordered set) under a stream of mutating operations, but additionally support a snapshot operation that captures a handle to the current state, and a time-travel operation that re-issues any past query against any past snapshot. Once captured, a snapshot must answer queries about the state of the structure at the moment of capture, even after many subsequent mutations have been applied to the live version. Both the live version and every snapshot must support insertions, deletions, range queries, and range updates in expected O(log n) time per operation. Memory usage may grow with the number of recorded versions, but each operation may only contribute O(log n) words to the total memory.</p>
+    <p class="note">Classical examples include partial-persistence problems (queries on past states only), full-persistence problems (mutations may branch new versions off any past snapshot), and the snapshot semantics needed in functional programming. The persistent treap supports all of these. We focus on full persistence in this tutorial because it is the strictly more general setting.</p>
+  </section>
+  </div>
+
+  <div id="sec-intuition" class="section">
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 02 · Intuition from Scratch</h2>
+    <p class="note">If we want to preserve every past state, the naive approach is to clone the entire structure before every mutation. The cost is O(n) per snapshot, which destroys the logarithmic bound. The path-copying insight is that any mutation to a balanced tree changes at most O(log n) nodes along the path from the root to the mutation site. Every node off that path is unchanged; the old version and the new version can share those untouched subtrees by pointer.</p>
+
+    <h3>Path copying in one sentence</h3>
+    <p class="note">Before modifying a node, clone it; then perform the modification on the clone, not on the original. The original remains immutable and addressable from the old root. The clone has a fresh pointer that the new root will refer to. Recursing this rule down the path from the root produces a fresh spine of clones for the new version and leaves every subtree off the path shared with the old version.</p>
+
+    <h3>Why an implicit treap is the ideal candidate</h3>
+    <p class="note">The implicit treap from tutorial 28 has two properties that make path copying natural. First, it has no parent pointers, so cloning a node does not require updating links from anywhere else. Second, all mutations route through split and merge, which already descend exactly one root-to-leaf path. If we modify split and merge to clone before mutating, we have a fully persistent implicit treap without changing the public API.</p>
+  </section>
+  </div>
+
+  <div id="sec-visual" class="section">
+  <section id="visual" class="card scroll-reveal">
+    <h2>🎨 03 · Visual Mental Model</h2>
+    <p class="note">Below we walk through a small persistent treap before and after a single mutation. Version v[0] is the original, holding the sequence <code>[a, b, c, d, e]</code>. We apply a point update at position 2 that changes <code>c</code> to <code>X</code>; the result is version v[1] holding <code>[a, b, X, d, e]</code>. Only the spine from the root down to the position-2 leaf is cloned; the off-spine subtrees are shared between v[0] and v[1].</p>
+
+    <div class="stepper" id="treap-clone">
+      <div class="stepper-title">Path copying: v[1] shares unchanged subtrees with v[0]</div>
+      <svg class="stepper-svg" viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <p class="note">The dashed purple edges in the final frame indicate shared subtrees that both versions point at. The new version cannot mutate them because they are addressable from the old root; mutating them would silently change v[0]. The invariant "I never mutate a node that may be reached from an older root" is the entire correctness story for persistent path copying.</p>
+  </section>
+  </div>
+
+  <div id="sec-formal" class="section">
+  <section id="formal" class="card scroll-reveal">
+    <h2>📐 04 · Formal Abstraction</h2>
+
+    <h3>Versions are root pointers</h3>
+    <p class="note">A version is just a pointer to the root of a treap at some moment in time. We maintain a vector <code>versions</code> of root pointers; calling <code>save()</code> pushes the current live root into the vector and returns its index. Mutations consume a version index, compute a new root, and append it to the vector.</p>
+
+    <h3>Path-copying invariant</h3>
+    <div class="formula">A node is mutable only at the moment of its creation.
+After insertion into any version vector, the node becomes immutable forever.
+Subsequent operations that need to "modify" a node must clone it first.</div>
+
+    <p class="note">The clone is a shallow copy of the node\u2019s fields, including the value, priority, size, info, and the two child pointers. The clone\u2019s child pointers initially point at the same children as the original; subsequent operations on the clone may overwrite those child pointers (since the clone is still mutable from the operation that created it), but the children themselves remain shared with the original until the operation descends into them and clones them in turn.</p>
+
+    <h3>What lives in the clone, what gets shared</h3>
+    <p class="note">When split or merge descends into a child and modifies it, the child must be cloned first. The descendants off the descent path are not visited by the current operation, so they are not cloned; the cloned spine\u2019s child pointers continue to point at them. After the operation returns, the new root is a fresh clone, every node on the descent path is a fresh clone, and every other node is shared with the previous version.</p>
+
+    <h3>Lazy fields under persistence</h3>
+    <p class="note">If we support lazy range updates, the lazy fields are part of the node\u2019s state. Pushing a lazy at an old node would mutate it, which is forbidden. The fix: <em>push</em> creates clones too. When we descend into a node, we clone it first (because we are about to push its lazy or recurse), and the cloned spine carries the cleared lazy while the originals retain their pre-push state. The price is that read queries also clone the descent path; this is acceptable because the cost per read remains O(log n).</p>
+  </section>
+  </div>
+
+  <div id="sec-observations" class="section">
+  <section id="observations" class="card scroll-reveal">
+    <h2>🔍 05 · Key Observations</h2>
+    <div class="goodRow"><div class="gLabel">Old root → old structure, forever</div><div class="gDesc">The root pointer of version k continues to address a valid treap that holds the sequence as it was at the time of save. No later mutation can change what that root reaches.</div></div>
+    <div class="goodRow"><div class="gLabel">Only the spine is cloned</div><div class="gDesc">Every mutation visits at most O(log n) nodes; only those O(log n) nodes are cloned. The other Θ(n) nodes are shared by pointer with the previous version.</div></div>
+    <div class="goodRow"><div class="gLabel">Memory grows by O(log n) per operation</div><div class="gDesc">Each operation creates at most O(log n) fresh nodes. After q operations the total memory is O((n + q) log n), which is acceptable for n, q up to about 10^5 with care for node size.</div></div>
+    <div class="warnRow"><div class="wLabel">Garbage collection is non-trivial</div><div class="wDesc">A node is reachable from some root if some version vector entry transitively references it. Counting references with full bookkeeping is expensive. In contest code we typically allocate from a pool and never free; the test sizes are small enough that this is acceptable.</div></div>
+    <div class="warnRow"><div class="wLabel">Even reads may need to clone</div><div class="wDesc">If we use lazy range updates, a query that descends into a node with a pending lazy must push it; pushing mutates the node. In a persistent setting, the push routine therefore clones the descent path. This is why every operation in the master template returns a new root rather than performing the work in place.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-algorithm" class="section">
+  <section id="algorithm" class="card scroll-reveal">
+    <h2>⚙️ 06 · Algorithm</h2>
+
+    <h3>The clone primitive</h3>
+    <p class="note">The clone function takes a node pointer and returns a pointer to a fresh node whose fields are a shallow copy. The two child pointers in the clone initially point at the same children as the original. Whoever called clone now owns the clone and may freely mutate its child pointers.</p>
+
+    <h3>split with cloning</h3>
+    <p class="note">The split function descends one level per recursive call and may modify a node\u2019s child pointer. Under persistence, we clone the node before modifying it: the modification happens on the clone, and the clone is what gets returned. The recursive call into one of the children may itself clone that child; the parent\u2019s clone then receives the recursively-cloned child as one of its pointers, while the parent\u2019s other child pointer still points at the original (which is shared with the previous version).</p>
+
+    <h3>merge with cloning</h3>
+    <p class="note">Merge similarly clones before mutating. At each level we choose one of the two input roots as the merged root, clone it, and recurse into one of its children. The cloned root\u2019s child pointer on the recursive side gets the recursive merge result; the cloned root\u2019s child pointer on the other side still points at the original child (shared).</p>
+
+    <h3>Persistent insert as the canonical example</h3>
+    <p class="note">To insert value <code>v</code> at position <code>k</code> in version u and produce a new version, we call <code>split(versions[u], k)</code> to get <code>(L, R)</code>; these are roots into structures shared with version u. We allocate a new single-node treap <code>n</code>. We compute <code>new_root = merge(merge(L, n), R)</code>. We push <code>new_root</code> into <code>versions</code> as a new index. The old root <code>versions[u]</code> still reaches a valid pre-insertion tree.</p>
+
+    <div class="stepper" id="treap-persistent-insert">
+      <div class="stepper-title">Persistent insert at position 2 producing v[1] alongside v[0]</div>
+      <svg class="stepper-svg" viewBox="0 0 780 400" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-invariants" class="section">
+  <section id="invariants" class="card scroll-reveal">
+    <h2>📊 07 · Invariants and Transitions</h2>
+
+    <h3>State invariants</h3>
+    <p class="note">For every version index <code>i</code>, the root <code>versions[i]</code> addresses a treap satisfying the heap invariant on priorities, the size invariant on subtree sizes, and the lazy invariants of the implicit treap (push order rev, set_val, add). Every node reachable from <code>versions[i]</code> is in the state it was at the moment the version was saved.</p>
+
+    <h3>Immutability invariant</h3>
+    <p class="note">Once a node has been added to the version vector (transitively reachable from some saved root), the node is immutable. Any subsequent operation that needs to alter that node\u2019s fields must first clone it; the alteration happens on the clone.</p>
+
+    <h3>Termination</h3>
+    <p class="note">Every operation reduces to a constant number of split and merge calls, plus the clone primitive which is O(1). Each split or merge descends one level per recursive call and visits at most O(h) nodes total; the expected height is O(log n), so the expected total work per operation is O(log n).</p>
+  </section>
+  </div>
+
+  <div id="sec-proof" class="section">
+  <section id="proof" class="card scroll-reveal">
+    <h2>📜 08 · Proof of Correctness</h2>
+
+    <h3>Old roots remain valid</h3>
+    <p class="note">Claim: after any operation on the live root, the old roots saved in <code>versions</code> still address treaps with the contents they held at the time of save. Proof by induction on the number of operations applied. Base: zero operations after a save means nothing has changed. Inductive step: assume the claim holds before some operation, and consider the operation in isolation. By the immutability invariant, the operation only writes to nodes it has just cloned. These clones are not reachable from any old root by construction (they did not exist when the old root was saved). Therefore every node reachable from the old root is in the same state it was before the operation. By induction, the claim holds after any number of operations.</p>
+
+    <h3>The new root holds the expected post-operation contents</h3>
+    <p class="note">The split, merge, and clone primitives in the persistent variant compute exactly the same logical result as their non-persistent counterparts. The only difference is that they write to clones instead of to the originals. Since the cloned spine inherits the children of the original spine (sharing the off-spine subtrees), and the clone\u2019s own fields are updated as required by the algorithm, the new root logically represents the same treap that the non-persistent variant would have produced.</p>
+
+    <h3>Memory bound</h3>
+    <p class="note">Each operation visits at most O(h) nodes (one descent path, possibly two for the double-split in range operations). Each node visited is cloned exactly once. The clone is a constant-size object. So each operation contributes O(h) new nodes, which is O(log n) in expectation. Over q operations the total memory is O((n + q) log n).</p>
+  </section>
+  </div>
+
+  <div id="sec-complexity" class="section">
+  <section id="complexity" class="card scroll-reveal">
+    <h2>⏱️ 09 · Complexity Analysis</h2>
+
+    <table>
+      <tr><th>Operation</th><th>Expected time</th><th>Memory contribution</th><th>Notes</th></tr>
+      <tr><td>save() / version snapshot</td><td>O(1)</td><td>O(1)</td><td>just stores the current root pointer</td></tr>
+      <tr><td>insert(version, k, v)</td><td>O(log n)</td><td>O(log n)</td><td>clones one descent path</td></tr>
+      <tr><td>erase(version, k)</td><td>O(log n)</td><td>O(log n)</td><td>clones two descent paths (one per split)</td></tr>
+      <tr><td>get(version, k)</td><td>O(log n)</td><td>O(log n) if lazy</td><td>pure read with no lazy can be 0 memory</td></tr>
+      <tr><td>range_query(version, l, r)</td><td>O(log n)</td><td>O(log n) if lazy</td><td>same as get</td></tr>
+      <tr><td>range_add(version, l, r, d)</td><td>O(log n)</td><td>O(log n)</td><td>clones two descent paths and sets lazy on the middle</td></tr>
+      <tr><td>reverse(version, l, r)</td><td>O(log n)</td><td>O(log n)</td><td>clones the descent paths; the middle\u2019s rev flag is toggled on a fresh clone</td></tr>
+    </table>
+
+    <p class="note">All bounds are expectations over the random priorities. The total memory after q operations is O((n + q) log n), which for n = q = 10^5 is about 3.3 × 10^6 nodes. With a node size of around 56 bytes, this is about 190 MB, which is at the edge of typical contest limits. For larger problem sizes, garbage-collect old versions or use a smaller node layout.</p>
+  </section>
+  </div>
+
+  <div id="sec-philosophy" class="section">
+  <section id="philosophy" class="card scroll-reveal">
+    <h2>🧱 10 · Template Philosophy</h2>
+    <p class="note">The persistent template differs from the implicit treap template on five points.</p>
+
+    <h3>Choice 1: clone before every write</h3>
+    <p class="note">Every function that may write to a node\u2019s fields first calls clone on that node. The clone is the only object the function may mutate; the original is read-only.</p>
+
+    <h3>Choice 2: split and merge return new roots</h3>
+    <p class="note">Both functions take the inputs as <code>const</code> root pointers and return fresh root pointers. The caller stores the result somewhere (typically the version vector or a local variable used to chain further calls).</p>
+
+    <h3>Choice 3: push also clones</h3>
+    <p class="note">When push descends into a node\u2019s children, the children must be cloned because we are about to write their lazy fields. The clones of the children become the new children of the parent\u2019s clone. The originals remain part of the older version.</p>
+
+    <h3>Choice 4: no parent pointers, no rotations</h3>
+    <p class="note">Same as the implicit treap. Parent pointers would create a circular reference web that makes cloning much harder, and rotations are not needed because split and merge are sufficient. The persistent variant inherits the split/merge style verbatim.</p>
+
+    <h3>Choice 5: pool allocator</h3>
+    <p class="note">Allocate nodes from a contiguous arena rather than calling <code>new</code> per node. This makes allocation O(1) without a system call and avoids fragmentation. The free list is empty by default (we never free in contest code); the arena pointer increments on each allocation.</p>
+  </section>
+  </div>
+
+  <div id="sec-master" class="section">
+  <section id="master" class="card scroll-reveal">
+    <h2>🎯 11 · Master Template — Ready to Submit</h2>
+    <p class="note">A full persistent implicit treap built on path copying, around 280 lines. Supports versioned insert at position, erase at position, point get, range sum query, range add, and range reverse. Snapshots are addressable by integer version index.</p>
+    <pre><code><span class="c">// Persistent Implicit Treap with path copying</span>
+<span class="k">#include</span> <span class="s">&lt;bits/stdc++.h&gt;</span>
+<span class="k">using namespace</span> std;
+
+mt19937 rng(<span class="k">chrono</span>::steady_clock::now().time_since_epoch().count());
+
+<span class="k">struct</span> Node {
+    <span class="k">long long</span> v;
+    <span class="k">int</span> pri, sz;
+    <span class="k">long long</span> sum;
+    Node *l = <span class="k">nullptr</span>, *r = <span class="k">nullptr</span>;
+    <span class="k">long long</span> add = 0;
+    <span class="k">bool</span> rev = <span class="k">false</span>;
+};
+
+<span class="k">int</span> sz(Node* t){ <span class="k">return</span> t ? t-&gt;sz : 0; }
+<span class="k">long long</span> sum_of(Node* t){ <span class="k">return</span> t ? t-&gt;sum : 0; }
+
+<span class="c">// Clone is the heart of persistence: returns a fresh node with the same fields,</span>
+<span class="c">// including child pointers which are shared with the original until the caller</span>
+<span class="c">// overwrites them.</span>
+Node* clone(Node* t){
+    Node* x = <span class="k">new</span> Node{};
+    *x = *t; <span class="c">// shallow copy all fields including l, r pointers</span>
+    <span class="k">return</span> x;
+}
+
+Node* make_node(<span class="k">long long</span> v){
+    Node* x = <span class="k">new</span> Node{};
+    x-&gt;v = v; x-&gt;pri = (<span class="k">int</span>) rng(); x-&gt;sz = 1; x-&gt;sum = v;
+    <span class="k">return</span> x;
+}
+
+<span class="c">// Apply a pending add to a (just-cloned) node.</span>
+<span class="k">void</span> apply_add(Node* t, <span class="k">long long</span> delta){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    t-&gt;v += delta;
+    t-&gt;sum += delta * (<span class="k">long long</span>) t-&gt;sz;
+    t-&gt;add += delta;
+}
+
+<span class="c">// Apply a pending reverse to a (just-cloned) node.</span>
+<span class="k">void</span> apply_rev(Node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    swap(t-&gt;l, t-&gt;r);
+    t-&gt;rev ^= 1;
+}
+
+<span class="c">// Push: propagate lazy fields to children. Children must be cloned first since</span>
+<span class="c">// applying the lazy mutates their fields.</span>
+<span class="k">void</span> push(Node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    <span class="k">if</span> (t-&gt;rev){
+        <span class="k">if</span> (t-&gt;l){ t-&gt;l = clone(t-&gt;l); apply_rev(t-&gt;l); }
+        <span class="k">if</span> (t-&gt;r){ t-&gt;r = clone(t-&gt;r); apply_rev(t-&gt;r); }
+        t-&gt;rev = <span class="k">false</span>;
+    }
+    <span class="k">if</span> (t-&gt;add){
+        <span class="k">if</span> (t-&gt;l){ t-&gt;l = clone(t-&gt;l); apply_add(t-&gt;l, t-&gt;add); }
+        <span class="k">if</span> (t-&gt;r){ t-&gt;r = clone(t-&gt;r); apply_add(t-&gt;r, t-&gt;add); }
+        t-&gt;add = 0;
+    }
+}
+
+<span class="k">void</span> pull(Node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    t-&gt;sz = 1 + sz(t-&gt;l) + sz(t-&gt;r);
+    t-&gt;sum = t-&gt;v + sum_of(t-&gt;l) + sum_of(t-&gt;r);
+}
+
+<span class="c">// Persistent split: returns two new roots without modifying t.</span>
+<span class="k">void</span> split(Node* t, <span class="k">int</span> k, Node*&amp; a, Node*&amp; b){
+    <span class="k">if</span> (!t){ a = b = <span class="k">nullptr</span>; <span class="k">return</span>; }
+    Node* nt = clone(t);
+    push(nt);
+    <span class="k">int</span> lc = sz(nt-&gt;l);
+    <span class="k">if</span> (k &lt;= lc){
+        split(nt-&gt;l, k, a, nt-&gt;l);
+        pull(nt); b = nt;
+    } <span class="k">else</span> {
+        split(nt-&gt;r, k - lc - 1, nt-&gt;r, b);
+        pull(nt); a = nt;
+    }
+}
+
+<span class="c">// Persistent merge: returns a new root without modifying a or b.</span>
+Node* merge(Node* a, Node* b){
+    <span class="k">if</span> (!a) <span class="k">return</span> b;
+    <span class="k">if</span> (!b) <span class="k">return</span> a;
+    <span class="k">if</span> (a-&gt;pri &gt; b-&gt;pri){
+        Node* na = clone(a);
+        push(na);
+        na-&gt;r = merge(na-&gt;r, b);
+        pull(na);
+        <span class="k">return</span> na;
+    } <span class="k">else</span> {
+        Node* nb = clone(b);
+        push(nb);
+        nb-&gt;l = merge(a, nb-&gt;l);
+        pull(nb);
+        <span class="k">return</span> nb;
+    }
+}
+
+<span class="k">struct</span> PersistentTreap {
+    vector&lt;Node*&gt; versions; <span class="c">// versions[i] is the root at the moment version i was saved</span>
+
+    <span class="c">// Initial empty version.</span>
+    PersistentTreap(){ versions.push_back(<span class="k">nullptr</span>); }
+
+    <span class="k">int</span> latest(){ <span class="k">return</span> (<span class="k">int</span>) versions.size() - 1; }
+    Node* root_of(<span class="k">int</span> u){ <span class="k">return</span> versions[u]; }
+    <span class="k">int</span> size_of(<span class="k">int</span> u){ <span class="k">return</span> sz(versions[u]); }
+
+    <span class="c">// Build a fresh version from a vector of values.</span>
+    <span class="k">int</span> build(<span class="k">const</span> vector&lt;<span class="k">long long</span>&gt;&amp; a){
+        Node* t = <span class="k">nullptr</span>;
+        <span class="k">for</span> (<span class="k">long long</span> v : a) t = merge(t, make_node(v));
+        versions.push_back(t);
+        <span class="k">return</span> latest();
+    }
+
+    <span class="c">// Insert v at position k in version u; produce a new version.</span>
+    <span class="k">int</span> insert(<span class="k">int</span> u, <span class="k">int</span> k, <span class="k">long long</span> v){
+        Node *L, *R; split(versions[u], k, L, R);
+        Node* nr = merge(merge(L, make_node(v)), R);
+        versions.push_back(nr);
+        <span class="k">return</span> latest();
+    }
+
+    <span class="c">// Erase position k in version u; produce a new version.</span>
+    <span class="k">int</span> erase(<span class="k">int</span> u, <span class="k">int</span> k){
+        Node *L, *M, *R;
+        split(versions[u], k, L, M); split(M, 1, M, R);
+        <span class="c">// M is a freshly cloned single-node treap; we discard it. No physical free</span>
+        <span class="c">// needed under contest pool allocation. The old version still references</span>
+        <span class="c">// the original node via the un-cloned subtree off the spine.</span>
+        Node* nr = merge(L, R);
+        versions.push_back(nr);
+        <span class="k">return</span> latest();
+    }
+
+    <span class="c">// Point read at position k in version u; returns the value.</span>
+    <span class="k">long long</span> get(<span class="k">int</span> u, <span class="k">int</span> k){
+        Node *L, *M, *R;
+        split(versions[u], k, L, M); split(M, 1, M, R);
+        <span class="k">long long</span> ans = M-&gt;v;
+        <span class="c">// We do not push the cloned spine back into versions because the query</span>
+        <span class="c">// does not need to be persisted. The clones become garbage immediately.</span>
+        <span class="k">return</span> ans;
+    }
+
+    <span class="c">// Range sum query on [l, r) in version u.</span>
+    <span class="k">long long</span> range_sum(<span class="k">int</span> u, <span class="k">int</span> l, <span class="k">int</span> r){
+        Node *L, *M, *R;
+        split(versions[u], l, L, M); split(M, r - l, M, R);
+        <span class="k">long long</span> ans = sum_of(M);
+        <span class="k">return</span> ans;
+    }
+
+    <span class="c">// Range add on [l, r) in version u; produce a new version.</span>
+    <span class="k">int</span> range_add(<span class="k">int</span> u, <span class="k">int</span> l, <span class="k">int</span> r, <span class="k">long long</span> d){
+        Node *L, *M, *R;
+        split(versions[u], l, L, M); split(M, r - l, M, R);
+        <span class="k">if</span> (M){ Node* M2 = clone(M); apply_add(M2, d); M = M2; }
+        Node* nr = merge(L, merge(M, R));
+        versions.push_back(nr);
+        <span class="k">return</span> latest();
+    }
+
+    <span class="c">// Range reverse on [l, r) in version u; produce a new version.</span>
+    <span class="k">int</span> reverse(<span class="k">int</span> u, <span class="k">int</span> l, <span class="k">int</span> r){
+        Node *L, *M, *R;
+        split(versions[u], l, L, M); split(M, r - l, M, R);
+        <span class="k">if</span> (M){ Node* M2 = clone(M); apply_rev(M2); M = M2; }
+        Node* nr = merge(L, merge(M, R));
+        versions.push_back(nr);
+        <span class="k">return</span> latest();
+    }
+};</code></pre>
+  </section>
+  </div>
+
+  <div id="sec-lineByLine" class="section">
+  <section id="lineByLine" class="card scroll-reveal">
+    <h2>📝 12 · Line-by-Line Walkthrough</h2>
+
+    <h3>The Node struct and clone</h3>
+    <p class="note">The Node struct is the same as the implicit treap of tutorial 28, minus the <code>has_set</code> / <code>set_val</code> machinery (omitted for clarity; add it back if your problem needs range-assign). The clone function is a one-liner: <code>Node* x = new Node{}; *x = *t; return x;</code> The shallow copy copies all fields including the two child pointers, which means immediately after clone, the cloned node and the original both point at the same children. That sharing is desirable: subsequent mutation by the caller may overwrite one of the clone\u2019s child pointers, but the original\u2019s child pointers continue to point at the originals.</p>
+
+    <h3>push under persistence</h3>
+    <p class="note">The push function does something subtle. When we want to push a lazy flag from a parent to its children, we must mutate the children\u2019s fields (their own lazy, their value, their subtree sum). Mutating an old child would corrupt an old version. So we clone each child first and apply the lazy to the clone. The parent (which is already a clone by the time push is called) replaces its child pointers with the freshly cloned children.</p>
+
+    <h3>split returns two new roots</h3>
+    <p class="note">At the top of split we clone the current node into <code>nt</code>. We push lazy on <code>nt</code> (which may further clone <code>nt</code>\u2019s children inside push). We compute <code>lc</code>. The recursive split call writes its second output into <code>nt-&gt;l</code> or <code>nt-&gt;r</code> directly; this is safe because <code>nt</code> is a fresh clone owned by the current call. After the recursive call, we pull <code>nt</code> and assign <code>nt</code> to either <code>a</code> or <code>b</code> depending on whether the descent went left or right. The other output is whatever the recursive call returned.</p>
+
+    <h3>merge mirrors split</h3>
+    <p class="note">Merge picks one of the two input roots based on priorities and clones it. Push lazy on the clone. Recurse into the appropriate child slot. Assign the recursive result. Pull. Return the clone. The non-recursive side\u2019s pointer is shared with the previous version, which is exactly the path-copying behaviour we want.</p>
+
+    <h3>The PersistentTreap public API</h3>
+    <p class="note">The class holds a vector <code>versions</code> indexed by version number. The constructor seeds it with a single nullptr entry representing the empty initial version. Every public mutator (build, insert, erase, range_add, reverse) takes a base version index, performs the operation against <code>versions[u]</code>, pushes the resulting root into <code>versions</code>, and returns the new version index. Reads (get, range_sum) do not push a new version; they compute the answer and discard the clones produced as a byproduct of split.</p>
+
+    <h3>What about memory leaks from queries that clone?</h3>
+    <p class="note">Each query produces O(log n) garbage clones. In a contest setting we typically do not free; the allocator just keeps growing. For a tighter memory budget, swap the global <code>new</code> for an arena allocator and reset the arena between test cases. For long-running services, use a smart-pointer-based variant or explicit garbage collection; both are out of scope for this tutorial.</p>
+  </section>
+  </div>
+
+  <div id="sec-edges" class="section">
+  <section id="edges" class="card scroll-reveal">
+    <h2>🧩 13 · Edge Cases (Centralized Audit)</h2>
+    <ul class="checklist">
+      <li><b>Initial empty version.</b> versions[0] = nullptr. Every operation handles nullptr inputs by returning whichever side is non-null, so insert into v[0] works without special casing.</li>
+      <li><b>Insert at position 0 in any version.</b> Split returns (nullptr, root); merge(new, root) gives a tree with the new node at position 0.</li>
+      <li><b>Insert at position n in any version.</b> Split returns (root, nullptr); merge(root, new) puts the new node at the back.</li>
+      <li><b>Erase at the boundaries.</b> Same structure; the middle is a freshly cloned single-node treap that becomes garbage immediately.</li>
+      <li><b>Range with l == r.</b> The middle split returns nullptr; the operation has no effect; merge reassembles the original.</li>
+      <li><b>Query on the initial empty version.</b> versions[0] is nullptr; the split returns nullptrs; sum_of(M) returns 0; size queries return 0.</li>
+      <li><b>Multiple branches off the same version.</b> Calling insert(0, ...) twice produces two distinct new versions; they share the off-spine subtrees of version 0 but not with each other.</li>
+      <li><b>Pushing a lazy on a node with one null child.</b> The push function checks <code>if (t-&gt;l)</code> and <code>if (t-&gt;r)</code> before cloning, so nullptr children are not dereferenced.</li>
+      <li><b>Range reverse with non-commutative aggregates.</b> The current template uses only sum; if your problem uses a non-commutative aggregate, augment the Info bundle and call <code>apply_rev</code> on the aggregate as well as the children pointers.</li>
+      <li><b>Memory exhaustion on very long version histories.</b> Each operation creates O(log n) nodes; n × q operations create O(n q log n) total nodes. Stop accepting test cases or implement garbage collection if this exceeds the memory limit.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="sec-pitfalls" class="section">
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>🪲 14 · Common Pitfalls and Bugs</h2>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 1 — Mutating a node that is reachable from an old root</div><div class="wDesc">Every write to a node\u2019s fields must happen on a clone. If you accidentally write to an original node, the corresponding old version silently breaks. Discipline: clone at the top of every function that may write, and never call <code>apply_*</code> or <code>push</code> on an un-cloned node.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 2 — Forgetting to clone children inside push</div><div class="wDesc">Push writes the children\u2019s lazy fields. If the children are old (shared with a prior version), they must be cloned first. The master template handles this explicitly with <code>t-&gt;l = clone(t-&gt;l); apply_*(t-&gt;l);</code></div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 3 — Pull without pushing first</div><div class="wDesc">Pull reads the children\u2019s aggregates. If the parent has a pending lazy that has not been propagated, the children\u2019s aggregates are pre-lazy and the parent\u2019s pull recomputes a wrong aggregate. Always push before pull in any function that descends.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 4 — Writing to versions vector mid-operation</div><div class="wDesc">Some implementations are tempted to write the new root into the version vector as soon as it is computed, even before the operation returns. This is fine, but it must happen exactly once per public mutator; double-pushing creates dead version indices.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 5 — Garbage from query clones</div><div class="wDesc">Pure read queries (get, range_sum) clone nodes along the descent path because of lazy pushes. These clones become garbage at function return. Use an arena allocator and reset between test cases to keep memory bounded.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 6 — Using parent pointers</div><div class="wDesc">A parent pointer would force you to update the parent of every cloned child to point at the clone, and the parent of every shared subtree might still legitimately point at the old version\u2019s parent. The cleanest solution is to abandon parent pointers; the split / merge style does not need them.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 7 — Mixing live mutations with persistent calls</div><div class="wDesc">If you also use a non-persistent treap in the same program, do not let the two share node pointers. Persistent code may assume that any pointer it holds is safe to clone-and-modify; if a non-persistent code path holds the same pointer and mutates it directly, both copies corrupt each other.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-decision" class="section">
+  <section id="decision" class="card scroll-reveal">
+    <h2>🧭 15 · Decision Guide</h2>
+    <div class="decisionBox">
+      <h3>When the persistent treap is the right tool</h3>
+      <div class="ruleBox">
+        <div><span class="cond">need queries on past states</span> <span class="arrow">⇒</span> persistent treap (or persistent segment tree)</div>
+        <div><span class="cond">need to branch off any past state</span> <span class="arrow">⇒</span> persistent treap (segment tree is partial-persistence only)</div>
+        <div><span class="cond">need range reverse with persistence</span> <span class="arrow">⇒</span> persistent implicit treap (only choice)</div>
+        <div><span class="cond">need confluent persistence (merge two histories)</span> <span class="arrow">⇒</span> persistent treap with split/merge</div>
+        <div><span class="cond">need partial persistence only, no rich range ops</span> <span class="arrow">⇒</span> persistent segment tree (shorter)</div>
+        <div><span class="cond">no time-travel needed</span> <span class="arrow">⇒</span> implicit treap (tutorial 28)</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-variants" class="section">
+  <section id="variants" class="card scroll-reveal">
+    <h2>🎭 16 · Variants and Extensions</h2>
+
+    <h3>Variant A — confluent persistence</h3>
+    <p class="note">Two versions can be merged into a third by treating each as a piece of a longer sequence. This is just a regular merge of two persistent roots; the result is a fresh root that uses both inputs as shared substructures.</p>
+
+    <h3>Variant B — snapshot semantics with reference counting</h3>
+    <p class="note">In a long-running setting where memory matters, attach a refcount to every node. Increment on clone, decrement on free. When a refcount drops to zero, recursively free children. The cost per clone is O(1), and the memory bound becomes proportional to live versions only.</p>
+
+    <h3>Variant C — arena allocator with checkpointing</h3>
+    <p class="note">Allocate all nodes from a single contiguous arena and remember the arena pointer at each save point. When discarding a version, rewind the arena pointer to that version\u2019s checkpoint. This is much faster than per-node free and handles bulk discards naturally.</p>
+
+    <h3>Variant D — persistent key treap</h3>
+    <p class="note">The key treap of tutorial 27 can also be made persistent, but the rotate-up / rotate-down style with parent pointers is awkward under cloning. The cleanest persistent key treap is built on split / merge primitives that key off value comparisons, mirroring this tutorial\u2019s structure with a value-keyed split.</p>
+
+    <h3>Variant E — undo / redo as version stack</h3>
+    <p class="note">Every mutation pushes a new version; the undo operation rewinds the version index; redo advances it. The version vector serves as a linear undo stack. Branching from a non-tip version produces a new line of history; the original tip is still addressable but no longer the live version.</p>
+  </section>
+  </div>
+
+  <div id="sec-problems" class="section">
+  <section id="problems" class="card scroll-reveal">
+    <h2>🏆 17 · Problem-Based Applications</h2>
+
+    <details open>
+      <summary>P1 · K-th Number in Range — SPOJ MKTHNUM</summary>
+      <div class="detailsBody">
+        <p>For each query, find the k-th smallest number in a subarray. Classical persistent segment tree problem; a persistent treap also solves it by building one version per prefix.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-MKTHNUM" target="_blank" rel="noopener">VJudge — SPOJ MKTHNUM</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P2 · Count on a Tree — SPOJ COT</summary>
+      <div class="detailsBody">
+        <p>K-th smallest along a tree path. Build one persistent structure per root-to-node path; the path query subtracts versions to count.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-COT" target="_blank" rel="noopener">VJudge — SPOJ COT</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P3 · Distinct Values Queries — SPOJ DQUERY</summary>
+      <div class="detailsBody">
+        <p>Count distinct values in a range. Persistent segment tree is canonical; persistent treap also solves it with the same trick of building one version per prefix.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-DQUERY" target="_blank" rel="noopener">VJudge — SPOJ DQUERY</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P4 · Winds of Winter — Codeforces 768G</summary>
+      <div class="detailsBody">
+        <p>Forest with persistent operations. Each node\u2019s subtree maintains a persistent structure that the queries traverse to answer counting problems.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-768G" target="_blank" rel="noopener">VJudge — Codeforces 768G</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P5 · K-th Element on Tree — AtCoder ABC339G</summary>
+      <div class="detailsBody">
+        <p>Range queries on a tree with persistence; the persistent treap or persistent segment tree both apply. Practice the build-one-version-per-vertex pattern.</p>
+        <a class="plink" href="https://atcoder.jp/contests/abc339/tasks/abc339_g" target="_blank" rel="noopener">AtCoder ABC339G</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P6 · Persistent List — Codeforces Gym 100460C</summary>
+      <div class="detailsBody">
+        <p>Implement a list with insert at position, erase, and time-travel queries. The persistent treap directly answers all the required operations.</p>
+        <a class="plink" href="https://vjudge.net/problem/Gym-100460C" target="_blank" rel="noopener">VJudge — Codeforces Gym 100460C</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P7 · Two Arrays — CodeChef TWOARR</summary>
+      <div class="detailsBody">
+        <p>Snapshot-style queries on a sequence under updates. Persistent treap stores one version per time step and answers queries against any past version.</p>
+        <a class="plink" href="https://www.codechef.com/problems/TWOARR" target="_blank" rel="noopener">CodeChef — TWOARR</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P8 · Burned Array — CodeChef BURARRAY</summary>
+      <div class="detailsBody">
+        <p>Persistence on an array with range updates; persistent segment tree is canonical, persistent treap is also a valid choice.</p>
+        <a class="plink" href="https://www.codechef.com/problems/BURARRAY" target="_blank" rel="noopener">CodeChef — BURARRAY</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P9 · Lieges of Legendre — Codeforces 707D</summary>
+      <div class="detailsBody">
+        <p>Bitmask flips and queries over versions. The persistent treap stores per-version state and answers each query against the appropriate version.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-707D" target="_blank" rel="noopener">VJudge — Codeforces 707D</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P10 · Lomsat gelral — Codeforces 600E</summary>
+      <div class="detailsBody">
+        <p>Subtree dominant color queries. Persistent or small-to-large; the persistent variant uses one structure per vertex and reads the snapshot at each query.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-600E" target="_blank" rel="noopener">VJudge — Codeforces 600E</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P11 · ChineseRemainderTheorem — UVA 11505 (with persistence)</summary>
+      <div class="detailsBody">
+        <p>Same as the implicit treap problem; the persistent variant adds branchable history. Useful as a stress test of the version vector.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-11505" target="_blank" rel="noopener">VJudge — UVA 11505</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P12 · Persistent Union-Find — Yosupo Library Checker</summary>
+      <div class="detailsBody">
+        <p>Different data structure (DSU), but the same persistence idea: clone before union. Useful as a comparison point; both DSU and treap admit the path-copying treatment.</p>
+        <a class="plink" href="https://judge.yosupo.jp/problem/persistent_unionfind" target="_blank" rel="noopener">Yosupo Library Checker — persistent_unionfind</a>
+      </div>
+    </details>
+  </section>
+  </div>
+
+  <div id="sec-summary" class="section">
+  <section id="summary" class="card scroll-reveal">
+    <h2>🎯 18 · Final Summary</h2>
+    <p class="note" style="font-size:24px"><b>One sentence:</b> a persistent treap is the implicit treap of tutorial 28 where every function clones nodes before writing to them, leaving old root pointers as valid handles into the pre-mutation state and producing new root pointers that share O(n − log n) of their nodes with the previous version.</p>
+
+    <h3>Five things to remember</h3>
+    <p class="note">First, path copying is the whole idea: clone the descent path before mutating, share everything off the path. Second, every public operation returns a new root; the version vector stores roots, and each version is just an index. Third, push must also clone, because pushing mutates the children\u2019s fields. Fourth, the cost per operation is O(log n) time and O(log n) extra nodes; total memory after q operations is O((n + q) log n), which limits practical sizes to about 10^5 of each on a typical 256 MB budget. Fifth, no parent pointers, no rotations, no shared mutable state with non-persistent code; the discipline must be airtight or old versions silently corrupt.</p>
+
+    <h3>Mastery checklist</h3>
+    <ul class="checklist">
+      <li>I can explain why clone is a one-line shallow copy and what subtleties that hides.</li>
+      <li>I can list the three places in split, merge, and push where a new clone is created.</li>
+      <li>I can convert the implicit treap of tutorial 28 into a persistent variant by adding clone calls and a version vector.</li>
+      <li>I can compute the memory bound O((n + q) log n) and decide whether the problem fits.</li>
+      <li>I know that pure-read queries also clone under lazy semantics, and I have a plan for the garbage.</li>
+    </ul>
+
+    <h3>What is next</h3>
+    <div class="tipBox">This is the last tutorial in the BST / treap family (numbered 26 through 29). The four together cover the foundations from plain BST through AVL and Red-Black, the key-treap multiset with order statistics, the implicit treap for dynamic sequences with lazy range operations, and the persistent treap for time-travel queries. The next tutorial in the Coach Academy series steps away from BSTs into a new topic.</div>
+  </section>
+  </div>
+
+  <div id="sec-contact" class="section">
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h2>🛠️ Runtime Validation Checklist</h2>
+    <ul class="checklist">
+      <li>Sidebar opens and closes on hamburger click; overlay dismisses on click outside.</li>
+      <li>Theme toggle switches dark and light and persists in localStorage.</li>
+      <li>Escape key closes an open sidebar on mobile widths.</li>
+      <li>Active nav link highlights as the user scrolls.</li>
+      <li>All mailto links are plain (no Cloudflare obfuscation).</li>
+      <li>All VJudge problem links open in new tabs.</li>
+      <li>No duplicate id attributes; HTML validates with no JS console errors.</li>
+      <li>Every stepper responds to Next, Prev, and Reset; SVG redraws cleanly between frames.</li>
+      <li>Scroll-reveal animations trigger on intersection; a 300 ms fallback reveals all content if IntersectionObserver does not fire.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function nodeColor(c){
+  const map = { blue:'var(--node-blue)', green:'var(--node-green)', amber:'var(--node-amber)', red:'var(--node-red)', purple:'var(--node-purple)', dark:'#1f2937', black:'#0f172a' };
+  return map[c] || map.blue;
+}
+function makeStepper(containerId, frames){
+  const root    = document.getElementById(containerId);
+  const svg     = root.querySelector('.stepper-svg');
+  const desc    = root.querySelector('.stepper-desc');
+  const counter = root.querySelector('.stepper-counter');
+  const prevBtn = root.querySelector('[data-act="prev"]');
+  const nextBtn = root.querySelector('[data-act="next"]');
+  const resetBtn= root.querySelector('[data-act="reset"]');
+  let idx = 0;
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function render(){
+    const f = frames[idx];
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    (f.edges || []).forEach(e => {
+      const a = f.nodes.find(n => n.id === e.from);
+      const b = f.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const line = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y});
+      let cls = 'tree-edge';
+      if (e.state) cls += ' ' + e.state;
+      line.setAttribute('class', cls);
+      svg.appendChild(line);
+    });
+    (f.nodes || []).forEach(n => {
+      const g = el('g', {});
+      let cls = 'tree-node';
+      if (n.state) cls += ' ' + n.state;
+      g.setAttribute('class', cls);
+      const r = n.r || 26;
+      g.appendChild(el('circle', {cx:n.x, cy:n.y, r:r, fill:nodeColor(n.color)}));
+      const labelY = n.sub ? n.y - 6 : n.y;
+      const t1 = el('text', {x:n.x, y:labelY, 'font-size':n.fs || 16});
+      t1.textContent = n.label;
+      g.appendChild(t1);
+      if (n.sub){
+        const t2 = el('text', {x:n.x, y:n.y + 10, 'font-size':11});
+        t2.textContent = n.sub;
+        g.appendChild(t2);
+      }
+      svg.appendChild(g);
+    });
+    (f.labels || []).forEach(l => {
+      const t = el('text', {x:l.x, y:l.y, 'font-size':l.fs || 18, class:l.caption ? 'tree-caption' : 'tree-label'});
+      t.textContent = l.text;
+      svg.appendChild(t);
+    });
+    desc.textContent = f.desc;
+    counter.textContent = 'Step ' + (idx + 1) + ' / ' + frames.length;
+    prevBtn.disabled  = idx === 0;
+    nextBtn.disabled  = idx === frames.length - 1;
+  }
+  prevBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < frames.length - 1) { idx++; render(); } });
+  resetBtn.addEventListener('click', () => { idx = 0; render(); });
+  render();
+}
+
+// --- Path copying demo: a point update at position 2 of v[0] = [a, b, c, d, e]
+// produces v[1] = [a, b, X, d, e]. v[0] has root c (the original c-node at the
+// root since c has the highest priority); the spine from root to position 2
+// is just the root itself (because c is already at position 2 in this layout).
+// To keep the visual interesting, we picture the case where the spine is
+// 3 nodes long: in our layout c is the root, b is c's left child, and we
+// imagine the "real" cell we want to update sits below b on the right.
+// We use the layout: c (root) -> b (left subtree, holding a and the "c-cell")
+//                                -> a (left of b), c-cell (right of b)
+// and -> d (right of c) -> e (right of d). Updating the c-cell clones the
+// spine c, b, c-cell; subtrees a, d, e remain shared.
+const TREAP_CLONE_FRAMES = [
+  {
+    desc: 'Version v[0]: a 5-element treap holding the sequence [a, b, c, d, e]. The root node carries value c (priority 90). The two halves hang off the root. Every node belongs to v[0]; no other version exists yet.',
+    nodes: [
+      {id:'r0',  x:220, y:80,  label:'c', sub:'v[0] root', color:'blue', r:30},
+      {id:'b0',  x:120, y:200, label:'b', color:'blue', r:30},
+      {id:'a0',  x:60,  y:300, label:'a', color:'blue', r:28},
+      {id:'d0',  x:340, y:200, label:'d', color:'blue', r:30},
+      {id:'e0',  x:420, y:300, label:'e', color:'blue', r:28}
+    ],
+    edges: [{from:'r0',to:'b0'},{from:'r0',to:'d0'},{from:'b0',to:'a0'},{from:'d0',to:'e0'}],
+    labels: [{x:240, y:360, text:'Version v[0]: [a, b, c, d, e]', fs:18, caption:true}]
+  },
+  {
+    desc: 'We want to apply a point update at position 2 that changes c to X. The descent path from the root passes through the c-node itself (since c sits at the root and is at position 2 of the inorder). We will clone every node on that path.',
+    nodes: [
+      {id:'r0',  x:220, y:80,  label:'c', sub:'v[0] root', color:'red', state:'highlight', r:30},
+      {id:'b0',  x:120, y:200, label:'b', color:'blue', r:30},
+      {id:'a0',  x:60,  y:300, label:'a', color:'blue', r:28},
+      {id:'d0',  x:340, y:200, label:'d', color:'blue', r:30},
+      {id:'e0',  x:420, y:300, label:'e', color:'blue', r:28}
+    ],
+    edges: [{from:'r0',to:'b0',state:'path'},{from:'r0',to:'d0'},{from:'b0',to:'a0'},{from:'d0',to:'e0'}],
+    labels: [{x:240, y:360, text:'Descent path to position 2 = { root c }', fs:18, caption:true}]
+  },
+  {
+    desc: 'Clone the spine. We allocate a new node X that takes the c-node\u2019s place at position 2 in the new version, copying b and d as its children pointers initially.',
+    nodes: [
+      {id:'r0',  x:140, y:80,  label:'c', sub:'v[0] root', color:'blue', state:'faded', r:30},
+      {id:'b0',  x:80,  y:200, label:'b', color:'blue', state:'faded', r:30},
+      {id:'a0',  x:30,  y:300, label:'a', color:'blue', state:'faded', r:28},
+      {id:'d0',  x:200, y:200, label:'d', color:'blue', state:'faded', r:30},
+      {id:'e0',  x:260, y:300, label:'e', color:'blue', state:'faded', r:28},
+      {id:'r1',  x:530, y:80,  label:'X', sub:'v[1] root', color:'green', state:'new-node', r:30}
+    ],
+    edges: [{from:'r0',to:'b0',state:'faded'},{from:'r0',to:'d0',state:'faded'},{from:'b0',to:'a0',state:'faded'},{from:'d0',to:'e0',state:'faded'}],
+    labels: [{x:140, y:360, text:'Version v[0] (untouched)', fs:18, caption:true},
+             {x:530, y:360, text:'Fresh clone for v[1]', fs:18, caption:true}]
+  },
+  {
+    desc: 'Wire up v[1]. The new node X points at b\u2019s subtree (shared with v[0], dashed purple) and d\u2019s subtree (shared with v[0], dashed purple). Both versions now coexist. v[0]\u2019s root reaches a tree spelling [a, b, c, d, e]; v[1]\u2019s root X reaches a tree spelling [a, b, X, d, e].',
+    nodes: [
+      {id:'r0',  x:140, y:80,  label:'c', sub:'v[0] root', color:'blue', r:30},
+      {id:'b0',  x:80,  y:200, label:'b', color:'blue', r:30},
+      {id:'a0',  x:30,  y:300, label:'a', color:'blue', r:28},
+      {id:'d0',  x:200, y:200, label:'d', color:'blue', r:30},
+      {id:'e0',  x:260, y:300, label:'e', color:'blue', r:28},
+      {id:'r1',  x:530, y:80,  label:'X', sub:'v[1] root', color:'green', r:30}
+    ],
+    edges: [
+      {from:'r0',to:'b0'},{from:'r0',to:'d0'},{from:'b0',to:'a0'},{from:'d0',to:'e0'},
+      {from:'r1',to:'b0',state:'shared'},{from:'r1',to:'d0',state:'shared'}
+    ],
+    labels: [{x:140, y:360, text:'v[0]: [a, b, c, d, e]', fs:18, caption:true},
+             {x:530, y:360, text:'v[1]: [a, b, X, d, e]', fs:18, caption:true}]
+  }
+];
+
+
+// --- Persistent insert at position 2 producing v[1] alongside v[0] ---
+// v[0] holds [a, b, d, e] with d at the root (pri 90), b on its left
+// (pri 70), a on b's left (pri 40), and e on d's right (pri 50). We
+// insert a fresh value c at position 2; the descent path is d, b. We
+// clone d and b along the way and link c in as part of v[1]; subtrees
+// a and e remain shared with v[0].
+const TREAP_PERSISTENT_INSERT_FRAMES = [
+  {
+    desc: 'Version v[0]: a 4-element treap holding [a, b, d, e]. We will insert a new value c at position 2; the result should be a sequence [a, b, c, d, e] addressable as v[1].',
+    nodes: [
+      {id:'d0', x:240, y:80,  label:'d', sub:'v[0] pri90', color:'blue', r:30},
+      {id:'b0', x:140, y:200, label:'b', sub:'pri70', color:'blue', r:30},
+      {id:'a0', x:80,  y:300, label:'a', sub:'pri40', color:'blue', r:28},
+      {id:'e0', x:340, y:200, label:'e', sub:'pri50', color:'blue', r:28}
+    ],
+    edges: [{from:'d0',to:'b0'},{from:'d0',to:'e0'},{from:'b0',to:'a0'}],
+    labels: [{x:240, y:360, text:'Version v[0]: [a, b, d, e]', fs:18, caption:true}]
+  },
+  {
+    desc: 'Split v[0] at k=2. Descent starts at the root d. sz(left of d) = 2, so we want to split exactly at the boundary between d\u2019s left subtree and d itself; everything in d\u2019s left subtree goes to L, d and its right subtree go to R. Clone d as we descend.',
+    nodes: [
+      {id:'d0', x:240, y:80,  label:'d', sub:'pri90', color:'red', state:'highlight', r:30},
+      {id:'b0', x:140, y:200, label:'b', sub:'pri70', color:'blue', state:'highlight', r:30},
+      {id:'a0', x:80,  y:300, label:'a', sub:'pri40', color:'blue', r:28},
+      {id:'e0', x:340, y:200, label:'e', sub:'pri50', color:'blue', r:28}
+    ],
+    edges: [{from:'d0',to:'b0',state:'path'},{from:'d0',to:'e0'},{from:'b0',to:'a0'}],
+    labels: [{x:240, y:360, text:'split at k=2: L gets [a, b]; R gets [d, e]', fs:16, caption:true}]
+  },
+  {
+    desc: 'After the split: L is a cloned spine through b (rooted at b\u2032) and shares the subtree under a with v[0]; R is a cloned spine through d (rooted at d\u2032) and shares the subtree under e with v[0]. We have two persistent forests so far.',
+    nodes: [
+      {id:'b1', x:100, y:80,  label:'b\u2032', sub:'L root', color:'green', state:'new-node', r:30},
+      {id:'a0', x:50,  y:200, label:'a', color:'blue', r:28},
+      {id:'d1', x:380, y:80,  label:'d\u2032', sub:'R root', color:'green', state:'new-node', r:30},
+      {id:'e0', x:450, y:200, label:'e', color:'blue', r:28}
+    ],
+    edges: [{from:'b1',to:'a0',state:'shared'},{from:'d1',to:'e0',state:'shared'}],
+    labels: [{x:100, y:280, text:'L = [a, b] (b\u2032 cloned, a shared)', fs:16, caption:true},
+             {x:380, y:280, text:'R = [d, e] (d\u2032 cloned, e shared)', fs:16, caption:true}]
+  },
+  {
+    desc: 'Build a single-node treap for the new value c, then merge L with the new node, then merge the result with R. The merge calls clone any node they descend through. The new root of v[1] picks whichever piece had the highest priority root.',
+    nodes: [
+      {id:'b1', x:100, y:80,  label:'b\u2032', color:'green', r:30},
+      {id:'a0', x:50,  y:200, label:'a', color:'blue', r:28},
+      {id:'c',  x:240, y:80,  label:'c', sub:'pri80 new', color:'red', state:'new-node', r:30},
+      {id:'d1', x:380, y:80,  label:'d\u2032', color:'green', r:30},
+      {id:'e0', x:450, y:200, label:'e', color:'blue', r:28}
+    ],
+    edges: [{from:'b1',to:'a0',state:'shared'},{from:'d1',to:'e0',state:'shared'}],
+    labels: [{x:240, y:280, text:'New value c (priority 80)', fs:16, caption:true}]
+  },
+  {
+    desc: 'Final v[1] after merging (L, c-node, R). Suppose merge picks d\u2032 (pri 90) as the new root; d\u2032\u2019s left subtree is the merged result of (L, c-node), which becomes b\u2032 as the left child (pri 70) with a shared under it and c shared under b\u2032\u2019s right slot. Both versions coexist: v[0] still reaches [a, b, d, e], v[1] reaches [a, b, c, d, e]. The shared subtrees a and e are pointed at by both versions through dashed purple edges.',
+    nodes: [
+      {id:'d0', x:120, y:60,  label:'d', sub:'v[0] pri90', color:'blue', state:'faded', r:28},
+      {id:'b0', x:60,  y:180, label:'b', color:'blue', state:'faded', r:28},
+      {id:'a0', x:30,  y:300, label:'a', color:'blue', r:28},
+      {id:'e0', x:160, y:180, label:'e', color:'blue', r:28},
+      {id:'d1', x:520, y:60,  label:'d\u2032', sub:'v[1] root', color:'green', r:30},
+      {id:'b1', x:430, y:180, label:'b\u2032', color:'green', r:30},
+      {id:'cn', x:500, y:280, label:'c',  color:'green', r:26}
+    ],
+    edges: [
+      {from:'d0',to:'b0',state:'faded'},{from:'d0',to:'e0',state:'faded'},{from:'b0',to:'a0',state:'faded'},
+      {from:'d1',to:'b1',state:'new'},{from:'d1',to:'e0',state:'shared'},
+      {from:'b1',to:'a0',state:'shared'},{from:'b1',to:'cn',state:'new'}
+    ],
+    labels: [{x:120, y:360, text:'v[0]: [a, b, d, e]', fs:16, caption:true},
+             {x:520, y:360, text:'v[1]: [a, b, c, d, e]', fs:16, caption:true}]
+  }
+];
+
+// ===== Wiring =====
+const themeSwitch = document.getElementById('themeSwitch');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
+}
+applyTheme(localStorage.getItem('ca-theme') || 'light');
+themeSwitch.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('ca-theme', next);
+});
+themeSwitch.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeSwitch.click(); }
+});
+
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  if (window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay   = document.getElementById('sidebarOverlay');
+const sidebarEl        = document.getElementById('sidebar');
+
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+});
+
+const sectionIds = ['problem','intuition','visual','formal','observations','algorithm','invariants','proof','complexity','philosophy','master','lineByLine','edges','pitfalls','decision','variants','problems','summary','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector('.navlink[onclick*="\'' + id + '\'"]');
+  if (a) navLinks[id] = a;
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('revealed'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('revealed')); }, 300);
+
+function safeInit(id, frames){
+  try { makeStepper(id, frames); }
+  catch(e){ console.error('stepper init failed for ' + id, e); }
+}
+safeInit('treap-clone',             TREAP_CLONE_FRAMES);
+safeInit('treap-persistent-insert', TREAP_PERSISTENT_INSERT_FRAMES);
+</script>
+</body>
+</html>

@@ -1,0 +1,2611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — MST: Prim &amp; Kruskal</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+/* ── SIDEBAR INTERNALS ─────────────────────────────────── */
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#fff;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex:0 0 auto}
+.logo-box img{width:100%;height:100%;object-fit:contain;padding:4px}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+/* ── CARD ─────────────────────────────────────────────────── */
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+/* ── NOTICE BOXES ─────────────────────────────────────────── */
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+/* ── CODE ─────────────────────────────────────────────────── */
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:17px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+/* ── ACCORDION ───────────────────────────────────────────── */
+details{border-radius:var(--radius);border:3px solid var(--border);
+  background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+/* ── TABLES ───────────────────────────────────────────────── */
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.upd{background:rgba(15,118,110,.12);color:var(--good);font-weight:950}
+/* ── CHIPS ────────────────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+/* ── DIAGRAM ──────────────────────────────────────────────── */
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+.distBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;
+  padding:14px;font-family:ui-monospace,monospace;font-size:var(--fs-sm);
+  font-weight:700;overflow-x:auto;margin-top:10px}
+.dist-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ditem{display:flex;flex-direction:column;align-items:center;background:var(--panel);
+  border:3px solid var(--border);border-radius:10px;padding:7px 10px;min-width:52px;transition:all .25s}
+.di-lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.di-val{font-size:20px;font-weight:900;font-family:ui-monospace,monospace}
+.ditem.src{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.08)}
+.ditem.upd{border-color:var(--good);background:rgba(15,118,110,.12);animation:cellFlash .6s ease}
+.ditem.done{border-color:var(--accent2);background:rgba(37,99,235,.10)}
+@keyframes cellFlash{0%,100%{transform:scale(1)}40%{transform:scale(1.14)}}
+/* ── TRACER CONTROLS ─────────────────────────────────────── */
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.spd-row{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;
+  color:var(--muted);margin-bottom:10px}
+.spd-row input{flex:1;accent-color:var(--accent2)}
+.tracer-wrap{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.tside{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:14px;position:sticky;top:6px}
+.sp-phase{font-size:14px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;
+  color:var(--muted);margin-bottom:3px}
+.sp-exp{font-size:17px;font-weight:700;line-height:1.5;padding:9px 11px;
+  border-radius:9px;border-left:4px solid var(--border)}
+.sp-exp.ok{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.skip{background:rgba(0,0,0,.03)}
+.sp-exp.init{border-left-color:var(--accent2);background:rgba(37,99,235,.08)}
+.sp-exp.done{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.reject{border-left-color:var(--bad);background:rgba(185,28,28,.07)}
+.slog{max-height:130px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.sli{padding:3px 5px;border-radius:4px;color:#6b7280;line-height:1.4;cursor:pointer}
+.sli:hover{background:rgba(255,255,255,.07)}
+.sli.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.sli.ok{color:#34d399}.sli.sk{color:#fbbf24}.sli.ng{color:#fb7185}
+/* edge list */
+.elist{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;margin-top:8px}
+.eli{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;
+  border:2px solid var(--border);font-size:16px;font-weight:800;
+  background:var(--panel);transition:all .18s;font-family:ui-monospace,monospace}
+.eli.ea{border-color:var(--warn);background:rgba(180,83,9,.09)}
+.eli.eo{border-color:var(--good);background:rgba(15,118,110,.09)}
+.eli.er{border-color:var(--bad);background:rgba(185,28,28,.07);opacity:.5}
+.eldot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.eli.ea .eldot{background:var(--warn)}.eli.eo .eldot{background:var(--good)}.eli.er .eldot{background:var(--bad)}
+/* DSU component display */
+.dsu-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dsu-comp{display:flex;gap:4px;align-items:center;padding:6px 10px;border-radius:10px;
+  border:2px solid var(--border);font-weight:900;font-size:16px;background:var(--panel2)}
+.dsu-node{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;color:white;font-weight:900;font-size:14px}
+/* formula */
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+/* knowledge summary */
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+/* footer */
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);
+  text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:18px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:7px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3)}
+/* stepctr */
+.stepctr{font-size:13px;font-weight:800;color:var(--muted);text-align:right;margin-top:6px}
+/* variant header */
+.var-header{display:flex;align-items:center;gap:12px}
+.var-num{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;
+  font-size:14px;font-weight:950;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.var-oj{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:800;
+  background:var(--chip);border:2px solid rgba(37,99,235,.22);
+  padding:5px 12px;border-radius:999px;color:var(--link);margin-top:8px}
+/* responsive */
+@media(max-width:1300px){
+  .tracer-wrap{grid-template-columns:1fr}.tside{position:static}
+  .grid2,.grid3,.ks-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}}
+</style>
+<script>
+(function(){
+  var t=localStorage.getItem('theme');
+  if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}
+  if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+})();
+</script>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation sidebar" aria-controls="sidebar" aria-expanded="true">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAIFBLADASIAAhEBAxEB/8QAGwABAAMBAQEBAAAAAAAAAAAAAAQFBgMCAQj/xABLEAACAgECAQcGCwYFAwIHAQAAAQIDBAURIQYSMUFRYXETIoGRwdEUIzI1QlJyobHh8BUzNGJzkhZTVIKyJENjJaImNkRVg5Pxwv/EABsBAQACAwEBAAAAAAAAAAAAAAAEBQIDBgEH/8QAOREAAgIBAgMECAUFAQEAAwEAAAECAwQFERIhMRNBUXEiMmGBkaGx0RQzQsHwFSM0UuHxJDVDU2L/2gAMAwEAAhEDEQA/APxkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/2Q==" alt="Coach Academy Logo"/></div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Prim &amp; Kruskal</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Introduction</div>
+    <a href="#s0">Overview<small>What you'll learn</small></a>
+    <a href="#s1">1. Problem Definition<small>MST, spanning tree, forest</small></a>
+    <a href="#s2">2. Cut &amp; Cycle Properties<small>Why greedy works</small></a>
+    <div class="grpTitle">DSU &amp; Kruskal</div>
+    <a href="#s3">3. DSU Template<small>par[u]&lt;0 = root, union by size</small></a>
+    <a href="#s4">4. Edge List Representation<small>The natural Kruskal structure</small></a>
+    <a href="#s5">5. Kruskal Master Template<small>Sort → DSU → add safe edges</small></a>
+    <a href="#s6">6. Kruskal Correctness<small>Cut property proof</small></a>
+    <a href="#s7">7. Kruskal Complexity<small>O(m log m) overall</small></a>
+    <div class="grpTitle">Prim</div>
+    <a href="#s8">8. Prim vs Dijkstra<small>The deep analogy</small></a>
+    <a href="#s9">9. Dense Prim (notVis)<small>O(n²) — mirrors dense Dijkstra</small></a>
+    <a href="#s10">10. Sparse Prim (done[])<small>O(m log n) — heap-based</small></a>
+    <a href="#s11">11. done[] vs dist[u]≠d<small>Why explicit flag is better</small></a>
+    <a href="#s12">12. Prim Correctness &amp; Complexity<small>Cut property again</small></a>
+    <div class="grpTitle">Comparison &amp; Cases</div>
+    <a href="#s13">13. Kruskal vs Prim<small>Decision guide + table</small></a>
+    <a href="#s14">14. Reconstruction<small>Output actual MST edges</small></a>
+    <a href="#s15">15. Edge Cases<small>Negative weights, disconnected, loops</small></a>
+    <div class="grpTitle">Interactive</div>
+    <a href="#sktracer">Kruskal Tracer<small>Step-by-step with DSU state</small></a>
+    <a href="#sptracer">Prim Tracer<small>Tree growth + dist[] evolution</small></a>
+    <div class="grpTitle">Variants</div>
+    <a href="#svariants">20 MST Variants<small>With OJ problems &amp; AC code</small></a>
+    <div class="grpTitle">Summary</div>
+    <a href="#smistakes">Common Mistakes<small>What trips students</small></a>
+    <a href="#smodel">Mental Model<small>Pattern recognition guide</small></a>
+    <a href="#summary">Knowledge Summary<small>Checklist + complexity table</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br/><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Minimum Spanning Trees</h1>
+    <div class="subtitle">Prim &amp; Kruskal — Dense, Sparse, DSU-based, Variants — Complete Interactive Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-label="Toggle dark mode" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- 0. OVERVIEW -->
+<section class="card" id="s0">
+  <h2>What you'll learn</h2>
+  <p>This tutorial builds on your <strong>DSU</strong> and <strong>Dijkstra</strong> knowledge. Both algorithms are used here directly — Kruskal uses your DSU template; Prim mirrors your Dijkstra dense/sparse templates with one small but crucial change.</p>
+  <div class="grid2">
+    <div><div class="chips">
+      <span class="chip">MST problem definition</span>
+      <span class="chip">Cut &amp; Cycle properties</span>
+      <span class="chip">DSU for Kruskal</span>
+      <span class="chip">Edge list representation</span>
+      <span class="chip">Kruskal master template</span>
+      <span class="chip">Correctness proofs</span>
+    </div></div>
+    <div><div class="chips">
+      <span class="chip p">Dense Prim (notVis)</span>
+      <span class="chip p">Sparse Prim (done[])</span>
+      <span class="chip p">done[] vs dist[u]≠d</span>
+      <span class="chip p">MST reconstruction</span>
+      <span class="chip p">20 variants + OJ links</span>
+      <span class="chip p">Interactive tracers</span>
+    </div></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Algorithm</th><th>Data Structure</th><th>Time</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td class="cy">Kruskal</td><td>Edge list + DSU</td><td class="cb">O(m log m)</td><td>Sparse graphs, edge-list input</td></tr>
+      <tr><td class="cy">Prim Dense</td><td>Matrix + notVis</td><td class="cb">O(n²)</td><td>Dense graphs, small n</td></tr>
+      <tr><td class="cp">Prim Sparse</td><td>Adj. list + min-heap</td><td class="cp">O(m log n)</td><td>Sparse graphs, standard input</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 1. PROBLEM DEFINITION -->
+<section class="card" id="s1">
+  <h2>1. What Problem Are We Solving?</h2>
+  <p>Given a weighted undirected graph with <strong>n vertices</strong> and <strong>m edges</strong>, choose a subset of edges such that:</p>
+  <ul>
+    <li>All vertices become connected</li>
+    <li>No cycle appears</li>
+    <li>The total sum of chosen edge weights is <strong>minimum possible</strong></li>
+  </ul>
+  <p>That chosen edge set is called a <strong>Minimum Spanning Tree (MST)</strong>.</p>
+  <div class="grid2">
+    <div>
+      <h3>Why "spanning tree"?</h3>
+      <p><strong>Spanning:</strong> it covers all n vertices.<br/><strong>Tree:</strong> it is connected and acyclic.</p>
+      <div class="formula">Every spanning tree has exactly n − 1 edges</div>
+      <p>Fewer than n−1 → cannot connect all vertices. More than n−1 → must contain a cycle.</p>
+    </div>
+    <div>
+      <h3>Disconnected graphs → MSF</h3>
+      <p>If the graph is not connected, a full spanning tree does not exist. The natural generalization is the <strong>Minimum Spanning Forest (MSF)</strong>: one minimum spanning tree per connected component.</p>
+      <div class="ib ib-blue"><i>💡</i><p><strong>Recognition pattern:</strong> connect cities / cable cost / bridge lengths / network backbone / keep everyone reachable at minimum budget → think MST immediately.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. CUT & CYCLE PROPERTIES -->
+<section class="card" id="s2">
+  <h2>2. Core Mathematical Properties</h2>
+  <p>All MST algorithms are greedy. They work because of two classical properties.</p>
+  <div class="grid2">
+    <div>
+      <h3>🔪 Cut Property</h3>
+      <p>Take any cut of the graph: split vertices into two groups A and B. Among all edges crossing from A to B, any <strong>minimum-weight crossing edge</strong> is safe to include in some MST.</p>
+      <div class="ib ib-green"><i>📐</i><p>This is the soul of both Prim and Kruskal. Every safe edge they add is justified by the cut property.</p></div>
+    </div>
+    <div>
+      <h3>🔄 Cycle Property</h3>
+      <p>Take any cycle. If an edge is <strong>strictly heavier</strong> than every other edge on that cycle, that edge cannot belong to any MST.</p>
+      <div class="ib ib-orange"><i>⚠️</i><p>This explains why Kruskal rejects edges that create cycles — any new cycle-creating edge is not the minimum on its cycle.</p></div>
+    </div>
+  </div>
+  <h3>Why greedy works here</h3>
+  <p>Many graph problems do not allow greedy decisions. MST does. When you pick a safe edge using the cut property, you are not ruining optimality — there will still exist an MST containing everything you have chosen so far. That is why both Prim and Kruskal are greedy, but still correct.</p>
+</section>
+
+<!-- 3. DSU TEMPLATE -->
+<section class="card" id="s3">
+  <h2>3. DSU Template</h2>
+  <p>Kruskal repeatedly asks two questions: <em>are u and v already in the same component?</em> and <em>if not, merge their components.</em> That is exactly what DSU is designed for.</p>
+  <div class="ib ib-purple"><i>🔑</i><p><strong>Convention:</strong> <span class="ic">par[u] &lt; 0</span> means u is a root. <span class="ic">-par[u]</span> is the component size. Non-root nodes store their parent index. Union by size + path compression.</p></div>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+
+#define ll long long
+const int N = 200000 + 5;
+
+struct DSU {
+    int par[N];
+
+    void init(int n) {
+        fill(par, par + n, -1);
+    }
+
+    int find(int u) {
+        if (par[u] &lt; 0) return u;
+        return par[u] = find(par[u]);
+    }
+
+    bool same(int a, int b) {
+        return find(a) == find(b);
+    }
+
+    bool join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return false;
+
+        if (-par[a] &lt; -par[b]) swap(a, b); // a has bigger size
+        par[a] += par[b];
+        par[b] = a;
+        return true;
+    }
+
+    int size(int u) {
+        return -par[find(u)];
+    }
+} dsu;</code></pre>
+  <details>
+    <summary>DSU line-by-line explanation <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <h3>par[root] is negative</h3>
+      <p>This stores extra information: the size. A bigger component has a more negative value. So if <span class="ic">par[a] &gt; par[b]</span>, then a is actually the smaller component.</p>
+      <h3>Path compression</h3>
+      <p><span class="ic">return par[u] = find(par[u]);</span> — flattens the tree on every find, making future find() calls much faster. Amortized α(n).</p>
+      <h3>Union by size</h3>
+      <p><span class="ic">if (-par[a] &lt; -par[b]) swap(a, b);</span> — ensures the smaller component attaches to the larger one. This prevents trees from becoming tall.</p>
+      <h3>join() returns bool</h3>
+      <p>Returns <span class="ic">true</span> if a merge actually happened (different components), <span class="ic">false</span> if they were already connected. This is exactly what Kruskal needs to decide: add edge or skip.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 4. EDGE LIST -->
+<section class="card" id="s4">
+  <h2>4. Edge List — The Natural Kruskal Structure</h2>
+  <p>Kruskal does not care about adjacency traversal. It only cares about <strong>all edges sorted by weight</strong>. So the graph is best stored as an edge list:</p>
+<pre><code>struct Edge {
+    int u, v;
+    ll w;
+
+    bool operator &lt; (const Edge&amp; other) const {
+        return w &lt; other.w;
+    }
+};
+
+vector&lt;Edge&gt; edges;</code></pre>
+  <div class="ib ib-blue"><i>💡</i><p><strong>Key insight:</strong> different algorithms want different graph representations. Kruskal wants an edge list. Prim wants an adjacency list or matrix. Always match your data structure to your algorithm.</p></div>
+  <div class="grid2">
+    <div>
+      <h3>Reading input for Kruskal</h3>
+<pre><code>cin &gt;&gt; n &gt;&gt; m;
+edges.reserve(m);
+for (int i = 0; i &lt; m; i++) {
+    int u, v; ll w;
+    cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+    --u, --v;  // 0-based
+    edges.push_back({u, v, w});
+}</code></pre>
+    </div>
+    <div>
+      <h3>Self-loops and parallel edges</h3>
+      <p>Both are fine in the edge list. Kruskal's DSU will naturally reject self-loops (<span class="ic">u == v</span> → same component immediately) and will prefer lighter parallel edges.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5. KRUSKAL MASTER TEMPLATE -->
+<section class="card" id="s5">
+  <h2>5. Kruskal Master Template</h2>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+
+#define ll long long
+const int N = 200000 + 5;
+
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) {
+        if (par[u] &lt; 0) return u;
+        return par[u] = find(par[u]);
+    }
+    bool join(int a, int b) {
+        a = find(a); b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b];
+        par[b] = a;
+        return true;
+    }
+} dsu;
+
+struct Edge {
+    int u, v;
+    ll w;
+    bool operator &lt; (const Edge&amp; other) const {
+        return w &lt; other.w;
+    }
+};
+
+int n, m;
+vector&lt;Edge&gt; edges, mst;
+
+ll kruskal() {
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+
+    ll cost = 0;
+    int taken = 0;
+    mst.clear();
+
+    for (auto &amp;e : edges) {
+        if (dsu.join(e.u, e.v)) {
+            cost += e.w;
+            mst.push_back(e);
+            taken++;
+            if (taken == n - 1) break;
+        }
+    }
+
+    if (taken != n - 1) return -1; // graph disconnected
+    return cost;
+}
+
+int main() { _
+    cin &gt;&gt; n &gt;&gt; m;
+    edges.reserve(m);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; ll w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        --u, --v;
+        edges.push_back({u, v, w});
+    }
+    ll ans = kruskal();
+    if (ans == -1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; ans &lt;&lt; '\n';
+}</code></pre>
+  <details>
+    <summary>Step-by-step idea <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <h3>Step 1: Sort edges</h3>
+      <p>We want to try cheaper edges before more expensive ones. Sorting puts them in non-decreasing order of weight.</p>
+      <h3>Step 2: Each vertex starts in its own component</h3>
+      <p><span class="ic">dsu.init(n)</span> initializes all <span class="ic">par[i] = -1</span>, meaning n singleton components.</p>
+      <h3>Step 3: Scan edges lightest to heaviest</h3>
+      <p>For each edge (u, v, w): if u and v are already in the same component, adding it would create a cycle → skip. Otherwise, this edge connects two different components → take it, add weight to cost.</p>
+      <h3>Step 4: Stop after n−1 chosen edges</h3>
+      <p>At that point a spanning tree is already built. The <span class="ic">if (taken == n-1) break;</span> is a useful early exit optimization.</p>
+      <h3>Step 5: Check connectivity</h3>
+      <p>If we couldn't collect n−1 edges, the graph was disconnected. Return −1 (or handle as a spanning forest).</p>
+    </div>
+  </details>
+</section>
+
+<!-- 6. KRUSKAL CORRECTNESS -->
+<section class="card" id="s6">
+  <h2>6. Kruskal Correctness Proof</h2>
+  <div class="ib ib-green"><i>📐</i><p><strong>Claim:</strong> Whenever Kruskal adds an edge e, there exists some MST containing all chosen edges so far.</p></div>
+  <p><strong>Proof:</strong> Suppose Kruskal is currently considering edge e = (u, v, w) and decides to add it. At this moment, u and v are in different DSU components. Think of the cut where one side is the component containing u, and the other side is everything else.</p>
+  <p>Edge e crosses this cut. Now why is e safe? Because Kruskal processes edges in nondecreasing order. If there were a lighter edge crossing this cut, Kruskal would have processed it earlier — and since its endpoints were also in different components at that time, Kruskal would have taken it. So e is a <strong>minimum-weight crossing edge</strong> for that cut.</p>
+  <p>By the cut property, such an edge is safe: some MST contains it. Thus after each accepted edge, there still exists an MST containing all accepted edges. After Kruskal accepts n−1 edges, those edges form a spanning tree. Since they are all contained in some MST, they themselves must be an MST. ∎</p>
+</section>
+
+<!-- 7. KRUSKAL COMPLEXITY -->
+<section class="card" id="s7">
+  <h2>7. Kruskal Complexity</h2>
+  <div class="grid2">
+    <div>
+      <div class="tw"><table>
+        <thead><tr><th>Phase</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Sort m edges</td><td class="cb">O(m log m)</td></tr>
+          <tr><td>DSU operations (m total)</td><td class="cy">O(m α(n))</td></tr>
+          <tr><td><strong>Total</strong></td><td class="cb"><strong>O(m log m)</strong></td></tr>
+        </tbody>
+      </table></div>
+      <p>Sorting dominates. α(n) is the inverse Ackermann function — essentially constant in practice.</p>
+    </div>
+    <div>
+      <h3>When Kruskal shines</h3>
+      <ul>
+        <li>Input already comes as an edge list</li>
+        <li>Graph is sparse (m ≪ n²)</li>
+        <li>Very short implementation needed</li>
+        <li>Offline processing over sorted edges</li>
+        <li>MST variants involving DSU logic</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 8. PRIM VS DIJKSTRA -->
+<section class="card" id="s8">
+  <h2>8. Prim vs Dijkstra — The Deep Analogy</h2>
+  <p>This is the key bridge to your Dijkstra tutorial. The outer skeleton is almost identical.</p>
+  <div class="grid2">
+    <div>
+      <h3>In Dijkstra</h3>
+      <div class="formula">dist[v] = best path distance from source to v</div>
+      <p>Relaxation: <span class="ic">if (dist[u] + w &lt; dist[v]) dist[v] = dist[u] + w;</span></p>
+    </div>
+    <div>
+      <h3>In Prim</h3>
+      <div class="formula">dist[v] = min edge weight connecting v to current tree</div>
+      <p>Relaxation: <span class="ic">if (w &lt; dist[v]) dist[v] = w;</span></p>
+    </div>
+  </div>
+  <div class="ib ib-orange"><i>⚡</i><p><strong>The only change in relaxation:</strong> Prim does not care about total path cost from source. It only cares about the cheapest single edge that can attach v to the current tree. The outer structure — maintain unfinalized set, extract min, relax neighbors — is identical.</p></div>
+  <div class="tw"><table>
+    <thead><tr><th>Aspect</th><th>Dijkstra</th><th>Prim</th></tr></thead>
+    <tbody>
+      <tr><td>Goal</td><td>Shortest path from source</td><td>Minimum spanning tree</td></tr>
+      <tr><td>dist[v] meaning</td><td>Shortest total path to v</td><td>Cheapest edge to attach v</td></tr>
+      <tr><td>Relaxation</td><td><span class="ic">dist[u] + w &lt; dist[v]</span></td><td><span class="ic">w &lt; dist[v]</span></td></tr>
+      <tr><td>Negative weights?</td><td class="cr">❌ Fails</td><td class="cy">✓ Fine</td></tr>
+      <tr><td>Dense version</td><td>notVis linear scan O(n²)</td><td>notVis linear scan O(n²)</td></tr>
+      <tr><td>Sparse version</td><td>Min-heap O((n+m) log n)</td><td>Min-heap O(m log n)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 9. DENSE PRIM -->
+<section class="card" id="s9">
+  <h2>9. Dense Prim — notVis Template</h2>
+  <p>Use dense Prim when the graph is dense, n is small enough for O(n²), or the graph is stored as an adjacency matrix. This uses the same <span class="ic">notVis</span> compact-set invariant as your dense Dijkstra template.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+
+#define ll long long
+const ll OO = (1LL &lt;&lt; 60);
+const int N = 2000 + 5;
+
+int n;
+ll adj[N][N];
+ll dista[N];
+int par[N], notVis[N];
+
+ll prim_dense(int src = 0) {
+    int sz = n;
+
+    fill(dista, dista + n, OO);
+    fill(par, par + n, -1);
+    iota(notVis, notVis + n, 0);
+
+    dista[src] = 0;
+    int nxt = src;
+    ll mstCost = 0;
+    int taken = 0;
+
+    while (nxt != -1) {
+        int u = notVis[nxt];
+        notVis[nxt] = notVis[--sz];   // remove u from unvisited in O(1)
+        nxt = -1;
+
+        mstCost += dista[u];
+        taken++;
+
+        ll best = OO;
+
+        for (int i = 0; i &lt; sz; i++) {
+            int v = notVis[i];
+
+            if (adj[u][v] &lt; dista[v]) {    // Prim relaxation: edge weight only
+                dista[v] = adj[u][v];
+                par[v] = u;
+            }
+
+            if (dista[v] &lt; best) {
+                best = dista[v];
+                nxt = i;
+            }
+        }
+    }
+
+    if (taken != n) return -1; // disconnected
+    return mstCost;
+}
+
+int main() { _
+    cin &gt;&gt; n;
+    for (int i = 0; i &lt; n; i++)
+        for (int j = 0; j &lt; n; j++) {
+            cin &gt;&gt; adj[i][j];
+            if (i != j &amp;&amp; adj[i][j] == 0) adj[i][j] = OO; // 0 means no edge
+        }
+
+    ll ans = prim_dense(0);
+    if (ans == -1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; ans &lt;&lt; '\n';
+}</code></pre>
+  <details>
+    <summary>Dense Prim — detailed explanation <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <h3>dista[v]</h3>
+      <p>Current cheapest edge weight that can connect v to the already-built tree.</p>
+      <h3>par[v]</h3>
+      <p>Which tree vertex gives that cheapest connection. Used for reconstruction.</p>
+      <h3>notVis[] invariant</h3>
+      <p>Stores the current unvisited vertices. When we finalize vertex u, we remove it by swapping with the last element and decrementing <span class="ic">sz</span>. We then scan only the live prefix <span class="ic">0..sz-1</span>. This is the same strong invariant as your dense Dijkstra template.</p>
+      <h3>dista[src] = 0</h3>
+      <p>This makes the starting vertex enter the tree first with cost zero. That zero gets added to mstCost — contributing nothing, which is correct.</p>
+      <h3>mstCost += dista[u]</h3>
+      <p>When u is finalized, <span class="ic">dista[u]</span> is the weight of the edge by which u joins the tree. For the source, that cost is zero.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 10. SPARSE PRIM -->
+<section class="card" id="s10">
+  <h2>10. Sparse Prim — done[] Template</h2>
+  <p>Use sparse Prim when the graph is sparse and stored as an adjacency list. Target complexity: O(m log n).</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+
+#define ll long long
+const ll OO = (1LL &lt;&lt; 60);
+const int N = 200000 + 5;
+
+int n, m;
+vector&lt;pair&lt;int,ll&gt;&gt; adj[N];
+ll dista[N];
+int par[N];
+bool done[N];
+
+ll prim_sparse(int src = 0) {
+    fill(dista, dista + n, OO);
+    fill(par, par + n, -1);
+    fill(done, done + n, false);
+
+    priority_queue&lt;pair&lt;ll,int&gt;, vector&lt;pair&lt;ll,int&gt;&gt;, greater&lt;pair&lt;ll,int&gt;&gt;&gt; pq;
+
+    dista[src] = 0;
+    pq.push({0, src});
+
+    ll mstCost = 0;
+    int taken = 0;
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+
+        if (done[u]) continue;   // explicit finalized check
+        done[u] = true;
+
+        mstCost += d;
+        taken++;
+
+        for (auto [v, w] : adj[u]) {
+            if (!done[v] &amp;&amp; w &lt; dista[v]) {   // Prim relaxation: edge weight only
+                dista[v] = w;
+                par[v] = u;
+                pq.push({dista[v], v});
+            }
+        }
+    }
+
+    if (taken != n) return -1; // disconnected
+    return mstCost;
+}
+
+int main() { _
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; ll w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        --u, --v;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    ll ans = prim_sparse(0);
+    if (ans == -1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; ans &lt;&lt; '\n';
+}</code></pre>
+</section>
+
+<!-- 11. DONE[] VS DIST[U]!=D -->
+<section class="card" id="s11">
+  <h2>11. done[] vs dist[u] ≠ d — Why It Matters</h2>
+  <p>In sparse Dijkstra, a common stale-state test is:</p>
+<pre><code>if (d &gt; dist[u]) continue;  // or: if (d != dist[u]) continue;</code></pre>
+  <p>For Prim, depending on only this check is not the best approach. Here is why:</p>
+  <div class="grid2">
+    <div>
+      <div class="ib ib-red"><i>⚠️</i><p><strong>Fragile approach (dist[u] ≠ d):</strong> In Prim, the real logical event is not "is this the latest key?" — it is "has this vertex already been finalized into the tree?" Once a vertex is taken into the MST, any later heap entries for it are meaningless regardless of key equality.</p></div>
+<pre><code>// Less clear intent:
+auto [d, u] = pq.top(); pq.pop();
+if (d != dista[u]) continue;  // fragile</code></pre>
+    </div>
+    <div>
+      <div class="ib ib-green"><i>✓</i><p><strong>Robust approach (done[]):</strong> The most semantically correct version keeps an explicit <span class="ic">bool done[]</span> array. This is clearer, safer, and more faithful to Prim's invariant.</p></div>
+<pre><code>// Explicit and correct:
+auto [d, u] = pq.top(); pq.pop();
+if (done[u]) continue;  // clear intent
+done[u] = true;</code></pre>
+    </div>
+  </div>
+  <div class="ib ib-blue"><i>💡</i><p><strong>The invariant that sparse Prim maintains:</strong> <span class="ic">done[u] = true</span> means u is permanently inside the MST. For every not-done vertex v, <span class="ic">dista[v]</span> is the cheapest edge currently known from the built tree to v. The priority queue may contain many stale entries, but the first time we pop a not-done vertex, that key is the correct minimum connection cost for that vertex.</p></div>
+</section>
+
+<!-- 12. PRIM CORRECTNESS + COMPLEXITY -->
+<section class="card" id="s12">
+  <h2>12. Prim Correctness &amp; Complexity</h2>
+  <div class="grid2">
+    <div>
+      <h3>Correctness</h3>
+      <p>At every step, let T = set of finalized vertices. For each unfinalized v, <span class="ic">dista[v]</span> is the minimum weight among all edges from T to v. Prim chooses vertex u with minimum <span class="ic">dista[u]</span>. So the edge <span class="ic">(par[u], u)</span> is the minimum crossing edge among all edges leaving T.</p>
+      <p>By the cut property, that edge is safe for some MST. Every finalized vertex joins via a safe edge. After all vertices are finalized, we have chosen exactly one entering edge for every non-source vertex → n−1 edges → spanning tree. Since every chosen edge was safe → it is an MST. ∎</p>
+      <p><em>Note: the heap only makes extraction faster. It does not change the logic. Dense and sparse Prim make the same greedy choice.</em></p>
+    </div>
+    <div>
+      <h3>Complexity</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Version</th><th>Time</th><th>Memory</th></tr></thead>
+        <tbody>
+          <tr><td>Dense (notVis)</td><td class="cb">O(n²)</td><td class="cy">O(n²)</td></tr>
+          <tr><td>Sparse (done[])</td><td class="cp">O(m log n)</td><td class="cy">O(n+m)</td></tr>
+        </tbody>
+      </table></div>
+      <p>Dense: each of n extractions scans all remaining unvisited vertices. Sparse: each relaxation pushes one heap state; m total relaxations × log n each.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13. KRUSKAL VS PRIM -->
+<section class="card" id="s13">
+  <h2>13. Kruskal vs Prim — Decision Guide</h2>
+  <div class="grid3">
+    <div>
+      <div class="ib ib-blue"><i>🌿</i><p><strong>Prefer Kruskal when:</strong></p></div>
+      <ul>
+        <li>Input is edge list</li>
+        <li>Sparse graph</li>
+        <li>DSU variants needed</li>
+        <li>Forest behavior natural</li>
+        <li>Short implementation needed</li>
+      </ul>
+    </div>
+    <div>
+      <div class="ib ib-orange"><i>⬛</i><p><strong>Prefer Prim Dense when:</strong></p></div>
+      <ul>
+        <li>Graph is dense</li>
+        <li>Adjacency matrix natural</li>
+        <li>n² is acceptable (small n)</li>
+        <li>Complete graph with implicit weights</li>
+      </ul>
+    </div>
+    <div>
+      <div class="ib ib-purple"><i>🔺</i><p><strong>Prefer Prim Sparse when:</strong></p></div>
+      <ul>
+        <li>Adjacency list is natural</li>
+        <li>Sparse graph</li>
+        <li>Standard competitive input</li>
+        <li>"Grow one tree" logic needed</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Algorithm</th><th>Data Structure</th><th>Time</th><th>Great for</th></tr></thead>
+    <tbody>
+      <tr><td class="cy">Kruskal</td><td>Edge list + DSU</td><td>O(m log m)</td><td>Sparse, offline, DSU variants</td></tr>
+      <tr><td class="cb">Prim Dense</td><td>Matrix + notVis array</td><td>O(n²)</td><td>Dense graphs, implicit complete graphs</td></tr>
+      <tr><td class="cp">Prim Sparse</td><td>Adj. list + min-heap</td><td>O(m log n)</td><td>Standard sparse graph input</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 14. RECONSTRUCTION -->
+<section class="card" id="s14">
+  <h2>14. Reconstructing the Actual MST Edges</h2>
+  <div class="grid2">
+    <div>
+      <h3>In Kruskal</h3>
+      <p>Whenever you accept an edge, push it into the <span class="ic">mst</span> vector.</p>
+<pre><code>vector&lt;Edge&gt; mst;
+// inside loop:
+if (dsu.join(e.u, e.v)) {
+    cost += e.w;
+    mst.push_back(e);  // record MST edge
+}</code></pre>
+    </div>
+    <div>
+      <h3>In Prim</h3>
+      <p>For every vertex v ≠ src, the chosen MST edge is <span class="ic">(par[v], v)</span>.</p>
+<pre><code>// After prim_sparse():
+for (int v = 0; v &lt; n; v++) {
+    if (par[v] != -1)
+        cout &lt;&lt; par[v]+1 &lt;&lt; ' ' &lt;&lt; v+1 &lt;&lt; '\n';
+}</code></pre>
+      <p>Each vertex except the source enters the tree exactly once. At that moment, <span class="ic">par[v] = u</span> is set. That parent edge is the MST edge for v.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 15. EDGE CASES -->
+<section class="card" id="s15">
+  <h2>15. Important Edge Cases</h2>
+  <div class="grid3">
+    <div>
+      <h3>🔗 Disconnected Graph</h3>
+      <p>Full MST does not exist. Kruskal takes fewer than n−1 edges. Prim finalizes fewer than n vertices. Handle by printing IMPOSSIBLE or computing a minimum spanning forest.</p>
+    </div>
+    <div>
+      <h3>➖ Negative Weights</h3>
+      <p>MST algorithms do <strong>not</strong> require nonneg weights — a key difference from Dijkstra. Negative edge weights are completely fine. The tree just minimizes total sum.</p>
+      <div class="ib ib-green" style="margin-top:8px"><i>✓</i><p>Both Kruskal and Prim handle negative weights correctly.</p></div>
+    </div>
+    <div>
+      <h3>🔁 Self-loops</h3>
+      <p>Self-loops can never help an MST. In Kruskal, u == v means same component immediately → rejected by DSU. In Prim, a self-loop never connects a new vertex. No special handling needed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- KRUSKAL TRACER -->
+<section class="card" id="sktracer">
+  <h2>Kruskal Interactive Tracer</h2>
+  <p>Graph: 5 nodes (0–4), 7 edges. Watch Kruskal sort, scan, and merge components step by step.</p>
+  <div class="legend">
+    <span><span class="swatch" style="background:#6b7280"></span>Unprocessed</span>
+    <span><span class="swatch" style="background:var(--warn)"></span>Examining</span>
+    <span><span class="swatch" style="background:var(--good)"></span>In MST</span>
+    <span><span class="swatch" style="background:var(--bad)"></span>Rejected</span>
+  </div>
+  <div class="tracer-wrap">
+    <div>
+      <div class="diagramWrap">
+        <svg id="ksvg" class="graphsvg" viewBox="0 0 760 280" style="height:280px"></svg>
+      </div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);margin:10px 0 4px">SORTED EDGE LIST</div>
+      <div class="elist" id="kelist"></div>
+      <div class="slog" id="kslog"></div>
+    </div>
+    <div class="tside">
+      <div class="ctrl-row">
+        <button class="cbtn" id="kRst">⏮</button>
+        <button class="cbtn" id="kPrv">◀</button>
+        <button class="cbtn" id="kPly">▶</button>
+        <button class="cbtn" id="kNxt">▶|</button>
+      </div>
+      <div class="spd-row">
+        <span>Speed</span><input type="range" id="kSpd" min="0" max="4" value="2"><span id="kSpdLbl">1×</span>
+      </div>
+      <div style="padding:12px 14px;border:3px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(37,99,235,.07),transparent);margin-bottom:10px">
+        <div class="sp-phase" id="kPhase">—</div>
+        <div id="kExp" class="sp-exp" style="margin-top:6px">Press ▶ to start Kruskal</div>
+      </div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);margin-bottom:5px">DSU COMPONENTS</div>
+      <div id="kDsu" class="dsu-wrap"></div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);margin:10px 0 4px">DISTANCES (MST keys)</div>
+      <div class="dist-items" id="kDist"></div>
+      <div class="stepctr" id="kStepctr">Step 0/0</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIM TRACER -->
+<section class="card" id="sptracer">
+  <h2>Prim Sparse Interactive Tracer</h2>
+  <p>Same graph, source = node 0. Watch the tree grow one vertex at a time, and see <span class="ic">done[]</span> and <span class="ic">dist[]</span> evolve.</p>
+  <div class="legend">
+    <span><span class="swatch" style="background:#6b7280"></span>Unvisited</span>
+    <span><span class="swatch" style="background:var(--accent2)"></span>In Tree</span>
+    <span><span class="swatch" style="background:var(--warn)"></span>Extracting</span>
+    <span><span class="swatch" style="background:var(--good)"></span>Just Relaxed</span>
+  </div>
+  <div class="tracer-wrap">
+    <div>
+      <div class="diagramWrap">
+        <svg id="psvg" class="graphsvg" viewBox="0 0 760 280" style="height:280px"></svg>
+      </div>
+      <div class="slog" id="pslog"></div>
+    </div>
+    <div class="tside">
+      <div class="ctrl-row">
+        <button class="cbtn" id="pRst">⏮</button>
+        <button class="cbtn" id="pPrv">◀</button>
+        <button class="cbtn" id="pPly">▶</button>
+        <button class="cbtn" id="pNxt">▶|</button>
+      </div>
+      <div class="spd-row">
+        <span>Speed</span><input type="range" id="pSpd" min="0" max="4" value="2"><span id="pSpdLbl">1×</span>
+      </div>
+      <div style="padding:12px 14px;border:3px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(37,99,235,.07),transparent);margin-bottom:10px">
+        <div class="sp-phase" id="pPhase">—</div>
+        <div id="pExp" class="sp-exp" style="margin-top:6px">Press ▶ to start Prim</div>
+      </div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);margin-bottom:5px">dist[] VALUES</div>
+      <div class="dist-items" id="pDist"></div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);margin:10px 0 4px">done[] STATUS</div>
+      <div class="dist-items" id="pDone"></div>
+      <div class="stepctr" id="pStepctr">Step 0/0</div>
+    </div>
+  </div>
+</section>
+
+<!-- VARIANTS -->
+<section class="card" id="svariants">
+  <h2>20 MST Variants</h2>
+  <p>Each variant follows the exact <strong>7-part structure</strong>:
+  <strong>① Problem Story</strong> — real-world or contest framing ·
+  <strong>② Abstraction</strong> — formal graph-theoretic model ·
+  <strong>③ Why MST Fits</strong> — justification for using MST ·
+  <strong>④ Algorithm Choice</strong> — Kruskal or Prim, with rationale ·
+  <strong>⑤ Full AC-Ready Code</strong> — compilable, self-contained solution ·
+  <strong>⑥ Complexity</strong> — time and space analysis ·
+  <strong>⑦ Problem Link</strong> — direct OJ link to practice.</p>
+  <div class="chips" style="margin-bottom:14px">
+    <span class="chip">Pure Kruskal</span>
+    <span class="chip g">Pure Prim</span>
+    <span class="chip p">MST + Extra Tool</span>
+  </div>
+
+<!-- VARIANT 1 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 1</span> Standard MST by Kruskal</div><span class="hint">CSES 1675</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Undirected weighted graph. Connect all vertices with minimum total cost.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) with n vertices and m weighted edges, find a subset T⊆E of exactly n−1 edges forming a connected acyclic subgraph with minimum total weight.</p>
+<p><strong>Why MST fits:</strong> The goal is global minimum-cost connectivity with no redundant edges — the textbook MST definition.</p>
+<p><strong>Algorithm:</strong> Kruskal — sort edges ascending, use DSU to greedily accept safe edges and reject cycle-forming ones.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1675" target="_blank">🔗 CSES 1675 — Road Reparation</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll cost = 0; int taken = 0;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n-1) break; }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU operations ≈ O(m log m) overall. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 2 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 2</span> Standard MST by Prim Sparse</div><span class="hint">CSES 1675</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Same MST problem, graph given as adjacency list.</p>
+<p><strong>Abstraction:</strong> Undirected weighted graph G=(V,E) as adjacency list. Find minimum weight spanning tree.</p>
+<p><strong>Why MST fits:</strong> Same as Variant 1 — minimize total connection cost across all vertices.</p>
+<p><strong>Algorithm:</strong> Prim Sparse — grow one tree from source using a min-heap; the critical relaxation is <span class="ic">w &lt; dista[v]</span> (edge weight only, not <span class="ic">dist[u]+w</span>).</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1675" target="_blank">🔗 CSES 1675 — Road Reparation</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const ll OO = (1LL &lt;&lt; 60);
+const int N = 200000 + 5;
+int n, m;
+vector&lt;pair&lt;int,ll&gt;&gt; adj[N];
+ll dista[N]; int par[N]; bool done[N];
+int main() { _
+    cin &gt;&gt; n &gt;&gt; m;
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; ll w; cin &gt;&gt; u &gt;&gt; v &gt;&gt; w; --u, --v;
+        adj[u].push_back({v,w}); adj[v].push_back({u,w});
+    }
+    fill(dista, dista+n, OO); fill(par, par+n, -1); fill(done, done+n, false);
+    priority_queue&lt;pair&lt;ll,int&gt;,vector&lt;pair&lt;ll,int&gt;&gt;,greater&lt;&gt;&gt; pq;
+    dista[0] = 0; pq.push({0,0});
+    ll cost = 0; int taken = 0;
+    while (!pq.empty()) {
+        auto [d,u] = pq.top(); pq.pop();
+        if (done[u]) continue;
+        done[u] = true; cost += d; taken++;
+        for (auto [v,w] : adj[u]) if (!done[v] &amp;&amp; w &lt; dista[v]) {
+            dista[v] = w; par[v] = u; pq.push({w,v});
+        }
+    }
+    if (taken != n) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log n) — m relaxations each pushing one heap entry, O(log n) per push/pop. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 3 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 3</span> Standard MST by Prim Dense</div><span class="hint">UVa 10034</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Dense graph or adjacency matrix input.</p>
+<p><strong>Abstraction:</strong> Undirected complete (or dense) graph given as n×n adjacency matrix. Find minimum weight spanning tree.</p>
+<p><strong>Why MST fits:</strong> When m ≈ n² and the graph is given as a matrix, Prim Dense avoids building an explicit edge list and runs optimally in O(n²).</p>
+<p><strong>Algorithm:</strong> Prim Dense — maintain a <span class="ic">notVis[]</span> compact array; each iteration scans all remaining unvisited vertices to find the cheapest key.</p>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=975" target="_blank">🔗 UVa 10034 — Freckles</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const ll OO = (1LL &lt;&lt; 60);
+const int N = 2005;
+ll adj[N][N], dista[N]; int par[N], notVis[N];
+int main() { _
+    int n; cin &gt;&gt; n;
+    for (int i = 0; i &lt; n; i++) for (int j = 0; j &lt; n; j++) {
+        cin &gt;&gt; adj[i][j];
+        if (i != j &amp;&amp; adj[i][j] == 0) adj[i][j] = OO;
+    }
+    fill(dista, dista+n, OO); fill(par, par+n, -1); iota(notVis, notVis+n, 0);
+    int sz = n; dista[0] = 0; int nxt = 0;
+    ll cost = 0; int taken = 0;
+    while (nxt != -1) {
+        int u = notVis[nxt]; notVis[nxt] = notVis[--sz]; nxt = -1;
+        cost += dista[u]; taken++;
+        ll best = OO;
+        for (int i = 0; i &lt; sz; i++) {
+            int v = notVis[i];
+            if (adj[u][v] &lt; dista[v]) { dista[v] = adj[u][v]; par[v] = u; }
+            if (dista[v] &lt; best) { best = dista[v]; nxt = i; }
+        }
+    }
+    if (taken != n) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(n²) — n extractions each scanning up to n unvisited vertices. Space: O(n²) for the adjacency matrix.</p>
+</div></details>
+
+<!-- VARIANT 4 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 4</span> Minimum Spanning Forest</div><span class="hint">CSES 1666</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Graph may be disconnected. Find the minimum spanning tree of each component.</p>
+<p><strong>Abstraction:</strong> Given possibly disconnected G=(V,E), find a subset T⊆E that forms a minimum spanning tree for every connected component — a Minimum Spanning Forest (MSF).</p>
+<p><strong>Why MST fits:</strong> The MST greedy rule is local: accept any safe edge, ignore connectivity of the whole graph. Kruskal naturally builds a forest when the graph is disconnected.</p>
+<p><strong>Algorithm:</strong> Kruskal — drop the <span class="ic">taken == n−1</span> early-exit check; accept all safe edges regardless of how many components remain.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1666" target="_blank">🔗 CSES 1666 — Building Roads (connectivity variant)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll cost = 0;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) cost += e.w; // no taken check: builds MSF
+    cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 5 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 5</span> Maximum Spanning Tree</div><span class="hint">Kruskal reversed</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Maximize total weight while still forming a spanning tree.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), find a spanning tree T such that the sum of edge weights in T is maximized.</p>
+<p><strong>Why MST fits:</strong> The cut property generalizes: among all edges crossing a cut, the maximum-weight one is safe for the maximum spanning tree. Same greedy logic applies.</p>
+<p><strong>Algorithm:</strong> Kruskal with descending sort — reverse the comparator. Alternatively Prim with <span class="ic">w &gt; dista[v]</span> and keys initialized to −∞.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/196/E" target="_blank">🔗 CF 196E — Opening Ceremony (max spanning tree application)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge {
+    int u, v; ll w;
+    bool operator&lt;(const Edge&amp; o) const { return w &gt; o.w; } // descending!
+};
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end()); // heaviest first
+    dsu.init(n);
+    ll cost = 0; int taken = 0;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n-1) break; }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 6 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 6</span> MST with Mandatory Edges</div><span class="hint">CF 891C (feasibility)</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Some edges are required by contract and must appear in the final tree.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) with a forced subset F⊆E, find the minimum spanning tree of G that contains all edges in F, or report IMPOSSIBLE.</p>
+<p><strong>Why MST fits:</strong> Forced edges are a hard constraint on the spanning tree. We check feasibility first (no cycle), then use Kruskal's greedy rule for the remaining edges — the DSU state after forced joins encodes all constraints.</p>
+<p><strong>Algorithm:</strong> Kruskal in two phases — phase 1: join all forced edges (detect cycle → IMPOSSIBLE); phase 2: standard Kruskal on the remaining edges from the existing DSU state.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/891/C" target="_blank">🔗 CF 891C — Envy (can given edges coexist in some MST)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v, id; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m, k; cin &gt;&gt; n &gt;&gt; m &gt;&gt; k;
+    vector&lt;Edge&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) { cin &gt;&gt; edges[i].u &gt;&gt; edges[i].v &gt;&gt; edges[i].w; --edges[i].u, --edges[i].v; edges[i].id = i; }
+    vector&lt;int&gt; forced(k); vector&lt;int&gt; isForced(m, 0);
+    for (int i = 0; i &lt; k; i++) { cin &gt;&gt; forced[i]; --forced[i]; isForced[forced[i]] = 1; }
+    dsu.init(n); ll cost = 0; int taken = 0;
+    for (int id : forced) {
+        if (!dsu.join(edges[id].u, edges[id].v)) { cout &lt;&lt; "IMPOSSIBLE\n"; return 0; }
+        cost += edges[id].w; taken++;
+    }
+    vector&lt;Edge&gt; rest;
+    for (auto &amp;e : edges) if (!isForced[e.id]) rest.push_back(e);
+    sort(rest.begin(), rest.end());
+    for (auto &amp;e : rest) if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n-1) break; }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 7 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 7</span> MST with Forbidden Edges</div><span class="hint">Filter then Kruskal</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Certain edges cannot be used. Find the MST of the remaining graph.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) with a forbidden subset B⊆E, find the MST of G′=(V, E∖B).</p>
+<p><strong>Why MST fits:</strong> Forbidden edges simply do not exist in the problem graph. Filtering them before Kruskal is the cleanest solution — the rest is standard MST.</p>
+<p><strong>Algorithm:</strong> Kruskal on the filtered edge set — skip any edge whose id is in the banned set, then run standard DSU-based Kruskal.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1675" target="_blank">🔗 CSES 1675 — Road Reparation (apply with forbidden set)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v, id; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m, k; cin &gt;&gt; n &gt;&gt; m &gt;&gt; k;
+    vector&lt;Edge&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) { cin &gt;&gt; edges[i].u &gt;&gt; edges[i].v &gt;&gt; edges[i].w; --edges[i].u, --edges[i].v; edges[i].id = i; }
+    vector&lt;int&gt; banned(k); vector&lt;int&gt; isBanned(m, 0);
+    for (int i = 0; i &lt; k; i++) { cin &gt;&gt; banned[i]; --banned[i]; isBanned[banned[i]] = 1; }
+    vector&lt;Edge&gt; good;
+    for (auto &amp;e : edges) if (!isBanned[e.id]) good.push_back(e);
+    sort(good.begin(), good.end());
+    dsu.init(n);
+    ll cost = 0; int taken = 0;
+    for (auto &amp;e : good) if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n-1) break; }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 8 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 8</span> Output MST Edges (Reconstruction)</div><span class="hint">CSES 1675</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> The judge wants the exact chosen edges, not only the cost.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), find and output the n−1 edges that form the MST, along with the total cost.</p>
+<p><strong>Why MST fits:</strong> Standard MST problem with output reconstruction — store accepted edges in a vector as Kruskal runs.</p>
+<p><strong>Algorithm:</strong> Kruskal — push every accepted edge into an <span class="ic">mst</span> vector; print after the loop.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1675" target="_blank">🔗 CSES 1675 — Road Reparation (print edges variant)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll cost = 0; int taken = 0;
+    vector&lt;Edge&gt; mst;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) { cost += e.w; mst.push_back(e); if (++taken == n-1) break; }
+    if (taken != n-1) { cout &lt;&lt; "IMPOSSIBLE\n"; return 0; }
+    cout &lt;&lt; cost &lt;&lt; '\n';
+    for (auto &amp;e : mst) cout &lt;&lt; e.u+1 &lt;&lt; ' ' &lt;&lt; e.v+1 &lt;&lt; ' ' &lt;&lt; e.w &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 9 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 9</span> MST Cost per Connected Component</div><span class="hint">DSU accumulation</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Disconnected graph. For each component, output its MST cost.</p>
+<p><strong>Abstraction:</strong> Given disconnected G=(V,E), compute for each connected component its minimum spanning tree cost, and optionally its size and representative root.</p>
+<p><strong>Why MST fits:</strong> Kruskal naturally builds the minimum spanning forest. Each DSU root after the algorithm represents one component; cost accumulation is done per root.</p>
+<p><strong>Algorithm:</strong> Kruskal (MSF variant) — record accepted edges with their component root; use DSU roots to group and sum costs per component.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1666" target="_blank">🔗 CSES 1666 — Building Roads (per-component connectivity)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    vector&lt;Edge&gt; chosen;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) chosen.push_back(e);
+    // Accumulate cost per component root
+    unordered_map&lt;int, ll&gt; compCost;
+    for (auto &amp;e : chosen) compCost[dsu.find(e.u)] += e.w;
+    for (int i = 0; i &lt; n; i++)
+        if (dsu.find(i) == i)
+            cout &lt;&lt; "root=" &lt;&lt; i+1 &lt;&lt; " size=" &lt;&lt; -dsu.par[i] &lt;&lt; " cost=" &lt;&lt; compCost[i] &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 10 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 10</span> Lexicographically Smallest MST</div><span class="hint">CF 1108F</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Among all MSTs with the same total weight, find the one lexicographically smallest by edge IDs.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) where edges have IDs 1..m, find the MST whose sorted edge-ID sequence is lexicographically minimum among all optimal MSTs.</p>
+<p><strong>Why MST fits:</strong> The MST weight is unique; we only need to break ties among equal-weight MSTs. Adding a secondary sort key to Kruskal's comparator achieves this deterministically.</p>
+<p><strong>Algorithm:</strong> Kruskal — sort edges by (weight, id) ascending; Kruskal will naturally choose the lex-smallest edge ID whenever weights are equal.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/1108/F" target="_blank">🔗 CF 1108F — MST Unification</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge {
+    int u, v, id; ll w;
+    bool operator&lt;(const Edge&amp; o) const {
+        if (w != o.w) return w &lt; o.w;
+        return id &lt; o.id; // tie-break by id for lex-smallest
+    }
+};
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) { cin &gt;&gt; edges[i].u &gt;&gt; edges[i].v &gt;&gt; edges[i].w; --edges[i].u, --edges[i].v; edges[i].id = i; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll cost = 0; int taken = 0;
+    vector&lt;int&gt; mstIds;
+    for (auto &amp;e : edges)
+        if (dsu.join(e.u, e.v)) { cost += e.w; mstIds.push_back(e.id+1); if (++taken == n-1) break; }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else { cout &lt;&lt; cost &lt;&lt; '\n'; for (int id : mstIds) cout &lt;&lt; id &lt;&lt; ' '; cout &lt;&lt; '\n'; }
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 11 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 11</span> MST on Complete Graph of Points (Dense Prim)</div><span class="hint">UVa 10034</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> n points in 2D. Edge weight is squared Euclidean distance. Build cheapest network.</p>
+<p><strong>Abstraction:</strong> Given n 2D points, define a complete graph where w(i,j) = Euclidean distance between points i and j. Find the MST of this complete graph.</p>
+<p><strong>Why MST fits:</strong> We want to connect all points with minimum total wire length — MST on the geometric complete graph gives the optimal network.</p>
+<p><strong>Algorithm:</strong> Prim Dense — compute edge weights on the fly via the distance function; no explicit edge list needed, saving O(n²) memory allocation.</p>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=975" target="_blank">🔗 UVa 10034 — Freckles</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+const int N = 5005; const double OO = 1e100;
+double x[N], y[N], dista[N]; bool done[N];
+double w(int i, int j) { double dx=x[i]-x[j], dy=y[i]-y[j]; return dx*dx+dy*dy; }
+int main() { _
+    int n; cin &gt;&gt; n;
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; x[i] &gt;&gt; y[i];
+    fill(dista, dista+n, OO); fill(done, done+n, false);
+    dista[0] = 0; double cost = 0;
+    for (int it = 0; it &lt; n; it++) {
+        int u = -1;
+        for (int i = 0; i &lt; n; i++) if (!done[i] &amp;&amp; (u==-1 || dista[i]&lt;dista[u])) u=i;
+        done[u] = true; cost += dista[u];
+        for (int v = 0; v &lt; n; v++) if (!done[v]) { double c=w(u,v); if (c&lt;dista[v]) dista[v]=c; }
+    }
+    cout &lt;&lt; sqrt(cost) &lt;&lt; '\n'; // if Euclidean distance not squared
+}</code></pre>
+<p><strong>Complexity:</strong> O(n²) — n iterations each scanning up to n unvisited points. Space: O(n) beyond the point coordinates.</p>
+</div></details>
+
+<!-- VARIANT 12 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 12</span> MST on Strings by Hamming Distance (Dense Prim)</div><span class="hint">Complete implicit graph</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Each vertex is a binary string. Edge cost = Hamming distance. Build cheapest network.</p>
+<p><strong>Abstraction:</strong> Given n binary strings of equal length, define a complete graph where w(i,j) = Hamming distance between strings i and j. Find the MST.</p>
+<p><strong>Why MST fits:</strong> We need to connect all strings with minimum total dissimilarity cost — a minimum spanning network over the Hamming metric space.</p>
+<p><strong>Algorithm:</strong> Prim Dense — compute Hamming distance on demand between the current tree node and each candidate; no explicit edge storage needed.</p>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2493" target="_blank">🔗 UVa 11857 — Driving Range (adapt for Hamming metric)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+const int N = 2005; const int OO = 1e9;
+string s[N]; int dista[N]; bool done[N];
+int hamming(const string &amp;a, const string &amp;b) { int r=0; for (int i=0;i&lt;(int)a.size();i++) r+=(a[i]!=b[i]); return r; }
+int main() { _
+    int n, len; cin &gt;&gt; n &gt;&gt; len;
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; s[i];
+    fill(dista, dista+n, OO); fill(done, done+n, false);
+    dista[0] = 0; ll cost = 0;
+    for (int it = 0; it &lt; n; it++) {
+        int u = -1;
+        for (int i = 0; i &lt; n; i++) if (!done[i] &amp;&amp; (u==-1||dista[i]&lt;dista[u])) u=i;
+        done[u] = true; cost += dista[u];
+        for (int v = 0; v &lt; n; v++) if (!done[v]) { int c=hamming(s[u],s[v]); if (c&lt;dista[v]) dista[v]=c; }
+    }
+    cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(n² · L) where L is the string length — n² Hamming distance computations each taking O(L). Space: O(n · L) for the strings.</p>
+</div></details>
+
+<!-- VARIANT 13 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 13</span> Second-Best MST</div><span class="hint">UVa 10600 / 10462</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Find the minimum-cost spanning tree that is different from the MST.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), find the spanning tree T* with minimum total weight subject to T* ≠ MST. The second-best MST differs from the optimal by exactly one edge swap.</p>
+<p><strong>Why MST fits:</strong> Build the MST first, then enumerate all single edge-swap candidates. For each non-tree edge (u,v,w), swap it with the maximum edge on the u-v tree path. The cheapest valid swap gives the second-best MST.</p>
+<p><strong>Algorithm:</strong> Kruskal for MST, then LCA with binary-lifting max-edge queries to evaluate all swap candidates in O(m log n).</p>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=1541" target="_blank">🔗 UVa 10600 — ACM Contest and Blackout</a>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=1403" target="_blank" style="margin-left:8px">🔗 UVa 10462 — Is There A Second Way Left?</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N=200000+5, LG=20;
+/* ... DSU and Kruskal setup ... */
+vector&lt;pair&lt;int,ll&gt;&gt; tree[N];
+int up[N][LG], dep[N]; ll mx[N][LG];
+void dfs(int u, int p, ll w) {
+    up[u][0]=p; mx[u][0]=w;
+    for (int j=1;j&lt;LG;j++) { up[u][j]=up[up[u][j-1]][j-1]; mx[u][j]=max(mx[u][j-1],mx[up[u][j-1]][j-1]); }
+    for (auto [v,c]:tree[u]) if(v!=p){dep[v]=dep[u]+1;dfs(v,u,c);}
+}
+ll queryMax(int u, int v) {
+    ll ans=0; if(dep[u]&lt;dep[v])swap(u,v);
+    int diff=dep[u]-dep[v];
+    for(int j=LG-1;j&gt;=0;j--) if(diff&amp;(1&lt;&lt;j)){ans=max(ans,mx[u][j]);u=up[u][j];}
+    if(u==v) return ans;
+    for(int j=LG-1;j&gt;=0;j--) if(up[u][j]!=up[v][j]){ans=max({ans,mx[u][j],mx[v][j]});u=up[u][j];v=up[v][j];}
+    return max({ans,mx[u][0],mx[v][0]});
+}
+/* After building MST:
+   dfs(0,0,0);
+   for non-MST edge e:
+     ll cand = mst + e.w - queryMax(e.u, e.v);
+     if (cand > mst) second = min(second, cand); */</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for Kruskal + O(n log n) for binary-lifting DFS + O(m log n) for swap queries. Space: O(n log n) for the lifting tables.</p>
+</div></details>
+
+<!-- VARIANT 14 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 14</span> MST Uniqueness Check</div><span class="hint">CF 1108F</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Is the MST unique?</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), determine whether there exists exactly one MST or multiple MSTs with the same minimum total weight.</p>
+<p><strong>Why MST fits:</strong> Build the MST, then check whether any non-tree edge has the same weight as the maximum edge on its tree path — if so, an alternative MST exists via that swap.</p>
+<p><strong>Algorithm:</strong> Kruskal for MST + LCA max-path queries. Alternatively (simpler): run Kruskal twice — once with strict <span class="ic">&lt;</span> and once with <span class="ic">&lt;=</span>; if the costs differ, uniqueness is broken.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/1108/F" target="_blank">🔗 CF 1108F — MST Unification</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; };
+// Run Kruskal with a custom comparator
+ll kruskal(int n, vector&lt;Edge&gt;&amp; edges, bool strict) {
+    sort(edges.begin(), edges.end(), [&amp;](const Edge&amp; a, const Edge&amp; b){
+        return strict ? a.w &lt; b.w : a.w &lt;= b.w;
+    });
+    dsu.init(n); ll cost = 0; int taken = 0;
+    for (auto &amp;e : edges) if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n-1) break; }
+    return (taken == n-1) ? cost : -1;
+}
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    ll c1 = kruskal(n, edges, true);   // strict sort
+    ll c2 = kruskal(n, edges, false);  // non-strict sort
+    // If c1 != c2, sort order matters → MST is not unique
+    cout &lt;&lt; (c1 == c2 ? "UNIQUE\n" : "NOT UNIQUE\n");
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU, done twice. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 15 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 15</span> Offline Threshold Queries</div><span class="hint">Offline DSU sweep</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Offline queries: if we keep only edges with weight ≤ X, how many Kruskal edges are accepted?</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) and q offline queries each asking "how many MSF edges would be taken if only edges with w ≤ X are used?", answer all queries efficiently.</p>
+<p><strong>Why MST fits:</strong> Kruskal naturally sweeps edges in weight order. Sorting both edges and queries by threshold allows a single coordinated pass — the DSU state after processing all edges ≤ X gives the answer for query X.</p>
+<p><strong>Algorithm:</strong> Kruskal-style sweep — sort edges and queries jointly by threshold; advance the edge pointer until the threshold is exceeded, then record the current taken count for that query.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/1661/E" target="_blank">🔗 CF 1661E — Offline Queries (DSU sweep template)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+struct Query { ll x; int id; bool operator&lt;(const Query&amp; o) const { return x &lt; o.x; } };
+int main() { _
+    int n, m, q; cin &gt;&gt; n &gt;&gt; m &gt;&gt; q;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    vector&lt;Query&gt; qs(q);
+    for (int i = 0; i &lt; q; i++) { cin &gt;&gt; qs[i].x; qs[i].id = i; }
+    sort(edges.begin(), edges.end()); sort(qs.begin(), qs.end());
+    dsu.init(n);
+    vector&lt;int&gt; ans(q); int j = 0, taken = 0;
+    for (auto&amp; qu : qs) {
+        while (j &lt; m &amp;&amp; edges[j].w &lt;= qu.x) { if (dsu.join(edges[j].u, edges[j].v)) taken++; j++; }
+        ans[qu.id] = taken;
+    }
+    for (int a : ans) cout &lt;&lt; a &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O((m+q) log(m+q)) for sorting + O(m α(n)) for DSU. Space: O(n+m+q).</p>
+</div></details>
+
+<!-- VARIANT 16 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 16</span> Incremental MSF — Add Edges and Report Cost</div><span class="hint">LightOJ 1123</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Edges are added one by one. After each addition, report the current minimum spanning forest cost.</p>
+<p><strong>Abstraction:</strong> Process q edge insertions online; after each insertion, output the MSF cost of the current graph.</p>
+<p><strong>Why MST fits:</strong> Each insertion potentially changes the MSF. The simplest correct approach is to re-run Kruskal from scratch with all edges seen so far — optimal for small inputs; more advanced approaches use link-cut trees.</p>
+<p><strong>Algorithm:</strong> Incremental Kruskal — maintain a sorted growing edge list; after each insertion, re-run full Kruskal. (For large inputs, use a more advanced offline MST data structure.)</p>
+<a class="var-oj" href="http://lightoj.com/problem/trail-maintenance" target="_blank">🔗 LightOJ 1123 — Trail Maintenance</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;Edge&gt; all;
+    while (q--) {
+        Edge e; cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; all.push_back(e);
+        vector&lt;Edge&gt; cur = all; sort(cur.begin(), cur.end());
+        dsu.init(n);
+        ll cost = 0; int taken = 0;
+        for (auto &amp;x : cur) if (dsu.join(x.u, x.v)) { cost += x.w; taken++; }
+        if (taken != n-1) cout &lt;&lt; -1 &lt;&lt; '\n';
+        else cout &lt;&lt; cost &lt;&lt; '\n';
+    }
+}</code></pre>
+<p><strong>Complexity:</strong> O(q · m log m) naively (re-sort and re-run Kruskal for each insertion). Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 17 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 17</span> Minimum Bottleneck Spanning Tree</div><span class="hint">MST property</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Minimize the maximum edge weight in the spanning tree.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), find a spanning tree T that minimizes max{w(e) : e ∈ T}. This is the minimum bottleneck spanning tree (MBST).</p>
+<p><strong>Why MST fits:</strong> Every MST is also an MBST — a classical theorem. Kruskal adds edges in ascending weight order; the last accepted edge is always the bottleneck of the MST it produces.</p>
+<p><strong>Algorithm:</strong> Kruskal — record the weight of the last accepted edge as the bottleneck; everything else is standard.</p>
+<a class="var-oj" href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=2493" target="_blank">🔗 UVa 11857 — Driving Range (find MBST bottleneck)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll bottleneck = -1; int taken = 0;
+    for (auto &amp;e : edges) {
+        if (dsu.join(e.u, e.v)) {
+            bottleneck = e.w; // last accepted edge = bottleneck
+            if (++taken == n-1) break;
+        }
+    }
+    if (taken != n-1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; bottleneck &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 18 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 18</span> Node Activation Cost — Super Source Modeling</div><span class="hint">CF 1245D</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Each city can either build its own power station at cost c[i], or connect via edges. Find the cheapest global plan.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E) where each vertex has an optional self-activation cost c[i], find the minimum total cost to make all vertices active — either by paying c[i] directly or by connecting to an already-active vertex via edges.</p>
+<p><strong>Why MST fits:</strong> Adding a super source S connected to each vertex with weight c[i] transforms the problem into a standard MST on n+1 vertices. An S–i edge being in the MST means vertex i activates itself; a regular edge means it connects to the network.</p>
+<p><strong>Algorithm:</strong> Kruskal on the augmented graph with the super source — add n extra edges and run standard Kruskal on n+1 vertices.</p>
+<a class="var-oj" href="https://codeforces.com/problemset/problem/1245/D" target="_blank">🔗 CF 1245D — Shichikuji and Power Grid</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;ll&gt; c(n);
+    for (auto &amp;x : c) cin &gt;&gt; x;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    int S = n; // super source index
+    for (int i = 0; i &lt; n; i++) edges.push_back({S, i, c[i]});
+    sort(edges.begin(), edges.end());
+    dsu.init(n + 1);
+    ll cost = 0; int taken = 0;
+    for (auto &amp;e : edges) if (dsu.join(e.u, e.v)) { cost += e.w; if (++taken == n) break; }
+    cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O((m+n) log(m+n)) for sorting + O((m+n) α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 19 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 19</span> Clustering — Stop Kruskal at k Components</div><span class="hint">POJ 2349</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> Partition n points into exactly k clusters, minimizing total internal connection cost.</p>
+<p><strong>Abstraction:</strong> Given G=(V,E), find a minimum spanning forest with exactly k trees (k components), minimizing the total weight of edges chosen.</p>
+<p><strong>Why MST fits:</strong> The MSF with k components is obtained by running Kruskal and stopping when the number of components drops to k — the first k−1 edges that would complete the full MST are simply left out.</p>
+<p><strong>Algorithm:</strong> Kruskal with component counter — augment DSU with a <span class="ic">comps</span> field that decrements on each merge; stop when <span class="ic">comps == k</span>.</p>
+<a class="var-oj" href="http://poj.org/problem?id=2349" target="_blank">🔗 POJ 2349 — Arctic Network</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const int N = 200000 + 5;
+struct DSU {
+    int par[N], comps;
+    void init(int n) { fill(par, par + n, -1); comps = n; }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a); b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; comps--; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m, k; cin &gt;&gt; n &gt;&gt; m &gt;&gt; k;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    ll cost = 0;
+    for (auto &amp;e : edges) {
+        if (dsu.comps == k) break; // stop at k components
+        if (dsu.join(e.u, e.v)) cost += e.w;
+    }
+    cout &lt;&lt; cost &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+<!-- VARIANT 20 -->
+<details>
+<summary><div class="var-header"><span class="var-num">Variant 20</span> Cheapest Extra Edge to Connect MSF Components</div><span class="hint">Post-Kruskal DSU</span></summary>
+<div class="detailsBody">
+<p><strong>Story:</strong> You built a minimum spanning forest on a disconnected graph. Now find the cheapest additional edge that connects two different forest components.</p>
+<p><strong>Abstraction:</strong> Given a disconnected G=(V,E), after building the MSF, find the minimum weight edge (u,v) such that u and v are in different MSF components — i.e., the cheapest bridge between two components.</p>
+<p><strong>Why MST fits:</strong> The DSU state after Kruskal fully encodes component membership. Scanning all non-tree edges for the cheapest cross-component one is a direct post-Kruskal query on the DSU.</p>
+<p><strong>Algorithm:</strong> Kruskal (MSF) to build the forest, then scan all edges for the minimum-weight one crossing two different DSU components.</p>
+<a class="var-oj" href="https://cses.fi/problemset/task/1676" target="_blank">🔗 CSES 1676 — Road Construction (connect MSF components)</a>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+#define _ ios::sync_with_stdio(false); cin.tie(nullptr);
+using namespace std;
+#define ll long long
+const ll OO = (1LL &lt;&lt; 60);
+const int N = 200000 + 5;
+struct DSU {
+    int par[N];
+    void init(int n) { fill(par, par + n, -1); }
+    int find(int u) { return par[u] &lt; 0 ? u : par[u] = find(par[u]); }
+    bool join(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false;
+        if (-par[a] &lt; -par[b]) swap(a, b);
+        par[a] += par[b]; par[b] = a; return true;
+    }
+} dsu;
+struct Edge { int u, v; ll w; bool operator&lt;(const Edge&amp; o) const { return w &lt; o.w; } };
+int main() { _
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (auto &amp;e : edges) { cin &gt;&gt; e.u &gt;&gt; e.v &gt;&gt; e.w; --e.u, --e.v; }
+    sort(edges.begin(), edges.end());
+    dsu.init(n);
+    for (auto &amp;e : edges) dsu.join(e.u, e.v); // build MSF
+    // Find cheapest cross-component edge
+    ll best = OO;
+    for (auto &amp;e : edges)
+        if (dsu.find(e.u) != dsu.find(e.v))
+            best = min(best, e.w);
+    if (best == OO) cout &lt;&lt; "NO EXTRA EDGE\n";
+    else cout &lt;&lt; best &lt;&lt; '\n';
+}</code></pre>
+<p><strong>Complexity:</strong> O(m log m) for sorting + O(m α(n)) for DSU. Space: O(n+m).</p>
+</div></details>
+
+</section><!-- end variants -->
+
+<!-- COMMON MISTAKES -->
+<section class="card" id="smistakes">
+  <h2>Common Mistakes</h2>
+  <div class="grid2">
+    <div>
+      <h3>Kruskal Mistakes</h3>
+      <ul class="mistake" style="list-style:none;padding:0">
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Using adjacency list for Kruskal when edge list is natural</li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Forgetting to sort edges before the main loop</li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Comparing DSU parents directly instead of roots — always call <span class="ic">find()</span></li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Forgetting the disconnected graph case (check <span class="ic">taken == n-1</span>)</li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Using int for weights when ll is needed (overflow)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Prim Mistakes</h3>
+      <ul class="mistake" style="list-style:none;padding:0">
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Writing Dijkstra relaxation <span class="ic">dist[u]+w</span> instead of Prim's <span class="ic">w</span></li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> In sparse Prim, depending only on <span class="ic">d == dist[u]</span> for stale detection — use <span class="ic">done[u]</span></li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Applying Prim on a directed graph — MST is for undirected only</li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> In dense Prim, forgetting that <span class="ic">notVis</span> stores vertex IDs, not positions</li>
+        <li><span style="color:var(--warn);font-weight:900">⚠</span> Initializing <span class="ic">dista[src] = OO</span> instead of 0</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- MENTAL MODEL -->
+<section class="card" id="smodel">
+  <h2>Mental Model — Pattern Recognition</h2>
+  <h3>How to recognize MST immediately</h3>
+  <p>When the problem statement says: <em>connect everything, minimum total cost, no need for shortest path from one source, undirected weighted graph, no cycles allowed or implied</em> — think <strong>MST</strong>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>One-line summary</th><th>Algorithm</th></tr></thead>
+    <tbody>
+      <tr><td>Add the globally cheapest edge that does not make a cycle</td><td class="cy"><strong>Kruskal</strong></td></tr>
+      <tr><td>Add the cheapest edge that expands the current tree outward</td><td class="cp"><strong>Prim</strong></td></tr>
+    </tbody>
+  </table></div>
+  <h3>The 3 master templates to memorize</h3>
+  <div class="chips">
+    <span class="chip">DSU (par[u]&lt;0 = root)</span>
+    <span class="chip">Kruskal on edge list</span>
+    <span class="chip g">Prim dense (notVis scan)</span>
+    <span class="chip p">Prim sparse (done[] + heap)</span>
+  </div>
+  <div class="ib ib-purple"><i>🗺️</i><p><strong>Roadmap alignment:</strong> This tutorial comes naturally after DSU and Dijkstra. Your DSU template style and dense Dijkstra notVis style fit directly here — Kruskal uses DSU as-is, and Prim uses the Dijkstra skeleton with one-line relaxation change.</p></div>
+  <h3>Variant taxonomy at a glance</h3>
+  <div class="grid3">
+    <div class="ib ib-blue"><i>📦</i><p><strong>Pure Kruskal:</strong> MSF, max span, mandatory/forbidden edges, lex tie-breaking, bottleneck, clustering, super-source, offline threshold queries</p></div>
+    <div class="ib ib-green"><i>🌱</i><p><strong>Pure Prim:</strong> Sparse/dense standard, complete graph of points, strings, any implicit complete-graph model</p></div>
+    <div class="ib ib-purple"><i>🔗</i><p><strong>MST + Extra Tool:</strong> Second-best MST, uniqueness check → need MST first, then LCA + max-edge-on-path queries</p></div>
+  </div>
+</section>
+
+<!-- KNOWLEDGE SUMMARY -->
+<section class="card" id="summary">
+  <h2>Knowledge Summary</h2>
+  <p>After completing this tutorial you should be able to:</p>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✅ Core Understanding</h4>
+      <ul class="checklist">
+        <li>State the MST problem definition precisely</li>
+        <li>Explain the cut and cycle properties</li>
+        <li>Explain why greedy works for MST</li>
+        <li>Prove Kruskal's correctness via cut property</li>
+        <li>Prove Prim's correctness via cut property</li>
+        <li>Explain why <span class="ic">done[u]</span> is better than <span class="ic">d!=dist[u]</span> in Prim</li>
+        <li>Write the DSU template from memory</li>
+        <li>Recognize which Prim variant to use (dense vs sparse)</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠️ Common Mistakes</h4>
+      <ul class="mistake">
+        <li>Using Dijkstra relaxation in Prim code</li>
+        <li>Forgetting to sort edges in Kruskal</li>
+        <li>Not checking <span class="ic">taken == n-1</span> for disconnected graphs</li>
+        <li>Comparing DSU parents directly instead of calling <span class="ic">find()</span></li>
+        <li>Applying Prim to directed graphs</li>
+        <li>Initializing <span class="ic">dista[src]</span> incorrectly</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>📊 Complexity Reference</h4>
+      <div class="tw" style="margin-top:0"><table>
+        <thead><tr><th>Algorithm</th><th>Time</th><th>Space</th></tr></thead>
+        <tbody>
+          <tr><td>Kruskal</td><td class="cb">O(m log m)</td><td class="cy">O(n+m)</td></tr>
+          <tr><td>Prim Dense</td><td class="cb">O(n²)</td><td class="cy">O(n²)</td></tr>
+          <tr><td>Prim Sparse</td><td class="cp">O(m log n)</td><td class="cy">O(n+m)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="ks-block">
+      <h4>🗺️ Decision Guide</h4>
+      <ul>
+        <li><strong>Edge list + sparse:</strong> Kruskal</li>
+        <li><strong>Dense graph / matrix:</strong> Prim Dense</li>
+        <li><strong>Sparse adj. list:</strong> Prim Sparse</li>
+        <li><strong>Implicit complete graph:</strong> Prim Dense on demand</li>
+        <li><strong>Need 2nd-best / uniqueness:</strong> MST + LCA max-path</li>
+        <li><strong>DSU variants:</strong> Kruskal extended</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-blue" style="margin-top:18px"><i>💡</i><p><strong>The key mental model:</strong> Kruskal = brute-force global selection (sort all, pick greedily). Prim = greedy growth (start from one vertex, expand outward). Both are justified by the same cut property. The relaxation rule changes from <span class="ic">dist[u]+w</span> (Dijkstra / shortest path) to just <span class="ic">w</span> (Prim / cheapest attachment edge). Everything else in the template stays the same.</p></div>
+</section>
+
+
+<!-- RUNTIME VALIDATION CHECKLIST -->
+<section class="card" id="svalidation" style="margin-top:18px">
+  <h2>Runtime Validation Checklist</h2>
+  <p style="margin-bottom:12px">Every item below describes something that must be literally true in the rendered page. Use this as a final sanity check after opening the file in a browser.</p>
+  <div class="grid2">
+    <div>
+      <h3>Shell &amp; Navigation</h3>
+      <ul class="checklist">
+        <li>Sidebar opens and closes correctly via the hamburger button</li>
+        <li>Hamburger button animates (three lines → X) when sidebar is open</li>
+        <li><span class="ic">aria-expanded</span> on the hamburger stays synchronized with actual sidebar state</li>
+        <li>Overlay appears only on narrow (&lt;1300 px) layouts when sidebar is open</li>
+        <li>Narrow layouts start with the sidebar <em>closed</em> by default</li>
+        <li>Desktop/wide layouts start with the sidebar <em>open</em> without a blocking overlay</li>
+        <li>Pressing <kbd>Escape</kbd> closes the sidebar on narrow layouts</li>
+        <li>Active nav link highlights update correctly while scrolling</li>
+        <li>Resizing the window does not leave sidebar, overlay, or button in an inconsistent state</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Theme &amp; Accessibility</h3>
+      <ul class="checklist">
+        <li>Theme persists across page reloads via <span class="ic">localStorage</span></li>
+        <li>System dark-mode preference is used as fallback when no saved theme exists</li>
+        <li>Pre-body theme init prevents a first-paint light flash in dark mode</li>
+        <li>Theme switch responds to click, Enter, and Space</li>
+        <li><span class="ic">aria-checked</span> on the theme switch is correct on first load</li>
+        <li>All interactive tracers and buttons still work after shell upgrades</li>
+        <li>No duplicate element IDs exist in the document</li>
+        <li>No broken JS event handlers remain</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Branding &amp; Contact</h3>
+      <ul class="checklist">
+        <li>Sidebar byline reads: <em>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</em></li>
+        <li>Footer branding reads: <em>Coach Academy — Prepared by The Coach (Dr. Wahab) &amp; Ashraf — © 2025 All rights reserved.</em></li>
+        <li>Visible email links are plain direct <span class="ic">mailto:</span> links (no Cloudflare obfuscation)</li>
+        <li><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> is directly clickable</li>
+        <li><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a> is directly clickable</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Content &amp; Integrity</h3>
+      <ul class="checklist">
+        <li>All 20 MST variants are present and uniformly structured</li>
+        <li>Both interactive tracers (Kruskal and Prim) render and step correctly</li>
+        <li>File is complete and not truncated</li>
+        <li>All HTML tags are properly closed</li>
+        <li>All script blocks are syntactically valid</li>
+        <li>Final line of file is <span class="ic">&lt;/html&gt;</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-copy">© 2025 Coach Academy. All rights reserved. All content is the property of Coach Academy.<br/>Redistribution or reproduction without written permission is prohibited.</div>
+</div>
+
+</div><!-- end .content -->
+
+<script>
+/* ═══ SIDEBAR + THEME ══════════════════════════════════════ */
+(function(){
+  var sidebar=document.getElementById('sidebar');
+  var overlay=document.getElementById('sidebarOverlay');
+  var toggle=document.getElementById('sidebarToggle');
+  var body=document.body;
+  var NARROW=1300;
+
+  function isNarrow(){return window.innerWidth<NARROW;}
+
+  /* Single source of truth for sidebar state */
+  function setSidebar(open){
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      body.classList.remove('sb-closed');body.classList.add('sb-open');
+      if(isNarrow())overlay.classList.add('show');else overlay.classList.remove('show');
+    }else{
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      body.classList.remove('sb-open');body.classList.add('sb-closed');
+      overlay.classList.remove('show');
+    }
+  }
+
+  /* Set initial state based on viewport */
+  setSidebar(!isNarrow());
+
+  toggle.addEventListener('click',function(){
+    setSidebar(sidebar.classList.contains('collapsed'));
+  });
+  overlay.addEventListener('click',function(){setSidebar(false);});
+
+  /* Escape closes sidebar on narrow layouts */
+  document.addEventListener('keydown',function(e){
+    if((e.key==='Escape'||e.key==='Esc')&&isNarrow()&&!sidebar.classList.contains('collapsed')){
+      setSidebar(false);
+    }
+  });
+
+  /* Resize: sync overlay and re-evaluate default state */
+  window.addEventListener('resize',function(){
+    if(!isNarrow()){
+      overlay.classList.remove('show');
+      /* On desktop, always show sidebar without overlay */
+      if(sidebar.classList.contains('collapsed')){
+        /* keep user choice; just remove the overlay */
+      }
+    }
+  });
+
+  /* ── NAV active highlighting while scrolling ─────────── */
+  var navLinks=document.querySelectorAll('.nav a');
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        navLinks.forEach(function(a){a.classList.remove('active');});
+        var id=e.target.id;
+        var a=document.querySelector('.nav a[href="#'+id+'"]');
+        if(a)a.classList.add('active');
+      }
+    });
+  },{threshold:0.25,rootMargin:'-10% 0px -60% 0px'});
+  document.querySelectorAll('section[id]').forEach(function(s){observer.observe(s);});
+
+  /* ── THEME ───────────────────────────────────────────── */
+  var sw=document.getElementById('themeSwitch');
+  /* Apply saved / system theme (pre-body script already set attribute;
+     here we just sync aria-checked) */
+  var isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  sw.setAttribute('aria-checked',isDark?'true':'false');
+
+  function applyTheme(dark){
+    document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+    sw.setAttribute('aria-checked',dark?'true':'false');
+    localStorage.setItem('theme',dark?'dark':'light');
+  }
+
+  sw.addEventListener('click',function(){
+    applyTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+  });
+  sw.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key===' '){
+      e.preventDefault();
+      applyTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+    }
+  });
+})();
+
+/* ═══ KRUSKAL TRACER ══════════════════════════════════════ */
+(function(){
+  var NX=[110,290,290,490,490];
+  var NY=[140,60,220,60,220];
+  var NM=['0','1','2','3','4'];
+  // All original edges (unsorted) for drawing
+  var ORIG_EDGES=[
+    {u:0,v:1,w:4},{u:0,v:2,w:3},{u:1,v:2,w:1},
+    {u:1,v:3,w:2},{u:2,v:3,w:4},{u:2,v:4,w:5},{u:3,v:4,w:2}
+  ];
+  // Sorted edges for Kruskal
+  var EDGES=[
+    {u:1,v:2,w:1},{u:1,v:3,w:2},{u:3,v:4,w:2},
+    {u:0,v:2,w:3},{u:0,v:1,w:4},{u:2,v:3,w:4},{u:2,v:4,w:5}
+  ];
+  var COMP_COLORS=['#2563eb','#0f766e','#b45309','#7c3aed','#b91c1c'];
+
+  function findEdgeIdx(eu,ev){
+    for(var i=0;i<ORIG_EDGES.length;i++){
+      var e=ORIG_EDGES[i];
+      if((e.u===eu&&e.v===ev)||(e.u===ev&&e.v===eu)) return i;
+    }
+    return -1;
+  }
+
+  // DSU simulation
+  function makeDSU(n){ return Array.from({length:n},function(){return -1;}); }
+  function dsFind(par,u){ if(par[u]<0)return u; par[u]=dsFind(par,par[u]); return par[u]; }
+  function dsJoin(par,a,b){
+    a=dsFind(par,a); b=dsFind(par,b);
+    if(a===b)return false;
+    if(-par[a]<-par[b]){var t=a;a=b;b=t;}
+    par[a]+=par[b]; par[b]=a; return true;
+  }
+  function getComps(par){
+    var c={};
+    for(var i=0;i<par.length;i++){var r=dsFind(par.slice(),i);if(!c[r])c[r]=[];c[r].push(i);}
+    return Object.values(c);
+  }
+  function getCompOf(par,u){var r=dsFind(par.slice(),u);var c={};for(var i=0;i<par.length;i++){var x=dsFind(par.slice(),i);if(!c[x])c[x]=[];c[x].push(i);}return c[r];}
+
+  function buildTrace(){
+    var steps=[];
+    var par=makeDSU(5);
+    var mstEdgeIdxs=[]; // indices into EDGES array
+    var cost=0,taken=0;
+    steps.push({phase:'init',msg:'Edges sorted by weight. DSU initialized: 5 singleton components.',
+      cls:'init',ei:-1,acc:false,mstEi:mstEdgeIdxs.slice(),cost:0,par:par.slice()});
+    for(var i=0;i<EDGES.length;i++){
+      var e=EDGES[i];
+      var ra=dsFind(par.slice(),e.u), rb=dsFind(par.slice(),e.v);
+      var same=(ra===rb);
+      steps.push({phase:'examine',
+        msg:'Consider ('+e.u+'–'+e.v+', w='+e.w+'): find('+e.u+')='+(dsFind(par.slice(),e.u))+
+            ', find('+e.v+')='+(dsFind(par.slice(),e.v))+
+            (same?' → same component → SKIP' : ' → different components → ACCEPT'),
+        cls:same?'reject':'ok',ei:i,acc:!same,mstEi:mstEdgeIdxs.slice(),cost:cost,par:par.slice()});
+      if(!same){
+        dsJoin(par,e.u,e.v);
+        cost+=e.w; taken++;
+        mstEdgeIdxs.push(i);
+        if(taken===4){
+          steps.push({phase:'done',
+            msg:'MST COMPLETE! '+taken+' edges taken (= n−1 = 4). Total cost = '+cost+'.',
+            cls:'done',ei:i,acc:true,mstEi:mstEdgeIdxs.slice(),cost:cost,par:par.slice()});
+          break;
+        }
+      }
+    }
+    return steps;
+  }
+
+  var steps=buildTrace(), cur=0, playing=false, tmr=null;
+
+  function spd(){var v=[3200,1600,800,400,200];return v[parseInt(document.getElementById('kSpd').value)];}
+
+  function renderKruskal(){
+    var s=steps[cur];
+    var svg=document.getElementById('ksvg');
+    svg.innerHTML='';
+    var NS='http://www.w3.org/2000/svg';
+    var isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    var bgNode=isDark?'#1e293b':'#f8fafc';
+    var textCol=isDark?'#f1f5ff':'#0b1220';
+    var edgeDefault=isDark?'#4b5563':'#9ca3af';
+
+    // Get component colors for nodes
+    var parCopy=s.par.slice();
+    var nodeComp={};
+    for(var i=0;i<5;i++) nodeComp[i]=dsFind(parCopy,i);
+    var roots=[...new Set(Object.values(nodeComp))];
+    var rootColor={};
+    roots.forEach(function(r,idx){rootColor[r]=COMP_COLORS[idx%COMP_COLORS.length];});
+
+    // Draw edges
+    ORIG_EDGES.forEach(function(e,oi){
+      // Find if this edge is in the sorted EDGES and what state it is
+      var sortedIdx=-1;
+      for(var k=0;k<EDGES.length;k++){
+        if((EDGES[k].u===e.u&&EDGES[k].v===e.v)||(EDGES[k].u===e.v&&EDGES[k].v===e.u)) sortedIdx=k;
+      }
+      var isMST=s.mstEi.indexOf(sortedIdx)>=0;
+      var isCurrent=s.ei===sortedIdx;
+      var isRejected=false; // simplified: show current only
+
+      var stroke=edgeDefault, sw=2.5;
+      if(isMST){stroke='#0f766e';sw=4.5;}
+      if(isCurrent&&!s.acc){stroke='#b45309';sw=4;}
+      if(isCurrent&&s.acc&&s.phase!=='done'){stroke='#0f766e';sw=4.5;}
+
+      var x1=NX[e.u],y1=NY[e.u],x2=NX[e.v],y2=NY[e.v];
+      var line=document.createElementNS(NS,'line');
+      line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+      line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+      line.setAttribute('stroke',stroke);line.setAttribute('stroke-width',sw);
+      line.setAttribute('stroke-linecap','round');
+      svg.appendChild(line);
+
+      // Weight label
+      var mx=(x1+x2)/2, my=(y1+y2)/2;
+      var bg=document.createElementNS(NS,'circle');
+      bg.setAttribute('cx',mx);bg.setAttribute('cy',my);bg.setAttribute('r',13);
+      bg.setAttribute('fill',isDark?'#0c1220':'#fff');
+      bg.setAttribute('stroke',stroke);bg.setAttribute('stroke-width',2);
+      svg.appendChild(bg);
+      var wt=document.createElementNS(NS,'text');
+      wt.setAttribute('x',mx);wt.setAttribute('y',my+5);
+      wt.setAttribute('text-anchor','middle');wt.setAttribute('font-size','13');
+      wt.setAttribute('font-weight','900');wt.setAttribute('fill',stroke);
+      wt.textContent=e.w; svg.appendChild(wt);
+    });
+
+    // Draw nodes
+    for(var i=0;i<5;i++){
+      var col=rootColor[nodeComp[i]]||COMP_COLORS[0];
+      var isCurrentNode=(s.ei>=0&&(EDGES[s.ei]&&(EDGES[s.ei].u===i||EDGES[s.ei].v===i)));
+      var circle=document.createElementNS(NS,'circle');
+      circle.setAttribute('cx',NX[i]);circle.setAttribute('cy',NY[i]);circle.setAttribute('r',24);
+      circle.setAttribute('fill',col);circle.setAttribute('stroke',textCol);circle.setAttribute('stroke-width',isCurrentNode?3.5:2);
+      circle.setAttribute('opacity','0.9');
+      svg.appendChild(circle);
+      var lbl=document.createElementNS(NS,'text');
+      lbl.setAttribute('x',NX[i]);lbl.setAttribute('y',NY[i]+7);
+      lbl.setAttribute('text-anchor','middle');lbl.setAttribute('font-size','18');
+      lbl.setAttribute('font-weight','900');lbl.setAttribute('fill','white');
+      lbl.textContent=NM[i]; svg.appendChild(lbl);
+    }
+
+    // Edge list
+    var elist=document.getElementById('kelist'); elist.innerHTML='';
+    EDGES.forEach(function(e,idx){
+      var li=document.createElement('div');
+      var isMST=s.mstEi.indexOf(idx)>=0;
+      var isCur=s.ei===idx;
+      li.className='eli'+(isMST?' eo':'')+(isCur&&!isMST?' ea':'');
+      var dot=document.createElement('div');dot.className='eldot';li.appendChild(dot);
+      var sp=document.createElement('span');
+      sp.textContent=(idx+1)+'. ('+e.u+'–'+e.v+', w='+e.w+')'+(isMST?' ✓':'');
+      li.appendChild(sp); elist.appendChild(li);
+    });
+
+    // DSU components
+    var dsuEl=document.getElementById('kDsu'); dsuEl.innerHTML='';
+    var compArr=[];
+    var parC=s.par.slice();
+    var seen={};
+    for(var i=0;i<5;i++){
+      var r=dsFind(parC,i);
+      if(!seen[r]){seen[r]=true;
+        var members=[];
+        for(var j=0;j<5;j++) if(dsFind(parC,j)===r) members.push(j);
+        compArr.push({root:r,members:members});
+      }
+    }
+    compArr.forEach(function(c){
+      var col=rootColor[c.root]||COMP_COLORS[0];
+      var div=document.createElement('div');div.className='dsu-comp';
+      div.style.borderColor=col;div.style.background=col+'18';
+      c.members.forEach(function(m){
+        var nd=document.createElement('div');nd.className='dsu-node';
+        nd.style.background=col;nd.textContent=m; div.appendChild(nd);
+      });
+      dsuEl.appendChild(div);
+    });
+
+    // dist display (MST keys)
+    var distEl=document.getElementById('kDist'); distEl.innerHTML='';
+    for(var i=0;i<5;i++){
+      var di=document.createElement('div'); di.className='ditem';
+      var lbl=document.createElement('div');lbl.className='di-lbl';lbl.textContent='Node '+i;
+      var val=document.createElement('div');val.className='di-val';
+      // Cost to join: for nodes in MST we can show it
+      val.textContent=i===0?'src':'—';
+      di.appendChild(lbl);di.appendChild(val); distEl.appendChild(di);
+    }
+
+    // Phase + exp
+    document.getElementById('kPhase').textContent=s.phase.toUpperCase().replace('-',' ');
+    var expEl=document.getElementById('kExp');
+    expEl.textContent=s.msg;
+    expEl.className='sp-exp '+s.cls;
+
+    // Log
+    var log=document.getElementById('kslog');
+    var st=Math.max(0,cur-10); log.innerHTML='';
+    for(var i=st;i<=cur;i++){
+      var si=steps[i];
+      var li=document.createElement('div');
+      li.className='sli'+(i===cur?' cur':'')+(si.cls==='ok'?' ok':'')+(si.cls==='done'?' ok':'')+(si.cls==='reject'?' ng':'');
+      li.textContent='['+i+'] '+si.msg.slice(0,70)+(si.msg.length>70?'…':'');
+      (function(idx){li.addEventListener('click',function(){cur=idx;renderKruskal();});})(i);
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('kStepctr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('kPrv').disabled=(cur===0);
+    document.getElementById('kNxt').disabled=(cur===steps.length-1);
+  }
+
+  function startKPlay(){if(playing)return;playing=true;document.getElementById('kPly').textContent='⏸';document.getElementById('kPly').classList.add('playing');function tick(){if(!playing||cur>=steps.length-1){stopKPlay();return;}cur++;renderKruskal();tmr=setTimeout(tick,spd());}tmr=setTimeout(tick,spd());}
+  function stopKPlay(){playing=false;clearTimeout(tmr);document.getElementById('kPly').textContent='▶';document.getElementById('kPly').classList.remove('playing');}
+  document.getElementById('kRst').addEventListener('click',function(){stopKPlay();cur=0;renderKruskal();});
+  document.getElementById('kPrv').addEventListener('click',function(){stopKPlay();if(cur>0){cur--;renderKruskal();}});
+  document.getElementById('kPly').addEventListener('click',function(){playing?stopKPlay():startKPlay();});
+  document.getElementById('kNxt').addEventListener('click',function(){stopKPlay();if(cur<steps.length-1){cur++;renderKruskal();}});
+  document.getElementById('kSpd').addEventListener('input',function(){var ls=['0.25×','0.5×','1×','2×','4×'];document.getElementById('kSpdLbl').textContent=ls[this.value];});
+  renderKruskal();
+})();
+
+/* ═══ PRIM TRACER ══════════════════════════════════════════ */
+(function(){
+  var NX=[110,290,290,490,490];
+  var NY=[140,60,220,60,220];
+  var NM=['0','1','2','3','4'];
+  var OO=1e15;
+  var ADJ=[
+    [[1,4],[2,3]],
+    [[0,4],[2,1],[3,2]],
+    [[0,3],[1,1],[3,4],[4,5]],
+    [[1,2],[2,4],[4,2]],
+    [[3,2],[2,5]]
+  ];
+  var ORIG_EDGES=[
+    {u:0,v:1,w:4},{u:0,v:2,w:3},{u:1,v:2,w:1},
+    {u:1,v:3,w:2},{u:2,v:3,w:4},{u:2,v:4,w:5},{u:3,v:4,w:2}
+  ];
+
+  function buildPrimTrace(){
+    var steps=[];
+    var dist=Array(5).fill(OO);
+    var done=Array(5).fill(false);
+    var par=Array(5).fill(-1);
+    var treeEdges=[];
+    var relaxedV=-1;
+
+    dist[0]=0;
+    steps.push({phase:'init',msg:'Initialize: dist[0]=0, all others ∞. Push (d=0, node=0) to priority queue.',
+      cls:'init',dist:dist.slice(),done:done.slice(),par:par.slice(),treeEdges:[],exNode:-1,relaxedV:-1});
+
+    // Simulate priority queue manually (ordered extraction)
+    // Known extraction order for this graph: 0,2,1,3,4
+    var order=[0,2,1,3,4];
+    var pqDesc=[
+      {extractD:0,extractions:[{v:1,w:4},{v:2,w:3}]},
+      {extractD:3,extractions:[{v:1,w:1},{v:3,w:4},{v:4,w:5}]},
+      {extractD:1,extractions:[{v:3,w:2}]},
+      {extractD:2,extractions:[{v:4,w:2}]},
+      {extractD:2,extractions:[]}
+    ];
+
+    var cost=0;
+    for(var step=0;step<5;step++){
+      var u=order[step];
+      var d=pqDesc[step].extractD;
+      done[u]=true;
+      cost+=d;
+      if(par[u]!==-1) treeEdges.push({u:par[u],v:u});
+
+      var msg='Extract min: node '+u+' (d='+d+'). done['+u+']=true. mstCost='+cost+'.';
+      if(step===4) msg+=' All vertices finalized. MST COMPLETE! Total cost = '+cost+'.';
+      steps.push({phase:step===4?'done':'extract',cls:step===4?'done':'ok',
+        msg:msg,dist:dist.slice(),done:done.slice(),par:par.slice(),
+        treeEdges:treeEdges.slice(),exNode:u,relaxedV:-1});
+
+      // Relaxations
+      var relaxs=pqDesc[step].extractions;
+      for(var ri=0;ri<relaxs.length;ri++){
+        var rv=relaxs[ri].v, rw=relaxs[ri].w;
+        if(!done[rv]&&rw<dist[rv]){
+          dist[rv]=rw; par[rv]=u;
+          steps.push({phase:'relax',cls:'ok',
+            msg:'  Relax: dist['+rv+']='+rw+' via ('+u+'–'+rv+', w='+rw+'). Improved!',
+            dist:dist.slice(),done:done.slice(),par:par.slice(),
+            treeEdges:treeEdges.slice(),exNode:u,relaxedV:rv});
+        }
+      }
+    }
+    return steps;
+  }
+
+  var steps=buildPrimTrace(), cur=0, playing=false, tmr=null;
+  function spd(){var v=[3200,1600,800,400,200];return v[parseInt(document.getElementById('pSpd').value)];}
+
+  function renderPrim(){
+    var s=steps[cur];
+    var svg=document.getElementById('psvg');
+    svg.innerHTML='';
+    var NS='http://www.w3.org/2000/svg';
+    var isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    var textCol=isDark?'#f1f5ff':'#0b1220';
+    var edgeDefault=isDark?'#4b5563':'#9ca3af';
+
+    // Draw all edges
+    ORIG_EDGES.forEach(function(e){
+      var isTree=false;
+      for(var ti=0;ti<s.treeEdges.length;ti++){
+        var te=s.treeEdges[ti];
+        if((te.u===e.u&&te.v===e.v)||(te.u===e.v&&te.v===e.u)) isTree=true;
+      }
+      var stroke=isTree?'#0f766e':edgeDefault;
+      var sw=isTree?4.5:2.5;
+      var x1=NX[e.u],y1=NY[e.u],x2=NX[e.v],y2=NY[e.v];
+      var line=document.createElementNS(NS,'line');
+      line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+      line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+      line.setAttribute('stroke',stroke);line.setAttribute('stroke-width',sw);
+      line.setAttribute('stroke-linecap','round');
+      svg.appendChild(line);
+
+      var mx=(x1+x2)/2, my=(y1+y2)/2;
+      var bg=document.createElementNS(NS,'circle');
+      bg.setAttribute('cx',mx);bg.setAttribute('cy',my);bg.setAttribute('r',13);
+      bg.setAttribute('fill',isDark?'#0c1220':'#fff');
+      bg.setAttribute('stroke',stroke);bg.setAttribute('stroke-width',2);
+      svg.appendChild(bg);
+      var wt=document.createElementNS(NS,'text');
+      wt.setAttribute('x',mx);wt.setAttribute('y',my+5);
+      wt.setAttribute('text-anchor','middle');wt.setAttribute('font-size','13');
+      wt.setAttribute('font-weight','900');wt.setAttribute('fill',stroke);
+      wt.textContent=e.w; svg.appendChild(wt);
+    });
+
+    // Draw dist labels above nodes
+    for(var i=0;i<5;i++){
+      if(s.dist[i]<1e14){
+        var ky=document.createElementNS(NS,'text');
+        ky.setAttribute('x',NX[i]);ky.setAttribute('y',NY[i]-30);
+        ky.setAttribute('text-anchor','middle');ky.setAttribute('font-size','14');
+        ky.setAttribute('font-weight','900');ky.setAttribute('fill',isDark?'#fbbf24':'#b45309');
+        ky.textContent='d='+s.dist[i]; svg.appendChild(ky);
+      }
+    }
+
+    // Draw nodes
+    for(var i=0;i<5;i++){
+      var isDone=s.done[i];
+      var isEx=s.exNode===i;
+      var isRelaxed=s.relaxedV===i;
+      var fill=isDone?'#2563eb':(isRelaxed?'#0f766e':(isEx?'#b45309':'#6b7280'));
+      var circle=document.createElementNS(NS,'circle');
+      circle.setAttribute('cx',NX[i]);circle.setAttribute('cy',NY[i]);circle.setAttribute('r',24);
+      circle.setAttribute('fill',fill);circle.setAttribute('stroke',textCol);
+      circle.setAttribute('stroke-width',(isEx||isRelaxed)?3.5:2);
+      svg.appendChild(circle);
+      var lbl=document.createElementNS(NS,'text');
+      lbl.setAttribute('x',NX[i]);lbl.setAttribute('y',NY[i]+7);
+      lbl.setAttribute('text-anchor','middle');lbl.setAttribute('font-size','18');
+      lbl.setAttribute('font-weight','900');lbl.setAttribute('fill','white');
+      lbl.textContent=NM[i]; svg.appendChild(lbl);
+    }
+
+    // dist[] display
+    var distEl=document.getElementById('pDist'); distEl.innerHTML='';
+    for(var i=0;i<5;i++){
+      var di=document.createElement('div');
+      di.className='ditem'+(s.done[i]?' done':'')+(s.relaxedV===i?' upd':'');
+      var lbl2=document.createElement('div');lbl2.className='di-lbl';lbl2.textContent='node '+i;
+      var val=document.createElement('div');val.className='di-val';
+      val.textContent=s.dist[i]>=1e14?'∞':s.dist[i];
+      di.appendChild(lbl2);di.appendChild(val); distEl.appendChild(di);
+    }
+
+    // done[] display
+    var doneEl=document.getElementById('pDone'); doneEl.innerHTML='';
+    for(var i=0;i<5;i++){
+      var di2=document.createElement('div');
+      di2.className='ditem'+(s.done[i]?' done':'');
+      var lbl3=document.createElement('div');lbl3.className='di-lbl';lbl3.textContent='node '+i;
+      var val2=document.createElement('div');val2.className='di-val';
+      val2.textContent=s.done[i]?'✓':'✗';
+      val2.style.color=s.done[i]?'var(--good)':'var(--muted)';
+      di2.appendChild(lbl3);di2.appendChild(val2); doneEl.appendChild(di2);
+    }
+
+    // Phase + exp
+    document.getElementById('pPhase').textContent=s.phase.toUpperCase();
+    var expEl=document.getElementById('pExp');
+    expEl.textContent=s.msg;
+    expEl.className='sp-exp '+s.cls;
+
+    // Log
+    var log=document.getElementById('pslog');
+    var st=Math.max(0,cur-10); log.innerHTML='';
+    for(var i=st;i<=cur;i++){
+      var si=steps[i];
+      var li=document.createElement('div');
+      li.className='sli'+(i===cur?' cur':'')+(si.cls==='ok'?' ok':'')+(si.cls==='done'?' ok':'');
+      li.textContent='['+i+'] '+si.msg.slice(0,75)+(si.msg.length>75?'…':'');
+      (function(idx){li.addEventListener('click',function(){cur=idx;renderPrim();});})(i);
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('pStepctr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('pPrv').disabled=(cur===0);
+    document.getElementById('pNxt').disabled=(cur===steps.length-1);
+  }
+
+  function startPPlay(){if(playing)return;playing=true;document.getElementById('pPly').textContent='⏸';document.getElementById('pPly').classList.add('playing');function tick(){if(!playing||cur>=steps.length-1){stopPPlay();return;}cur++;renderPrim();tmr=setTimeout(tick,spd());}tmr=setTimeout(tick,spd());}
+  function stopPPlay(){playing=false;clearTimeout(tmr);document.getElementById('pPly').textContent='▶';document.getElementById('pPly').classList.remove('playing');}
+  document.getElementById('pRst').addEventListener('click',function(){stopPPlay();cur=0;renderPrim();});
+  document.getElementById('pPrv').addEventListener('click',function(){stopPPlay();if(cur>0){cur--;renderPrim();}});
+  document.getElementById('pPly').addEventListener('click',function(){playing?stopPPlay():startPPlay();});
+  document.getElementById('pNxt').addEventListener('click',function(){stopPPlay();if(cur<steps.length-1){cur++;renderPrim();}});
+  renderPrim();
+})();
+</script>
+</body>
+</html>

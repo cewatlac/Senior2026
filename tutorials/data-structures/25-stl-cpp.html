@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — C++ STL: Zero to Hero</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.5;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 12px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:24px 0 12px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900;color:var(--accent)}
+h4{margin:18px 0 8px;font-size:22px;font-weight:900}
+section{scroll-margin-top:16px;margin-bottom:40px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);max-width:1400px}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06)}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:24px;line-height:1.1}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;margin-top:4px}
+.brand-title .t3{font-size:13px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 30px}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:18px 8px 8px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:14px}
+.nav a{display:block;padding:9px 12px;border-radius:12px;border:2px solid transparent;
+  font-weight:700;color:var(--text);margin:3px 5px;font-size:16px;line-height:1.3}
+.nav a small{display:block;font-weight:600;color:var(--muted);font-size:13px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:6px;padding-left:56px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:8px 14px;border-radius:999px;font-weight:900;font-size:16px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card.tight{padding:14px 20px}
+.card.accent{border-color:var(--accent2);background:linear-gradient(180deg,var(--panel),var(--panel2))}
+pre{background:var(--codebg);color:var(--codetext);padding:18px 20px;border-radius:14px;
+  overflow-x:auto;font-size:17px;line-height:1.55;margin:12px 0;
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace}
+code{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:.92em;background:var(--chip);padding:2px 7px;border-radius:6px;color:var(--accent)}
+pre code{background:transparent;color:inherit;padding:0;font-size:inherit}
+.kw{color:#c084fc;font-weight:700}.ty{color:#7dd3fc}.fn{color:#fcd34d}
+.str{color:#86efac}.num{color:#fda4af}.cm{color:#94a3b8;font-style:italic}.op{color:#f1f5f9}
+.tip,.warn,.note,.analogy{padding:14px 18px;border-radius:14px;margin:14px 0;border:2.5px solid;display:flex;gap:14px;align-items:flex-start}
+.tip{background:rgba(15,118,110,.10);border-color:var(--good);color:var(--text)}
+.warn{background:rgba(180,83,9,.12);border-color:var(--warn);color:var(--text)}
+.note{background:rgba(37,99,235,.10);border-color:var(--accent2);color:var(--text)}
+.analogy{background:rgba(192,132,252,.10);border-color:#9333ea;color:var(--text)}
+.tip strong,.warn strong,.note strong,.analogy strong{display:block;margin-bottom:4px;font-size:18px}
+.tip .ico,.warn .ico,.note .ico,.analogy .ico{font-size:24px;flex:0 0 auto;line-height:1}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:18px}
+th,td{border:2px solid var(--border);padding:10px 14px;text-align:left;vertical-align:top}
+th{background:var(--panel2);font-weight:900;color:var(--accent)}
+tr:nth-child(even) td{background:rgba(241,244,255,.4)}
+[data-theme="dark"] tr:nth-child(even) td{background:rgba(15,35,71,.3)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800;
+  border:2px solid;margin-right:4px}
+.b-O1{background:rgba(15,118,110,.18);border-color:var(--good);color:var(--good)}
+.b-Ologn{background:rgba(180,83,9,.18);border-color:var(--warn);color:var(--warn)}
+.b-On{background:rgba(185,28,28,.18);border-color:var(--bad);color:var(--bad)}
+.b-Onlogn{background:rgba(192,132,252,.18);border-color:#9333ea;color:#9333ea}
+.b-info{background:rgba(37,99,235,.18);border-color:var(--accent2);color:var(--accent)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.viz{background:var(--panel);border:2.5px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.viz-title{font-weight:900;font-size:20px;margin-bottom:10px;color:var(--accent)}
+.viz-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.viz-controls button,.viz-controls input{font:inherit;font-size:16px;padding:8px 16px;
+  border:2.5px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);
+  cursor:pointer;font-weight:700}
+.viz-controls input{cursor:text;width:80px}
+.viz-controls button:hover{background:var(--accent2);color:white;border-color:var(--accent)}
+.viz-stage{padding:18px;background:var(--panel2);border-radius:12px;min-height:120px;
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:Consolas,monospace;font-size:18px}
+.cell{min-width:50px;height:50px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:2.5px solid var(--border);border-radius:8px;font-weight:800;
+  transition:all .35s ease;position:relative}
+.cell.new{background:var(--accent2);color:white;border-color:var(--accent);transform:scale(1.15)}
+.cell.removed{opacity:.3;text-decoration:line-through}
+.cell.empty{background:transparent;border-style:dashed;color:var(--muted)}
+.cell-idx{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--muted);font-weight:700}
+.viz-info{margin-top:10px;font-size:16px;color:var(--muted);font-weight:700}
+.viz-info span{color:var(--accent);font-weight:900}
+.tree{display:flex;flex-direction:column;align-items:center;padding:14px}
+.tree-row{display:flex;justify-content:center;gap:14px;margin:6px 0}
+.tree-node{width:48px;height:48px;border-radius:50%;background:var(--panel);border:2.5px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--accent)}
+.tree-node.new{background:var(--accent2);color:white}
+.kbd{display:inline-block;padding:2px 8px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--panel2);font-family:Consolas,monospace;font-size:.9em;font-weight:700}
+ul,ol{margin:8px 0 14px 0;padding-left:28px}
+li{margin:4px 0}
+hr{border:none;height:2px;background:var(--border);margin:30px 0}
+.toc-card{background:var(--panel2);border:2px dashed var(--accent2);border-radius:14px;padding:16px 22px;margin:18px 0}
+.toc-card h4{margin-top:0;color:var(--accent)}
+.qstrip{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qchip{padding:6px 12px;border-radius:999px;background:var(--chip);border:2px solid var(--border);
+  font-weight:800;font-size:15px;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<button class="sidebar-toggle open" id="sbToggle" aria-label="Toggle sidebar">
+  <span class="burger-icon"><span></span><span></span><span></span></span>
+</button>
+<div class="sidebar-overlay" id="sbOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">C++ STL: Zero to Hero</div>
+      <div class="t3">SENIOR TRAINING · 2026</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="grpTitle">Part 0 — Foundations</div>
+    <a href="#why-stl">Why STL?</a>
+    <a href="#five-pillars">The 5 Pillars</a>
+    <a href="#first-program">Your First Program</a>
+
+    <div class="grpTitle">Part 1 — Sequence Containers</div>
+    <a href="#vector">vector <small>The workhorse</small></a>
+    <a href="#deque">deque <small>Double-ended queue</small></a>
+    <a href="#array">array <small>Fixed size</small></a>
+    <a href="#list">list / forward_list</a>
+
+    <div class="grpTitle">Part 2 — Ordered Associative</div>
+    <a href="#set">set</a>
+    <a href="#multiset">multiset</a>
+    <a href="#map">map</a>
+    <a href="#multimap">multimap</a>
+
+    <div class="grpTitle">Part 3 — Unordered (Hash)</div>
+    <a href="#unordered">unordered_set / unordered_map</a>
+
+    <div class="grpTitle">Part 4 — Container Adapters</div>
+    <a href="#stack">stack</a>
+    <a href="#queue">queue</a>
+    <a href="#pq">priority_queue</a>
+
+    <div class="grpTitle">Part 5 — Iterators</div>
+    <a href="#iterators">Iterators Deep Dive</a>
+
+    <div class="grpTitle">Part 6 — Algorithms</div>
+    <a href="#alg-sort">Sorting & Ordering</a>
+    <a href="#alg-search">Searching</a>
+    <a href="#alg-modify">Modifying</a>
+    <a href="#alg-set">Set Operations</a>
+    <a href="#alg-numeric">Numeric</a>
+    <a href="#alg-cond">Condition Checkers</a>
+    <a href="#alg-partition">Partition</a>
+
+    <div class="grpTitle">Part 7 — Strings</div>
+    <a href="#strings">String as Container</a>
+
+    <div class="grpTitle">Part 8 — Functors & Lambdas</div>
+    <a href="#functors">Comparators, Lambdas</a>
+
+    <div class="grpTitle">Part 9 — Advanced</div>
+    <a href="#bitset">bitset</a>
+    <a href="#pair-tuple">pair & tuple</a>
+    <a href="#numeric-limits">numeric_limits</a>
+    <a href="#custom-hash">Custom Hash</a>
+
+    <div class="grpTitle">Part 10 — Master Template</div>
+    <a href="#template">Contest Template</a>
+
+    <div class="grpTitle">Part 11 — Worked Problems</div>
+    <a href="#problems">15 Problems Hero Path</a>
+
+    <div class="grpTitle">Part 12 — Reference</div>
+    <a href="#complexity">Complexity Table</a>
+    <a href="#mistakes">Top 15 Mistakes</a>
+  </nav>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div>
+      <h1>C++ STL: Zero to Hero</h1>
+      <div class="subtitle">A complete journey — from "what's a vector?" to ICPC-grade fluency.</div>
+    </div>
+    <div class="btnRow">
+      <span class="pill">📘 Beginner-friendly</span>
+      <span class="pill">⚡ CP-grade depth</span>
+      <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- PART 0 — WHY STL?                                          -->
+  <!-- ========================================================== -->
+
+  <section id="why-stl">
+    <h2>Part 0 · Why STL Exists</h2>
+
+    <div class="card">
+      <p>Imagine you need a list of integers that can grow. In raw C, you would:</p>
+      <ol>
+        <li>Allocate an array with <code>malloc</code>.</li>
+        <li>Track its size and capacity in two extra variables.</li>
+        <li>When full, allocate a bigger array, copy everything over, free the old one.</li>
+        <li>Remember to <code>free()</code> at the end so you don't leak memory.</li>
+        <li>Repeat all of this for every other data structure you need: linked list, hash map, heap…</li>
+      </ol>
+      <p>That's <em>hundreds of lines of bug-prone boilerplate</em> before you've solved a single problem. STL — the <strong>Standard Template Library</strong> — gives you all of that, tested and tuned, in <em>one line</em>:</p>
+      <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v;        <span class="cm">// done. resizes itself. cleans up on its own.</span></code></pre>
+    </div>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      STL is to data structures what a power drill is to a screwdriver. You <em>could</em> turn every screw by hand — but with the drill in your toolbox you finish the whole house in the time it took to do one wall.</div>
+    </div>
+
+    <h3 id="five-pillars">The 5 Pillars of STL</h3>
+    <p>Everything in STL is built from five kinds of building blocks. Memorize these names — every chapter below maps back to them.</p>
+    <table>
+      <tr><th style="width:20%">Pillar</th><th style="width:40%">What it is</th><th>Examples</th></tr>
+      <tr><td><strong>Containers</strong></td><td>Objects that <em>hold data</em>.</td><td><code>vector</code>, <code>set</code>, <code>map</code>, <code>queue</code>…</td></tr>
+      <tr><td><strong>Iterators</strong></td><td>Smart pointers that <em>walk</em> over a container.</td><td><code>v.begin()</code>, <code>v.end()</code></td></tr>
+      <tr><td><strong>Algorithms</strong></td><td>Free functions that <em>do something</em> to a range.</td><td><code>sort</code>, <code>find</code>, <code>reverse</code>, <code>count</code>…</td></tr>
+      <tr><td><strong>Functors</strong></td><td>Function-like objects that <em>customize</em> behavior.</td><td><code>less&lt;&gt;</code>, <code>greater&lt;&gt;</code>, lambdas</td></tr>
+      <tr><td><strong>Adapters</strong></td><td>Wrappers that <em>change the interface</em> of a container.</td><td><code>stack</code>, <code>queue</code>, <code>priority_queue</code></td></tr>
+    </table>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>Mental model</strong>
+      <em>Containers</em> hold things. <em>Iterators</em> point into them. <em>Algorithms</em> work on ranges defined by iterators. <em>Functors</em> tell algorithms <em>how</em> to compare or transform. <em>Adapters</em> repackage a container into a different shape.</div>
+    </div>
+
+    <h3 id="first-program">Your Very First STL Program</h3>
+    <p>One header unlocks <em>everything</em>:</p>
+    <pre><code><span class="kw">#include</span> &lt;bits/stdc++.h&gt;   <span class="cm">// pulls in the entire STL — perfect for contests</span>
+<span class="kw">using namespace</span> std;     <span class="cm">// so we can write `vector` instead of `std::vector`</span>
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">6</span>};
+    <span class="fn">sort</span>(a.<span class="fn">begin</span>(), a.<span class="fn">end</span>());          <span class="cm">// algorithm works on iterator range</span>
+    <span class="kw">for</span> (<span class="ty">int</span> x : a) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;  <span class="cm">// 1 1 2 3 4 5 6 9</span>
+}</code></pre>
+    <p>That tiny program touched <strong>all five pillars</strong>:</p>
+    <ul>
+      <li><strong>Container:</strong> <code>vector&lt;int&gt;</code></li>
+      <li><strong>Iterators:</strong> <code>a.begin()</code>, <code>a.end()</code></li>
+      <li><strong>Algorithm:</strong> <code>sort()</code></li>
+      <li><strong>Functor:</strong> implicit <code>less&lt;int&gt;</code> (the default comparator)</li>
+      <li><strong>Adapter:</strong> the range-for loop adapts the iterator pair into a clean syntax</li>
+    </ul>
+
+    <div class="note">
+      <span class="ico">📘</span>
+      <div><strong>Beginner tip</strong>
+      <code>&lt;bits/stdc++.h&gt;</code> is non-standard but works on GCC/Clang (which all contest judges use). It saves you from listing 30 separate headers. In real production code, prefer specific headers — <code>&lt;vector&gt;</code>, <code>&lt;algorithm&gt;</code>, etc.</div>
+    </div>
+
+    <div class="toc-card">
+      <h4>Where to go next</h4>
+      <p>Read in order. Each Part assumes you have understood the previous one. If you only have 60 minutes, read Parts 0, 1.1 (vector), 2.1 (set), 2.3 (map), and 4 (adapters) — that covers ~80% of contest needs.</p>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 1 — SEQUENCE CONTAINERS                               -->
+  <!-- ========================================================== -->
+
+  <section id="vector">
+    <h2>Part 1.1 · vector — The Workhorse</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      <code>vector</code> is a <em>magic resizing array</em>. It looks and acts like a regular array (you can write <code>v[i]</code>, you get O(1) indexing) but it <em>grows on its own</em> when you push to it. You will use it in <strong>~70% of every program you write</strong>.</div>
+    </div>
+
+    <h3>Internal model — capacity vs size</h3>
+    <p>A vector keeps a contiguous chunk of memory. Two numbers describe it:</p>
+    <ul>
+      <li><strong>size()</strong> — how many elements you've actually stored.</li>
+      <li><strong>capacity()</strong> — how much memory has been reserved (≥ size).</li>
+    </ul>
+    <p>When <code>size == capacity</code> and you <code>push_back</code> one more, the vector allocates a <em>bigger</em> block (typically <strong>2× capacity</strong>), copies everything over, and frees the old one. This <em>doubling strategy</em> is what makes <code>push_back</code> <span class="badge b-O1">O(1) amortized</span>.</p>
+
+    <div class="viz" id="vec-viz">
+      <div class="viz-title">🔬 Interactive: vector growth (push_back doubling)</div>
+      <div class="viz-controls">
+        <input id="vec-input" placeholder="value" value="7"/>
+        <button onclick="vecPush()">push_back</button>
+        <button onclick="vecPop()">pop_back</button>
+        <button onclick="vecReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="vec-stage"></div>
+      <div class="viz-info">size: <span id="vec-size">0</span> · capacity: <span id="vec-cap">0</span> · last action: <span id="vec-action">—</span></div>
+    </div>
+
+    <h3>Declaration & initialization (5 ways)</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; a;                      <span class="cm">// empty</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; b(<span class="num">10</span>);                  <span class="cm">// 10 zeros</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; c(<span class="num">10</span>, <span class="num">-1</span>);              <span class="cm">// 10 copies of -1</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; d = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>};   <span class="cm">// from initializer list</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; e(d.<span class="fn">begin</span>(), d.<span class="fn">end</span>());   <span class="cm">// copy from range</span></code></pre>
+
+    <h3>The full operation cheat sheet</h3>
+    <table>
+      <tr><th>Operation</th><th>What it does</th><th>Complexity</th></tr>
+      <tr><td><code>v.push_back(x)</code></td><td>Append <code>x</code> to the end.</td><td><span class="badge b-O1">O(1) amortized</span></td></tr>
+      <tr><td><code>v.pop_back()</code></td><td>Remove the last element.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.emplace_back(args)</code></td><td>Build element in place — faster for objects.</td><td><span class="badge b-O1">O(1) amort.</span></td></tr>
+      <tr><td><code>v[i]</code></td><td>Direct access. <strong>No bounds check.</strong></td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.at(i)</code></td><td>Access with bounds check (throws on bad index).</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.front()</code> / <code>v.back()</code></td><td>First / last element.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.size()</code> / <code>v.empty()</code></td><td>Number of elements / is it empty?</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.clear()</code></td><td>Erase everything (size becomes 0).</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>v.resize(n)</code></td><td>Make the size exactly <code>n</code>; new entries default-initialized.</td><td><span class="badge b-On">O(|n − old size|)</span></td></tr>
+      <tr><td><code>v.reserve(n)</code></td><td>Pre-allocate capacity for <code>n</code> elements (avoids reallocs).</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>v.insert(it, x)</code></td><td>Insert <code>x</code> before iterator <code>it</code>.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>v.erase(it)</code></td><td>Remove element at <code>it</code>; everything after shifts left.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>v.begin()</code> / <code>v.end()</code></td><td>Iterator to first / one-past-last.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>v.rbegin()</code> / <code>v.rend()</code></td><td>Reverse iterators (for iterating backwards).</td><td><span class="badge b-O1">O(1)</span></td></tr>
+    </table>
+
+    <h3>Three ways to iterate</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>};
+
+<span class="cm">// 1) classic index loop — when you need the index</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; (<span class="ty">int</span>)v.<span class="fn">size</span>(); ++i)
+    cout &lt;&lt; i &lt;&lt; <span class="str">":"</span> &lt;&lt; v[i] &lt;&lt; <span class="str">' '</span>;
+
+<span class="cm">// 2) range-based for — cleanest, when you only need the value</span>
+<span class="kw">for</span> (<span class="ty">int</span> x : v) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;
+<span class="kw">for</span> (<span class="ty">int</span>&amp; x : v) x *= <span class="num">2</span>;        <span class="cm">// note the &amp; — modifies in place</span>
+
+<span class="cm">// 3) iterator loop — verbose but very explicit; needed for erase()</span>
+<span class="kw">for</span> (<span class="kw">auto</span> it = v.<span class="fn">begin</span>(); it != v.<span class="fn">end</span>(); ++it)
+    cout &lt;&lt; *it &lt;&lt; <span class="str">' '</span>;</code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Cast size() to int!</strong>
+      <code>v.size()</code> returns an <em>unsigned</em> type (<code>size_t</code>). Comparing a signed loop variable with an unsigned size is the source of countless bugs. Either write <code>(int)v.size()</code> or use a <code>size_t</code> loop variable.</div>
+    </div>
+
+    <h3>2D vectors — vectors of vectors</h3>
+    <pre><code><span class="cm">// a 5×7 grid of zeros</span>
+<span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt; grid(<span class="num">5</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;(<span class="num">7</span>, <span class="num">0</span>));
+
+grid[<span class="num">2</span>][<span class="num">3</span>] = <span class="num">42</span>;
+<span class="ty">int</span> rows = grid.<span class="fn">size</span>();
+<span class="ty">int</span> cols = grid[<span class="num">0</span>].<span class="fn">size</span>();</code></pre>
+
+    <h3>⚠️ Iterator invalidation — the #1 bug source</h3>
+    <p>When a vector grows past its capacity, it reallocates. <strong>Every iterator, pointer, and reference into the old memory becomes invalid.</strong> Using them is undefined behavior.</p>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="ty">int</span>&amp; ref = v[<span class="num">0</span>];        <span class="cm">// ref points into v's buffer</span>
+v.<span class="fn">push_back</span>(<span class="num">4</span>);          <span class="cm">// vector might reallocate!</span>
+cout &lt;&lt; ref;             <span class="cm">// 💥 might crash or print garbage</span></code></pre>
+    <p>Rules:</p>
+    <ul>
+      <li><strong>push_back / emplace_back / insert / resize / reserve</strong> — may invalidate <em>everything</em> if a reallocation happens.</li>
+      <li><strong>erase(it)</strong> — invalidates <code>it</code> and everything after it.</li>
+      <li><strong>pop_back</strong> — invalidates only the iterator/reference to the last element.</li>
+      <li><strong>operator[] / at()</strong> — never invalidate (read-only operations don't reallocate).</li>
+    </ul>
+
+    <h3>The 5 most common beginner mistakes</h3>
+    <table>
+      <tr><th>Mistake</th><th>Fix</th></tr>
+      <tr><td><code>for (int i=0; i&lt;v.size()-1; ++i)</code> on an empty vector → infinite loop (unsigned underflow)</td><td>Cast: <code>(int)v.size()-1</code>, or check <code>!v.empty()</code> first.</td></tr>
+      <tr><td>Erasing while iterating: <code>for (auto x : v) if (x==0) v.erase(...)</code></td><td>Use the <code>erase–remove</code> idiom (see Part 6.3).</td></tr>
+      <tr><td>Storing references through <code>push_back</code></td><td><code>reserve()</code> first, or just store indices.</td></tr>
+      <tr><td>Reading <code>v[v.size()]</code> — out of bounds!</td><td>Last valid index is <code>v.size()-1</code>.</td></tr>
+      <tr><td>Forgetting the inner vector size in 2D: <code>vector&lt;vector&lt;int&gt;&gt; g(n);</code></td><td>Each row is empty — pre-size with <code>vector&lt;int&gt;(m, 0)</code>.</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="deque">
+    <h2>Part 1.2 · deque — Double-Ended Queue</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      Like <code>vector</code>, but you can push and pop from <em>both ends</em> in O(1). Internally it's a chain of fixed-size blocks, not one contiguous array.</div>
+    </div>
+
+    <h3>What it adds over vector</h3>
+    <table>
+      <tr><th>Operation</th><th>vector</th><th>deque</th></tr>
+      <tr><td><code>push_back / pop_back</code></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>push_front / pop_front</code></td><td><span class="badge b-On">O(n)</span> (shift everyone)</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>operator[]</code></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span> (slightly slower constant)</td></tr>
+      <tr><td>Memory layout</td><td>One contiguous block</td><td>Chain of blocks</td></tr>
+    </table>
+
+    <pre><code><span class="ty">deque</span>&lt;<span class="ty">int</span>&gt; dq;
+dq.<span class="fn">push_back</span>(<span class="num">1</span>);  dq.<span class="fn">push_back</span>(<span class="num">2</span>);   <span class="cm">// dq: [1, 2]</span>
+dq.<span class="fn">push_front</span>(<span class="num">0</span>);                       <span class="cm">// dq: [0, 1, 2]</span>
+cout &lt;&lt; dq[<span class="num">1</span>];                            <span class="cm">// 1</span>
+dq.<span class="fn">pop_front</span>();                            <span class="cm">// dq: [1, 2]</span></code></pre>
+
+    <h3>The killer use-case: sliding window</h3>
+    <p>To find the maximum of every window of size <code>k</code> in an array, you keep a deque of <em>indices</em> in decreasing order of their values. The front is always the current window's max.</p>
+    <pre><code><span class="cm">// Sliding-window maximum, O(n)</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">slidingMax</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; a, <span class="ty">int</span> k) {
+    <span class="ty">deque</span>&lt;<span class="ty">int</span>&gt; dq;          <span class="cm">// stores indices, values strictly decreasing</span>
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; ans;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; (<span class="ty">int</span>)a.<span class="fn">size</span>(); ++i) {
+        <span class="kw">while</span> (!dq.<span class="fn">empty</span>() &amp;&amp; dq.<span class="fn">front</span>() &lt;= i - k) dq.<span class="fn">pop_front</span>();
+        <span class="kw">while</span> (!dq.<span class="fn">empty</span>() &amp;&amp; a[dq.<span class="fn">back</span>()] &lt; a[i]) dq.<span class="fn">pop_back</span>();
+        dq.<span class="fn">push_back</span>(i);
+        <span class="kw">if</span> (i &gt;= k - <span class="num">1</span>) ans.<span class="fn">push_back</span>(a[dq.<span class="fn">front</span>()]);
+    }
+    <span class="kw">return</span> ans;
+}</code></pre>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>When to choose deque</strong>
+      Pick <code>deque</code> only if you genuinely need <code>push_front</code>/<code>pop_front</code>. Otherwise <code>vector</code> wins on cache locality and constant factors.</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section id="array">
+    <h2>Part 1.3 · array — Fixed-Size Container</h2>
+
+    <p><code>std::array&lt;T, N&gt;</code> is a thin wrapper around a C-style array. The size <code>N</code> is part of the type and known at compile time.</p>
+
+    <pre><code><span class="ty">array</span>&lt;<span class="ty">int</span>, <span class="num">5</span>&gt; a = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+a.<span class="fn">fill</span>(<span class="num">0</span>);            <span class="cm">// all zeros</span>
+cout &lt;&lt; a.<span class="fn">size</span>();    <span class="cm">// 5  (compile-time known)</span>
+<span class="kw">for</span> (<span class="ty">int</span> x : a) cout &lt;&lt; x;</code></pre>
+
+    <table>
+      <tr><th>Why pick array over C array</th><th>Why pick array over vector</th></tr>
+      <tr><td>It knows its own size (<code>.size()</code>).</td><td>No heap allocation — lives on the stack.</td></tr>
+      <tr><td>Works with all STL algorithms via <code>begin()/end()</code>.</td><td>Tiny constant factor, perfect for known-size data.</td></tr>
+      <tr><td>Can be returned from a function and copied safely.</td><td>Use it for fixed-size grids, look-up tables, etc.</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="list">
+    <h2>Part 1.4 · list & forward_list — Linked Lists</h2>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>You almost never need these.</strong>
+      In modern hardware, cache locality dominates Big-O for small/medium n. A <code>vector</code> with O(n) insert is faster than a <code>list</code> with O(1) insert until n is in the millions. Use <code>list</code> only when the algorithm specifically needs <em>iterator stability</em> or <em>O(1) splice</em>.</div>
+    </div>
+
+    <ul>
+      <li><strong>list</strong> — doubly-linked list. <code>push_front</code>, <code>push_back</code>, <code>insert</code>, <code>erase</code> are all O(1) <em>given an iterator</em>. <code>splice()</code> moves nodes between lists in O(1) without copying — this is the only situation where <code>list</code> truly shines.</li>
+      <li><strong>forward_list</strong> — singly linked. Smaller per-node memory but you can only iterate forward. Rarely used.</li>
+    </ul>
+
+    <pre><code><span class="ty">list</span>&lt;<span class="ty">int</span>&gt; A = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="ty">list</span>&lt;<span class="ty">int</span>&gt; B = {<span class="num">10</span>, <span class="num">20</span>};
+<span class="kw">auto</span> it = A.<span class="fn">begin</span>(); ++it;       <span class="cm">// points at 2</span>
+A.<span class="fn">splice</span>(it, B);                 <span class="cm">// A: [1, 10, 20, 2, 3]; B is now empty — O(1)</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 2 — ORDERED ASSOCIATIVE                               -->
+  <!-- ========================================================== -->
+
+  <section id="set">
+    <h2>Part 2.1 · set — Sorted Bag of Unique Elements</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <code>set</code> is a <em>filing cabinet that auto-sorts itself and refuses duplicates</em>. Every time you drop a paper in, it slides into its correct alphabetical spot. Try to add a paper that's already inside? Nothing happens.</div>
+    </div>
+
+    <h3>What it gives you</h3>
+    <ul>
+      <li>Elements are kept in sorted order (ascending by default).</li>
+      <li>No duplicates — inserting an existing element is a no-op.</li>
+      <li>All operations are <span class="badge b-Ologn">O(log n)</span>: insert, erase, find, count.</li>
+      <li>Internally a balanced BST (red-black tree).</li>
+    </ul>
+
+    <h3>The full operation table</h3>
+    <table>
+      <tr><th>Operation</th><th>What it does</th><th>Complexity</th></tr>
+      <tr><td><code>s.insert(x)</code></td><td>Insert <code>x</code>. Returns <code>pair&lt;iterator, bool&gt;</code> — the bool is <code>true</code> if newly inserted, <code>false</code> if already present.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.erase(x)</code></td><td>Remove element with value <code>x</code>. Returns 0 or 1 (count removed).</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.erase(it)</code></td><td>Remove element at iterator. Faster — no search needed.</td><td><span class="badge b-O1">O(1) amort.</span></td></tr>
+      <tr><td><code>s.find(x)</code></td><td>Returns iterator to <code>x</code>, or <code>s.end()</code> if absent.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.count(x)</code></td><td>Returns 0 or 1 (set has unique elements).</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.contains(x)</code></td><td>C++20 only. <code>true</code>/<code>false</code>. Cleaner than <code>find</code>.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.lower_bound(x)</code></td><td>Iterator to first element <strong>≥ x</strong>.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.upper_bound(x)</code></td><td>Iterator to first element <strong>&gt; x</strong>.</td><td><span class="badge b-Ologn">O(log n)</span></td></tr>
+      <tr><td><code>s.size()</code> / <code>s.empty()</code></td><td>Standard.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>*s.begin()</code></td><td>The smallest element.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>*s.rbegin()</code></td><td>The largest element.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+    </table>
+
+    <h3>Working example</h3>
+    <pre><code><span class="ty">set</span>&lt;<span class="ty">int</span>&gt; s;
+s.<span class="fn">insert</span>(<span class="num">5</span>);  s.<span class="fn">insert</span>(<span class="num">2</span>);  s.<span class="fn">insert</span>(<span class="num">8</span>);  s.<span class="fn">insert</span>(<span class="num">2</span>);
+<span class="cm">// s now contains: {2, 5, 8} — duplicate 2 was ignored</span>
+
+<span class="kw">for</span> (<span class="ty">int</span> x : s) cout &lt;&lt; x &lt;&lt; <span class="str">' '</span>;       <span class="cm">// 2 5 8 (sorted)</span>
+
+<span class="kw">if</span> (s.<span class="fn">find</span>(<span class="num">5</span>) != s.<span class="fn">end</span>()) cout &lt;&lt; <span class="str">"yes"</span>;
+<span class="kw">if</span> (s.<span class="fn">count</span>(<span class="num">5</span>))            cout &lt;&lt; <span class="str">"yes"</span>;        <span class="cm">// equivalent</span>
+
+s.<span class="fn">erase</span>(<span class="num">2</span>);                                 <span class="cm">// {5, 8}</span>
+cout &lt;&lt; *s.<span class="fn">begin</span>();                          <span class="cm">// 5  (smallest)</span>
+cout &lt;&lt; *s.<span class="fn">rbegin</span>();                         <span class="cm">// 8  (largest)</span></code></pre>
+
+    <div class="viz" id="set-viz">
+      <div class="viz-title">🔬 Interactive: set keeps things sorted</div>
+      <div class="viz-controls">
+        <input id="set-input" placeholder="value" value="42"/>
+        <button onclick="setInsert()">insert</button>
+        <button onclick="setErase()">erase</button>
+        <button onclick="setReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="set-stage"></div>
+      <div class="viz-info">size: <span id="set-size">0</span> · last: <span id="set-action">—</span></div>
+    </div>
+
+    <h3>lower_bound vs upper_bound — finally explained</h3>
+    <p>This is the most-asked STL question. Both return an iterator into the <em>sorted</em> set. The difference is what they do with elements <em>equal</em> to the query.</p>
+    <table>
+      <tr><th>Function</th><th>Returns iterator to first element that is…</th></tr>
+      <tr><td><code>lower_bound(x)</code></td><td><strong>≥ x</strong> &nbsp; (the first one that is <em>not less than</em> x)</td></tr>
+      <tr><td><code>upper_bound(x)</code></td><td><strong>&gt; x</strong> &nbsp; (strictly greater)</td></tr>
+    </table>
+
+    <pre><code><span class="ty">set</span>&lt;<span class="ty">int</span>&gt; s = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>};   <span class="cm">// (set has no dups, so really {10,20,30,40})</span>
+
+s.<span class="fn">lower_bound</span>(<span class="num">20</span>);   <span class="cm">// → iterator to 20</span>
+s.<span class="fn">upper_bound</span>(<span class="num">20</span>);   <span class="cm">// → iterator to 30</span>
+s.<span class="fn">lower_bound</span>(<span class="num">25</span>);   <span class="cm">// → iterator to 30 (no exact match, returns next ≥)</span>
+s.<span class="fn">upper_bound</span>(<span class="num">40</span>);   <span class="cm">// → s.end()  (nothing strictly greater)</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Don't use <code>std::lower_bound</code> on a set/map!</strong>
+      The free function <code>std::lower_bound(s.begin(), s.end(), x)</code> works in <strong>O(n)</strong> on a set because set iterators aren't random-access. Always use the <em>member function</em> <code>s.lower_bound(x)</code> — it's <span class="badge b-Ologn">O(log n)</span>.</div>
+    </div>
+
+    <h3>The "find closest" pattern</h3>
+    <pre><code><span class="cm">// Find the element in s closest to x</span>
+<span class="kw">auto</span> it = s.<span class="fn">lower_bound</span>(x);  <span class="cm">// first element ≥ x</span>
+<span class="ty">int</span> best = INT_MAX;
+<span class="kw">if</span> (it != s.<span class="fn">end</span>())            best = <span class="fn">min</span>(best, *it - x);
+<span class="kw">if</span> (it != s.<span class="fn">begin</span>()) {
+    --it;
+    best = <span class="fn">min</span>(best, x - *it);
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="multiset">
+    <h2>Part 2.2 · multiset — Sorted Bag <em>With</em> Duplicates</h2>
+
+    <p>A <code>multiset</code> is identical to a <code>set</code> except it allows the same value to appear multiple times.</p>
+
+    <pre><code><span class="ty">multiset</span>&lt;<span class="ty">int</span>&gt; ms;
+ms.<span class="fn">insert</span>(<span class="num">5</span>);  ms.<span class="fn">insert</span>(<span class="num">5</span>);  ms.<span class="fn">insert</span>(<span class="num">3</span>);
+<span class="cm">// ms: {3, 5, 5}</span>
+cout &lt;&lt; ms.<span class="fn">count</span>(<span class="num">5</span>);    <span class="cm">// 2 — really counts now (not just 0/1)</span></code></pre>
+
+    <h3>⚠️ The classic erase trap</h3>
+    <pre><code>ms.<span class="fn">erase</span>(<span class="num">5</span>);                 <span class="cm">// removes ALL copies of 5</span>
+ms.<span class="fn">erase</span>(ms.<span class="fn">find</span>(<span class="num">5</span>));      <span class="cm">// removes EXACTLY ONE copy</span></code></pre>
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>The trap</strong>
+      <code>ms.erase(value)</code> wipes <em>every</em> matching element. To remove a single copy, always do <code>ms.erase(ms.find(value))</code>. Make sure to check <code>find() != end()</code> first.</div>
+    </div>
+
+    <h3>Common use: priority-like structure with random delete</h3>
+    <p><code>multiset</code> is essentially a heap that <em>also</em> lets you remove arbitrary elements in O(log n) — something a <code>priority_queue</code> can't do.</p>
+    <pre><code><span class="ty">multiset</span>&lt;<span class="ty">int</span>&gt; ms = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>, <span class="num">2</span>};
+<span class="ty">int</span> mn = *ms.<span class="fn">begin</span>();           <span class="cm">// min in O(1)</span>
+<span class="ty">int</span> mx = *ms.<span class="fn">rbegin</span>();          <span class="cm">// max in O(1)</span>
+ms.<span class="fn">erase</span>(ms.<span class="fn">find</span>(<span class="num">4</span>));         <span class="cm">// delete arbitrary value in O(log n)</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="map">
+    <h2>Part 2.3 · map — Sorted Phone Book</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <code>map</code> is a sorted phone book: each entry is a <em>name → number</em> pair. The names are kept in alphabetical order, each name appears at most once, and you can look up someone in <span class="badge b-Ologn">O(log n)</span>.</div>
+    </div>
+
+    <h3>The basics</h3>
+    <pre><code><span class="ty">map</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; age;
+age[<span class="str">"alice"</span>] = <span class="num">30</span>;
+age[<span class="str">"bob"</span>]   = <span class="num">25</span>;
+age[<span class="str">"carol"</span>] = <span class="num">28</span>;
+
+cout &lt;&lt; age[<span class="str">"bob"</span>];        <span class="cm">// 25</span>
+age.<span class="fn">erase</span>(<span class="str">"alice"</span>);
+cout &lt;&lt; age.<span class="fn">size</span>();        <span class="cm">// 2</span>
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [name, a] : age)              <span class="cm">// C++17 structured binding — beautiful</span>
+    cout &lt;&lt; name &lt;&lt; <span class="str">":"</span> &lt;&lt; a &lt;&lt; <span class="str">'\n'</span>;     <span class="cm">// in alphabetical order!</span></code></pre>
+
+    <h3>operator[] vs at() vs find() — pick the right one</h3>
+    <table>
+      <tr><th>Form</th><th>Behavior when key exists</th><th>Behavior when key is missing</th></tr>
+      <tr><td><code>m[k]</code></td><td>Returns reference to value.</td><td><strong>Inserts</strong> a default-constructed value (e.g., 0 for int) and returns reference to it.</td></tr>
+      <tr><td><code>m.at(k)</code></td><td>Returns reference to value.</td><td>Throws <code>std::out_of_range</code>.</td></tr>
+      <tr><td><code>m.find(k)</code></td><td>Returns iterator to (key, value).</td><td>Returns <code>m.end()</code>.</td></tr>
+      <tr><td><code>m.count(k)</code></td><td>Returns 1.</td><td>Returns 0.</td></tr>
+      <tr><td><code>m.contains(k)</code> (C++20)</td><td>Returns true.</td><td>Returns false.</td></tr>
+    </table>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>The silent-insert trap</strong>
+      Just <em>reading</em> <code>m[k]</code> for an unknown key creates an entry. This corrupts your map and inflates its size. Use <code>m.find(k)</code> or <code>m.count(k)</code> when you only want to <em>check</em>.
+      <pre style="margin-top:8px"><code><span class="kw">if</span> (m[k] == <span class="num">5</span>)                <span class="cm">// 💀 inserts m[k]=0 if k absent!</span>
+<span class="kw">if</span> (m.<span class="fn">count</span>(k) &amp;&amp; m[k] == <span class="num">5</span>)  <span class="cm">// ✅ correct</span></code></pre></div>
+    </div>
+
+    <h3>Counting frequencies (the killer use)</h3>
+    <pre><code><span class="ty">map</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; freq;
+<span class="kw">for</span> (<span class="ty">string</span>&amp; w : words) freq[w]++;     <span class="cm">// auto-creates with 0, then ++</span>
+
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [word, c] : freq)
+    cout &lt;&lt; word &lt;&lt; <span class="str">": "</span> &lt;&lt; c &lt;&lt; <span class="str">'\n'</span>;</code></pre>
+
+    <h3>map of map (2D mapping)</h3>
+    <pre><code><span class="ty">map</span>&lt;<span class="ty">string</span>, <span class="ty">map</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;&gt; grid;
+grid[<span class="str">"alice"</span>][<span class="str">"math"</span>] = <span class="num">95</span>;
+grid[<span class="str">"alice"</span>][<span class="str">"phys"</span>] = <span class="num">88</span>;</code></pre>
+
+    <h3>map vs unordered_map — quick reference</h3>
+    <table>
+      <tr><th></th><th>map (red-black tree)</th><th>unordered_map (hash table)</th></tr>
+      <tr><td>Lookup</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-O1">O(1) average</span></td></tr>
+      <tr><td>Order</td><td>Sorted by key</td><td>Random</td></tr>
+      <tr><td>Need <code>operator&lt;</code>?</td><td>Yes</td><td>No, but needs hash</td></tr>
+      <tr><td>Worst case</td><td>O(log n) guaranteed</td><td>O(n) on adversarial input</td></tr>
+      <tr><td>Use when…</td><td>You need sorted iteration, or floor/ceiling queries.</td><td>You only need fast lookup.</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="multimap">
+    <h2>Part 2.4 · multimap — One Key, Many Values</h2>
+
+    <p>A <code>multimap</code> allows many entries with the same key. <code>operator[]</code> doesn't exist (which value would it return?). You access groups of equal keys via <code>equal_range</code>:</p>
+
+    <pre><code><span class="ty">multimap</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; mm;
+mm.<span class="fn">insert</span>({<span class="str">"alice"</span>, <span class="num">95</span>});
+mm.<span class="fn">insert</span>({<span class="str">"alice"</span>, <span class="num">88</span>});
+mm.<span class="fn">insert</span>({<span class="str">"bob"</span>,   <span class="num">72</span>});
+
+<span class="kw">auto</span> [first, last] = mm.<span class="fn">equal_range</span>(<span class="str">"alice"</span>);
+<span class="kw">for</span> (<span class="kw">auto</span> it = first; it != last; ++it)
+    cout &lt;&lt; it-&gt;second &lt;&lt; <span class="str">' '</span>;        <span class="cm">// 88 95 (sorted by key, kept in insertion order within key in newer C++)</span></code></pre>
+
+    <div class="tip">
+      <span class="ico">✅</span>
+      <div><strong>Honestly?</strong> Most people just use <code>map&lt;Key, vector&lt;Value&gt;&gt;</code> instead. It's clearer and easier to manipulate.</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 3 — UNORDERED CONTAINERS                              -->
+  <!-- ========================================================== -->
+
+  <section id="unordered">
+    <h2>Part 3 · unordered_set & unordered_map (Hash-based)</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      If <code>set</code> is a sorted filing cabinet, <code>unordered_set</code> is a <em>magic locker room</em>: each item gets thrown into a locker whose number is computed from a hash of the item. Average <span class="badge b-O1">O(1)</span> for everything — but the items are not in any meaningful order.</div>
+    </div>
+
+    <h3>The interface mirrors set/map</h3>
+    <p>Same operations, same names — only the complexity and ordering change.</p>
+    <pre><code><span class="ty">unordered_set</span>&lt;<span class="ty">int</span>&gt; us;
+us.<span class="fn">insert</span>(<span class="num">5</span>);  us.<span class="fn">insert</span>(<span class="num">2</span>);  us.<span class="fn">insert</span>(<span class="num">8</span>);
+<span class="kw">if</span> (us.<span class="fn">count</span>(<span class="num">5</span>)) cout &lt;&lt; <span class="str">"present"</span>;
+us.<span class="fn">erase</span>(<span class="num">2</span>);
+
+<span class="ty">unordered_map</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; um;
+um[<span class="str">"alice"</span>] = <span class="num">30</span>;       <span class="cm">// same operator[] as map</span>
+um.<span class="fn">erase</span>(<span class="str">"alice"</span>);</code></pre>
+
+    <h3>Decision: ordered vs unordered</h3>
+    <table>
+      <tr><th>Use ORDERED (set / map) when…</th><th>Use UNORDERED (unordered_set / unordered_map) when…</th></tr>
+      <tr><td>You need elements in sorted order.</td><td>You only need fast lookup.</td></tr>
+      <tr><td>You need <code>lower_bound</code> / <code>upper_bound</code> / floor / ceiling.</td><td>Order doesn't matter.</td></tr>
+      <tr><td>You iterate the smallest/largest often.</td><td>You'll use <code>find</code>/<code>count</code>/<code>insert</code> heavily on huge n.</td></tr>
+      <tr><td>You need O(log n) <em>worst-case</em>.</td><td>You're OK with O(n) worst-case (rare on random data).</td></tr>
+      <tr><td>Custom comparator is easy: just <code>operator&lt;</code>.</td><td>Custom hash is easy for built-ins; harder for structs.</td></tr>
+    </table>
+
+    <h3>The hash collision worst case</h3>
+    <p>Hash tables are O(1) <em>average</em>. If many keys hash to the same bucket, all those keys live in a chain that must be linearly scanned — operations degrade to O(n).</p>
+    <p>For random data this never happens. <strong>But contest setters know this.</strong> They craft inputs that hash to the same bucket on purpose. The result: your O(n log n) solution times out as O(n²).</p>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Anti-hash attacks are real.</strong>
+      Codeforces has standard test sets that crash naive <code>unordered_map&lt;long long, int&gt;</code> by exploiting GCC's predictable hash. Defend yourself with a <em>custom hash</em> (see Part 9.4 — Custom Hash).</div>
+    </div>
+
+    <h3>Quick-fix: hash + a random seed</h3>
+    <pre><code><span class="kw">struct</span> SafeHash {
+    <span class="kw">static</span> <span class="ty">uint64_t</span> <span class="fn">splitmix64</span>(<span class="ty">uint64_t</span> x) {
+        x += <span class="num">0x9e3779b97f4a7c15</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">30</span>)) * <span class="num">0xbf58476d1ce4e5b9</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">27</span>)) * <span class="num">0x94d049bb133111eb</span>;
+        <span class="kw">return</span> x ^ (x &gt;&gt; <span class="num">31</span>);
+    }
+    <span class="ty">size_t</span> <span class="fn">operator</span>()(<span class="ty">uint64_t</span> x) <span class="kw">const</span> {
+        <span class="kw">static</span> <span class="kw">const</span> <span class="ty">uint64_t</span> SEED =
+            chrono::steady_clock::now().time_since_epoch().count();
+        <span class="kw">return</span> <span class="fn">splitmix64</span>(x + SEED);
+    }
+};
+
+<span class="ty">unordered_map</span>&lt;<span class="ty">long long</span>, <span class="ty">int</span>, SafeHash&gt; safe_map;</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 4 — CONTAINER ADAPTERS                                -->
+  <!-- ========================================================== -->
+
+  <section id="stack">
+    <h2>Part 4.1 · stack — Last In, First Out</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <em>stack of plates</em>. You always add a plate on top, and you always take from the top. The plate at the bottom only comes out when everything above has been removed.</div>
+    </div>
+
+    <h3>The whole interface (only 5 things)</h3>
+    <pre><code><span class="ty">stack</span>&lt;<span class="ty">int</span>&gt; st;
+st.<span class="fn">push</span>(<span class="num">10</span>);   st.<span class="fn">push</span>(<span class="num">20</span>);   st.<span class="fn">push</span>(<span class="num">30</span>);
+cout &lt;&lt; st.<span class="fn">top</span>();      <span class="cm">// 30</span>
+st.<span class="fn">pop</span>();              <span class="cm">// removes 30 (returns void!)</span>
+cout &lt;&lt; st.<span class="fn">size</span>();     <span class="cm">// 2</span>
+cout &lt;&lt; st.<span class="fn">empty</span>();    <span class="cm">// false</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong><code>pop()</code> returns void.</strong>
+      To both read and remove the top, do <code>int x = st.top(); st.pop();</code> — never <code>x = st.pop()</code>.</div>
+    </div>
+
+    <div class="viz" id="stack-viz">
+      <div class="viz-title">🔬 Interactive: stack — Last In, First Out</div>
+      <div class="viz-controls">
+        <input id="stack-input" placeholder="value" value="42"/>
+        <button onclick="stackPush()">push</button>
+        <button onclick="stackPop()">pop</button>
+        <button onclick="stackReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="stack-stage" style="flex-direction:column-reverse;align-items:center;min-height:200px;justify-content:flex-start;gap:4px"></div>
+      <div class="viz-info">size: <span id="stack-size">0</span> · top: <span id="stack-top">—</span> · last: <span id="stack-action">—</span></div>
+    </div>
+
+    <h3>Classic problem: balanced brackets</h3>
+    <pre><code><span class="ty">bool</span> <span class="fn">isBalanced</span>(<span class="kw">const</span> <span class="ty">string</span>&amp; s) {
+    <span class="ty">stack</span>&lt;<span class="ty">char</span>&gt; st;
+    <span class="kw">for</span> (<span class="ty">char</span> c : s) {
+        <span class="kw">if</span> (c == <span class="str">'('</span> || c == <span class="str">'['</span> || c == <span class="str">'{'</span>) st.<span class="fn">push</span>(c);
+        <span class="kw">else</span> {
+            <span class="kw">if</span> (st.<span class="fn">empty</span>()) <span class="kw">return</span> <span class="kw">false</span>;
+            <span class="ty">char</span> t = st.<span class="fn">top</span>(); st.<span class="fn">pop</span>();
+            <span class="kw">if</span> (c == <span class="str">')'</span> &amp;&amp; t != <span class="str">'('</span>) <span class="kw">return</span> <span class="kw">false</span>;
+            <span class="kw">if</span> (c == <span class="str">']'</span> &amp;&amp; t != <span class="str">'['</span>) <span class="kw">return</span> <span class="kw">false</span>;
+            <span class="kw">if</span> (c == <span class="str">'}'</span> &amp;&amp; t != <span class="str">'{'</span>) <span class="kw">return</span> <span class="kw">false</span>;
+        }
+    }
+    <span class="kw">return</span> st.<span class="fn">empty</span>();
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="queue">
+    <h2>Part 4.2 · queue — First In, First Out</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <em>line at a coffee shop</em>. The first person who arrives is the first served.</div>
+    </div>
+
+    <pre><code><span class="ty">queue</span>&lt;<span class="ty">int</span>&gt; q;
+q.<span class="fn">push</span>(<span class="num">10</span>);   q.<span class="fn">push</span>(<span class="num">20</span>);   q.<span class="fn">push</span>(<span class="num">30</span>);
+cout &lt;&lt; q.<span class="fn">front</span>();    <span class="cm">// 10  (oldest)</span>
+cout &lt;&lt; q.<span class="fn">back</span>();     <span class="cm">// 30  (newest)</span>
+q.<span class="fn">pop</span>();             <span class="cm">// removes 10 (the front)</span></code></pre>
+
+    <div class="viz" id="queue-viz">
+      <div class="viz-title">🔬 Interactive: queue — First In, First Out</div>
+      <div class="viz-controls">
+        <input id="queue-input" placeholder="value" value="7"/>
+        <button onclick="queuePush()">push (back)</button>
+        <button onclick="queuePop()">pop (front)</button>
+        <button onclick="queueReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="queue-stage" style="min-height:90px"></div>
+      <div class="viz-info">size: <span id="queue-size">0</span> · front: <span id="queue-front">—</span> · back: <span id="queue-back">—</span> · last: <span id="queue-action">—</span></div>
+    </div>
+
+    <h3>The killer use: BFS (breadth-first search)</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">bfs</span>(<span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt;&amp; g, <span class="ty">int</span> src) {
+    <span class="ty">int</span> n = g.<span class="fn">size</span>();
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; dist(n, -<span class="num">1</span>);
+    <span class="ty">queue</span>&lt;<span class="ty">int</span>&gt; q;
+    dist[src] = <span class="num">0</span>;
+    q.<span class="fn">push</span>(src);
+    <span class="kw">while</span> (!q.<span class="fn">empty</span>()) {
+        <span class="ty">int</span> u = q.<span class="fn">front</span>(); q.<span class="fn">pop</span>();
+        <span class="kw">for</span> (<span class="ty">int</span> v : g[u]) <span class="kw">if</span> (dist[v] == -<span class="num">1</span>) {
+            dist[v] = dist[u] + <span class="num">1</span>;
+            q.<span class="fn">push</span>(v);
+        }
+    }
+    <span class="kw">return</span> dist;
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="pq">
+    <h2>Part 4.3 · priority_queue — The Heap</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <em>magic basket</em> that, no matter what you throw into it, always lets you pick out the <strong>largest</strong> item first.</div>
+    </div>
+
+    <h3>Default: max-heap</h3>
+    <pre><code><span class="ty">priority_queue</span>&lt;<span class="ty">int</span>&gt; pq;       <span class="cm">// MAX-heap by default</span>
+pq.<span class="fn">push</span>(<span class="num">3</span>);  pq.<span class="fn">push</span>(<span class="num">1</span>);  pq.<span class="fn">push</span>(<span class="num">5</span>);  pq.<span class="fn">push</span>(<span class="num">2</span>);
+cout &lt;&lt; pq.<span class="fn">top</span>();    <span class="cm">// 5</span>
+pq.<span class="fn">pop</span>();
+cout &lt;&lt; pq.<span class="fn">top</span>();    <span class="cm">// 3</span></code></pre>
+    <ul>
+      <li><code>push(x)</code>, <code>pop()</code> — both <span class="badge b-Ologn">O(log n)</span></li>
+      <li><code>top()</code>, <code>size()</code>, <code>empty()</code> — <span class="badge b-O1">O(1)</span></li>
+      <li><strong>You cannot iterate or search a priority_queue.</strong> If you need that, use <code>multiset</code>.</li>
+    </ul>
+
+    <h3>Three ways to make a min-heap</h3>
+    <pre><code><span class="cm">// Way 1: use greater&lt;&gt; comparator (the standard way)</span>
+<span class="ty">priority_queue</span>&lt;<span class="ty">int</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;, <span class="ty">greater</span>&lt;<span class="ty">int</span>&gt;&gt; minPQ;
+
+<span class="cm">// Way 2: negate values, use max-heap (cheap hack — int only!)</span>
+<span class="ty">priority_queue</span>&lt;<span class="ty">int</span>&gt; tricky;
+tricky.<span class="fn">push</span>(-x);                       <span class="cm">// store -x, top is the smallest x</span>
+
+<span class="cm">// Way 3: lambda comparator (verbose but flexible)</span>
+<span class="kw">auto</span> cmp = [](<span class="ty">int</span> a, <span class="ty">int</span> b){ <span class="kw">return</span> a &gt; b; };
+<span class="ty">priority_queue</span>&lt;<span class="ty">int</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;, <span class="kw">decltype</span>(cmp)&gt; minPQ2(cmp);</code></pre>
+
+    <h3>Custom comparator with pairs</h3>
+    <pre><code><span class="cm">// Min-heap of (distance, node) pairs — for Dijkstra</span>
+<span class="ty">priority_queue</span>&lt;
+    <span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;,
+    <span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;&gt;,
+    <span class="ty">greater</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;&gt;
+&gt; pq;</code></pre>
+
+    <div class="viz" id="heap-viz">
+      <div class="viz-title">🔬 Interactive: heap insert / extract-max</div>
+      <div class="viz-controls">
+        <input id="heap-input" placeholder="value" value="9"/>
+        <button onclick="heapPush()">push</button>
+        <button onclick="heapPop()">pop (extract max)</button>
+        <button onclick="heapReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="heap-stage" style="display:block;text-align:center;min-height:160px"></div>
+      <div class="viz-info">size: <span id="heap-size">0</span> · top: <span id="heap-top">—</span> · last: <span id="heap-action">—</span></div>
+    </div>
+
+    <h3>The "stale entry" trick (for Dijkstra)</h3>
+    <p>Since <code>priority_queue</code> can't update an element in place, Dijkstra uses a clever trick: push the new (smaller) distance and <em>ignore</em> stale entries when they pop later.</p>
+    <pre><code><span class="kw">while</span> (!pq.<span class="fn">empty</span>()) {
+    <span class="kw">auto</span> [d, u] = pq.<span class="fn">top</span>(); pq.<span class="fn">pop</span>();
+    <span class="kw">if</span> (d &gt; dist[u]) <span class="kw">continue</span>;          <span class="cm">// stale — ignore</span>
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; [v, w] : g[u]) {
+        <span class="kw">if</span> (dist[u] + w &lt; dist[v]) {
+            dist[v] = dist[u] + w;
+            pq.<span class="fn">push</span>({dist[v], v});      <span class="cm">// might create stale entry — that's ok</span>
+        }
+    }
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 5 — ITERATORS                                         -->
+  <!-- ========================================================== -->
+
+  <section id="iterators">
+    <h2>Part 5 · Iterators — The Glue of STL</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      An iterator is a <em>smart bookmark</em>. It knows where it is in a container, you can move it forward (and sometimes backward), and you can read the page it points to with <code>*it</code>.</div>
+    </div>
+
+    <h3>Why iterators exist</h3>
+    <p>STL algorithms don't know what container they're working on. <code>sort</code> doesn't care if you give it a vector, a deque, or a plain C array — it just walks from one iterator to another. That separation is the genius of STL: <strong>N containers × M algorithms = N × M combinations, with N + M code.</strong></p>
+
+    <h3>The half-open range [first, last)</h3>
+    <p>Every STL algorithm takes a pair of iterators: <code>first</code> (start, inclusive) and <code>last</code> (one-past-end, exclusive). This convention has three big benefits:</p>
+    <ul>
+      <li>An empty range is naturally expressed as <code>first == last</code>.</li>
+      <li><code>last - first</code> directly gives the size.</li>
+      <li>You never have to special-case "did I include the last element?".</li>
+    </ul>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>};
+
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());           <span class="cm">// whole range</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">begin</span>() + <span class="num">3</span>);       <span class="cm">// first 3 elements only: [10,20,30)</span></code></pre>
+
+    <h3>The 5 iterator categories</h3>
+    <table>
+      <tr><th>Category</th><th>Capabilities</th><th>Examples</th></tr>
+      <tr><td><strong>Input</strong></td><td>Read once, ++ once. Single-pass.</td><td><code>istream_iterator</code></td></tr>
+      <tr><td><strong>Output</strong></td><td>Write once, ++ once.</td><td><code>back_inserter</code>, <code>ostream_iterator</code></td></tr>
+      <tr><td><strong>Forward</strong></td><td>Read/write, ++, multi-pass.</td><td><code>forward_list</code></td></tr>
+      <tr><td><strong>Bidirectional</strong></td><td>++ and <strong>--</strong></td><td><code>list</code>, <code>set</code>, <code>map</code></td></tr>
+      <tr><td><strong>Random Access</strong></td><td>+ k, − k, [k], O(1) jump</td><td><code>vector</code>, <code>deque</code>, <code>array</code>, raw pointer</td></tr>
+    </table>
+
+    <p><strong>Why this matters:</strong> some algorithms require random-access iterators. <code>sort()</code> needs random access — that's why you can't sort a <code>list</code> with <code>std::sort</code>. (Use <code>list::sort()</code> member instead.)</p>
+
+    <h3>begin/end families</h3>
+    <table>
+      <tr><th>Pair</th><th>Meaning</th></tr>
+      <tr><td><code>begin()</code> / <code>end()</code></td><td>Forward iteration over the container.</td></tr>
+      <tr><td><code>cbegin()</code> / <code>cend()</code></td><td>Same, but <em>const</em> — guarantees you won't write through it.</td></tr>
+      <tr><td><code>rbegin()</code> / <code>rend()</code></td><td>Reverse iteration: <code>*rbegin()</code> is the last element.</td></tr>
+      <tr><td><code>crbegin()</code> / <code>crend()</code></td><td>Const reverse.</td></tr>
+    </table>
+    <pre><code><span class="cm">// reverse-print without reversing</span>
+<span class="kw">for</span> (<span class="kw">auto</span> it = v.<span class="fn">rbegin</span>(); it != v.<span class="fn">rend</span>(); ++it)
+    cout &lt;&lt; *it &lt;&lt; <span class="str">' '</span>;</code></pre>
+
+    <h3>Iterator arithmetic</h3>
+    <pre><code><span class="kw">auto</span> it = v.<span class="fn">begin</span>();
+<span class="fn">advance</span>(it, <span class="num">3</span>);                  <span class="cm">// move it forward by 3 — works on any iterator</span>
+<span class="kw">auto</span> nx = <span class="fn">next</span>(it);             <span class="cm">// returns it+1 without modifying it</span>
+<span class="kw">auto</span> pv = <span class="fn">prev</span>(it);             <span class="cm">// returns it-1 (bidirectional+)</span>
+<span class="ty">int</span> d = <span class="fn">distance</span>(v.<span class="fn">begin</span>(), it); <span class="cm">// how many steps from begin to it</span></code></pre>
+
+    <h3>Iterator adapters — the secret weapons</h3>
+    <p>Sometimes you want to <em>write into</em> a container via an algorithm. These adapters wrap a container so you can use it as an output iterator.</p>
+    <table>
+      <tr><th>Adapter</th><th>What it does</th></tr>
+      <tr><td><code>back_inserter(c)</code></td><td>Each <code>*= x</code> through this iterator becomes <code>c.push_back(x)</code>.</td></tr>
+      <tr><td><code>front_inserter(c)</code></td><td>Same but <code>push_front</code> (works on deque/list).</td></tr>
+      <tr><td><code>inserter(c, it)</code></td><td>Calls <code>c.insert(it, x)</code> for each item.</td></tr>
+    </table>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; src = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; dst;
+<span class="fn">copy</span>(src.<span class="fn">begin</span>(), src.<span class="fn">end</span>(), <span class="fn">back_inserter</span>(dst));
+<span class="cm">// dst is now {1, 2, 3}</span>
+
+<span class="cm">// transform into a brand-new vector</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; squared;
+<span class="fn">transform</span>(src.<span class="fn">begin</span>(), src.<span class="fn">end</span>(), <span class="fn">back_inserter</span>(squared),
+          [](<span class="ty">int</span> x){ <span class="kw">return</span> x*x; });
+<span class="cm">// squared is now {1, 4, 9}</span></code></pre>
+
+    <h3>How range-based for actually works</h3>
+    <pre><code><span class="kw">for</span> (<span class="ty">int</span> x : v) { ... }
+
+<span class="cm">// is exactly equivalent to:</span>
+<span class="kw">for</span> (<span class="kw">auto</span> __it = v.<span class="fn">begin</span>(); __it != v.<span class="fn">end</span>(); ++__it) {
+    <span class="ty">int</span> x = *__it;
+    ...
+}</code></pre>
+    <p>So range-for works on <em>anything</em> with <code>begin()</code> and <code>end()</code> — including raw arrays, your own classes, and STL containers.</p>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 6 — ALGORITHMS                                        -->
+  <!-- ========================================================== -->
+
+  <section id="alg-sort">
+    <h2>Part 6.1 · Sorting & Ordering Algorithms</h2>
+
+    <h3>sort — the workhorse</h3>
+    <p><code>sort</code> uses <em>introsort</em> (quicksort + heapsort fallback) — guaranteed <span class="badge b-Onlogn">O(n log n)</span> worst case.</p>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">6</span>};
+
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());                <span class="cm">// ascending  → 1 1 2 3 4 5 6 9</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="ty">greater</span>&lt;<span class="ty">int</span>&gt;()); <span class="cm">// descending → 9 6 5 4 3 2 1 1</span>
+
+<span class="cm">// Lambda comparator — sort by absolute value</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+     [](<span class="ty">int</span> a, <span class="ty">int</span> b){ <span class="kw">return</span> <span class="fn">abs</span>(a) &lt; <span class="fn">abs</span>(b); });
+
+<span class="cm">// Sort pairs — by .second descending, then .first ascending</span>
+<span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; pairs;
+<span class="fn">sort</span>(pairs.<span class="fn">begin</span>(), pairs.<span class="fn">end</span>(),
+     [](<span class="kw">auto</span>&amp; a, <span class="kw">auto</span>&amp; b){
+         <span class="kw">if</span> (a.second != b.second) <span class="kw">return</span> a.second &gt; b.second;
+         <span class="kw">return</span> a.first &lt; b.first;
+     });</code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Comparators must be strict weak ordering.</strong>
+      Use <code>&lt;</code> not <code>&lt;=</code>. Returning <code>true</code> for equal elements crashes <code>sort</code> with undefined behavior.</div>
+    </div>
+
+    <h3>Other sorting flavors</h3>
+    <table>
+      <tr><th>Function</th><th>What it does</th><th>Complexity</th></tr>
+      <tr><td><code>stable_sort</code></td><td>Like <code>sort</code> but preserves the relative order of equal elements.</td><td><span class="badge b-Onlogn">O(n log n)</span></td></tr>
+      <tr><td><code>partial_sort(first, mid, last)</code></td><td>Sort just enough to put the smallest <code>mid-first</code> elements at the front.</td><td>O(n log k)</td></tr>
+      <tr><td><code>nth_element(first, kth, last)</code></td><td>Puts the k-th element in its final sorted position. Everything before is ≤, everything after is ≥. <strong>The rest is unsorted.</strong></td><td><span class="badge b-On">O(n) average</span></td></tr>
+      <tr><td><code>is_sorted(first, last)</code></td><td>Check if a range is non-decreasing.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>reverse(first, last)</code></td><td>Reverse the range in place.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>rotate(first, mid, last)</code></td><td>Rotate so that <code>mid</code> becomes the new first.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>shuffle(first, last, rng)</code></td><td>Random shuffle. Pass <code>mt19937</code> for good randomness.</td><td><span class="badge b-On">O(n)</span></td></tr>
+    </table>
+
+    <pre><code><span class="cm">// k-th smallest in O(n) average — much faster than full sort</span>
+<span class="fn">nth_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">begin</span>() + k, v.<span class="fn">end</span>());
+<span class="ty">int</span> kth = v[k];
+
+<span class="cm">// Random shuffle — DON'T use random_shuffle, it's deprecated/removed</span>
+<span class="ty">mt19937</span> rng(chrono::steady_clock::now().time_since_epoch().count());
+<span class="fn">shuffle</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), rng);</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="alg-search">
+    <h2>Part 6.2 · Searching Algorithms</h2>
+
+    <h3>Linear search family</h3>
+    <pre><code><span class="kw">auto</span> it = <span class="fn">find</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">7</span>);     <span class="cm">// returns iterator or end()</span>
+<span class="kw">if</span> (it != v.<span class="fn">end</span>()) cout &lt;&lt; *it;
+
+<span class="kw">auto</span> e = <span class="fn">find_if</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                  [](<span class="ty">int</span> x){ <span class="kw">return</span> x &gt; <span class="num">100</span>; });    <span class="cm">// first element &gt; 100</span>
+
+<span class="kw">auto</span> ne = <span class="fn">find_if_not</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                       [](<span class="ty">int</span> x){ <span class="kw">return</span> x % <span class="num">2</span> == <span class="num">0</span>; });  <span class="cm">// first odd</span>
+
+<span class="ty">int</span> n = <span class="fn">count</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">5</span>);            <span class="cm">// how many 5s</span>
+<span class="ty">int</span> e2 = <span class="fn">count_if</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                  [](<span class="ty">int</span> x){ <span class="kw">return</span> x % <span class="num">2</span> == <span class="num">0</span>; });    <span class="cm">// count evens</span></code></pre>
+
+    <h3>Binary search family — for SORTED ranges only</h3>
+    <table>
+      <tr><th>Function</th><th>Returns</th></tr>
+      <tr><td><code>binary_search(first, last, x)</code></td><td><strong>bool</strong> — does <code>x</code> exist? <em>Returns no position!</em></td></tr>
+      <tr><td><code>lower_bound(first, last, x)</code></td><td>Iterator to first element <strong>≥ x</strong>.</td></tr>
+      <tr><td><code>upper_bound(first, last, x)</code></td><td>Iterator to first element <strong>&gt; x</strong>.</td></tr>
+      <tr><td><code>equal_range(first, last, x)</code></td><td>Pair: (lower_bound, upper_bound). All occurrences in this range.</td></tr>
+    </table>
+    <p>All four are <span class="badge b-Ologn">O(log n)</span> on random-access iterators (vector, array). On <code>set</code>/<code>map</code> iterators (bidirectional only) the free functions become <span class="badge b-On">O(n)</span> — use the <em>member</em> versions.</p>
+
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>};
+
+<span class="cm">// Does 5 exist?</span>
+<span class="ty">bool</span> ok = <span class="fn">binary_search</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">5</span>);   <span class="cm">// true</span>
+
+<span class="cm">// How many 5s?</span>
+<span class="kw">auto</span> [lo, hi] = <span class="fn">equal_range</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">5</span>);
+<span class="ty">int</span> cnt = hi - lo;                                <span class="cm">// 3</span>
+
+<span class="cm">// Index of first ≥ 4?</span>
+<span class="kw">auto</span> it = <span class="fn">lower_bound</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">4</span>);
+<span class="ty">int</span> idx = it - v.<span class="fn">begin</span>();                       <span class="cm">// 2 (points at 5)</span></code></pre>
+
+    <div class="viz" id="bs-viz">
+      <div class="viz-title">🔬 Interactive: binary search · lower_bound vs upper_bound</div>
+      <div class="viz-controls">
+        <span style="font-weight:700">array (sorted):</span>
+        <input id="bs-array" value="1, 3, 5, 5, 5, 7, 9, 11" style="width:240px"/>
+        <span style="font-weight:700">x:</span>
+        <input id="bs-x" value="5" style="width:60px"/>
+        <button onclick="bsRun('lower')">lower_bound(x)</button>
+        <button onclick="bsRun('upper')">upper_bound(x)</button>
+        <button onclick="bsReset()">reset</button>
+      </div>
+      <div class="viz-stage" id="bs-stage" style="min-height:90px"></div>
+      <div class="viz-info" id="bs-info">click a button to run a binary search</div>
+    </div>
+
+    <h3>Min/max algorithms</h3>
+    <pre><code><span class="kw">auto</span> mn = *<span class="fn">min_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+<span class="kw">auto</span> mx = *<span class="fn">max_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+<span class="kw">auto</span> [mn2, mx2] = <span class="fn">minmax_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());  <span class="cm">// pair of iterators</span>
+
+<span class="cm">// With custom comparator: longest string</span>
+<span class="kw">auto</span> longest = *<span class="fn">max_element</span>(words.<span class="fn">begin</span>(), words.<span class="fn">end</span>(),
+    [](<span class="kw">auto</span>&amp; a, <span class="kw">auto</span>&amp; b){ <span class="kw">return</span> a.<span class="fn">size</span>() &lt; b.<span class="fn">size</span>(); });</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="alg-modify">
+    <h2>Part 6.3 · Modifying Algorithms</h2>
+
+    <h3>copy / fill / replace</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; src = {<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>}, dst(<span class="num">5</span>);
+<span class="fn">copy</span>(src.<span class="fn">begin</span>(), src.<span class="fn">end</span>(), dst.<span class="fn">begin</span>());
+
+<span class="fn">copy_if</span>(src.<span class="fn">begin</span>(), src.<span class="fn">end</span>(), <span class="fn">back_inserter</span>(dst),
+        [](<span class="ty">int</span> x){ <span class="kw">return</span> x % <span class="num">2</span> == <span class="num">0</span>; });
+
+<span class="fn">fill</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>);            <span class="cm">// every element = 0</span>
+<span class="fn">fill_n</span>(v.<span class="fn">begin</span>(), <span class="num">5</span>, <span class="num">42</span>);              <span class="cm">// first 5 elements = 42</span>
+
+<span class="fn">replace</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">3</span>, <span class="num">99</span>);     <span class="cm">// every 3 → 99</span>
+<span class="fn">replace_if</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+           [](<span class="ty">int</span> x){<span class="kw">return</span> x&lt;<span class="num">0</span>;}, <span class="num">0</span>);     <span class="cm">// negatives → 0</span></code></pre>
+
+    <h3>transform — apply a function to every element</h3>
+    <pre><code><span class="cm">// Single range: square every element in place</span>
+<span class="fn">transform</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), v.<span class="fn">begin</span>(),
+          [](<span class="ty">int</span> x){ <span class="kw">return</span> x*x; });
+
+<span class="cm">// Two ranges: element-wise add</span>
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; a = {<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>}, b = {<span class="num">10</span>,<span class="num">20</span>,<span class="num">30</span>}, c(<span class="num">3</span>);
+<span class="fn">transform</span>(a.<span class="fn">begin</span>(), a.<span class="fn">end</span>(), b.<span class="fn">begin</span>(), c.<span class="fn">begin</span>(),
+          [](<span class="ty">int</span> x, <span class="ty">int</span> y){ <span class="kw">return</span> x + y; });
+<span class="cm">// c = {11, 22, 33}</span></code></pre>
+
+    <h3>The erase–remove idiom (the trickiest STL pattern)</h3>
+    <p><code>remove</code> doesn't actually remove anything — it <em>shifts</em> non-matching elements forward and returns an iterator to the new logical end. You then call <code>erase</code> on the tail to shrink the container.</p>
+    <pre><code><span class="cm">// Remove all 0s from v</span>
+v.<span class="fn">erase</span>(<span class="fn">remove</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>), v.<span class="fn">end</span>());
+
+<span class="cm">// Remove with a predicate</span>
+v.<span class="fn">erase</span>(<span class="fn">remove_if</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                 [](<span class="ty">int</span> x){ <span class="kw">return</span> x &lt; <span class="num">0</span>; }),
+        v.<span class="fn">end</span>());
+
+<span class="cm">// C++20 simplified: std::erase / std::erase_if (one call)</span>
+<span class="fn">erase</span>(v, <span class="num">0</span>);
+<span class="fn">erase_if</span>(v, [](<span class="ty">int</span> x){ <span class="kw">return</span> x &lt; <span class="num">0</span>; });</code></pre>
+
+    <div class="note">
+      <span class="ico">📘</span>
+      <div><strong>Why this dance?</strong> STL algorithms only know iterators — they have no way to <em>shrink</em> the container itself (that's a container-specific operation). The 2-step idiom keeps the algorithm container-agnostic.</div>
+    </div>
+
+    <h3>unique — collapse consecutive duplicates</h3>
+    <p>Same idea as <code>remove</code>: must combine with <code>erase</code>, must be on a sorted range to actually remove all duplicates.</p>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>};
+
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+v.<span class="fn">erase</span>(<span class="fn">unique</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>()), v.<span class="fn">end</span>());
+<span class="cm">// v is now {1, 3, 5}</span></code></pre>
+
+    <h3>Other modifiers</h3>
+    <table>
+      <tr><th>Function</th><th>What it does</th></tr>
+      <tr><td><code>reverse_copy</code></td><td>Like <code>copy</code> but in reverse.</td></tr>
+      <tr><td><code>swap(a, b)</code></td><td>Swap two values (or two whole containers — O(1) for most STL containers).</td></tr>
+      <tr><td><code>swap_ranges(f1, l1, f2)</code></td><td>Element-wise swap two ranges.</td></tr>
+      <tr><td><code>iter_swap(it1, it2)</code></td><td>Swap the two pointed-to elements.</td></tr>
+      <tr><td><code>generate(first, last, gen)</code></td><td>Fill range by calling <code>gen()</code> for each slot.</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="alg-set">
+    <h2>Part 6.4 · Set Operations (on sorted ranges)</h2>
+
+    <p>These operate on two <strong>sorted</strong> ranges and produce a sorted result. They work on any container — vector, set, deque — as long as input is sorted.</p>
+
+    <table>
+      <tr><th>Function</th><th>Result</th></tr>
+      <tr><td><code>set_union</code></td><td>Elements in A or B (or both), with duplicates merged.</td></tr>
+      <tr><td><code>set_intersection</code></td><td>Elements in both A and B.</td></tr>
+      <tr><td><code>set_difference</code></td><td>Elements in A but not in B.</td></tr>
+      <tr><td><code>set_symmetric_difference</code></td><td>Elements in A or B but not both.</td></tr>
+      <tr><td><code>includes(A, B)</code></td><td>Is B a subset of A?</td></tr>
+      <tr><td><code>merge(A, B, out)</code></td><td>Merge two sorted ranges into one sorted range.</td></tr>
+      <tr><td><code>inplace_merge</code></td><td>Merge two consecutive sorted halves of one range.</td></tr>
+    </table>
+
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; A = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">5</span>};
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; B = {<span class="num">2</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>};
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; C;
+
+<span class="fn">set_intersection</span>(A.<span class="fn">begin</span>(), A.<span class="fn">end</span>(),
+                 B.<span class="fn">begin</span>(), B.<span class="fn">end</span>(), <span class="fn">back_inserter</span>(C));
+<span class="cm">// C = {2, 5}</span>
+
+C.<span class="fn">clear</span>();
+<span class="fn">set_union</span>(A.<span class="fn">begin</span>(), A.<span class="fn">end</span>(),
+          B.<span class="fn">begin</span>(), B.<span class="fn">end</span>(), <span class="fn">back_inserter</span>(C));
+<span class="cm">// C = {1, 2, 3, 4, 5, 6}</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="alg-numeric">
+    <h2>Part 6.5 · Numeric Algorithms (<code>&lt;numeric&gt;</code>)</h2>
+
+    <h3>accumulate — sum, product, anything</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};
+<span class="ty">int</span> sum  = <span class="fn">accumulate</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>);              <span class="cm">// 15</span>
+<span class="ty">int</span> prod = <span class="fn">accumulate</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">1</span>,
+                       <span class="ty">multiplies</span>&lt;<span class="ty">int</span>&gt;());                <span class="cm">// 120</span>
+
+<span class="cm">// Sum of squares with a lambda</span>
+<span class="ty">int</span> sq = <span class="fn">accumulate</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>,
+    [](<span class="ty">int</span> acc, <span class="ty">int</span> x){ <span class="kw">return</span> acc + x*x; });          <span class="cm">// 55</span></code></pre>
+
+    <div class="warn">
+      <span class="ico">⚠️</span>
+      <div><strong>Initial-value type matters!</strong>
+      <code>accumulate(v.begin(), v.end(), 0)</code> returns an <code>int</code> even if <code>v</code> contains <code>long long</code> — and overflows silently. Use <code>0LL</code> as the initial value when summing big numbers.</div>
+    </div>
+
+    <h3>Other numeric goodies</h3>
+    <table>
+      <tr><th>Function</th><th>What it does</th><th>Example</th></tr>
+      <tr><td><code>iota(first, last, v)</code></td><td>Fill range with <code>v, v+1, v+2, …</code></td><td><code>iota(v.begin(), v.end(), 0)</code> → 0,1,2,…</td></tr>
+      <tr><td><code>partial_sum</code></td><td>Prefix sums.</td><td><code>{1,2,3} → {1,3,6}</code></td></tr>
+      <tr><td><code>adjacent_difference</code></td><td>Difference of consecutive elements.</td><td><code>{1,3,6} → {1,2,3}</code></td></tr>
+      <tr><td><code>inner_product</code></td><td>Dot product of two ranges.</td><td><code>(1,2)·(3,4) = 11</code></td></tr>
+      <tr><td><code>gcd(a, b)</code> / <code>lcm(a, b)</code></td><td>C++17. Greatest common divisor / least common multiple.</td><td><code>gcd(12, 18) = 6</code></td></tr>
+    </table>
+
+    <pre><code><span class="cm">// Build prefix sums in one line</span>
+<span class="ty">vector</span>&lt;<span class="ty">long long</span>&gt; ps(n+<span class="num">1</span>, <span class="num">0</span>);
+<span class="fn">partial_sum</span>(a.<span class="fn">begin</span>(), a.<span class="fn">end</span>(), ps.<span class="fn">begin</span>() + <span class="num">1</span>);
+<span class="cm">// ps[i] = a[0] + ... + a[i-1]; query sum(l..r) = ps[r+1] - ps[l]</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="alg-cond">
+    <h2>Part 6.6 · Condition Checkers (<code>all_of</code>, <code>any_of</code>, <code>none_of</code>)</h2>
+
+    <pre><code><span class="ty">bool</span> allEven  = <span class="fn">all_of</span> (v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                          [](<span class="ty">int</span> x){ <span class="kw">return</span> x % <span class="num">2</span> == <span class="num">0</span>; });
+<span class="ty">bool</span> anyZero  = <span class="fn">any_of</span> (v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                          [](<span class="ty">int</span> x){ <span class="kw">return</span> x == <span class="num">0</span>; });
+<span class="ty">bool</span> noneNeg  = <span class="fn">none_of</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                          [](<span class="ty">int</span> x){ <span class="kw">return</span> x &lt; <span class="num">0</span>; });</code></pre>
+
+    <p>All three short-circuit (return as soon as the answer is decided). They replace ugly hand-written loops with self-documenting one-liners.</p>
+  </section>
+
+  <hr>
+
+  <section id="alg-partition">
+    <h2>Part 6.7 · Partition Algorithms</h2>
+
+    <p><code>partition</code> rearranges a range so that elements satisfying a predicate come first. Returns the iterator to the first element NOT satisfying the predicate.</p>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>};
+<span class="kw">auto</span> mid = <span class="fn">partition</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(),
+                     [](<span class="ty">int</span> x){ <span class="kw">return</span> x % <span class="num">2</span> == <span class="num">0</span>; });
+<span class="cm">// v: even elements, then odd elements (order WITHIN groups not preserved)</span>
+<span class="cm">// mid points to the first odd element</span></code></pre>
+
+    <ul>
+      <li><code>stable_partition</code> — like <code>partition</code> but preserves relative order within each group.</li>
+      <li><code>partition_point</code> — for an already-partitioned range, returns the boundary in <span class="badge b-Ologn">O(log n)</span> (binary search by predicate).</li>
+      <li><code>is_partitioned(first, last, pred)</code> — check whether range is already partitioned by <code>pred</code>.</li>
+    </ul>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 7 — STRINGS                                           -->
+  <!-- ========================================================== -->
+
+  <section id="strings">
+    <h2>Part 7 · string — A Sequence Container in Disguise</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <code>string</code> is a <code>vector&lt;char&gt;</code> with extra string-specific methods. Anything you can do to a vector, you can do to a string.</div>
+    </div>
+
+    <h3>String-specific operations</h3>
+    <table>
+      <tr><th>Operation</th><th>What it does</th><th>Complexity</th></tr>
+      <tr><td><code>s.length()</code> / <code>s.size()</code></td><td>Number of characters.</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td><code>s.substr(pos, len)</code></td><td>Substring of <code>len</code> chars starting at <code>pos</code> (len defaults to end).</td><td><span class="badge b-On">O(len)</span></td></tr>
+      <tr><td><code>s.find(t)</code></td><td>First index where substring <code>t</code> appears, or <code>string::npos</code>.</td><td>O(n·m)</td></tr>
+      <tr><td><code>s.rfind(t)</code></td><td>Last index where substring <code>t</code> appears.</td><td>O(n·m)</td></tr>
+      <tr><td><code>s.find_first_of(set)</code></td><td>First position of any character in <code>set</code>.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>s.replace(pos, len, t)</code></td><td>Replace <code>len</code> chars at <code>pos</code> with string <code>t</code>.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>s.erase(pos, len)</code></td><td>Remove <code>len</code> chars at <code>pos</code>.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>s.insert(pos, t)</code></td><td>Insert <code>t</code> before position <code>pos</code>.</td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td><code>s + t</code> or <code>s += t</code></td><td>Concatenation.</td><td><span class="badge b-On">O(|s|+|t|)</span></td></tr>
+      <tr><td><code>s.compare(t)</code></td><td>Negative if s &lt; t, 0 if equal, positive if s &gt; t.</td><td><span class="badge b-On">O(min(|s|,|t|))</span></td></tr>
+    </table>
+
+    <pre><code><span class="ty">string</span> s = <span class="str">"hello world"</span>;
+
+<span class="ty">size_t</span> p = s.<span class="fn">find</span>(<span class="str">"world"</span>);            <span class="cm">// 6</span>
+<span class="kw">if</span> (p != <span class="ty">string</span>::npos) cout &lt;&lt; <span class="str">"found at "</span> &lt;&lt; p;
+
+<span class="ty">string</span> sub = s.<span class="fn">substr</span>(<span class="num">6</span>, <span class="num">5</span>);            <span class="cm">// "world"</span>
+<span class="ty">string</span> rest = s.<span class="fn">substr</span>(<span class="num">6</span>);                <span class="cm">// "world" (to end)</span>
+
+s.<span class="fn">replace</span>(<span class="num">0</span>, <span class="num">5</span>, <span class="str">"HELLO"</span>);                <span class="cm">// "HELLO world"</span>
+s.<span class="fn">insert</span>(<span class="num">5</span>, <span class="str">", "</span>);                       <span class="cm">// "HELLO,  world"</span>
+s.<span class="fn">erase</span>(<span class="num">5</span>, <span class="num">2</span>);                          <span class="cm">// back to "HELLO world"</span></code></pre>
+
+    <h3>Strings + STL algorithms</h3>
+    <pre><code><span class="ty">string</span> s = <span class="str">"banana"</span>;
+
+<span class="fn">sort</span>(s.<span class="fn">begin</span>(), s.<span class="fn">end</span>());                   <span class="cm">// "aaabnn"</span>
+<span class="fn">reverse</span>(s.<span class="fn">begin</span>(), s.<span class="fn">end</span>());                <span class="cm">// reverses in place</span>
+<span class="ty">int</span> as = <span class="fn">count</span>(s.<span class="fn">begin</span>(), s.<span class="fn">end</span>(), <span class="str">'a'</span>);     <span class="cm">// 3</span>
+
+<span class="cm">// Are they anagrams?</span>
+<span class="ty">bool</span> <span class="fn">anagram</span>(<span class="ty">string</span> a, <span class="ty">string</span> b) {
+    <span class="fn">sort</span>(a.<span class="fn">begin</span>(), a.<span class="fn">end</span>());
+    <span class="fn">sort</span>(b.<span class="fn">begin</span>(), b.<span class="fn">end</span>());
+    <span class="kw">return</span> a == b;
+}</code></pre>
+
+    <h3>String parsing with stringstream</h3>
+    <pre><code><span class="kw">#include</span> &lt;sstream&gt;
+<span class="ty">string</span> line = <span class="str">"42 7 12 99"</span>;
+<span class="ty">stringstream</span> ss(line);
+<span class="ty">int</span> x;
+<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; nums;
+<span class="kw">while</span> (ss &gt;&gt; x) nums.<span class="fn">push_back</span>(x);   <span class="cm">// {42, 7, 12, 99}
+
+// Split a CSV line</span>
+<span class="ty">string</span> csv = <span class="str">"alice,bob,carol"</span>;
+<span class="ty">stringstream</span> ss2(csv);
+<span class="ty">string</span> token;
+<span class="ty">vector</span>&lt;<span class="ty">string</span>&gt; tokens;
+<span class="kw">while</span> (<span class="fn">getline</span>(ss2, token, <span class="str">','</span>)) tokens.<span class="fn">push_back</span>(token);</code></pre>
+
+    <h3>Number ↔ string conversion</h3>
+    <pre><code><span class="ty">string</span> s = <span class="fn">to_string</span>(<span class="num">3.14</span>);     <span class="cm">// "3.140000"</span>
+<span class="ty">int</span>   n = <span class="fn">stoi</span>(<span class="str">"42"</span>);             <span class="cm">// 42</span>
+<span class="ty">long long</span> ll = <span class="fn">stoll</span>(<span class="str">"99999999999"</span>);
+<span class="ty">double</span> d = <span class="fn">stod</span>(<span class="str">"3.14"</span>);          <span class="cm">// 3.14</span>
+
+<span class="cm">// With base (binary, hex, …)</span>
+<span class="ty">int</span> hex = <span class="fn">stoi</span>(<span class="str">"ff"</span>, <span class="kw">nullptr</span>, <span class="num">16</span>);  <span class="cm">// 255</span></code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 8 — FUNCTORS / LAMBDAS                                -->
+  <!-- ========================================================== -->
+
+  <section id="functors">
+    <h2>Part 8 · Functors, Lambdas & Custom Comparators</h2>
+
+    <div class="analogy">
+      <span class="ico">💡</span>
+      <div><strong>Analogy</strong>
+      A <em>comparator</em> is a tiny function that answers ONE yes/no question: "should A come before B?" STL algorithms call it for every pair they need to compare.</div>
+    </div>
+
+    <h3>Three ways to write a comparator</h3>
+    <pre><code><span class="cm">// 1) Free function</span>
+<span class="ty">bool</span> <span class="fn">cmp</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) { <span class="kw">return</span> a &gt; b; }
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), cmp);
+
+<span class="cm">// 2) Functor — a struct with operator()</span>
+<span class="kw">struct</span> Cmp {
+    <span class="ty">bool</span> <span class="fn">operator</span>()(<span class="ty">int</span> a, <span class="ty">int</span> b) <span class="kw">const</span> { <span class="kw">return</span> a &gt; b; }
+};
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), Cmp());
+
+<span class="cm">// 3) Lambda — modern, clean, inline</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), [](<span class="ty">int</span> a, <span class="ty">int</span> b){ <span class="kw">return</span> a &gt; b; });</code></pre>
+
+    <h3>Lambda anatomy</h3>
+    <pre><code>[capture](parameters) -&gt; ReturnType { body }
+
+<span class="cm">// Examples</span>
+[](<span class="ty">int</span> x){ <span class="kw">return</span> x*<span class="num">2</span>; }                  <span class="cm">// no capture, returns int (deduced)</span>
+[&amp;](<span class="ty">int</span> x){ count += x; }              <span class="cm">// capture all by reference</span>
+[=](<span class="ty">int</span> x){ <span class="kw">return</span> x + offset; }       <span class="cm">// capture all by value</span>
+[&amp;count](<span class="ty">int</span> x){ count += x; }          <span class="cm">// capture only `count` by reference</span>
+[=, &amp;count](<span class="ty">int</span> x){ ... }                <span class="cm">// most by value, count by reference</span></code></pre>
+
+    <h3>Built-in functor objects (<code>&lt;functional&gt;</code>)</h3>
+    <table>
+      <tr><th>Functor</th><th>Returns true when</th><th>Use</th></tr>
+      <tr><td><code>less&lt;T&gt;</code></td><td>a &lt; b</td><td>default for sort, set, map</td></tr>
+      <tr><td><code>greater&lt;T&gt;</code></td><td>a &gt; b</td><td>descending sort, min-heap</td></tr>
+      <tr><td><code>less_equal&lt;T&gt;</code></td><td>a ≤ b</td><td>(don't use as sort comparator!)</td></tr>
+      <tr><td><code>plus&lt;T&gt;</code> / <code>minus&lt;T&gt;</code> / <code>multiplies&lt;T&gt;</code></td><td>a+b / a−b / a·b</td><td>accumulate, transform</td></tr>
+    </table>
+
+    <h3>Sorting pairs and structs</h3>
+    <pre><code><span class="cm">// Default pair sort: by .first asc, then .second asc</span>
+<span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; v;
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+
+<span class="cm">// Custom: by .second ascending, ties broken by .first descending</span>
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), [](<span class="kw">auto</span>&amp; a, <span class="kw">auto</span>&amp; b){
+    <span class="kw">if</span> (a.second != b.second) <span class="kw">return</span> a.second &lt; b.second;
+    <span class="kw">return</span> a.first &gt; b.first;
+});
+
+<span class="cm">// Custom struct</span>
+<span class="kw">struct</span> Person { <span class="ty">string</span> name; <span class="ty">int</span> age; };
+<span class="ty">vector</span>&lt;Person&gt; people;
+<span class="fn">sort</span>(people.<span class="fn">begin</span>(), people.<span class="fn">end</span>(), [](<span class="kw">const</span> Person&amp; a, <span class="kw">const</span> Person&amp; b){
+    <span class="kw">return</span> a.age &lt; b.age;
+});</code></pre>
+
+    <h3>Custom comparator for set / map</h3>
+    <pre><code><span class="cm">// Set ordered by string length, then lexicographically</span>
+<span class="kw">struct</span> ByLen {
+    <span class="ty">bool</span> <span class="fn">operator</span>()(<span class="kw">const</span> <span class="ty">string</span>&amp; a, <span class="kw">const</span> <span class="ty">string</span>&amp; b) <span class="kw">const</span> {
+        <span class="kw">if</span> (a.<span class="fn">size</span>() != b.<span class="fn">size</span>()) <span class="kw">return</span> a.<span class="fn">size</span>() &lt; b.<span class="fn">size</span>();
+        <span class="kw">return</span> a &lt; b;
+    }
+};
+<span class="ty">set</span>&lt;<span class="ty">string</span>, ByLen&gt; s;</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 9 — ADVANCED                                          -->
+  <!-- ========================================================== -->
+
+  <section id="bitset">
+    <h2>Part 9.1 · bitset — Compact Bit Array</h2>
+
+    <p>A <code>bitset&lt;N&gt;</code> is a fixed-size array of N bits, packed tight (8 bits per byte). Bitwise operations on bitsets run <strong>64 bits at a time</strong> on a 64-bit CPU — that's a free 64× speedup for problems like subset DP.</p>
+
+    <pre><code><span class="ty">bitset</span>&lt;<span class="num">100</span>&gt; b;            <span class="cm">// 100 bits, all 0</span>
+b.<span class="fn">set</span>(<span class="num">5</span>);                 <span class="cm">// b[5] = 1</span>
+b.<span class="fn">reset</span>(<span class="num">5</span>);               <span class="cm">// b[5] = 0</span>
+b.<span class="fn">flip</span>();                 <span class="cm">// flip all bits</span>
+b.<span class="fn">flip</span>(<span class="num">3</span>);                <span class="cm">// flip just bit 3</span>
+<span class="ty">bool</span> v = b.<span class="fn">test</span>(<span class="num">3</span>);       <span class="cm">// or just b[3]</span>
+<span class="ty">int</span> c = b.<span class="fn">count</span>();        <span class="cm">// number of set bits (popcount)</span>
+<span class="ty">bool</span> any = b.<span class="fn">any</span>();       <span class="cm">// at least one bit set?</span>
+<span class="ty">bool</span> none = b.<span class="fn">none</span>();     <span class="cm">// no bits set?</span>
+
+<span class="ty">string</span> s = b.<span class="fn">to_string</span>();
+<span class="ty">unsigned long</span> u = b.<span class="fn">to_ulong</span>();</code></pre>
+
+    <h3>Bitwise operations</h3>
+    <pre><code><span class="ty">bitset</span>&lt;<span class="num">8</span>&gt; a(<span class="str">"11001100"</span>), b(<span class="str">"10101010"</span>);
+<span class="kw">auto</span> _and = a &amp; b;     <span class="cm">// 10001000</span>
+<span class="kw">auto</span> _or  = a | b;     <span class="cm">// 11101110</span>
+<span class="kw">auto</span> _xor = a ^ b;     <span class="cm">// 01100110</span>
+<span class="kw">auto</span> _shl = a &lt;&lt; <span class="num">2</span>;    <span class="cm">// 00110000</span>
+<span class="kw">auto</span> _not = ~a;        <span class="cm">// 00110011</span></code></pre>
+
+    <h3>The 64× speedup</h3>
+    <p>Suppose you have an N×N adjacency matrix and want to count triangles. Naive: O(N³). With bitsets:</p>
+    <pre><code><span class="kw">const</span> <span class="ty">int</span> N = <span class="num">2000</span>;
+<span class="ty">bitset</span>&lt;N&gt; row[N];
+
+<span class="ty">long long</span> tri = <span class="num">0</span>;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; N; ++i)
+    <span class="kw">for</span> (<span class="ty">int</span> j = i+<span class="num">1</span>; j &lt; N; ++j)
+        <span class="kw">if</span> (row[i][j])
+            tri += (row[i] &amp; row[j]).<span class="fn">count</span>();   <span class="cm">// 64-wide AND in one CPU op</span>
+tri /= <span class="num">3</span>;
+<span class="cm">// Effective: O(N³ / 64)</span></code></pre>
+  </section>
+
+  <hr>
+
+  <section id="pair-tuple">
+    <h2>Part 9.2 · pair & tuple</h2>
+
+    <h3>pair — two values bundled together</h3>
+    <pre><code><span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">string</span>&gt; p = {<span class="num">42</span>, <span class="str">"hello"</span>};
+<span class="kw">auto</span> p2 = <span class="fn">make_pair</span>(<span class="num">10</span>, <span class="str">"world"</span>);
+cout &lt;&lt; p.first &lt;&lt; <span class="str">' '</span> &lt;&lt; p.second;
+
+<span class="cm">// C++17 structured bindings — cleaner</span>
+<span class="kw">auto</span> [num, txt] = p;
+cout &lt;&lt; num &lt;&lt; <span class="str">' '</span> &lt;&lt; txt;
+
+<span class="cm">// Pairs are comparable lexicographically (.first first, then .second)</span>
+<span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; v;
+<span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());</code></pre>
+
+    <h3>tuple — N values bundled together</h3>
+    <pre><code><span class="ty">tuple</span>&lt;<span class="ty">int</span>, <span class="ty">string</span>, <span class="ty">double</span>&gt; t = {<span class="num">1</span>, <span class="str">"hi"</span>, <span class="num">3.14</span>};
+cout &lt;&lt; <span class="fn">get</span>&lt;<span class="num">0</span>&gt;(t);   <span class="cm">// 1</span>
+cout &lt;&lt; <span class="fn">get</span>&lt;<span class="num">1</span>&gt;(t);   <span class="cm">// "hi"</span>
+
+<span class="cm">// Unpack with structured binding</span>
+<span class="kw">auto</span> [a, b, c] = t;
+
+<span class="cm">// Or with tie() — older syntax</span>
+<span class="ty">int</span> x; <span class="ty">string</span> y; <span class="ty">double</span> z;
+<span class="fn">tie</span>(x, y, z) = t;</code></pre>
+
+    <p>Tuples are great when a function needs to return multiple values:</p>
+    <pre><code><span class="ty">tuple</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>, <span class="ty">int</span>&gt; <span class="fn">findMinMaxSum</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v) {
+    <span class="ty">int</span> mn = *<span class="fn">min_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+    <span class="ty">int</span> mx = *<span class="fn">max_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+    <span class="ty">int</span> sm = <span class="fn">accumulate</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>(), <span class="num">0</span>);
+    <span class="kw">return</span> {mn, mx, sm};
+}
+<span class="kw">auto</span> [mn, mx, sm] = <span class="fn">findMinMaxSum</span>(v);</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="numeric-limits">
+    <h2>Part 9.3 · numeric_limits — Type Boundaries</h2>
+
+    <p>Instead of remembering magic constants like <code>2147483647</code>, ask the type itself:</p>
+    <pre><code><span class="kw">#include</span> &lt;limits&gt;
+
+<span class="ty">int</span>  iMax = numeric_limits&lt;<span class="ty">int</span>&gt;::max();             <span class="cm">// 2147483647</span>
+<span class="ty">int</span>  iMin = numeric_limits&lt;<span class="ty">int</span>&gt;::min();             <span class="cm">// -2147483648</span>
+<span class="ty">long long</span> llMax = numeric_limits&lt;<span class="ty">long long</span>&gt;::max();
+<span class="ty">double</span> dInf = numeric_limits&lt;<span class="ty">double</span>&gt;::infinity();
+<span class="ty">double</span> eps  = numeric_limits&lt;<span class="ty">double</span>&gt;::epsilon();   <span class="cm">// smallest representable difference</span>
+
+<span class="cm">// Equivalent old-school constants from &lt;climits&gt;</span>
+INT_MAX, INT_MIN, LLONG_MAX, LLONG_MIN, UINT_MAX</code></pre>
+  </section>
+
+  <hr>
+
+  <section id="custom-hash">
+    <h2>Part 9.4 · Custom Hash for unordered_map</h2>
+
+    <p>Two cases where you need a custom hash:</p>
+    <ol>
+      <li>You're storing a <strong>custom type</strong> (struct, pair) — the default hash doesn't know what to do.</li>
+      <li>You're storing built-in types but on Codeforces, where <em>anti-hash test cases</em> can blow up the default hash.</li>
+    </ol>
+
+    <h3>Hashing pairs</h3>
+    <pre><code><span class="kw">struct</span> PairHash {
+    <span class="ty">size_t</span> <span class="fn">operator</span>()(<span class="kw">const</span> <span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;&amp; p) <span class="kw">const</span> {
+        <span class="kw">return</span> hash&lt;<span class="ty">long long</span>&gt;()(((<span class="ty">long long</span>)p.first &lt;&lt; <span class="num">32</span>) | (<span class="ty">unsigned</span>)p.second);
+    }
+};
+<span class="ty">unordered_map</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;, <span class="ty">int</span>, PairHash&gt; m;</code></pre>
+
+    <h3>The bulletproof contest hash (splitmix64 + random seed)</h3>
+    <pre><code><span class="kw">struct</span> SafeHash {
+    <span class="kw">static</span> <span class="ty">uint64_t</span> <span class="fn">splitmix64</span>(<span class="ty">uint64_t</span> x) {
+        x += <span class="num">0x9e3779b97f4a7c15ULL</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">30</span>)) * <span class="num">0xbf58476d1ce4e5b9ULL</span>;
+        x = (x ^ (x &gt;&gt; <span class="num">27</span>)) * <span class="num">0x94d049bb133111ebULL</span>;
+        <span class="kw">return</span> x ^ (x &gt;&gt; <span class="num">31</span>);
+    }
+    <span class="ty">size_t</span> <span class="fn">operator</span>()(<span class="ty">uint64_t</span> x) <span class="kw">const</span> {
+        <span class="kw">static</span> <span class="kw">const</span> <span class="ty">uint64_t</span> SEED =
+            chrono::steady_clock::now().time_since_epoch().count();
+        <span class="kw">return</span> <span class="fn">splitmix64</span>(x + SEED);
+    }
+};
+<span class="ty">unordered_map</span>&lt;<span class="ty">long long</span>, <span class="ty">int</span>, SafeHash&gt; safe;</code></pre>
+
+    <p>Why it works: <code>splitmix64</code> spreads bits chaotically, and the per-run random <code>SEED</code> means the contest setter can't precompute a colliding input set.</p>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 10 — MASTER TEMPLATE                                  -->
+  <!-- ========================================================== -->
+
+  <section id="template">
+    <h2>Part 10 · The Contest-Ready Master Template</h2>
+
+    <h3>Full starter (paste at top of every solution)</h3>
+    <pre><code><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">using namespace</span> std;
+
+<span class="cm">// ── shorthand types ───────────────────────────────────────</span>
+<span class="kw">using</span> ll  = <span class="ty">long long</span>;
+<span class="kw">using</span> ull = <span class="ty">unsigned long long</span>;
+<span class="kw">using</span> pii = <span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;;
+<span class="kw">using</span> pll = <span class="ty">pair</span>&lt;ll, ll&gt;;
+<span class="kw">using</span> vi  = <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;;
+<span class="kw">using</span> vll = <span class="ty">vector</span>&lt;ll&gt;;
+<span class="kw">using</span> vpii = <span class="ty">vector</span>&lt;pii&gt;;
+<span class="kw">using</span> vvi = <span class="ty">vector</span>&lt;vi&gt;;
+
+<span class="cm">// ── shorthand macros ──────────────────────────────────────</span>
+<span class="kw">#define</span> all(x)  (x).<span class="fn">begin</span>(), (x).<span class="fn">end</span>()
+<span class="kw">#define</span> rall(x) (x).<span class="fn">rbegin</span>(), (x).<span class="fn">rend</span>()
+<span class="kw">#define</span> sz(x)   (<span class="ty">int</span>)(x).<span class="fn">size</span>()
+<span class="kw">#define</span> pb      push_back
+<span class="kw">#define</span> eb      emplace_back
+
+<span class="kw">const</span> <span class="ty">int</span> INF = <span class="num">1e9</span> + <span class="num">7</span>;
+<span class="kw">const</span> ll  LINF = <span class="num">1e18</span>;
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    ios_base::<span class="fn">sync_with_stdio</span>(<span class="kw">false</span>);   <span class="cm">// fast I/O</span>
+    cin.<span class="fn">tie</span>(<span class="kw">nullptr</span>);
+
+    <span class="cm">// solve here</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+    <h3>The 20 most-used one-liners</h3>
+    <table>
+      <tr><th>Goal</th><th>One-liner</th></tr>
+      <tr><td>Sort ascending</td><td><code>sort(all(v));</code></td></tr>
+      <tr><td>Sort descending</td><td><code>sort(rall(v));</code></td></tr>
+      <tr><td>Sort by custom key</td><td><code>sort(all(v), [](auto&amp; a, auto&amp; b){ return a.x &lt; b.x; });</code></td></tr>
+      <tr><td>Unique sorted vector</td><td><code>sort(all(v)); v.erase(unique(all(v)), v.end());</code></td></tr>
+      <tr><td>Remove element</td><td><code>v.erase(remove(all(v), x), v.end());</code></td></tr>
+      <tr><td>Sum</td><td><code>ll s = accumulate(all(v), 0LL);</code></td></tr>
+      <tr><td>Max element</td><td><code>int mx = *max_element(all(v));</code></td></tr>
+      <tr><td>Index of value</td><td><code>int i = find(all(v), x) - v.begin();</code></td></tr>
+      <tr><td>Binary search exists?</td><td><code>bool ok = binary_search(all(v), x);</code></td></tr>
+      <tr><td>Lower bound index</td><td><code>int i = lower_bound(all(v), x) - v.begin();</code></td></tr>
+      <tr><td>Reverse</td><td><code>reverse(all(v));</code></td></tr>
+      <tr><td>Fill with value</td><td><code>fill(all(v), 0);</code></td></tr>
+      <tr><td>Iota (0,1,2,…)</td><td><code>iota(all(v), 0);</code></td></tr>
+      <tr><td>Random shuffle</td><td><code>shuffle(all(v), mt19937(random_device{}()));</code></td></tr>
+      <tr><td>Min-heap of int</td><td><code>priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; pq;</code></td></tr>
+      <tr><td>Frequency map</td><td><code>map&lt;T,int&gt; f; for (auto&amp; x : v) ++f[x];</code></td></tr>
+      <tr><td>Max gap</td><td><code>int g = *max_element(all(v)) - *min_element(all(v));</code></td></tr>
+      <tr><td>Are all positive?</td><td><code>all_of(all(v), [](int x){ return x &gt; 0; });</code></td></tr>
+      <tr><td>Substring</td><td><code>string sub = s.substr(i, len);</code></td></tr>
+      <tr><td>Build prefix sums</td><td><code>partial_sum(all(v), v.begin());</code></td></tr>
+    </table>
+
+    <h3>"I need X → use Y" decision table</h3>
+    <table>
+      <tr><th>If you need…</th><th>Reach for…</th></tr>
+      <tr><td>A growing array</td><td><code>vector</code></td></tr>
+      <tr><td>Push/pop both ends</td><td><code>deque</code></td></tr>
+      <tr><td>Sorted unique elements</td><td><code>set</code></td></tr>
+      <tr><td>Sorted with duplicates / random delete a min/max</td><td><code>multiset</code></td></tr>
+      <tr><td>Key → value lookup, sorted</td><td><code>map</code></td></tr>
+      <tr><td>Key → value lookup, blazing fast</td><td><code>unordered_map</code> + custom hash</td></tr>
+      <tr><td>LIFO operations</td><td><code>stack</code></td></tr>
+      <tr><td>FIFO operations / BFS</td><td><code>queue</code></td></tr>
+      <tr><td>Always-pop the largest (Dijkstra/Prim)</td><td><code>priority_queue</code></td></tr>
+      <tr><td>Sliding window min/max</td><td><code>deque</code> of indices</td></tr>
+      <tr><td>Compact bitmap / subset DP</td><td><code>bitset</code></td></tr>
+      <tr><td>Two values together (state, distance)</td><td><code>pair</code></td></tr>
+      <tr><td>K-th smallest in O(n)</td><td><code>nth_element</code></td></tr>
+      <tr><td>Any-of / all-of / count</td><td><code>any_of</code> / <code>all_of</code> / <code>count_if</code></td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 11 — 15 WORKED PROBLEMS                               -->
+  <!-- ========================================================== -->
+
+  <section id="problems">
+    <h2>Part 11 · 15 Worked Problems — The Hero Path</h2>
+
+    <p>Each problem shows the <em>thinking</em>, the <em>STL choice</em>, the <em>full solution</em>, and the <em>complexity</em>. Read in order — they get progressively harder.</p>
+
+    <h3>P1 · Count distinct elements</h3>
+    <p><strong>STL:</strong> <code>sort + unique</code> &nbsp;or&nbsp; <code>set</code>.</p>
+    <pre><code><span class="ty">int</span> <span class="fn">distinct1</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; v) {
+    <span class="fn">sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+    <span class="kw">return</span> <span class="fn">unique</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>()) - v.<span class="fn">begin</span>();   <span class="cm">// O(n log n)</span>
+}
+<span class="ty">int</span> <span class="fn">distinct2</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v) {
+    <span class="kw">return</span> <span class="ty">set</span>&lt;<span class="ty">int</span>&gt;(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>()).<span class="fn">size</span>();      <span class="cm">// O(n log n)</span>
+}</code></pre>
+
+    <h3>P2 · Frequency map</h3>
+    <p>Given a list of strings, print each unique word and its count.</p>
+    <pre><code><span class="ty">unordered_map</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt; freq;
+<span class="kw">for</span> (<span class="ty">string</span>&amp; w : words) ++freq[w];
+<span class="kw">for</span> (<span class="kw">auto</span>&amp; [w, c] : freq) cout &lt;&lt; w &lt;&lt; <span class="str">' '</span> &lt;&lt; c &lt;&lt; <span class="str">'\n'</span>;
+<span class="cm">// Time: O(n) average. Use map if you need sorted output.</span></code></pre>
+
+    <h3>P3 · Two Sum</h3>
+    <p>Given <code>a[]</code> and target <code>T</code>, find indices i, j with <code>a[i]+a[j]=T</code>.</p>
+    <pre><code><span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; seen;          <span class="cm">// value → index</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; (<span class="ty">int</span>)a.<span class="fn">size</span>(); ++i) {
+    <span class="ty">int</span> need = T - a[i];
+    <span class="kw">if</span> (seen.<span class="fn">count</span>(need)) <span class="kw">return</span> {seen[need], i};
+    seen[a[i]] = i;
+}
+<span class="cm">// Time: O(n) average</span></code></pre>
+
+    <h3>P4 · Sliding window maximum</h3>
+    <p>Maximum of every k-sized window. Classic deque application — see Part 1.2.</p>
+
+    <h3>P5 · Balanced brackets</h3>
+    <p>Already solved in Part 4.1 with <code>stack</code>.</p>
+
+    <h3>P6 · Next greater element</h3>
+    <p>For each element, find the index of the next strictly greater element on its right.</p>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">nextGreater</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; a) {
+    <span class="ty">int</span> n = a.<span class="fn">size</span>();
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; ans(n, -<span class="num">1</span>);
+    <span class="ty">stack</span>&lt;<span class="ty">int</span>&gt; st;                       <span class="cm">// indices, decreasing values</span>
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; ++i) {
+        <span class="kw">while</span> (!st.<span class="fn">empty</span>() &amp;&amp; a[st.<span class="fn">top</span>()] &lt; a[i]) {
+            ans[st.<span class="fn">top</span>()] = i;
+            st.<span class="fn">pop</span>();
+        }
+        st.<span class="fn">push</span>(i);
+    }
+    <span class="kw">return</span> ans;
+}
+<span class="cm">// Time: O(n)</span></code></pre>
+
+    <h3>P7 · K-th largest element</h3>
+    <pre><code><span class="cm">// Approach 1: nth_element — O(n) average</span>
+<span class="ty">int</span> <span class="fn">kthLargest1</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v, <span class="ty">int</span> k) {
+    <span class="fn">nth_element</span>(v.<span class="fn">begin</span>(), v.<span class="fn">begin</span>() + (k-<span class="num">1</span>), v.<span class="fn">end</span>(), <span class="ty">greater</span>&lt;<span class="ty">int</span>&gt;());
+    <span class="kw">return</span> v[k-<span class="num">1</span>];
+}
+
+<span class="cm">// Approach 2: min-heap of size k — O(n log k), uses O(k) memory</span>
+<span class="ty">int</span> <span class="fn">kthLargest2</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; v, <span class="ty">int</span> k) {
+    <span class="ty">priority_queue</span>&lt;<span class="ty">int</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;, <span class="ty">greater</span>&lt;<span class="ty">int</span>&gt;&gt; pq;
+    <span class="kw">for</span> (<span class="ty">int</span> x : v) {
+        pq.<span class="fn">push</span>(x);
+        <span class="kw">if</span> ((<span class="ty">int</span>)pq.<span class="fn">size</span>() &gt; k) pq.<span class="fn">pop</span>();
+    }
+    <span class="kw">return</span> pq.<span class="fn">top</span>();
+}</code></pre>
+
+    <h3>P8 · Meeting rooms — minimum rooms needed</h3>
+    <p>Given start/end times of meetings, find the maximum number of overlapping meetings.</p>
+    <pre><code><span class="ty">int</span> <span class="fn">minRooms</span>(<span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt;&amp; mtgs) {
+    <span class="ty">vector</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; ev;     <span class="cm">// (time, +1 for start, -1 for end)</span>
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; [s, e] : mtgs) {
+        ev.<span class="fn">push_back</span>({s, +<span class="num">1</span>});
+        ev.<span class="fn">push_back</span>({e, -<span class="num">1</span>});         <span class="cm">// end-events sort first (–1 &lt; +1) → no overcount</span>
+    }
+    <span class="fn">sort</span>(ev.<span class="fn">begin</span>(), ev.<span class="fn">end</span>());
+    <span class="ty">int</span> cur = <span class="num">0</span>, best = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; [t, d] : ev) {
+        cur += d;
+        best = <span class="fn">max</span>(best, cur);
+    }
+    <span class="kw">return</span> best;
+}
+<span class="cm">// Time: O(n log n)</span></code></pre>
+
+    <h3>P9 · LRU cache concept</h3>
+    <p>Constant-time get/put with eviction of least-recently-used: combine <code>list</code> (for ordering) with <code>unordered_map</code> (for lookup).</p>
+    <pre><code><span class="kw">class</span> LRUCache {
+    <span class="ty">int</span> cap;
+    <span class="ty">list</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt; ord;                                  <span class="cm">// (key, val), MRU at front</span>
+    <span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">list</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>,<span class="ty">int</span>&gt;&gt;::iterator&gt; mp;
+<span class="kw">public</span>:
+    <span class="fn">LRUCache</span>(<span class="ty">int</span> c) : cap(c) {}
+    <span class="ty">int</span> <span class="fn">get</span>(<span class="ty">int</span> k) {
+        <span class="kw">if</span> (!mp.<span class="fn">count</span>(k)) <span class="kw">return</span> -<span class="num">1</span>;
+        ord.<span class="fn">splice</span>(ord.<span class="fn">begin</span>(), ord, mp[k]);              <span class="cm">// O(1) move to front</span>
+        <span class="kw">return</span> mp[k]-&gt;second;
+    }
+    <span class="ty">void</span> <span class="fn">put</span>(<span class="ty">int</span> k, <span class="ty">int</span> v) {
+        <span class="kw">if</span> (mp.<span class="fn">count</span>(k)) ord.<span class="fn">erase</span>(mp[k]);
+        ord.<span class="fn">push_front</span>({k, v});
+        mp[k] = ord.<span class="fn">begin</span>();
+        <span class="kw">if</span> ((<span class="ty">int</span>)ord.<span class="fn">size</span>() &gt; cap) {
+            mp.<span class="fn">erase</span>(ord.<span class="fn">back</span>().first);
+            ord.<span class="fn">pop_back</span>();
+        }
+    }
+};</code></pre>
+
+    <h3>P10 · Anagram groups</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">string</span>&gt;&gt; <span class="fn">anagrams</span>(<span class="ty">vector</span>&lt;<span class="ty">string</span>&gt;&amp; v) {
+    <span class="ty">map</span>&lt;<span class="ty">string</span>, <span class="ty">vector</span>&lt;<span class="ty">string</span>&gt;&gt; g;
+    <span class="kw">for</span> (<span class="ty">string</span>&amp; w : v) {
+        <span class="ty">string</span> key = w;
+        <span class="fn">sort</span>(key.<span class="fn">begin</span>(), key.<span class="fn">end</span>());
+        g[key].<span class="fn">push_back</span>(w);
+    }
+    <span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">string</span>&gt;&gt; ans;
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; [k, group] : g) ans.<span class="fn">push_back</span>(group);
+    <span class="kw">return</span> ans;
+}</code></pre>
+
+    <h3>P11 · Merge K sorted arrays</h3>
+    <pre><code><span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; <span class="fn">mergeK</span>(<span class="ty">vector</span>&lt;<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt;&amp; arrs) {
+    <span class="cm">// (value, which array, index within that array)</span>
+    <span class="kw">using</span> T = <span class="ty">tuple</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>, <span class="ty">int</span>&gt;;
+    <span class="ty">priority_queue</span>&lt;T, <span class="ty">vector</span>&lt;T&gt;, <span class="ty">greater</span>&lt;T&gt;&gt; pq;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; (<span class="ty">int</span>)arrs.<span class="fn">size</span>(); ++i)
+        <span class="kw">if</span> (!arrs[i].<span class="fn">empty</span>()) pq.<span class="fn">push</span>({arrs[i][<span class="num">0</span>], i, <span class="num">0</span>});
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; ans;
+    <span class="kw">while</span> (!pq.<span class="fn">empty</span>()) {
+        <span class="kw">auto</span> [val, ai, idx] = pq.<span class="fn">top</span>(); pq.<span class="fn">pop</span>();
+        ans.<span class="fn">push_back</span>(val);
+        <span class="kw">if</span> (idx + <span class="num">1</span> &lt; (<span class="ty">int</span>)arrs[ai].<span class="fn">size</span>())
+            pq.<span class="fn">push</span>({arrs[ai][idx+<span class="num">1</span>], ai, idx+<span class="num">1</span>});
+    }
+    <span class="kw">return</span> ans;
+}
+<span class="cm">// Time: O(N log K) where N = total elements, K = number of arrays</span></code></pre>
+
+    <h3>P12 · Count inversions (merge-sort based)</h3>
+    <pre><code><span class="ty">long long</span> <span class="fn">inversions</span>(<span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&amp; a, <span class="ty">int</span> l, <span class="ty">int</span> r) {
+    <span class="kw">if</span> (r - l &lt;= <span class="num">1</span>) <span class="kw">return</span> <span class="num">0</span>;
+    <span class="ty">int</span> m = (l + r) / <span class="num">2</span>;
+    <span class="ty">long long</span> ans = <span class="fn">inversions</span>(a, l, m) + <span class="fn">inversions</span>(a, m, r);
+    <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt; tmp;
+    <span class="ty">int</span> i = l, j = m;
+    <span class="kw">while</span> (i &lt; m &amp;&amp; j &lt; r) {
+        <span class="kw">if</span> (a[i] &lt;= a[j]) tmp.<span class="fn">push_back</span>(a[i++]);
+        <span class="kw">else</span> { tmp.<span class="fn">push_back</span>(a[j++]); ans += m - i; }
+    }
+    <span class="kw">while</span> (i &lt; m) tmp.<span class="fn">push_back</span>(a[i++]);
+    <span class="kw">while</span> (j &lt; r) tmp.<span class="fn">push_back</span>(a[j++]);
+    <span class="fn">copy</span>(tmp.<span class="fn">begin</span>(), tmp.<span class="fn">end</span>(), a.<span class="fn">begin</span>() + l);
+    <span class="kw">return</span> ans;
+}
+<span class="cm">// Time: O(n log n)</span></code></pre>
+
+    <h3>P13 · Range frequency queries (offline-style)</h3>
+    <p>For each value, store the sorted positions where it occurs. Query "how many <code>v</code> in [L,R]?" with two binary searches.</p>
+    <pre><code><span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt; pos;
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="num">0</span>; i &lt; n; ++i) pos[a[i]].<span class="fn">push_back</span>(i);
+
+<span class="ty">int</span> <span class="fn">freqInRange</span>(<span class="ty">int</span> v, <span class="ty">int</span> L, <span class="ty">int</span> R) {
+    <span class="kw">auto</span>&amp; p = pos[v];
+    <span class="kw">return</span> <span class="fn">upper_bound</span>(p.<span class="fn">begin</span>(), p.<span class="fn">end</span>(), R)
+         - <span class="fn">lower_bound</span>(p.<span class="fn">begin</span>(), p.<span class="fn">end</span>(), L);
+}
+<span class="cm">// Per query: O(log n)</span></code></pre>
+
+    <h3>P14 · Subset enumeration with bitset</h3>
+    <pre><code><span class="cm">// Iterate all subsets of {0..n-1}</span>
+<span class="kw">for</span> (<span class="ty">int</span> mask = <span class="num">0</span>; mask &lt; (<span class="num">1</span> &lt;&lt; n); ++mask) {
+    <span class="ty">bitset</span>&lt;<span class="num">32</span>&gt; b(mask);
+    cout &lt;&lt; b &lt;&lt; <span class="str">"  popcount="</span> &lt;&lt; b.<span class="fn">count</span>() &lt;&lt; <span class="str">'\n'</span>;
+}
+
+<span class="cm">// Iterate only the proper subsets of a given mask m (Gosper-style)</span>
+<span class="kw">for</span> (<span class="ty">int</span> sub = m; sub; sub = (sub - <span class="num">1</span>) &amp; m) { ... }</code></pre>
+
+    <h3>P15 · BFS with visited (queue + unordered_set)</h3>
+    <pre><code><span class="ty">int</span> <span class="fn">shortestPath</span>(<span class="ty">unordered_map</span>&lt;<span class="ty">int</span>, <span class="ty">vector</span>&lt;<span class="ty">int</span>&gt;&gt;&amp; g, <span class="ty">int</span> src, <span class="ty">int</span> tgt) {
+    <span class="ty">queue</span>&lt;<span class="ty">pair</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt;&gt; q;          <span class="cm">// (node, distance)</span>
+    <span class="ty">unordered_set</span>&lt;<span class="ty">int</span>&gt; vis;
+    q.<span class="fn">push</span>({src, <span class="num">0</span>});
+    vis.<span class="fn">insert</span>(src);
+    <span class="kw">while</span> (!q.<span class="fn">empty</span>()) {
+        <span class="kw">auto</span> [u, d] = q.<span class="fn">front</span>(); q.<span class="fn">pop</span>();
+        <span class="kw">if</span> (u == tgt) <span class="kw">return</span> d;
+        <span class="kw">for</span> (<span class="ty">int</span> v : g[u]) <span class="kw">if</span> (!vis.<span class="fn">count</span>(v)) {
+            vis.<span class="fn">insert</span>(v);
+            q.<span class="fn">push</span>({v, d+<span class="num">1</span>});
+        }
+    }
+    <span class="kw">return</span> -<span class="num">1</span>;
+}</code></pre>
+  </section>
+
+  <hr>
+
+  <!-- ========================================================== -->
+  <!-- PART 12 — REFERENCE                                        -->
+  <!-- ========================================================== -->
+
+  <section id="complexity">
+    <h2>Part 12 · Complexity Reference Tables</h2>
+
+    <h3>Sequence containers</h3>
+    <table>
+      <tr><th>Operation</th><th>vector</th><th>deque</th><th>list</th><th>array</th></tr>
+      <tr><td>operator[]</td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span></td><td>—</td><td><span class="badge b-O1">O(1)</span></td></tr>
+      <tr><td>push_back</td><td><span class="badge b-O1">O(1) amort.</span></td><td><span class="badge b-O1">O(1) amort.</span></td><td><span class="badge b-O1">O(1)</span></td><td>—</td></tr>
+      <tr><td>push_front</td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-O1">O(1) amort.</span></td><td><span class="badge b-O1">O(1)</span></td><td>—</td></tr>
+      <tr><td>insert anywhere</td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-O1">O(1)</span> with iter</td><td>—</td></tr>
+      <tr><td>erase anywhere</td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-O1">O(1)</span> with iter</td><td>—</td></tr>
+      <tr><td>find by value</td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td></tr>
+      <tr><td>splice</td><td>—</td><td>—</td><td><span class="badge b-O1">O(1)</span></td><td>—</td></tr>
+      <tr><td>memory layout</td><td>contiguous</td><td>chunked</td><td>linked</td><td>contiguous (stack)</td></tr>
+    </table>
+
+    <h3>Associative containers</h3>
+    <table>
+      <tr><th>Operation</th><th>set / map</th><th>multiset / multimap</th><th>unordered_set / map</th></tr>
+      <tr><td>insert</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-O1">O(1) avg</span> · <span class="badge b-On">O(n) worst</span></td></tr>
+      <tr><td>erase by value</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n + k)</span></td><td><span class="badge b-O1">O(1) avg</span></td></tr>
+      <tr><td>erase by iterator</td><td><span class="badge b-O1">O(1) amort.</span></td><td><span class="badge b-O1">O(1) amort.</span></td><td><span class="badge b-O1">O(1) avg</span></td></tr>
+      <tr><td>find / count</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n + k)</span></td><td><span class="badge b-O1">O(1) avg</span></td></tr>
+      <tr><td>lower_bound / upper_bound</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td>—</td></tr>
+      <tr><td>iterate sorted</td><td><span class="badge b-On">O(n)</span></td><td><span class="badge b-On">O(n)</span></td><td>not sorted</td></tr>
+    </table>
+
+    <h3>Adapters</h3>
+    <table>
+      <tr><th>Adapter</th><th>push</th><th>pop</th><th>top / front / back</th></tr>
+      <tr><td>stack</td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span> top</td></tr>
+      <tr><td>queue</td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span></td><td><span class="badge b-O1">O(1)</span> front/back</td></tr>
+      <tr><td>priority_queue</td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-Ologn">O(log n)</span></td><td><span class="badge b-O1">O(1)</span> top</td></tr>
+    </table>
+
+    <h3>Algorithms</h3>
+    <table>
+      <tr><th>Algorithm</th><th>Complexity</th><th>Notes</th></tr>
+      <tr><td>sort</td><td><span class="badge b-Onlogn">O(n log n)</span></td><td>introsort, in place</td></tr>
+      <tr><td>stable_sort</td><td><span class="badge b-Onlogn">O(n log n)</span></td><td>uses extra memory</td></tr>
+      <tr><td>nth_element</td><td><span class="badge b-On">O(n) avg</span></td><td>partial selection</td></tr>
+      <tr><td>partial_sort</td><td>O(n log k)</td><td>top k</td></tr>
+      <tr><td>binary_search / lower_bound / upper_bound</td><td><span class="badge b-Ologn">O(log n)</span></td><td>random-access only</td></tr>
+      <tr><td>find / count / accumulate</td><td><span class="badge b-On">O(n)</span></td><td>linear sweep</td></tr>
+      <tr><td>unique</td><td><span class="badge b-On">O(n)</span></td><td>removes consecutive dups</td></tr>
+      <tr><td>reverse / rotate / fill</td><td><span class="badge b-On">O(n)</span></td><td>in place</td></tr>
+      <tr><td>set_union / intersection / difference</td><td><span class="badge b-On">O(n + m)</span></td><td>both ranges sorted</td></tr>
+      <tr><td>make_heap</td><td><span class="badge b-On">O(n)</span></td><td>linear, not n log n!</td></tr>
+    </table>
+  </section>
+
+  <hr>
+
+  <section id="mistakes">
+    <h2>Part 12.2 · Top 15 Beginner Mistakes</h2>
+
+    <ol>
+      <li><strong>Comparing signed loop var to <code>v.size()</code>.</strong> <code>size()</code> is unsigned — <code>i &lt; v.size() - 1</code> wraps around when v is empty. <em>Fix:</em> cast to <code>(int)</code>.</li>
+      <li><strong>Using <code>std::lower_bound</code> on a set or map.</strong> O(n)! <em>Fix:</em> use the member function <code>s.lower_bound(x)</code> for O(log n).</li>
+      <li><strong>Forgetting <code>remove</code> doesn't actually remove.</strong> <em>Fix:</em> the erase–remove idiom: <code>v.erase(remove(...), v.end());</code></li>
+      <li><strong><code>map[k]</code> just to check if k exists.</strong> Inserts a default value! <em>Fix:</em> use <code>m.count(k)</code> or <code>m.find(k)</code>.</li>
+      <li><strong><code>multiset.erase(value)</code> removes <em>all</em> copies.</strong> <em>Fix:</em> <code>ms.erase(ms.find(value))</code> for one.</li>
+      <li><strong><code>accumulate(v.begin(), v.end(), 0)</code> overflowing on long longs.</strong> <em>Fix:</em> use <code>0LL</code> (or <code>(long long)0</code>).</li>
+      <li><strong>Iterating and erasing simultaneously.</strong> Iterator gets invalidated. <em>Fix:</em> use the return value of <code>erase()</code> or the erase–remove idiom.</li>
+      <li><strong>Storing iterators/references after <code>push_back</code>.</strong> Reallocation invalidates them. <em>Fix:</em> reserve up front, or store indices.</li>
+      <li><strong>Using <code>list</code> "because O(1) insert sounds good".</strong> Cache misses kill it. <em>Fix:</em> use <code>vector</code> by default.</li>
+      <li><strong><code>stack.pop()</code> returning the top.</strong> It returns <em>void</em>. <em>Fix:</em> read top first, then pop.</li>
+      <li><strong>Using <code>unordered_map&lt;long long,…&gt;</code> on Codeforces without custom hash.</strong> Anti-hash test cases blow up to O(n²). <em>Fix:</em> Part 9.4.</li>
+      <li><strong>Comparator returning <code>true</code> for equal elements.</strong> Violates strict weak ordering — UB. <em>Fix:</em> use <code>&lt;</code>, never <code>&lt;=</code>.</li>
+      <li><strong>Forgetting <code>cin.tie(nullptr)</code> + <code>sync_with_stdio(false)</code>.</strong> Slow I/O turns AC into TLE. <em>Fix:</em> always at the top of <code>main</code>.</li>
+      <li><strong>Returning <code>auto</code> from a function with multiple return paths of different types.</strong> Compiler error or surprising deduction. <em>Fix:</em> declare an explicit return type.</li>
+      <li><strong>Treating <code>nth_element</code> as a sort.</strong> It only places ONE element in its sorted spot. The rest is unordered.</li>
+    </ol>
+
+    <hr>
+
+    <div class="card accent">
+      <h3 style="margin-top:0">🏁 Congratulations — you're a hero now</h3>
+      <p>You've gone from "what's a vector?" to writing Dijkstra with custom hashes and rolling LRU caches. The next step is <strong>practice</strong>: solve at least 5 problems for each container/algorithm in this guide. STL fluency is reflex memory — you only get it from the seat.</p>
+      <p>Recommended next reads in this curriculum:</p>
+      <ul>
+        <li><strong>26-stl-valarray.html</strong> — numeric heavy-lifting with <code>std::valarray</code></li>
+        <li><strong>27-pbds.html</strong> — Policy-Based Data Structures (order statistics in O(log n))</li>
+      </ul>
+    </div>
+  </section>
+
+
+</main>
+
+<script>
+/* ---------- sidebar / theme ---------- */
+const sb = document.getElementById('sidebar');
+const tog = document.getElementById('sbToggle');
+const ov = document.getElementById('sbOverlay');
+function toggleSidebar(){
+  sb.classList.toggle('collapsed');
+  tog.classList.toggle('open');
+  document.body.classList.toggle('sb-closed');
+  /* overlay is only used as a dim layer on small screens when the
+     sidebar is OPEN — show it only in that exact case, never when closed */
+  if (window.innerWidth <= 1300 && !sb.classList.contains('collapsed')) {
+    ov.classList.add('show');
+  } else {
+    ov.classList.remove('show');
+  }
+}
+tog.addEventListener('click', toggleSidebar);
+ov.addEventListener('click', toggleSidebar);
+document.getElementById('themeSwitch').addEventListener('click',()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur==='dark'?'':'dark');
+});
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+  });
+});
+
+/* ---------- Vector growth visualizer ---------- */
+let vecData = [];
+let vecCap = 0;
+function vecRender(action){
+  const stage = document.getElementById('vec-stage');
+  stage.innerHTML = '';
+  for (let i = 0; i < vecCap; ++i){
+    const c = document.createElement('div');
+    if (i < vecData.length){
+      c.className = 'cell';
+      c.textContent = vecData[i];
+    } else {
+      c.className = 'cell empty';
+      c.textContent = '·';
+    }
+    const idx = document.createElement('div');
+    idx.className = 'cell-idx';
+    idx.textContent = i;
+    c.appendChild(idx);
+    stage.appendChild(c);
+  }
+  document.getElementById('vec-size').textContent = vecData.length;
+  document.getElementById('vec-cap').textContent = vecCap;
+  document.getElementById('vec-action').textContent = action || '—';
+}
+function vecPush(){
+  const v = document.getElementById('vec-input').value || '?';
+  let action = 'push_back(' + v + ')';
+  if (vecData.length === vecCap){
+    const newCap = vecCap === 0 ? 1 : vecCap * 2;
+    action += ' → realloc, capacity ' + vecCap + ' → ' + newCap;
+    vecCap = newCap;
+  }
+  vecData.push(v);
+  vecRender(action);
+  setTimeout(()=>{
+    const cells = document.querySelectorAll('#vec-stage .cell');
+    if (cells[vecData.length-1]) cells[vecData.length-1].classList.add('new');
+  },10);
+}
+function vecPop(){
+  if (vecData.length === 0){ vecRender('pop_back on empty (UB!)'); return; }
+  vecData.pop();
+  vecRender('pop_back — capacity unchanged');
+}
+function vecReset(){ vecData=[]; vecCap=0; vecRender('reset'); }
+vecRender();
+
+/* ---------- Set sorted-bag visualizer ---------- */
+let setData = [];
+function setRender(action){
+  const stage = document.getElementById('set-stage');
+  stage.innerHTML = '';
+  setData.forEach((v,i)=>{
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = v;
+    stage.appendChild(c);
+  });
+  if (setData.length === 0){
+    stage.innerHTML = '<span style="color:var(--muted)">empty</span>';
+  }
+  document.getElementById('set-size').textContent = setData.length;
+  document.getElementById('set-action').textContent = action || '—';
+}
+function setInsert(){
+  const v = parseInt(document.getElementById('set-input').value);
+  if (isNaN(v)){ setRender('invalid input'); return; }
+  if (setData.includes(v)){ setRender('insert('+v+') — already present, no-op'); return; }
+  setData.push(v);
+  setData.sort((a,b)=>a-b);
+  setRender('insert('+v+') — kept sorted');
+  setTimeout(()=>{
+    document.querySelectorAll('#set-stage .cell').forEach(c=>{
+      if (c.textContent == v) c.classList.add('new');
+    });
+  },10);
+}
+function setErase(){
+  const v = parseInt(document.getElementById('set-input').value);
+  const i = setData.indexOf(v);
+  if (i < 0){ setRender('erase('+v+') — not found'); return; }
+  setData.splice(i,1);
+  setRender('erase('+v+')');
+}
+function setReset(){ setData=[]; setRender('reset'); }
+setRender();
+
+/* ---------- Binary heap visualizer ---------- */
+let heap = [];
+function heapUp(i){
+  while (i>0){
+    const p = (i-1)>>1;
+    if (heap[p] < heap[i]){ [heap[p],heap[i]]=[heap[i],heap[p]]; i=p; }
+    else break;
+  }
+}
+function heapDown(i){
+  const n = heap.length;
+  while (true){
+    const l = 2*i+1, r = 2*i+2; let best = i;
+    if (l<n && heap[l]>heap[best]) best = l;
+    if (r<n && heap[r]>heap[best]) best = r;
+    if (best===i) break;
+    [heap[best],heap[i]]=[heap[i],heap[best]]; i=best;
+  }
+}
+function heapRender(action){
+  const stage = document.getElementById('heap-stage');
+  stage.innerHTML = '';
+  if (heap.length === 0){
+    stage.innerHTML = '<span style="color:var(--muted)">empty heap</span>';
+  } else {
+    let level = 0, idx = 0;
+    while (idx < heap.length){
+      const row = document.createElement('div');
+      row.className = 'tree-row';
+      const cnt = Math.min(1<<level, heap.length - idx);
+      for (let k=0;k<cnt;++k){
+        const n = document.createElement('div');
+        n.className = 'tree-node';
+        n.textContent = heap[idx+k];
+        row.appendChild(n);
+      }
+      stage.appendChild(row);
+      idx += cnt; level++;
+    }
+  }
+  document.getElementById('heap-size').textContent = heap.length;
+  document.getElementById('heap-top').textContent = heap.length ? heap[0] : '—';
+  document.getElementById('heap-action').textContent = action || '—';
+}
+function heapPush(){
+  const v = parseInt(document.getElementById('heap-input').value);
+  if (isNaN(v)){ heapRender('invalid input'); return; }
+  heap.push(v);
+  heapUp(heap.length-1);
+  heapRender('push('+v+') → bubble up');
+}
+function heapPop(){
+  if (heap.length===0){ heapRender('pop on empty (UB!)'); return; }
+  const top = heap[0];
+  heap[0] = heap[heap.length-1];
+  heap.pop();
+  if (heap.length) heapDown(0);
+  heapRender('extract '+top+' → sift down');
+}
+function heapReset(){ heap=[]; heapRender('reset'); }
+heapRender();
+
+/* ---------- Stack visualizer ---------- */
+let stackData = [];
+function stackRender(action){
+  const stage = document.getElementById('stack-stage');
+  stage.innerHTML = '';
+  if (stackData.length === 0){
+    stage.innerHTML = '<span style="color:var(--muted)">empty stack</span>';
+  } else {
+    stackData.forEach((v, i) => {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.style.minWidth = '80px';
+      c.textContent = v;
+      if (i === stackData.length - 1) {
+        const tag = document.createElement('div');
+        tag.className = 'cell-idx';
+        tag.style.top = '-22px';
+        tag.style.color = 'var(--accent)';
+        tag.textContent = '← top';
+        c.appendChild(tag);
+      }
+      stage.appendChild(c);
+    });
+  }
+  document.getElementById('stack-size').textContent = stackData.length;
+  document.getElementById('stack-top').textContent = stackData.length ? stackData[stackData.length-1] : '—';
+  document.getElementById('stack-action').textContent = action || '—';
+}
+function stackPush(){
+  const v = document.getElementById('stack-input').value || '?';
+  stackData.push(v);
+  stackRender('push(' + v + ') → goes on top');
+  setTimeout(()=>{
+    const cells = document.querySelectorAll('#stack-stage .cell');
+    if (cells.length) cells[cells.length-1].classList.add('new');
+  }, 10);
+}
+function stackPop(){
+  if (stackData.length === 0){ stackRender('pop on empty (UB!)'); return; }
+  const v = stackData.pop();
+  stackRender('pop() removed ' + v + ' (the last one pushed)');
+}
+function stackReset(){ stackData = []; stackRender('reset'); }
+stackRender();
+
+/* ---------- Queue visualizer ---------- */
+let queueData = [];
+function queueRender(action){
+  const stage = document.getElementById('queue-stage');
+  stage.innerHTML = '';
+  if (queueData.length === 0){
+    stage.innerHTML = '<span style="color:var(--muted)">empty queue</span>';
+  } else {
+    queueData.forEach((v, i) => {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.textContent = v;
+      const tag = document.createElement('div');
+      tag.className = 'cell-idx';
+      if (i === 0) { tag.textContent = 'front →'; tag.style.color = 'var(--good)'; }
+      else if (i === queueData.length - 1) { tag.textContent = '← back'; tag.style.color = 'var(--warn)'; }
+      else tag.textContent = '';
+      c.appendChild(tag);
+      stage.appendChild(c);
+    });
+  }
+  document.getElementById('queue-size').textContent = queueData.length;
+  document.getElementById('queue-front').textContent = queueData.length ? queueData[0] : '—';
+  document.getElementById('queue-back').textContent = queueData.length ? queueData[queueData.length-1] : '—';
+  document.getElementById('queue-action').textContent = action || '—';
+}
+function queuePush(){
+  const v = document.getElementById('queue-input').value || '?';
+  queueData.push(v);
+  queueRender('push(' + v + ') → joins the back');
+  setTimeout(()=>{
+    const cells = document.querySelectorAll('#queue-stage .cell');
+    if (cells.length) cells[cells.length-1].classList.add('new');
+  }, 10);
+}
+function queuePop(){
+  if (queueData.length === 0){ queueRender('pop on empty (UB!)'); return; }
+  const v = queueData.shift();
+  queueRender('pop() removed ' + v + ' (the oldest one)');
+}
+function queueReset(){ queueData = []; queueRender('reset'); }
+queueRender();
+
+/* ---------- Binary search visualizer (lower_bound / upper_bound) ---------- */
+function bsParse(){
+  return document.getElementById('bs-array').value
+    .split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+}
+function bsRender(arr, lo, hi, mid, x, mode, found){
+  const stage = document.getElementById('bs-stage');
+  stage.innerHTML = '';
+  arr.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.textContent = v;
+    if (i >= lo && i < hi) c.style.borderColor = 'var(--accent)';
+    if (i === mid) { c.classList.add('new'); }
+    if (i === found) { c.style.background = 'var(--good)'; c.style.color = 'white'; c.style.borderColor = 'var(--good)'; }
+    const tag = document.createElement('div');
+    tag.className = 'cell-idx';
+    tag.textContent = i;
+    c.appendChild(tag);
+    stage.appendChild(c);
+  });
+}
+async function bsRun(mode){
+  const arr = bsParse();
+  if (arr.length === 0) return;
+  const x = parseInt(document.getElementById('bs-x').value);
+  const info = document.getElementById('bs-info');
+  let lo = 0, hi = arr.length;
+  let stepN = 1;
+  while (lo < hi){
+    const mid = (lo + hi) >> 1;
+    bsRender(arr, lo, hi, mid, x, mode);
+    const cmp = (mode === 'lower')
+      ? (arr[mid] < x)         // lower: shrink left while a[mid] < x
+      : (arr[mid] <= x);       // upper: shrink left while a[mid] <= x
+    info.innerHTML = `step ${stepN}: lo=${lo} hi=${hi} mid=${mid} a[mid]=${arr[mid]} · `
+      + `compare a[mid] ${mode === 'lower' ? '< x' : '<= x'} · ${cmp ? 'TRUE → lo = mid+1' : 'FALSE → hi = mid'}`;
+    await new Promise(r => setTimeout(r, 900));
+    if (cmp) lo = mid + 1; else hi = mid;
+    stepN++;
+  }
+  bsRender(arr, lo, lo, -1, x, mode, lo);
+  const fnName = mode === 'lower' ? 'lower_bound' : 'upper_bound';
+  if (lo === arr.length)
+    info.innerHTML = `done · ${fnName}(${x}) → end() (no element ${mode === 'lower' ? '≥' : '>'} ${x})`;
+  else
+    info.innerHTML = `done · ${fnName}(${x}) → index <span>${lo}</span> (value <span>${arr[lo]}</span>) — first element ${mode === 'lower' ? '≥' : '>'} ${x}`;
+}
+function bsReset(){
+  document.getElementById('bs-stage').innerHTML = '';
+  document.getElementById('bs-info').innerHTML = 'click a button to run a binary search';
+}
+</script>
+</body>
+</html>

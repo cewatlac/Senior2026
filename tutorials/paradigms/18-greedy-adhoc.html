@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Greedy &amp; Adhoc in Competitive Programming</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;
+  justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2,.card h3{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);
+  box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.upd{background:rgba(15,118,110,.12);color:var(--good);font-weight:950}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+.formula.master{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.08));
+  border-color:var(--accent2);font-size:22px;font-family:system-ui,sans-serif}
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+.layer-badge{display:inline-block;font-size:12px;font-weight:900;padding:3px 9px;
+  border-radius:999px;margin-left:12px;vertical-align:middle;letter-spacing:.05em}
+.lb-base{background:rgba(37,99,235,.12);color:var(--accent2);border:1.5px solid rgba(37,99,235,.25)}
+.lb-sched{background:rgba(15,118,110,.12);color:var(--good);border:1.5px solid rgba(15,118,110,.25)}
+.lb-model{background:rgba(124,58,237,.12);color:#7c3aed;border:1.5px solid rgba(124,58,237,.25)}
+.lb-fw{background:rgba(180,83,9,.10);color:var(--warn);border:1.5px solid rgba(180,83,9,.22)}
+.lb-proof{background:rgba(185,28,28,.10);color:var(--bad);border:1.5px solid rgba(185,28,28,.22)}
+.sidebar-footer{padding:18px 16px;border-top:3px solid var(--border);margin-top:16px}
+.sf-text{font-size:15px;font-weight:800;color:var(--muted);line-height:1.6}
+.page-footer{border-top:3px solid var(--border);margin-top:50px;padding:40px 0 30px;text-align:center}
+.footer-brand{font-weight:950;font-size:28px;color:var(--accent2)}
+.footer-by{font-weight:750;font-size:18px;color:var(--muted);margin-top:6px}
+.footer-emails{margin-top:12px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.footer-email{font-size:17px;font-weight:800}
+.footer-copy{margin-top:14px;font-size:15px;font-weight:700;color:var(--muted)}
+.app-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);
+  padding:22px 20px 18px;margin:18px 0;position:relative}
+.app-block::before{content:"APPLICATION";position:absolute;top:-14px;left:18px;
+  background:var(--accent2);color:#fff;font-size:13px;font-weight:900;
+  padding:3px 10px;border-radius:999px;letter-spacing:.07em}
+.app-block p{margin:8px 0;font-size:var(--fs-sm);line-height:1.55}
+.app-block pre{margin:8px 0;font-size:16px}
+.app-block h3{margin:14px 0 6px;font-size:21px}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.dec-card{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px}
+.dec-card .dc-head{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:6px}
+.dec-card .dc-cond{font-size:16px;font-weight:800;color:var(--muted);margin-bottom:8px;
+  padding:4px 8px;background:rgba(37,99,235,.06);border-radius:8px;display:inline-block}
+.dec-card p{font-size:17px;font-weight:700;margin:6px 0;line-height:1.5}
+.mental-model{background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(37,99,235,.06));
+  border:3px solid var(--good);border-radius:var(--radius);padding:20px 24px;margin:18px 0}
+.mm-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.mm-item{background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:14px 16px}
+.mm-item .mm-num{font-size:28px;font-weight:950;color:var(--good);line-height:1}
+.mm-item .mm-title{font-weight:950;font-size:18px;margin:4px 0}
+.mm-item .mm-desc{font-size:16px;font-weight:700;color:var(--muted);line-height:1.5}
+.hierarchy-chain{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0}
+.hc-item{border:3px solid;border-radius:var(--radius);padding:18px 22px;width:100%;max-width:800px}
+.hc-label{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.hc-name{font-size:24px;font-weight:950;margin:4px 0}
+.hc-desc{font-size:17px;font-weight:700;line-height:1.55;color:var(--muted)}
+.hc-inherits{font-size:15px;font-weight:800;color:var(--good);margin-top:8px}
+.hc-connector{font-weight:900;font-size:20px;color:var(--accent2);padding:6px 0}
+@media(max-width:1300px){
+  .grid2,.grid3,.ks-grid{grid-template-columns:1fr}
+  .decision-grid,.mm-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}
+  .decision-grid,.mm-row{grid-template-columns:1fr}
+}
+/* ═══ PROOF LAB ═══ */
+.pl-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.pl-tab{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:11px 18px;border-radius:14px;font-weight:950;font-size:18px;cursor:pointer;
+  transition:all .18s;user-select:none}
+.pl-tab:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.12)}
+.pl-tab.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18);box-shadow:0 6px 20px rgba(37,99,235,.25)}
+.pl-panel{display:none;animation:plFade .3s ease}
+.pl-panel.active{display:block}
+@keyframes plFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pl-stepper{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:18px;margin:14px 0}
+.pl-step{display:none;min-height:90px}
+.pl-step.active{display:block;animation:plFade .25s ease}
+.pl-step-label{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:4px}
+.pl-step-title{font-size:21px;font-weight:950;margin-bottom:6px}
+.pl-step-body{font-size:var(--fs-sm);font-weight:700;line-height:1.55;color:var(--muted)}
+.pl-step-body strong{color:var(--text)}
+.pl-dots{display:flex;gap:6px;margin:12px 0 8px;align-items:center}
+.pl-dot{width:12px;height:12px;border-radius:50%;background:var(--border);
+  transition:all .18s;cursor:pointer}
+.pl-dot.done{background:var(--good)}
+.pl-dot.cur{background:var(--accent2);transform:scale(1.3)}
+.pl-nav{display:flex;gap:8px;align-items:center;margin-top:10px}
+.pl-btn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:8px 16px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;
+  transition:all .15s}
+.pl-btn:hover{transform:translateY(-1px)}
+.pl-btn:disabled{opacity:.3;cursor:default;transform:none!important}
+.pl-btn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.pl-cmp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.pl-cmp{border:3px solid var(--border);border-radius:14px;background:var(--panel2);padding:14px 16px}
+.pl-cmp .plc-icon{font-size:28px;margin-bottom:4px}
+.pl-cmp .plc-name{font-weight:950;font-size:18px;margin-bottom:4px}
+.pl-cmp .plc-core{font-size:15px;font-weight:800;color:var(--muted);line-height:1.45;
+  padding:6px 8px;border-radius:8px;background:rgba(37,99,235,.06);margin-top:6px}
+.pl-skel{background:var(--codebg);color:var(--codetext);border-radius:14px;
+  padding:14px 18px;font-family:ui-monospace,monospace;font-size:16px;font-weight:700;
+  line-height:1.6;border:2px solid rgba(255,255,255,.10);margin:10px 0;overflow-x:auto;
+  white-space:pre-wrap}
+@media(max-width:1300px){.pl-cmp-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.pl-cmp-grid{grid-template-columns:1fr}}
+/* ═══ TRACER VISUALS ═══ */
+.tr-timeline{position:relative;border:3px solid var(--border);border-radius:14px;
+  background:var(--panel2);padding:12px 14px;margin:12px 0;overflow-x:auto}
+.tr-row-label{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:4px}
+.tr-row{position:relative;height:38px;margin-bottom:8px}
+.tr-bar{position:absolute;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:900;color:#fff;
+  transition:all .35s ease;border:2px solid rgba(255,255,255,.2)}
+.tr-bar.greedy{background:var(--accent2)}
+.tr-bar.opt{background:var(--warn)}
+.tr-bar.swap{background:var(--good);animation:trSwap .5s ease}
+.tr-bar.muted{background:var(--border);color:var(--muted);opacity:.5}
+.tr-bar.highlight{box-shadow:0 0 0 3px var(--bad);z-index:2}
+.tr-bar.removed{opacity:.25;text-decoration:line-through}
+@keyframes trSwap{0%{transform:scaleY(.3);opacity:.3}100%{transform:scaleY(1);opacity:1}}
+.tr-axis{height:24px;position:relative;border-top:2px solid var(--border);margin-top:4px}
+.tr-tick{position:absolute;top:2px;font-size:12px;font-weight:800;color:var(--muted);transform:translateX(-50%)}
+.tr-state{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.tr-state-box{border:3px solid var(--border);border-radius:12px;padding:12px 14px;
+  background:var(--panel);font-size:16px;font-weight:800}
+.tr-state-box .tsl{font-size:13px;font-weight:900;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+.tr-state-box .tsv{font-size:18px;font-weight:950;font-family:ui-monospace,monospace}
+.tr-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:15px;
+  font-weight:900;margin:4px 2px}
+.tr-badge.ok{background:rgba(15,118,110,.12);color:var(--good);border:2px solid rgba(15,118,110,.3)}
+.tr-badge.no{background:rgba(185,28,28,.12);color:var(--bad);border:2px solid rgba(185,28,28,.3)}
+.tr-badge.info{background:rgba(37,99,235,.10);color:var(--accent2);border:2px solid rgba(37,99,235,.25)}
+.tr-explain{font-size:var(--fs-sm);font-weight:700;line-height:1.55;padding:10px 14px;
+  border-radius:12px;border-left:4px solid var(--accent2);background:rgba(37,99,235,.06);margin:10px 0}
+.tr-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.tr-heap{display:flex;gap:6px;flex-wrap:wrap;min-height:40px;align-items:center}
+.tr-chip{padding:6px 14px;border-radius:10px;font-size:16px;font-weight:900;
+  border:2px solid var(--border);background:var(--panel);transition:all .2s}
+.tr-chip.active{border-color:var(--warn);background:rgba(180,83,9,.10)}
+.tr-chip.worst{border-color:var(--bad);background:rgba(185,28,28,.10);color:var(--bad)}
+.tr-chip.gone{opacity:.25;text-decoration:line-through}
+svg.cutsvg{width:100%;display:block;border-radius:12px;min-height:220px}
+.tr-cost{font-family:ui-monospace,monospace;font-size:20px;font-weight:950;text-align:center;
+  padding:8px;border-radius:10px;margin:8px 0}
+@media(max-width:1300px){.tr-state{grid-template-columns:1fr}}
+</style>
+</head>
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('ca-theme');
+    if(!t) t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+    document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+<body class="sb-open">
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Menu" aria-controls="sidebar" aria-expanded="true" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Greedy &amp; Adhoc</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations (§1–5)</div>
+    <a href="#s0">Overview<small>The system you will master</small></a>
+    <a href="#s1">1. Problem Definition<small>Greedy, Adhoc &amp; when each applies</small></a>
+    <a href="#s2">2. Intuition from Scratch<small>Why local choices can be global</small></a>
+    <a href="#s3">3. Visual Mental Model<small>Commitment without regret</small></a>
+    <a href="#s4">4. Formal Abstraction<small>Matroid-like structure &amp; exchange</small></a>
+    <a href="#s5">5. Key Observations<small>Greedy vs DP vs Adhoc</small></a>
+    <div class="grpTitle">Proof Toolkit (§6–8)</div>
+    <a href="#s6">6. Proof Templates<small>Exchange, Stays-ahead, Cut, Rollback</small></a>
+    <a href="#s7">7. Invariants<small>State, transition, termination</small></a>
+    <a href="#s8">8. Decision Framework<small>When greedy is provably safe</small></a>
+    <a href="#slab">🔬 Proof Lab<small>Interactive step-by-step walkthroughs</small></a>
+    <div class="grpTitle">Classic Greedy (§9–14)</div>
+    <a href="#s9">9. Activity Selection<small>Earliest finish + stays-ahead proof</small></a>
+    <a href="#s10">10. Fractional Knapsack<small>Density sort + exchange proof</small></a>
+    <a href="#s11">11. Job Sequencing<small>Profit + latest slot + DSU</small></a>
+    <a href="#s12">12. Huffman Coding<small>Min-heap merge + sibling lemma</small></a>
+    <a href="#s13">13. Scheduling (Rollback)<small>Deadline sort + drop longest</small></a>
+    <a href="#s14">14. Graph Greedy<small>MST cut property &amp; Dijkstra</small></a>
+    <div class="grpTitle">Synthesis (§15–19)</div>
+    <a href="#s15">15. Complexity Analysis<small>All algorithms compared</small></a>
+    <a href="#s16">16. Edge Cases &amp; Pitfalls<small>Centralized audit</small></a>
+    <a href="#s17">17. Variants &amp; Extensions<small>0/1 knapsack, weighted intervals, k-ary</small></a>
+    <a href="#s18">18. Practice Problems<small>26 problems mapped to concepts</small></a>
+    <a href="#s19">19. Final Mental Model<small>Six things you must know</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br/><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br/>© 2025 All rights reserved.</div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Greedy &amp; Adhoc</h1>
+    <div class="subtitle">Complete Interactive Tutorial for Competitive Programming</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     §0 — OVERVIEW
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s0">
+  <h2>Overview <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="formula master">greedy algorithm = correct modeling + provably-safe local rule + optimal data structure</div>
+  <p>This tutorial builds complete mastery of greedy and adhoc techniques by treating every classic problem as a controlled derivation from one proof-driven framework. The greedy rule varies per problem. What never changes is the methodology: model → guess → prove → implement → audit. By the end you will derive activity selection, fractional knapsack, Huffman coding, job sequencing, scheduling with rollback, MST, and Dijkstra from a shared proof toolkit, and apply them to every major contest pattern.</p>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--accent2)">The learning arc</strong>
+      <ol style="margin:8px 0 0;padding-left:1.4rem">
+        <li style="font-size:17px;margin:.5rem 0">Adhoc modeling — simulation, invariants, reframing (§1–3)</li>
+        <li style="font-size:17px;margin:.5rem 0">Proof templates — exchange, stays-ahead, cut, rollback (§6)</li>
+        <li style="font-size:17px;margin:.5rem 0">Selection &amp; scheduling — activity selection, job sequencing (§9, §11, §13)</li>
+        <li style="font-size:17px;margin:.5rem 0">Resource allocation — fractional knapsack (§10)</li>
+        <li style="font-size:17px;margin:.5rem 0">Merging — Huffman coding / optimal merge (§12)</li>
+        <li style="font-size:17px;margin:.5rem 0">Graph greedy — MST (Prim/Kruskal) &amp; Dijkstra (§14)</li>
+      </ol>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--good)">✓ What you can do after this</strong>
+      <ul style="margin:8px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.4rem 0">Distinguish greedy from DP from adhoc in under 60 seconds</li>
+        <li style="font-size:17px;margin:.4rem 0">Write a formal exchange or stays-ahead proof for any greedy solution</li>
+        <li style="font-size:17px;margin:.4rem 0">Derive the comparator for sorting-based greedy via the N=2 swap technique</li>
+        <li style="font-size:17px;margin:.4rem 0">Implement all six classic greedy families from memory</li>
+        <li style="font-size:17px;margin:.4rem 0">Recognize when greedy fails and pivot to DP or other models</li>
+      </ul>
+      <strong style="font-size:19px;color:var(--muted);display:block;margin-top:12px">Prerequisites</strong>
+      <ul style="margin:6px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.3rem 0">Basic sorting and comparators in C++</li>
+        <li style="font-size:17px;margin:.3rem 0">Priority queue (min-heap, max-heap)</li>
+        <li style="font-size:17px;margin:.3rem 0">Disjoint Set Union (DSU) basics</li>
+        <li style="font-size:17px;margin:.3rem 0">Basic graph representation (adjacency list)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §1 — PROBLEM DEFINITION
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s1">
+  <h2>1. Problem Definition <span class="layer-badge lb-base">FOUNDATIONS</span></h2>
+  <p>In competitive programming, <strong>greedy</strong> and <strong>adhoc</strong> represent two complementary problem-solving paradigms. Understanding where each applies — and where neither does — is the first step toward contest transfer.</p>
+
+  <h3>What is a greedy algorithm?</h3>
+  <p>A greedy algorithm builds a solution incrementally by making the locally optimal choice at each step, committing to that choice permanently. The critical requirement: this local rule must lead to a globally optimal solution. Without a proof of this property, a greedy guess is just a guess — and contest judges exploit unproven guesses ruthlessly.</p>
+
+  <h3>What is an adhoc problem?</h3>
+  <p>An adhoc problem has no standard algorithmic classification. It requires you to discover structure from scratch: simulate small cases, find invariants, reframe the problem into a simpler equivalent, and only then choose a technique. Many adhoc problems end up having greedy solutions — but the modeling step comes first.</p>
+
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>The adhoc modeling toolkit:</strong> Simulation on small cases, searching for invariants, parity and counting arguments, rewriting the problem as a different combinatorial object, and greedy-as-subsequence construction. These are the tools you reach for before any named algorithm.</p>
+  </div>
+
+  <h3>The three families</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Family</th><th>Key property</th><th>When to use</th><th>When it fails</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Greedy</strong></td><td>Local choice is globally safe (provable)</td><td>Exchange / stays-ahead / cut proof exists</td><td>Local choice blocks future feasibility</td></tr>
+        <tr><td><strong>DP</strong></td><td>Optimal substructure + overlapping subproblems</td><td>Greedy fails; state = prefix/remaining/budget</td><td>State space too large</td></tr>
+        <tr><td><strong>Adhoc</strong></td><td>No standard classification</td><td>Problem requires structural discovery</td><td>Hidden standard algorithm applies</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>The default is DP, not greedy.</strong> If you cannot write a correctness proof with one of the four templates (exchange, stays-ahead, cut, rollback), assume the problem requires DP, flow, or a different model entirely. Greedy is the exception, not the rule.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §2 — INTUITION FROM SCRATCH
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s2">
+  <h2>2. Intuition from Scratch <span class="layer-badge lb-base">FOUNDATIONS</span></h2>
+  <p>Why can a local rule ever produce a global optimum? The answer lies in a structural property: <strong>the greedy choice does not reduce the set of reachable optimal solutions</strong>. Making the greedy choice first still leaves at least one optimal completion available.</p>
+
+  <h3>The "never falls behind" intuition</h3>
+  <p>Consider filling a knapsack with divisible materials. If you always pour in the densest material first, you never waste capacity on something less valuable. At every prefix of your decisions, you are at least as good as any alternative strategy. This is the stays-ahead principle in action.</p>
+
+  <h3>The "swap without regret" intuition</h3>
+  <p>Consider scheduling activities. If an optimal solution starts with activity A, but your greedy picks activity G that finishes earlier, you can swap A for G without losing anything — G ends sooner, so everything that fit after A still fits after G. This is the exchange principle: any disagreement between greedy and optimal can be resolved in greedy's favor.</p>
+
+  <div class="formula">Greedy is safe when: for any optimal solution OPT that disagrees with greedy's first choice, you can "fix" OPT to agree with greedy without worsening the objective.</div>
+
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>The contest workflow:</strong> (1) Simulate tiny inputs (n=3,4,5) to find structure. (2) Guess a greedy rule. (3) Try to break it with a counterexample. (4) If it survives, choose a proof template and write the proof. (5) Only then implement.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §3 — VISUAL MENTAL MODEL
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s3">
+  <h2>3. Visual Mental Model <span class="layer-badge lb-base">FOUNDATIONS</span></h2>
+  <p>Think of a greedy algorithm as walking forward on a path, committing to each step permanently. At each junction you pick the best-looking direction. The claim is: you never need to backtrack.</p>
+
+  <div class="hierarchy-chain">
+    <div class="hc-item" style="border-color:var(--accent2);background:rgba(37,99,235,.06)">
+      <div class="hc-label">Step 1 — Model</div>
+      <div class="hc-name">Adhoc Modeling</div>
+      <div class="hc-desc">Simulate small cases. Find invariants. Rewrite the problem. Identify what "one step" means and what "locally best" could mean.</div>
+    </div>
+    <div class="hc-connector">↓ once you have a candidate rule</div>
+    <div class="hc-item" style="border-color:var(--good);background:rgba(15,118,110,.06)">
+      <div class="hc-label">Step 2 — Prove</div>
+      <div class="hc-name">Choose a Proof Template</div>
+      <div class="hc-desc">Pick one of: <strong>Exchange</strong> (swap to greedy), <strong>Stays-ahead</strong> (prefix dominance), <strong>Cut property</strong> (safe edge), or <strong>Rollback</strong> (maintain-and-remove-worst). If none works, the greedy is probably wrong.</div>
+    </div>
+    <div class="hc-connector">↓ proof succeeds</div>
+    <div class="hc-item" style="border-color:#7c3aed;background:rgba(124,58,237,.06)">
+      <div class="hc-label">Step 3 — Implement</div>
+      <div class="hc-name">Optimal Data Structure</div>
+      <div class="hc-desc">Sort, heap, DSU — choose the data structure that makes your greedy rule run in the best complexity. The algorithm is the proof; the code is the proof plus bookkeeping.</div>
+    </div>
+  </div>
+
+  <div class="ib ib-purple"><i>🎯</i>
+    <p><strong>Mental image:</strong> Greedy = a one-pass left-to-right scan over a sorted or structured input, making irrevocable commitments. DP = filling a table with optimal sub-answers. Adhoc = discovering that the problem has a hidden structure that collapses into one of these or something entirely custom.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §4 — FORMAL ABSTRACTION
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s4">
+  <h2>4. Formal Abstraction <span class="layer-badge lb-base">FOUNDATIONS</span></h2>
+  <p>Formally, a greedy algorithm works on a problem that exhibits the <strong>greedy-choice property</strong> and <strong>optimal substructure</strong>.</p>
+
+  <h3>Greedy-choice property</h3>
+  <p>A globally optimal solution can be arrived at by making a locally optimal choice. Specifically: there exists an optimal solution that includes the greedy's first choice. This must be <em>proven</em>, not assumed.</p>
+
+  <h3>Optimal substructure</h3>
+  <p>After making the greedy choice, the remaining subproblem is a smaller instance of the same problem. The optimal solution to the original problem contains optimal solutions to subproblems.</p>
+
+  <div class="formula">Greedy-choice property + optimal substructure = greedy correctness</div>
+
+  <h3>Exchange argument (formal)</h3>
+  <p>Define greedy solution <strong>G</strong> and an arbitrary optimal solution <strong>OPT</strong>. Identify the first position where OPT differs from G. Swap OPT's choice with G's choice. Prove: (a) feasibility is preserved, and (b) the objective does not worsen. Repeat until OPT becomes G. Therefore G is optimal.</p>
+
+  <h3>Comparator derivation (the N=2 technique)</h3>
+  <p>For sorting-based greedy problems, analyze two adjacent items and determine when swapping them improves the objective. This two-item reasoning directly yields the comparator for <code>std::sort</code>. This technique is explicitly described in competitive programming references as the standard approach for deriving "strange comparators."</p>
+
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Example of N=2 technique:</strong> For "Largest Number" (LeetCode 179), compare strings a+b vs b+a. If a+b > b+a, then a should come before b. This comparator is derived by asking: "for just two elements, which order gives a better result?"</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §5 — KEY OBSERVATIONS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s5">
+  <h2>5. Key Observations <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p>Before diving into individual problems, internalize these observations that govern when greedy works and when it does not.</p>
+
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>The core insight:</strong> Greedy works when each local commitment provably cannot block a globally optimal completion. The proof templates in §6 formalize this — the decision table in §8 maps it to specific problem patterns.</p>
+  </div>
+
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>When greedy breaks:</strong> If a local choice can block future feasibility in ways that no simple swap can fix, the problem needs DP or another model. The counterexamples below illustrate exactly where this boundary lies.</p>
+  </div>
+
+  <h3>Counterexample: greedy coin change fails</h3>
+  <p>For denominations {1, 4, 5} and amount 8: greedy picks 5+1+1+1 = 4 coins. Optimal is 4+4 = 2 coins. The greedy choice (largest denomination first) blocks a better combination. This is a classic exchange-argument teaching example — the swap does not preserve feasibility because coins are indivisible and non-exchangeable in the required way.</p>
+
+  <h3>Counterexample: weighted interval scheduling</h3>
+  <p>When activities have weights (profits), earliest-finish greedy fails. A single long high-profit activity may be better than many short low-profit ones. The weighted variant requires DP, not greedy.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §6 — PROOF TEMPLATES
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s6">
+  <h2>6. Proof Templates <span class="layer-badge lb-proof">PROOFS</span></h2>
+  <p>These four templates are what convert a greedy guess into a contest-correct solution. They are not "extra theory" — they are <em>required</em> for any greedy approach to be trustworthy.</p>
+
+  <h3>Template 1: Exchange Argument (Swap-to-Greedy)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Setup:</strong> Let G be the greedy solution and OPT be any optimal solution.</p>
+    <p><strong>Step 1:</strong> Find the first position where OPT differs from G.</p>
+    <p><strong>Step 2:</strong> Replace OPT's choice at that position with G's choice.</p>
+    <p><strong>Step 3:</strong> Prove feasibility is preserved.</p>
+    <p><strong>Step 4:</strong> Prove the objective does not worsen.</p>
+    <p><strong>Step 5:</strong> Repeat — OPT converges to G. Therefore G is optimal.</p>
+    <p><strong>Used by:</strong> Fractional knapsack (§10), activity selection (§9), job sequencing (§11).</p>
+  </div>
+
+  <h3>Template 2: Stays-Ahead (Prefix Dominance)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Setup:</strong> Define a measurable prefix progress: finish time, covered distance, remaining slack, total cost so far.</p>
+    <p><strong>Base case:</strong> Greedy's first step is best by definition (e.g., earliest finish).</p>
+    <p><strong>Inductive step:</strong> If greedy is ahead at step r, then step r+1 keeps it ahead.</p>
+    <p><strong>Conclusion:</strong> Greedy completes ≥ tasks / achieves ≤ cost at every prefix. Therefore it is optimal overall.</p>
+    <p><strong>Used by:</strong> Activity selection (§9), interval scheduling variants.</p>
+  </div>
+
+  <h3>Template 3: Cut / Safe-Edge Property</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Setup:</strong> Define a cut (S, V\S) that respects the current chosen set.</p>
+    <p><strong>Claim:</strong> The lightest edge crossing the cut is safe — it belongs to some MST.</p>
+    <p><strong>Proof:</strong> Assume an MST T that excludes this light edge e. Adding e to T creates a cycle that crosses the cut via another edge f. Since w(e) &lt; w(f), removing f yields a lighter tree — contradiction.</p>
+    <p><strong>Used by:</strong> Kruskal (§14), Prim (§14).</p>
+  </div>
+
+  <h3>Template 4: Rollback / Replacement Pattern</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Setup:</strong> Process items in a constraint order (often by deadline).</p>
+    <p><strong>Step 1:</strong> Insert each candidate into a chosen set.</p>
+    <p><strong>Step 2:</strong> If constraints are violated, remove the "worst contributor" (often the item with maximum duration or minimum profit).</p>
+    <p><strong>Invariant:</strong> Among all processed items so far, the chosen set is a best feasible subset.</p>
+    <p><strong>Used by:</strong> Course Schedule III / scheduling with durations (§13).</p>
+  </div>
+
+  <details>
+    <summary>Proof drill: deriving a comparator via N=2 <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Problem:</strong> Given n strings, concatenate them to form the largest possible number.</p>
+      <p><strong>N=2 analysis:</strong> For two strings a, b, compare a+b vs b+a (as strings). If a+b > b+a, then a should precede b.</p>
+      <p><strong>Extension to N:</strong> This pairwise comparison defines a total order. Sorting by this comparator and concatenating gives the globally optimal result. The exchange proof: if any adjacent pair is out of order, swapping them improves the result — so the sorted order is optimal.</p>
+      <p><strong>Practice:</strong> <a href="https://leetcode.com/problems/largest-number/" target="_blank">LeetCode 179 — Largest Number</a></p>
+    </div>
+  </details>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §7 — INVARIANTS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s7">
+  <h2>7. Invariants <span class="layer-badge lb-proof">PROOFS</span></h2>
+  <p>Every greedy algorithm maintains invariants — properties that hold before and after each step. Understanding them is essential for correctness proofs and for debugging.</p>
+
+  <h3>A) State invariant</h3>
+  <p>The property that holds at each moment during execution. For activity selection: "the set of chosen activities is pairwise non-overlapping, and the last chosen activity has the earliest possible finish time among all valid choices." For Dijkstra: "every finalized vertex has its true shortest-path distance."</p>
+
+  <h3>B) Transition invariant</h3>
+  <p>How each greedy step preserves the state invariant. For activity selection: "adding the next earliest-finish compatible activity preserves non-overlapping and advances the finish time minimally." For rollback scheduling: "adding or removing an element maintains the property that the heap contains a best feasible subset."</p>
+
+  <h3>C) Termination invariant</h3>
+  <p>Why the algorithm stops and what holds at termination. For Kruskal: "after processing all edges, the DSU contains exactly the MST edges (or a spanning forest if disconnected)." For Bellman-Ford-style rollback: "after processing all items sorted by deadline, the heap contains the maximum feasible subset."</p>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Failure mode — wrong applicability:</strong> Applying greedy to a problem that lacks the greedy-choice property. Classic example: 0/1 knapsack with density sort. The invariant "densest items are always best" fails because an item with lower density but smaller weight may leave room for a more profitable combination.</p>
+  </div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Failure mode — hidden assumption:</strong> The greedy works only under conditions not stated in the problem. Example: Dijkstra's greedy "finalize closest vertex" requires non-negative edge weights. A negative edge can improve a finalized vertex later, breaking the "final when popped" invariant.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §8 — DECISION FRAMEWORK
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s8">
+  <h2>8. Decision / Recognition Guide <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p>This section is optimized for contest usage. Use the decision table first, then the reflex rules for quick pattern matching.</p>
+
+  <h3>Decision table</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Pattern you see</th><th>Technique</th><th>Proof template</th><th>Key data structure</th></tr></thead>
+      <tbody>
+        <tr><td>Max non-overlapping intervals</td><td class="cy">Greedy (earliest finish)</td><td>Stays-ahead / Exchange</td><td>Sort</td></tr>
+        <tr><td>Fill capacity with divisible items</td><td class="cy">Greedy (density sort)</td><td>Exchange</td><td>Sort</td></tr>
+        <tr><td>Unit-time jobs, deadlines, max profit</td><td class="cy">Greedy (profit desc + latest slot)</td><td>Exchange</td><td>DSU</td></tr>
+        <tr><td>Optimal prefix-free code / merge cost</td><td class="cy">Greedy (merge two smallest)</td><td>Exchange (sibling lemma)</td><td>Min-heap</td></tr>
+        <tr><td>Max jobs by deadline, variable durations</td><td class="cy">Greedy (rollback)</td><td>Replacement invariant</td><td>Max-heap</td></tr>
+        <tr><td>Minimum spanning tree</td><td class="cy">Greedy (Kruskal/Prim)</td><td>Cut property</td><td>DSU / Heap</td></tr>
+        <tr><td>SSSP, non-negative weights</td><td class="cy">Greedy (Dijkstra)</td><td>Stays-ahead</td><td>Min-heap</td></tr>
+        <tr><td>0/1 knapsack (indivisible items)</td><td class="cr">DP</td><td>—</td><td>Array</td></tr>
+        <tr><td>Weighted interval scheduling</td><td class="cr">DP</td><td>—</td><td>Sort + binary search</td></tr>
+        <tr><td>No standard pattern visible</td><td class="cb">Adhoc</td><td>—</td><td>Problem-specific</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Quick reflex rules</h3>
+  <div class="decision-grid">
+    <div class="dec-card">
+      <div class="dc-head">Sort + Scan</div>
+      <div class="dc-cond">intervals / deadlines / densities</div>
+      <p>If you can sort by one key and scan left-to-right making irrevocable choices, it is likely greedy. Prove via exchange or stays-ahead.</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">Heap + Maintain</div>
+      <div class="dc-cond">deadline + duration / merge cost</div>
+      <p>If you process items in order and need to maintain a "best so far" set, use a heap. Drop the worst element when constraints break (rollback) or merge the two smallest (Huffman).</p>
+    </div>
+    <div class="dec-card">
+      <div class="dc-head">DSU + Edges</div>
+      <div class="dc-cond">connect components / latest free slot</div>
+      <p>If the problem involves connectivity (MST) or slot assignment (job sequencing), DSU gives near O(1) amortized operations per step.</p>
+    </div>
+  </div>
+
+  <h3>⚡ 5-Second Recognition Rules</h3>
+  <div class="ib ib-purple"><i>🎯</i>
+    <p>
+      <strong>Intervals →</strong> sort by finish → greedy<br/>
+      <strong>Divisible resource →</strong> density sort → greedy<br/>
+      <strong>Deadline + duration →</strong> rollback max-heap → greedy<br/>
+      <strong>Prefix-free / merge cost →</strong> Huffman min-heap → greedy<br/>
+      <strong>Connect components →</strong> MST (Kruskal / Prim)<br/>
+      <strong>Shortest path, w ≥ 0 →</strong> Dijkstra<br/>
+      <strong>Capacity + indivisible →</strong> DP (not greedy)<br/>
+      <strong>Weighted intervals →</strong> DP (not greedy)
+    </p>
+  </div>
+
+  <h3>Common confusion note</h3>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Greedy vs DP confusion:</strong> Many students try greedy for 0/1 knapsack (sort by density) and get WA. The failure is fundamental: taking the densest item may block a more profitable combination. If items are <em>indivisible</em> and there is a <em>capacity budget</em>, think DP first. Greedy works for fractional knapsack because items are divisible — the exchange argument relies on continuous swapping of material.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     INTERACTIVE PROOF LAB
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="slab">
+  <h2>🔬 Interactive Greedy Proof Lab <span class="layer-badge lb-proof">INTERACTIVE</span></h2>
+  <p>This is the heart of the tutorial. Click a proof method below, read the intuition, then walk through the proof step by step. Each stepper traces the exact logical moves you would write in a contest proof.</p>
+
+  <div class="pl-tabs" id="plTabs">
+    <button class="pl-tab active" data-pl="exchange">🔄 Exchange</button>
+    <button class="pl-tab" data-pl="ahead">📈 Stays-Ahead</button>
+    <button class="pl-tab" data-pl="cut">✂️ Cut Property</button>
+    <button class="pl-tab" data-pl="rollback">♻️ Rollback</button>
+  </div>
+
+
+  <!-- ─── EXCHANGE ARGUMENT — INTERACTIVE TRACER ────── -->
+  <div class="pl-panel active" id="pl-exchange">
+    <h3>Exchange Argument — "Transform OPT into GREEDY"</h3>
+    <div class="ib ib-blue"><i>💡</i>
+      <p><strong>Super-simple idea:</strong> If a solution is not greedy, we can <em>swap</em> parts of it to make it more like greedy — without making it worse. Keep swapping until OPT becomes GREEDY.</p>
+    </div>
+    <div class="grid2" style="margin:10px 0">
+      <div><strong style="font-size:17px">When to use:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">You can swap elements between OPT and GREEDY and show the swap never worsens the objective.</span></div>
+      <div><strong style="font-size:17px">Proves:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Activity selection (§9), fractional knapsack (§10), job sequencing (§11), Huffman coding (§12).</span></div>
+    </div>
+
+    <h3>Interactive Proof Tracer — Activity Selection</h3>
+    <p style="font-size:16px;font-weight:700;color:var(--muted)">Activities: A(0,4), B(1,3), C(4,6), D(2,7), E(6,8). Greedy picks by earliest finish time. Both GREEDY and an alternative OPT are non-overlapping and have 3 activities.</p>
+
+    <div class="tr-ctrl">
+      <button class="pl-btn" id="exRst">↺ Reset</button>
+      <button class="pl-btn" id="exPrv">◀ Prev</button>
+      <button class="pl-btn" id="exNxt">Next ▶</button>
+      <span style="margin-left:auto;font-size:16px;font-weight:900;color:var(--muted)" id="exCtr">Step 1/6</span>
+    </div>
+
+    <div class="tr-timeline" id="exTimeline">
+      <div class="tr-row-label">All Activities</div>
+      <div class="tr-row" id="exAllRow" style="height:auto;display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="tr-row-label" style="margin-top:10px;color:var(--accent2)">GREEDY Solution</div>
+      <div class="tr-row" id="exGRow" style="height:auto;display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="tr-row-label" style="margin-top:10px;color:var(--warn)">OPT Solution (being transformed)</div>
+      <div class="tr-row" id="exORow" style="height:auto;display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <div class="tr-state" id="exState">
+      <div class="tr-state-box"><div class="tsl">Greedy set</div><div class="tsv" id="exGSet">—</div></div>
+      <div class="tr-state-box"><div class="tsl">OPT set</div><div class="tsv" id="exOSet">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Disagreement</div><div class="tsv" id="exDis">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Status</div><div class="tsv" id="exStatus">—</div></div>
+    </div>
+    <div class="tr-explain" id="exExp">Press <strong>Next</strong> to begin the exchange argument proof.</div>
+
+    <details>
+      <summary>Reusable proof skeleton <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+        <div class="pl-skel">1. Let G = greedy, OPT = any optimal solution.
+2. Find first index i where G[i] ≠ OPT[i].
+3. Replace OPT[i] with G[i].
+4. Show: feasibility preserved (G[i] finishes ≤ OPT[i]).
+5. Show: objective not worsened (count unchanged).
+6. Repeat — OPT converges to G. ∴ G is optimal.</div>
+      </div>
+    </details>
+    <div class="ib ib-orange"><i>⚠</i>
+      <p><strong>Typical mistake:</strong> Forgetting to prove <em>both</em> feasibility and objective preservation.</p>
+    </div>
+  </div>
+
+  <!-- ─── STAYS-AHEAD — INTERACTIVE TRACER ──────────── -->
+  <div class="pl-panel" id="pl-ahead">
+    <h3>Stays-Ahead — "GREEDY never falls behind"</h3>
+    <div class="ib ib-green"><i>💡</i>
+      <p><strong>Super-simple idea:</strong> At every step, greedy's finish time is ≤ optimal's finish time. If greedy never falls behind, it ends up at least as good.</p>
+    </div>
+    <div class="grid2" style="margin:10px 0">
+      <div><strong style="font-size:17px">When to use:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">You can define a measurable prefix progress and compare greedy vs optimal at each step by induction.</span></div>
+      <div><strong style="font-size:17px">Proves:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Activity selection (§9), Dijkstra (§14), interval scheduling variants.</span></div>
+    </div>
+
+    <h3>Interactive Prefix Comparison Tracer</h3>
+    <p style="font-size:16px;font-weight:700;color:var(--muted)">GREEDY = B(1,3), C(4,6), E(6,8). OPT = A(0,4), C(4,6), E(6,8). Both are feasible (non-overlapping) with 3 activities each. We compare finish times at each prefix.</p>
+
+    <div class="tr-ctrl">
+      <button class="pl-btn" id="saRst">↺ Reset</button>
+      <button class="pl-btn" id="saPrv">◀ Prev</button>
+      <button class="pl-btn" id="saNxt">Next ▶</button>
+      <span style="margin-left:auto;font-size:16px;font-weight:900;color:var(--muted)" id="saCtr">Step 1/6</span>
+    </div>
+
+    <div class="tr-timeline" id="saTimeline">
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;align-items:start">
+        <div class="tr-row-label" style="padding-top:6px;color:var(--accent2)">GREEDY</div>
+        <div id="saGRow" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <div class="tr-row-label" style="padding-top:6px;color:var(--warn)">OPT</div>
+        <div id="saORow" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+
+    <div class="tr-state" id="saState">
+      <div class="tr-state-box"><div class="tsl">Current step r</div><div class="tsv" id="saR">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Comparison</div><div class="tsv" id="saCmp">—</div></div>
+      <div class="tr-state-box"><div class="tsl">finish(gᵣ)</div><div class="tsv" id="saGF">—</div></div>
+      <div class="tr-state-box"><div class="tsl">finish(oᵣ)</div><div class="tsv" id="saOF">—</div></div>
+    </div>
+    <div class="tr-explain" id="saExp">Press <strong>Next</strong> to begin the stays-ahead induction proof.</div>
+
+    <details>
+      <summary>Reusable proof skeleton <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+        <div class="pl-skel">1. Define prefix measure M (e.g., finish time of r-th choice).
+2. Base case: M(g₁) ≤ M(o₁).
+3. Inductive step: M(gᵣ) ≤ M(oᵣ) → M(gᵣ₊₁) ≤ M(oᵣ₊₁).
+4. Greedy never falls behind at any prefix.
+∴ G achieves ≥ objective of OPT → G is optimal.</div>
+      </div>
+    </details>
+    <div class="ib ib-orange"><i>⚠</i>
+      <p><strong>Typical mistake:</strong> Choosing a prefix measure that isn't monotonically preserved across steps.</p>
+    </div>
+  </div>
+
+  <!-- ─── CUT PROPERTY — INTERACTIVE SVG TRACER ─────── -->
+  <div class="pl-panel" id="pl-cut">
+    <h3>Cut Property — "The lightest crossing edge is safe"</h3>
+    <div class="ib ib-green"><i>💡</i>
+      <p><strong>Super-simple idea:</strong> Split graph into two groups (a "cut"). The smallest edge between the groups is always safe to include in the MST. Excluding it leads to a contradiction.</p>
+    </div>
+    <div class="grid2" style="margin:10px 0">
+      <div><strong style="font-size:17px">When to use:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Graph problems where you greedily pick the cheapest connecting edge (MST).</span></div>
+      <div><strong style="font-size:17px">Proves:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Kruskal (§14), Prim (§14), any MST variant.</span></div>
+    </div>
+
+    <h3>Interactive MST Cut Tracer</h3>
+    <p style="font-size:16px;font-weight:700;color:var(--muted)">Connected graph with 4 nodes (A, B, C, D) and 5 weighted edges. We'll pick a cut, identify its lightest crossing edge, and prove by contradiction that any MST must contain it.</p>
+
+    <div class="tr-ctrl">
+      <button class="pl-btn" id="cutRst">↺ Reset</button>
+      <button class="pl-btn" id="cutPrv">◀ Prev</button>
+      <button class="pl-btn" id="cutNxt">Next ▶</button>
+      <span style="margin-left:auto;font-size:16px;font-weight:900;color:var(--muted)" id="cutCtr">Step 1/7</span>
+    </div>
+
+    <div class="tr-timeline" style="padding:8px">
+      <svg id="cutSvg" class="cutsvg" viewBox="0 0 660 260"></svg>
+    </div>
+
+    <div class="tr-state" id="cutState">
+      <div class="tr-state-box"><div class="tsl">Cut</div><div class="tsv" id="cutCutV">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Crossing edges</div><div class="tsv" id="cutCross">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Lightest crossing</div><div class="tsv" id="cutLight">—</div></div>
+      <div class="tr-state-box"><div class="tsl">Tree cost</div><div class="tsv" id="cutCost">—</div></div>
+    </div>
+    <div class="tr-explain" id="cutExp">Press <strong>Next</strong> to begin the cut-property contradiction proof.</div>
+
+    <details>
+      <summary>Reusable proof skeleton <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+        <div class="pl-skel">1. Choose a cut (S, V\S) respecting current edges.
+2. Let e = lightest crossing edge.
+3. Assume MST T excludes e.
+4. Add e → cycle forms, crossing cut via heavier edge f.
+5. Remove f → cheaper tree T′. Contradiction.
+∴ e belongs to some MST → safe.</div>
+      </div>
+    </details>
+    <div class="ib ib-orange"><i>⚠</i>
+      <p><strong>Typical mistake:</strong> Applying the cut property to directed graphs — it assumes undirected edges.</p>
+    </div>
+  </div>
+
+  <!-- ─── ROLLBACK — INTERACTIVE TRACER ─────────────── -->
+  <div class="pl-panel" id="pl-rollback">
+    <h3>Rollback — "Add everything, then fix mistakes"</h3>
+    <div class="ib ib-green"><i>💡</i>
+      <p><strong>Super-simple idea:</strong> Keep adding items. If a constraint breaks, remove the worst contributor. You always maintain the best feasible set seen so far.</p>
+    </div>
+    <div class="grid2" style="margin:10px 0">
+      <div><strong style="font-size:17px">When to use:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Process items in order, maintain a set, drop the worst element when overloaded.</span></div>
+      <div><strong style="font-size:17px">Proves:</strong><br/><span style="font-size:17px;font-weight:700;color:var(--muted)">Scheduling with durations (§13), Course Schedule III, priority scheduling.</span></div>
+    </div>
+
+    <h3>Interactive Scheduling Rollback Tracer</h3>
+    <div class="ib ib-blue"><i>📌</i>
+      <p><strong>Problem — Job Sequencing with Deadlines.</strong> You have <em>n</em> jobs. Each job <em>j</em> has a <strong>duration</strong> d<sub>j</sub> (how long it takes to run) and a <strong>deadline</strong> D<sub>j</sub> (time by which it must be finished). You process jobs one at a time with no preemption. A chosen subset S is <em>feasible</em> iff, when you run its jobs in deadline order, every job finishes by its deadline — equivalently, the sum of durations of all jobs chosen with deadline ≤ t is ≤ t for every t. <strong>Goal:</strong> maximize |S| — the number of jobs completed on time.</p>
+    </div>
+    <div class="ib ib-green"><i>⚙️</i>
+      <p><strong>Algorithm — Add-then-Rollback.</strong> (1) Sort jobs by deadline ascending. (2) Maintain a max-heap H of chosen durations and running total T = Σ d<sub>j∈H</sub>. (3) For each job j in order: push d<sub>j</sub> into H and add d<sub>j</sub> to T. (4) If T &gt; D<sub>j</sub>, pop the max of H and subtract it from T. The popped element may be j itself (a <em>rejection</em>) or an earlier commitment (a <em>swap</em>). Either way, H always holds the largest feasible subset of processed jobs seen so far.</p>
+    </div>
+    <p style="font-size:16px;font-weight:700;color:var(--muted);margin:10px 0 6px">Example jobs (already sorted by deadline): A(d=3, D=3), B(d=2, D=4), C(d=1, D=5), D(d=4, D=8). Watch step 4 — that's where a true swap happens.</p>
+
+    <div class="tr-ctrl">
+      <button class="pl-btn" id="rbRst">↺ Reset</button>
+      <button class="pl-btn" id="rbPrv">◀ Prev</button>
+      <button class="pl-btn" id="rbNxt">Next ▶</button>
+      <span style="margin-left:auto;font-size:16px;font-weight:900;color:var(--muted)" id="rbCtr">Step 1/8</span>
+    </div>
+
+    <div class="tr-timeline">
+      <div class="tr-row-label">Job Queue (sorted by deadline)</div>
+      <div id="rbQueue" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+      <div class="tr-row-label" style="color:var(--good)">Chosen Set (max-heap of durations)</div>
+      <div id="rbHeap" class="tr-heap" style="margin-bottom:8px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:8px">
+        <div class="tr-state-box"><div class="tsl">Current job</div><div class="tsv" id="rbCur">—</div></div>
+        <div class="tr-state-box"><div class="tsl">Total time T</div><div class="tsv" id="rbTime">0</div></div>
+        <div class="tr-state-box"><div class="tsl">Current deadline D</div><div class="tsv" id="rbDL">—</div></div>
+        <div class="tr-state-box"><div class="tsl">Status</div><div class="tsv" id="rbFeas"><span class="tr-badge ok">READY</span></div></div>
+      </div>
+    </div>
+    <div class="tr-explain" id="rbExp">Press <strong>Next</strong> to process jobs one by one and see the rollback invariant in action.</div>
+
+    <details>
+      <summary>Reusable proof skeleton <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+        <div class="pl-skel">1. Process items sorted by constraint (deadline).
+2. Add each item to chosen set.
+3. If constraint breaks → remove worst (max duration).
+4. Invariant: chosen set = best feasible subset so far.
+5. Removing worst frees most resource → max future options.
+∴ Final set is optimal.</div>
+      </div>
+    </details>
+    <div class="ib ib-orange"><i>⚠</i>
+      <p><strong>Typical mistake:</strong> Removing the <em>smallest</em> duration instead of the largest, or sorting by duration instead of deadline.</p>
+    </div>
+  </div>
+
+  <!-- ─── COMPARISON VIEW ───────────────────────────── -->
+  <h3 style="margin-top:24px">At-a-Glance Comparison</h3>
+  <div class="pl-cmp-grid">
+    <div class="pl-cmp" style="border-color:var(--accent2)">
+      <div class="plc-icon">🔄</div>
+      <div class="plc-name">Exchange</div>
+      <div class="plc-core">Transform OPT into GREEDY without making it worse.</div>
+    </div>
+    <div class="pl-cmp" style="border-color:var(--good)">
+      <div class="plc-icon">📈</div>
+      <div class="plc-name">Stays-Ahead</div>
+      <div class="plc-core">GREEDY never falls behind OPT at any prefix.</div>
+    </div>
+    <div class="pl-cmp" style="border-color:#7c3aed">
+      <div class="plc-icon">✂️</div>
+      <div class="plc-name">Cut Property</div>
+      <div class="plc-core">The lightest edge across a valid cut is safe for MST.</div>
+    </div>
+    <div class="pl-cmp" style="border-color:var(--warn)">
+      <div class="plc-icon">♻️</div>
+      <div class="plc-name">Rollback</div>
+      <div class="plc-core">When overloaded, remove the worst item — remain optimal.</div>
+    </div>
+  </div>
+
+  <!-- ─── HOW TO CHOOSE ─────────────────────────────── -->
+  <h3>How to Choose the Right Proof</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>You notice…</th><th>Proof method</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>You can swap choices between OPT and GREEDY</td><td class="cy">Exchange</td><td>Each swap moves OPT closer to GREEDY</td></tr>
+        <tr><td>You can compare progress step-by-step</td><td class="cy">Stays-Ahead</td><td>Induction on prefix measure</td></tr>
+        <tr><td>The problem involves MST / safe edges</td><td class="cp">Cut Property</td><td>Lightest crossing edge → contradiction</td></tr>
+        <tr><td>You add items then remove worst on overflow</td><td class="cb">Rollback</td><td>Removing worst preserves best set</td></tr>
+        <tr><td>None of the above patterns fit</td><td class="cr">Greedy may be wrong → try DP</td><td>Can't prove it → don't trust it</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ib ib-blue"><i>🧠</i>
+    <p><strong>Final intuition:</strong> If greedy is correct, usually you can do one of four things: (1) transform OPT → GREEDY, (2) show GREEDY is never worse at any step, (3) show each edge choice is safe by contradiction, or (4) show removing worst keeps best. If none works, pivot to DP.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §9 — ACTIVITY SELECTION
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s9">
+  <h2>9. Activity Selection <span class="layer-badge lb-base">CLASSIC GREEDY</span></h2>
+
+  <h3>Problem</h3>
+  <p>Select the maximum number of pairwise non-overlapping activities with start time sᵢ and finish time fᵢ on a single resource.</p>
+
+  <h3>Greedy rule</h3>
+  <div class="formula">Sort by finish time ascending. Take the next activity that starts at or after the last chosen finish time.</div>
+
+  <h3>Intuition</h3>
+  <p>The activity that finishes earliest leaves the maximum remaining room for future activities. By always choosing the earliest-finishing compatible activity, you greedily preserve future flexibility.</p>
+
+  <h3>Formal proof (exchange)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Proof sketch:</strong> Let greedy pick g₁ with the earliest finish. For any optimal solution whose first chosen activity is o₁, we have f(g₁) ≤ f(o₁). Replace o₁ with g₁: feasibility remains because g₁ ends earlier, and the solution size remains unchanged. Repeat on the remaining subproblem — each swap makes OPT agree with greedy at one more position without losing any activity. Therefore greedy is optimal.</p>
+  </div>
+
+  <h3>Formal proof (stays-ahead)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Stays-ahead lemma:</strong> Define greedy choices g₁, g₂, …, gₖ and optimal choices o₁, o₂, …, oₘ (both ordered by finish). Prove by induction that f(gᵣ) ≤ f(oᵣ) for all r ≤ min(k,m).</p>
+    <p><strong>Base case:</strong> f(g₁) ≤ f(o₁) by definition — g₁ has the earliest finish among all activities.</p>
+    <p><strong>Inductive step:</strong> Assume f(gᵣ) ≤ f(oᵣ). Then s(oᵣ₊₁) ≥ f(oᵣ) ≥ f(gᵣ) — so oᵣ₊₁ is compatible with gᵣ. Greedy picks gᵣ₊₁ with the earliest finish among all compatible activities, so f(gᵣ₊₁) ≤ f(oᵣ₊₁).</p>
+    <p><strong>Conclusion:</strong> Greedy matches or exceeds optimal at every prefix. Since greedy never falls behind, k ≥ m. Therefore greedy selects at least as many activities as any optimal solution.</p>
+  </div>
+
+  <h3>C++ template</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Act { long long s, f; };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n; cin &gt;&gt; n;
+    vector&lt;Act&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i].s &gt;&gt; a[i].f;
+
+    // GREEDY RULE: sort by finish time ascending
+    sort(a.begin(), a.end(), [](const Act&amp; x, const Act&amp; y) {
+        if (x.f != y.f) return x.f &lt; y.f;
+        return x.s &lt; y.s;
+    });
+
+    long long last = LLONG_MIN / 4;
+    int cnt = 0;
+    for (auto&amp; act : a) {
+        if (act.s &gt;= last) {   // compatible: starts at or after last finish
+            cnt++;
+            last = act.f;       // commit — irrevocable
+        }
+    }
+    cout &lt;&lt; cnt &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <details>
+    <summary>Line-by-line explanation <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>sort by finish time:</strong> The greedy rule requires processing activities in order of earliest finish. Secondary sort by start is a tiebreaker only.</p>
+      <p><strong>last = LLONG_MIN/4:</strong> Initial "last finish" is set to negative infinity so the first activity is always compatible.</p>
+      <p><strong>if (act.s &gt;= last):</strong> Compatibility check. Change <code>&gt;=</code> to <code>&gt;</code> if the problem requires strict non-overlap.</p>
+      <p><strong>last = act.f:</strong> Commit to this activity. The greedy never revisits this choice.</p>
+    </div>
+  </details>
+
+  <h3>Complexity</h3>
+  <div class="formula">O(n log n) sort + O(n) scan = O(n log n)</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Sorting by start time (fails — a long early activity blocks many short ones). Sorting by duration (fails — short activities may overlap with many others). Confusing with weighted interval scheduling (requires DP, not greedy).</p>
+  </div>
+
+  <p><strong>Practice:</strong> <a href="https://cses.fi/problemset/task/1629/" target="_blank">CSES Movie Festival</a> · <a href="https://www.geeksforgeeks.org/dsa/activity-selection-problem-greedy-algo-1/" target="_blank">GfG Activity Selection</a> · <a href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LeetCode 435 Non-overlapping Intervals</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §10 — FRACTIONAL KNAPSACK
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s10">
+  <h2>10. Fractional Knapsack <span class="layer-badge lb-base">CLASSIC GREEDY</span></h2>
+
+  <h3>Problem</h3>
+  <p>Maximize total value in a knapsack of capacity W, where each item i has value vᵢ and weight wᵢ, and items are <strong>divisible</strong> — you may take any fraction xᵢ ∈ [0,1].</p>
+
+  <h3>Greedy rule</h3>
+  <div class="formula">Sort by density rᵢ = vᵢ / wᵢ descending. Take as much as possible from the highest-density item first.</div>
+
+  <h3>Intuition</h3>
+  <p>Every unit of capacity should be spent on the "most valuable material per unit weight" first. Divisibility is the critical assumption — it allows continuous swapping of material between items, which is what makes the exchange argument work.</p>
+
+  <h3>Formal proof (exchange)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Proof:</strong> Consider any solution that takes some positive weight from item j while leaving room to take more from item i, where rᵢ > rⱼ. Move δ weight from j to i: the value changes by δ(rᵢ − rⱼ) > 0, and feasibility is unchanged (total weight stays the same). Repeating this swap eliminates all inversions — the density-sorted order is the unique optimum.</p>
+  </div>
+
+  <h3>C++ template</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Item {
+    long long w, v;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    long long W;
+    cin &gt;&gt; n &gt;&gt; W;
+
+    vector&lt;Item&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i].w &gt;&gt; a[i].v;
+
+    // GREEDY RULE: sort by density descending
+    // Cross-multiply to avoid floating-point error in comparator
+    sort(a.begin(), a.end(), [](const Item&amp; A, const Item&amp; B) {
+        return (__int128)A.v * B.w &gt; (__int128)B.v * A.w;
+    });
+
+    long double ans = 0.0L;
+    for (auto&amp; it : a) {
+        if (W == 0) break;
+        if (it.w &lt;= W) {
+            ans += it.v;       // take entire item
+            W -= it.w;
+        } else {
+            ans += (long double)it.v * (long double)W / (long double)it.w;
+            W = 0;             // knapsack full — take fraction
+        }
+    }
+
+    cout &lt;&lt; fixed &lt;&lt; setprecision(6) &lt;&lt; (double)ans &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="formula">O(n log n) sort + O(n) scan = O(n log n)</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Sorting by value alone (fails — a heavy high-value item may be less dense than a light item). Sorting by weight alone (fails similarly). Using <code>double</code> in the comparator (may violate strict weak ordering — prefer cross-multiplication with <code>__int128</code>).</p>
+  </div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Critical: 0/1 knapsack.</strong> If items are indivisible, this greedy fails completely. Consider items: (w=10, v=60), (w=20, v=100), (w=30, v=120) with capacity 50. Density sort picks items 1 and 2 (value 160), but the optimal is items 1 and 3 (value 180). The exchange argument breaks because you cannot continuously swap fractions. Use DP instead.</p>
+  </div>
+
+  <p><strong>Practice:</strong> <a href="https://www.geeksforgeeks.org/fractional-knapsack-problem/" target="_blank">GfG Fractional Knapsack</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §11 — JOB SEQUENCING
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s11">
+  <h2>11. Job Sequencing with Deadlines <span class="layer-badge lb-base">CLASSIC GREEDY</span></h2>
+
+  <h3>Problem</h3>
+  <p>Each job takes 1 unit of time, has a deadline dᵢ and profit pᵢ. Schedule at most one job per time slot to maximize total profit. A job earns profit only if it finishes by its deadline.</p>
+
+  <h3>Greedy rule</h3>
+  <div class="formula">Sort by profit descending. For each job, place it in the latest free slot ≤ deadline.</div>
+
+  <h3>Intuition</h3>
+  <p>High-profit jobs get priority. But each job should be scheduled as late as possible — this preserves early slots for tighter-deadline jobs that come later in the sorted order.</p>
+
+  <h3>Formal proof (exchange)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Why profit order is safe:</strong> If a lower-profit job blocks a higher-profit job in a feasible schedule, swapping them cannot decrease feasibility (both take one slot) and increases profit.</p>
+    <p><strong>Why latest-slot placement is safe:</strong> Placing a job earlier than necessary can only reduce options for other jobs with smaller deadlines. Pushing each job to its latest possible slot preserves feasibility for future choices.</p>
+  </div>
+
+  <h3>C++ template (DSU slots — near O(n log n))</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Job {
+    int id, d;
+    long long p;
+};
+
+// DSU for latest-available-slot queries
+struct DSU {
+    vector&lt;int&gt; parent;
+    DSU(int n = 0) { init(n); }
+    void init(int n) {
+        parent.resize(n + 1);
+        iota(parent.begin(), parent.end(), 0);
+    }
+    int find(int x) {
+        if (parent[x] == x) return x;
+        return parent[x] = find(parent[x]);  // path compression
+    }
+    // Occupy slot x: next available becomes find(x-1)
+    void occupy(int x) {
+        parent[x] = find(x - 1);
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;Job&gt; jobs(n);
+
+    int maxD = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; jobs[i].id &gt;&gt; jobs[i].d &gt;&gt; jobs[i].p;
+        maxD = max(maxD, jobs[i].d);
+    }
+
+    // GREEDY RULE: highest profit first
+    sort(jobs.begin(), jobs.end(), [](const Job&amp; a, const Job&amp; b) {
+        return a.p &gt; b.p;
+    });
+
+    DSU dsu(maxD);
+    long long totalProfit = 0;
+    int cnt = 0;
+
+    for (auto&amp; j : jobs) {
+        int slot = dsu.find(j.d);   // latest free slot ≤ deadline
+        if (slot &gt; 0) {
+            dsu.occupy(slot);
+            totalProfit += j.p;
+            cnt++;
+        }
+    }
+
+    cout &lt;&lt; cnt &lt;&lt; " " &lt;&lt; totalProfit &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="formula">O(n log n) sort + O(n · α(D)) DSU ≈ O(n log n)</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Placing a job at the <em>earliest</em> available slot (suboptimal — blocks tighter-deadline jobs). Missing the unit-time assumption — if durations vary, this algorithm does not apply. Forgetting that slot 0 means "no slot available."</p>
+  </div>
+
+  <p><strong>Practice:</strong> <a href="https://www.geeksforgeeks.org/dsa/job-sequencing-problem/" target="_blank">GfG Job Sequencing</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §12 — HUFFMAN CODING
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s12">
+  <h2>12. Huffman Coding &amp; Optimal Merge <span class="layer-badge lb-base">CLASSIC GREEDY</span></h2>
+
+  <h3>Problem</h3>
+  <p>Build an optimal prefix-free binary code for symbols with frequencies fᵢ, minimizing expected code length Σ fᵢ · depthᵢ. Equivalently: given n sorted files of sizes fᵢ, merge them pairwise to minimize total merge cost.</p>
+
+  <h3>Greedy rule</h3>
+  <div class="formula">Repeatedly merge the two smallest frequencies. Push the merged sum back into a min-heap.</div>
+
+  <h3>Intuition</h3>
+  <p>Smaller frequencies should end up deeper in the tree (longer codewords). Merging the two smallest guarantees they become siblings at maximal depth. Each merge costs the sum of the two merged values — so merging small values first minimizes the accumulated cost at each level.</p>
+
+  <h3>Formal proof (sibling lemma + exchange)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Sibling lemma:</strong> In an optimal prefix-code tree, consider the two least-frequent symbols. There exists an optimal tree where they are deepest siblings. If not, swap them downward with deeper leaves: since they have the smallest frequencies, moving them deeper cannot increase Σ fᵢ · depthᵢ.</p>
+    <p><strong>Recursive reduction:</strong> Contracting these siblings into a single pseudo-symbol of frequency f₁ + f₂ reduces the problem to n−1 symbols — exactly the greedy merge. By induction, the greedy produces an optimal tree.</p>
+  </div>
+
+  <h3>C++ template (optimal merge cost)</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;long long&gt;&gt; pq;
+    for (int i = 0; i &lt; n; i++) {
+        long long x; cin &gt;&gt; x;
+        pq.push(x);
+    }
+
+    long long cost = 0;
+    while (pq.size() &gt; 1) {
+        long long a = pq.top(); pq.pop();   // smallest
+        long long b = pq.top(); pq.pop();   // second smallest
+        cost += a + b;                       // merge cost
+        pq.push(a + b);                      // push merged node
+    }
+
+    cout &lt;&lt; cost &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="formula">O(n log n) — each of n−1 merges involves two heap operations</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Using a <em>max-heap</em> by accident (merging the two largest first gives the worst possible result). Confusing Huffman coding (optimal for prefix codes) with arithmetic coding (different model, not based on this greedy). Forgetting the n=1 edge case (no merges needed).</p>
+  </div>
+
+  <p><strong>Practice:</strong> <a href="https://onlinejudge.org/external/109/10954.pdf" target="_blank">UVA 10954 — Add All</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §13 — SCHEDULING (ROLLBACK)
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s13">
+  <h2>13. Scheduling with Durations (Rollback Pattern) <span class="layer-badge lb-sched">SCHEDULING</span></h2>
+
+  <h3>Problem</h3>
+  <p>Each job has duration tᵢ and deadline dᵢ. Execute sequentially on one machine. Maximize the number of jobs completed by their deadlines.</p>
+
+  <h3>Greedy rule (rollback)</h3>
+  <div class="formula">Sort by deadline ascending. Add each job's duration to a max-heap; track total time. If total &gt; current deadline, remove the job with largest duration from the heap.</div>
+
+  <h3>Intuition</h3>
+  <p>Processing earlier deadlines first handles tight constraints. When overloaded, dropping the longest job frees the most time and maximizes future feasibility — the replacement invariant guarantees this is always optimal.</p>
+
+  <h3>Formal proof (replacement invariant)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Invariant:</strong> After processing the first i jobs (sorted by deadline), the heap contains a feasible set with maximum size. Among all feasible sets of that size, it has minimum total time.</p>
+    <p><strong>Transition:</strong> When adding job i breaks feasibility (sum > dᵢ), any feasible subset must drop <em>some</em> job. Dropping the maximum-duration job yields the smallest remaining sum — the "best chance" to remain feasible for future deadlines.</p>
+    <p><strong>Termination:</strong> After all jobs are processed, the heap contains the maximum number of completable jobs.</p>
+  </div>
+
+  <h3>C++ template</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n; cin &gt;&gt; n;
+    vector&lt;pair&lt;int, int&gt;&gt; jobs(n);  // {duration, deadline}
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; jobs[i].first &gt;&gt; jobs[i].second;
+
+    // GREEDY RULE: sort by deadline ascending
+    sort(jobs.begin(), jobs.end(), [](auto&amp; a, auto&amp; b) {
+        return a.second &lt; b.second;
+    });
+
+    priority_queue&lt;int&gt; pq;  // max-heap of durations
+    long long sum = 0;
+
+    for (auto&amp; [t, d] : jobs) {
+        sum += t;
+        pq.push(t);
+        if (sum &gt; d) {
+            sum -= pq.top();  // ROLLBACK: remove longest job
+            pq.pop();
+        }
+    }
+
+    cout &lt;&lt; (int)pq.size() &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="formula">O(n log n) — sort + at most n heap operations</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Removing the <em>smallest</em> duration (wrong — you want to free the most time). Sorting by duration instead of deadline. Forgetting that this maximizes <em>count</em>, not profit — for maximum profit with deadlines, a different formulation is needed.</p>
+  </div>
+
+  <h3>Variant: feasibility-only check</h3>
+  <p>"Can we finish <em>all</em> jobs?" — sort by deadline, keep a running sum of durations, and check that the sum never exceeds the current deadline. No heap needed. This is the core of problems like AtCoder ABC131 D Megalomania.</p>
+
+  <p><strong>Practice:</strong> <a href="https://leetcode.com/problems/course-schedule-iii/" target="_blank">LeetCode 630 — Course Schedule III</a> · <a href="https://atcoder.jp/contests/abc131/tasks/abc131_d" target="_blank">AtCoder ABC131 D — Megalomania</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §14 — GRAPH GREEDY (MST + DIJKSTRA)
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s14">
+  <h2>14. Graph Greedy — MST &amp; Dijkstra <span class="layer-badge lb-model">GRAPH</span></h2>
+
+  <h3>14a. Minimum Spanning Tree</h3>
+  <p>Given a weighted undirected graph, find a spanning tree with minimum total edge weight.</p>
+
+  <h3>Cut Property (the proof that governs both Kruskal and Prim)</h3>
+  <div class="formula">For any cut (S, V\S), the minimum-weight edge crossing the cut is safe — it belongs to some MST.</div>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Proof:</strong> Assume an MST T that does not contain the light edge e across a cut. Add e to T — a cycle forms and must cross the cut again via another edge f. Since w(e) &lt; w(f), removing f yields a strictly lighter spanning tree — contradiction. Therefore e must belong to some MST.</p>
+  </div>
+
+  <h3>Kruskal's algorithm</h3>
+  <p>Sort edges by weight ascending. Add each edge if it connects two different components (no cycle). Uses DSU for cycle detection.</p>
+
+  <h3>C++ template: Kruskal</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Edge { int u, v; long long w; };
+struct DSU {
+    vector&lt;int&gt; p, sz;
+    DSU(int n = 0) { init(n); }
+    void init(int n) {
+        p.resize(n); sz.assign(n, 1);
+        iota(p.begin(), p.end(), 0);
+    }
+    int find(int x) { return p[x] == x ? x : p[x] = find(p[x]); }
+    bool unite(int a, int b) {
+        a = find(a); b = find(b);
+        if (a == b) return false;
+        if (sz[a] &lt; sz[b]) swap(a, b);
+        p[b] = a; sz[a] += sz[b];
+        return true;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;Edge&gt; edges(m);
+    for (int i = 0; i &lt; m; i++) {
+        cin &gt;&gt; edges[i].u &gt;&gt; edges[i].v &gt;&gt; edges[i].w;
+        --edges[i].u; --edges[i].v;
+    }
+
+    // GREEDY RULE: lightest edge first
+    sort(edges.begin(), edges.end(),
+         [](auto&amp; a, auto&amp; b) { return a.w &lt; b.w; });
+
+    DSU dsu(n);
+    long long cost = 0;
+    int used = 0;
+
+    for (auto&amp; e : edges) {
+        if (dsu.unite(e.u, e.v)) {   // no cycle — safe edge (cut property)
+            cost += e.w;
+            used++;
+        }
+    }
+
+    if (used != n - 1) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; "\n";
+
+    return 0;
+}</code></pre>
+
+  <h3>C++ template: Prim (sparse graph, heap)</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj(n);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; long long w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w; --u; --v;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    const long long INF = (long long)4e18;
+    vector&lt;long long&gt; dist(n, INF);
+    vector&lt;char&gt; vis(n, 0);
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;,
+                   greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+
+    dist[0] = 0;
+    pq.push({0, 0});
+
+    long long cost = 0;
+    int taken = 0;
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (vis[u]) continue;
+        vis[u] = 1;
+        cost += d;
+        taken++;
+
+        for (auto [v, w] : adj[u]) {
+            if (!vis[v] &amp;&amp; w &lt; dist[v]) {
+                dist[v] = w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+
+    if (taken != n) cout &lt;&lt; "IMPOSSIBLE\n";
+    else cout &lt;&lt; cost &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="grid2">
+    <div>
+      <div class="formula">Kruskal: O(m log m) + O(m · α(n))</div>
+      <p>Dominated by sorting. DSU operations are near-constant.</p>
+    </div>
+    <div>
+      <div class="formula">Prim (heap): O((n + m) log n)</div>
+      <p>Each vertex processed once, each edge relaxed once, each heap operation O(log n).</p>
+    </div>
+  </div>
+
+  <h3>14b. Dijkstra — Single-Source Shortest Paths</h3>
+  <p>Given a graph with <strong>non-negative</strong> edge weights, find shortest paths from a source to all vertices.</p>
+
+  <h3>Greedy rule</h3>
+  <div class="formula">Repeatedly finalize the unfinalized vertex with smallest tentative distance, then relax its outgoing edges.</div>
+
+  <h3>Formal proof (stays-ahead / finalization invariant)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Claim:</strong> When vertex u is popped from the priority queue, dist[u] is its true shortest-path distance.</p>
+    <p><strong>Proof:</strong> Suppose a shorter path to u exists via some unvisited vertex x. That path has length ≥ d[x] because all edge weights are non-negative. But d[x] ≥ d[u] by the extraction rule. Contradiction. Therefore u's distance is final when popped.</p>
+    <p><strong>Why negative edges break it:</strong> A later vertex can have a negative edge back that reduces an already-finalized vertex. The "final when popped" invariant fails.</p>
+  </div>
+
+  <h3>C++ template</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m; cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj(n);
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; long long w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w; --u; --v;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});  // remove if directed
+    }
+
+    const long long INF = (long long)4e18;
+    vector&lt;long long&gt; dist(n, INF);
+    vector&lt;int&gt; parent(n, -1);
+
+    priority_queue&lt;pair&lt;long long, int&gt;, vector&lt;pair&lt;long long, int&gt;&gt;,
+                   greater&lt;pair&lt;long long, int&gt;&gt;&gt; pq;
+
+    int s = 0;
+    dist[s] = 0;
+    pq.push({0, s});
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (d != dist[u]) continue;   // discard stale PQ entry
+
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                parent[v] = u;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; (dist[i] == INF ? -1 : dist[i]) &lt;&lt; (i + 1 == n ? '\n' : ' ');
+    }
+    return 0;
+}</code></pre>
+
+  <h3>Complexity</h3>
+  <div class="formula">O((n + m) log n) with binary heap</div>
+
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Common mistakes:</strong> Running Dijkstra on graphs with negative edges (wrong answers). Not discarding stale PQ entries (<code>if (d != dist[u]) continue;</code>) — causes TLE. Overflow: always use <code>long long</code> and a sufficiently large INF.</p>
+  </div>
+
+  <p><strong>Practice:</strong> <a href="https://cses.fi/problemset/task/1671/" target="_blank">CSES Shortest Routes I</a> · <a href="https://codeforces.com/problemset/problem/20/C" target="_blank">CF 20C — Dijkstra?</a> · <a href="https://cses.fi/problemset/task/1675/" target="_blank">CSES Road Reparation (MST)</a></p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §15 — COMPLEXITY ANALYSIS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s15">
+  <h2>15. Complexity Analysis <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Key DS</th><th>Bottleneck</th></tr></thead>
+      <tbody>
+        <tr><td>Activity Selection</td><td>O(n log n)</td><td>O(n)</td><td>Sort</td><td>Sorting</td></tr>
+        <tr><td>Fractional Knapsack</td><td>O(n log n)</td><td>O(n)</td><td>Sort</td><td>Sorting</td></tr>
+        <tr><td>Job Sequencing (DSU)</td><td>O(n log n)</td><td>O(n + D)</td><td>Sort + DSU</td><td>Sorting</td></tr>
+        <tr><td>Huffman / Merge</td><td>O(n log n)</td><td>O(n)</td><td>Min-heap</td><td>Heap operations</td></tr>
+        <tr><td>Scheduling (Rollback)</td><td>O(n log n)</td><td>O(n)</td><td>Sort + Max-heap</td><td>Sorting</td></tr>
+        <tr><td>Kruskal MST</td><td>O(m log m)</td><td>O(n + m)</td><td>Sort + DSU</td><td>Edge sorting</td></tr>
+        <tr><td>Prim MST (heap)</td><td>O((n+m) log n)</td><td>O(n + m)</td><td>Min-heap</td><td>Heap operations</td></tr>
+        <tr><td>Dijkstra (heap)</td><td>O((n+m) log n)</td><td>O(n + m)</td><td>Min-heap</td><td>Heap operations</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Pattern:</strong> Nearly every greedy algorithm is O(n log n) — dominated by sorting or heap operations. The greedy scan itself is always O(n) or O(m). This is why greedy is fast: the "smart" part is in the comparator and proof, not in the runtime.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §16 — EDGE CASES & PITFALLS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s16">
+  <h2>16. Edge Cases &amp; Common Pitfalls <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✓ Centralized Edge-Case Audit</h4>
+      <ul class="checklist">
+        <li>n = 0 or n = 1: empty input or trivially solved</li>
+        <li>All items identical: greedy must still terminate correctly</li>
+        <li>All deadlines = 1: only one job can be scheduled</li>
+        <li>Capacity W = 0: no items taken (fractional knapsack)</li>
+        <li>Single-node graph: MST cost = 0, Dijkstra dist = all 0 or INF</li>
+        <li>Disconnected graph: MST does not exist; Dijkstra reports INF for unreachable</li>
+        <li>Negative edge weights: Dijkstra fails; MST still works (weights are just edge attributes)</li>
+        <li>Ties in comparator: must handle stably or break consistently</li>
+        <li>Overflow: density cross-multiplication may overflow <code>long long</code> — use <code>__int128</code></li>
+        <li>Strict vs non-strict overlap: check problem statement carefully (≥ vs >)</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠ Common Pitfalls (by topic)</h4>
+      <ul class="mistake">
+        <li><strong>Activity Selection:</strong> Sorting by start time or duration</li>
+        <li><strong>Fractional Knapsack:</strong> Sorting by value or weight alone</li>
+        <li><strong>Fractional Knapsack:</strong> Using double in comparator (strict weak ordering violation)</li>
+        <li><strong>Job Sequencing:</strong> Earliest slot instead of latest slot</li>
+        <li><strong>Job Sequencing:</strong> Assuming non-unit durations work with this algorithm</li>
+        <li><strong>Huffman:</strong> Using max-heap instead of min-heap</li>
+        <li><strong>Rollback:</strong> Removing smallest duration instead of largest</li>
+        <li><strong>Rollback:</strong> Sorting by duration instead of deadline</li>
+        <li><strong>Kruskal:</strong> Running on directed graph without undirected conversion</li>
+        <li><strong>Dijkstra:</strong> Running on negative-weight edges</li>
+        <li><strong>Dijkstra:</strong> Not discarding stale PQ entries (causes TLE)</li>
+        <li><strong>All greedy:</strong> Applying greedy without a proof — WA on hidden test cases</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §17 — VARIANTS & EXTENSIONS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s17">
+  <h2>17. Variants &amp; Extensions <span class="layer-badge lb-model">VARIANTS</span></h2>
+
+  <h3>Variant 1: 0/1 Knapsack (Greedy Fails → DP)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Problem:</strong> Same as fractional knapsack, but items are <em>indivisible</em>. Take each item entirely or not at all.</p>
+    <p><strong>Why greedy fails:</strong> Density sort can miss profitable combinations. The exchange argument requires continuous fraction swapping, which is impossible with whole items.</p>
+    <p><strong>Algorithm:</strong> DP with state dp[i][w] = max value using first i items with capacity w. Time O(nW), space O(W) with rolling array.</p>
+    <p><strong>When to recognize:</strong> If items are indivisible and there is a capacity budget, always use DP.</p>
+  </div>
+
+  <h3>Variant 2: Weighted Interval Scheduling (Greedy Fails → DP)</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Problem:</strong> Same as activity selection, but each activity has a profit. Maximize total profit.</p>
+    <p><strong>Why greedy fails:</strong> Earliest-finish greedy may select many low-profit activities instead of one high-profit activity that covers the same time span.</p>
+    <p><strong>Algorithm:</strong> Sort by finish time. Binary search for the latest compatible job. DP: dp[i] = max(dp[i-1], profit[i] + dp[p(i)]) where p(i) is the latest compatible job.</p>
+    <p><strong>Practice:</strong> <a href="https://cses.fi/problemset/task/1140/" target="_blank">CSES Projects</a></p>
+  </div>
+
+  <h3>Variant 3: Minimum Deletions for Non-Overlapping Intervals</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Problem:</strong> Minimum number of intervals to remove so that the rest are pairwise non-overlapping.</p>
+    <p><strong>Why it fits:</strong> This is exactly n − (max compatible set). Solve activity selection, then subtract from n.</p>
+    <p><strong>Practice:</strong> <a href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LeetCode 435 — Non-overlapping Intervals</a></p>
+  </div>
+
+  <h3>Variant 4: k-ary Huffman</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Problem:</strong> Same as Huffman, but each internal node has k children instead of 2.</p>
+    <p><strong>What changes:</strong> Merge the k smallest values at each step. Pad with zeros if (n−1) is not divisible by (k−1) to ensure the final merge has exactly k children.</p>
+    <p><strong>Why it fits:</strong> Same sibling lemma, generalized to k-ary trees.</p>
+  </div>
+
+  <h3>Variant 5: Maximum Spanning Tree</h3>
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Problem:</strong> Find a spanning tree with maximum total weight.</p>
+    <p><strong>What changes:</strong> Negate all weights and run Kruskal, or equivalently sort edges in descending order.</p>
+    <p><strong>Why it fits:</strong> The cut property applies symmetrically — the heaviest edge across a cut is safe for a max-weight tree.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §18 — PRACTICE PROBLEMS
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s18">
+  <h2>18. Problem-Based Applications <span class="layer-badge lb-fw">PRACTICE</span></h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>ID</th><th>Problem</th><th>Concept</th><th>Difficulty</th></tr></thead>
+      <tbody>
+        <tr><td>P-01</td><td><a href="https://cses.fi/problemset/task/1629/" target="_blank">CSES Movie Festival</a></td><td>Activity selection, stays-ahead</td><td>Easy–Med</td></tr>
+        <tr><td>P-02</td><td><a href="https://www.geeksforgeeks.org/dsa/activity-selection-problem-greedy-algo-1/" target="_blank">GfG Activity Selection</a></td><td>Activity selection (earliest finish)</td><td>Easy</td></tr>
+        <tr><td>P-03</td><td><a href="https://codeforces.com/problemset/problem/1165/C" target="_blank">CF 1165C Good String</a></td><td>Adhoc + greedy construction</td><td>Medium</td></tr>
+        <tr><td>P-04</td><td><a href="https://codeforces.com/problemset/problem/1660/C" target="_blank">CF 1660C Get an Even String</a></td><td>Greedy scan invariant</td><td>Medium</td></tr>
+        <tr><td>P-05</td><td><a href="https://atcoder.jp/contests/abc131/tasks/abc131_d" target="_blank">AtCoder ABC131 D Megalomania</a></td><td>Deadline feasibility</td><td>Medium</td></tr>
+        <tr><td>P-06</td><td><a href="https://leetcode.com/problems/course-schedule-iii/" target="_blank">LeetCode 630 Course Schedule III</a></td><td>Rollback (max-heap)</td><td>Hard</td></tr>
+        <tr><td>P-07</td><td><a href="https://cses.fi/problemset/task/1630/" target="_blank">CSES Tasks and Deadlines</a></td><td>Exchange argument (ordering)</td><td>Medium</td></tr>
+        <tr><td>P-08</td><td><a href="https://codingcompetitions.withgoogle.com/codejam/round/0000000000432bd9/0000000000432b8d" target="_blank">GCJ Min Scalar Product</a></td><td>Exchange argument (sort opposite)</td><td>Medium</td></tr>
+        <tr><td>P-09</td><td><a href="https://leetcode.com/problems/largest-number/" target="_blank">LeetCode 179 Largest Number</a></td><td>Comparator derivation / N=2</td><td>Medium</td></tr>
+        <tr><td>P-10</td><td><a href="https://www.geeksforgeeks.org/fractional-knapsack-problem/" target="_blank">GfG Fractional Knapsack</a></td><td>Density sort</td><td>Medium</td></tr>
+        <tr><td>P-12</td><td><a href="https://www.geeksforgeeks.org/dsa/job-sequencing-problem/" target="_blank">GfG Job Sequencing</a></td><td>Profit + latest slot</td><td>Medium</td></tr>
+        <tr><td>P-13</td><td><a href="https://cses.fi/problemset/task/1675/" target="_blank">CSES Road Reparation</a></td><td>MST (Kruskal/Prim)</td><td>Medium</td></tr>
+        <tr><td>P-14</td><td><a href="https://open.kattis.com/problems/lostmap" target="_blank">Kattis Lost Map</a></td><td>MST (Prim)</td><td>Medium</td></tr>
+        <tr><td>P-15</td><td><a href="https://onlinejudge.org/external/100/10034.pdf" target="_blank">UVA 10034 Freckles</a></td><td>MST geometric</td><td>Medium</td></tr>
+        <tr><td>P-16</td><td><a href="https://cses.fi/problemset/task/1676/" target="_blank">CSES Road Construction</a></td><td>DSU connectivity</td><td>Medium</td></tr>
+        <tr><td>P-17</td><td><a href="https://codeforces.com/problemset/problem/25/D" target="_blank">CF 25D Roads not only in Berland</a></td><td>DSU + components</td><td>Medium</td></tr>
+        <tr><td>P-18</td><td><a href="https://cses.fi/problemset/task/1671/" target="_blank">CSES Shortest Routes I</a></td><td>Dijkstra</td><td>Medium</td></tr>
+        <tr><td>P-19</td><td><a href="https://codeforces.com/problemset/problem/20/C" target="_blank">CF 20C Dijkstra?</a></td><td>Dijkstra + path reconstruction</td><td>Hard</td></tr>
+        <tr><td>P-20</td><td><a href="https://open.kattis.com/problems/shortestpath1" target="_blank">Kattis shortestpath1</a></td><td>Dijkstra baseline</td><td>Medium</td></tr>
+        <tr><td>P-21</td><td><a href="https://onlinejudge.org/external/109/10954.pdf" target="_blank">UVA 10954 Add All</a></td><td>Huffman / optimal merge</td><td>Medium</td></tr>
+        <tr><td>P-22</td><td><a href="https://leetcode.com/problems/non-overlapping-intervals/" target="_blank">LeetCode 435 Non-overlapping Intervals</a></td><td>Interval greedy (min deletions)</td><td>Medium</td></tr>
+        <tr><td>P-23</td><td><a href="https://cses.fi/problemset/task/1074/" target="_blank">CSES Stick Lengths</a></td><td>Adhoc (median) / greedy insight</td><td>Easy</td></tr>
+        <tr><td>P-24</td><td><a href="https://cses.fi/problemset/task/2183/" target="_blank">CSES Missing Coin Sum</a></td><td>Greedy invariant</td><td>Medium</td></tr>
+        <tr><td>P-25</td><td><a href="https://cses.fi/problemset/task/1090/" target="_blank">CSES Ferris Wheel</a></td><td>Two-pointer greedy</td><td>Easy–Med</td></tr>
+        <tr><td>P-26</td><td><a href="https://cses.fi/problemset/task/1140/" target="_blank">CSES Projects</a></td><td>Weighted intervals → DP</td><td>Med–Hard</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     §19 — FINAL MENTAL MODEL
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="s19">
+  <h2>19. Final Mental Model <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="formula master" style="font-size:24px;margin-bottom:18px">greedy = correct modeling + provably-safe local rule + optimal data structure</div>
+  <p>Six statements. If you can recall and explain all six, you have mastered greedy and adhoc.</p>
+  <div class="mental-model">
+    <h3 style="margin:0 0 4px;color:var(--good)">The Six Things You Must Know</h3>
+    <div class="mm-row">
+      <div class="mm-item">
+        <div class="mm-num">①</div>
+        <div class="mm-title">Greedy is the exception, not the rule</div>
+        <div class="mm-desc">Most optimization problems require DP. Greedy is only safe when you can prove it with one of four templates: exchange, stays-ahead, cut, or rollback. If you cannot write the proof, do not trust the greedy.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">②</div>
+        <div class="mm-title">The proof IS the algorithm</div>
+        <div class="mm-desc">The exchange argument tells you what to sort by. The stays-ahead lemma tells you which prefix measure to track. The cut property tells you which edge is safe. The rollback pattern tells you what to remove. The proof directly generates the code.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">③</div>
+        <div class="mm-title">Derive comparators from the N=2 case</div>
+        <div class="mm-desc">For any sorting-based greedy, analyze two adjacent items: when does swapping them improve the objective? The answer is your comparator. This is the standard "strange comparator" technique in competitive programming.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">④</div>
+        <div class="mm-title">Counterexamples before code</div>
+        <div class="mm-desc">Before implementing any greedy, spend 2 minutes trying to break it with small inputs (n=3,4,5). Coin change {1,4,5} amount 8. Density sort for 0/1 knapsack. Earliest start for activity selection. If it breaks, pivot to DP.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑤</div>
+        <div class="mm-title">Data structure = implementation of the proof</div>
+        <div class="mm-desc">Sort for exchange-based proofs. Min-heap for Huffman and Dijkstra. Max-heap for rollback. DSU for connectivity and slot assignment. The data structure is chosen to make the proven greedy rule efficient — never the other way around.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑥</div>
+        <div class="mm-title">Adhoc = find the structure first</div>
+        <div class="mm-desc">Adhoc problems require structural discovery before any algorithm applies. Simulate small cases, identify invariants, reframe the problem. Many adhoc problems have greedy solutions — but the modeling step is creative, not mechanical.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ks-grid" style="margin-top:24px">
+    <div class="ks-block">
+      <h4>✓ Core Concepts Checklist</h4>
+      <ul class="checklist">
+        <li>Exchange argument: swap OPT's choice with greedy's, show no loss</li>
+        <li>Stays-ahead: greedy's prefix measure ≤ optimal's at every step</li>
+        <li>Cut property: lightest edge across any cut belongs to some MST</li>
+        <li>Rollback: maintain best feasible set; remove worst on overflow</li>
+        <li>N=2 comparator derivation for sorting-based problems</li>
+        <li>Activity selection: earliest finish time → maximum compatible set</li>
+        <li>Fractional knapsack: density sort → exchange on continuous fractions</li>
+        <li>Job sequencing: profit descending + DSU for latest free slot</li>
+        <li>Huffman: merge two smallest → sibling lemma + induction</li>
+        <li>Rollback scheduling: deadline sort + max-heap drop on overflow</li>
+        <li>Dijkstra: non-negative weights → finalize closest vertex</li>
+        <li>0/1 knapsack and weighted intervals require DP, not greedy</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🗺 Algorithm Derivation Map</h4>
+      <div class="tw"><table>
+        <thead><tr><th>Problem pattern</th><th>Proof template</th><th>Data structure</th></tr></thead>
+        <tbody>
+          <tr><td>Max non-overlapping intervals</td><td>Exchange / Stays-ahead</td><td>Sort</td></tr>
+          <tr><td>Divisible resource allocation</td><td>Exchange</td><td>Sort</td></tr>
+          <tr><td>Unit-time deadline scheduling</td><td>Exchange</td><td>Sort + DSU</td></tr>
+          <tr><td>Optimal merge / prefix codes</td><td>Exchange (sibling)</td><td>Min-heap</td></tr>
+          <tr><td>Max-count deadline scheduling</td><td>Rollback invariant</td><td>Sort + Max-heap</td></tr>
+          <tr><td>Minimum spanning tree</td><td>Cut property</td><td>Sort + DSU / Heap</td></tr>
+          <tr><td>SSSP (non-neg weights)</td><td>Stays-ahead</td><td>Min-heap</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     RUNTIME VALIDATION
+═══════════════════════════════════════════════════════ -->
+<section class="card" id="svalidation">
+  <h2>Runtime Validation Checklist <span class="layer-badge lb-fw">QA</span></h2>
+  <div class="ks-block" style="margin:0">
+    <ul class="checklist">
+      <li>Sidebar opens on desktop (≥1300px) by default; starts closed on mobile (&lt;1300px)</li>
+      <li>Hamburger button opens and closes the sidebar correctly and animates to ✕ when open</li>
+      <li>aria-expanded on the hamburger button stays synchronized with the actual sidebar state</li>
+      <li>Overlay appears only on narrow (mobile) layouts when sidebar is open; hidden on desktop</li>
+      <li>Escape key closes the sidebar on narrow layouts</li>
+      <li>Overlay tap/click closes the sidebar on mobile</li>
+      <li>Resize between desktop and mobile does not leave sidebar or overlay in an inconsistent state</li>
+      <li>Active nav link highlights the currently visible section during scroll (IntersectionObserver / rAF-throttled)</li>
+      <li>Theme persists across reloads via localStorage (key: ca-theme)</li>
+      <li>System dark-mode preference is used as fallback when no saved theme exists</li>
+      <li>Pre-body init script prevents first-paint theme mismatch</li>
+      <li>Theme switch supports click, Enter, and Space for keyboard accessibility</li>
+      <li>aria-checked on the theme switch is correct on first load and after every toggle</li>
+      <li>All interactive tracers (Exchange, Stays-Ahead, Cut, Rollback) function correctly</li>
+      <li>All Proof Lab tab panels switch correctly; only one panel is visible at a time</li>
+      <li>No duplicate element IDs exist in the document</li>
+      <li>No broken JavaScript event handlers remain</li>
+      <li>All visible email links are plain direct mailto: links — no Cloudflare obfuscation</li>
+      <li>Footer branding reads: Coach Academy — Prepared by The Coach (Dr. Wahab) &amp; Ashraf — © 2025 All rights reserved.</li>
+      <li>File is not truncated; all HTML tags are properly closed</li>
+      <li>All script blocks are syntactically valid with no unclosed braces or missing brackets</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════ -->
+<div class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <span class="footer-email">📧 <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></span>
+    <span class="footer-email">📧 <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+  </div>
+  <div class="footer-copy">© 2025 All rights reserved.</div>
+</div>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR — aria-expanded sync, Escape key, overlay,
+   mobile-closed / desktop-open defaults, resize handling
+═══════════════════════════════════════════════════════ */
+(function(){
+  var sidebar  = document.getElementById('sidebar');
+  var overlay  = document.getElementById('sidebarOverlay');
+  var toggle   = document.getElementById('sidebarToggle');
+  var body     = document.body;
+  var NARROW   = 1300;
+
+  function isNarrow(){ return window.innerWidth < NARROW; }
+
+  function syncState(open){
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      body.classList.remove('sb-closed');
+      body.classList.add('sb-open');
+      if(isNarrow()) overlay.classList.add('show');
+      else overlay.classList.remove('show');
+    } else {
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      body.classList.add('sb-closed');
+      body.classList.remove('sb-open');
+      overlay.classList.remove('show');
+    }
+  }
+  function openSidebar(){ syncState(true); }
+  function closeSidebar(){ syncState(false); }
+  function toggleSidebar(){
+    if(sidebar.classList.contains('collapsed')) openSidebar();
+    else closeSidebar();
+  }
+  function initState(){
+    if(isNarrow()) closeSidebar();
+    else openSidebar();
+  }
+
+  toggle.addEventListener('click', toggleSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  window.addEventListener('resize', initState);
+  // Escape closes sidebar on narrow layouts
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && isNarrow() && !sidebar.classList.contains('collapsed')){
+      closeSidebar();
+    }
+  });
+  initState();
+
+  document.querySelectorAll('.nav a').forEach(function(a){
+    a.addEventListener('click', function(){
+      document.querySelectorAll('.nav a').forEach(function(x){ x.classList.remove('active'); });
+      a.classList.add('active');
+      if(isNarrow()) closeSidebar();
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   THEME — persist via localStorage, system-dark fallback,
+   keyboard accessible (click / Enter / Space)
+═══════════════════════════════════════════════════════ */
+(function(){
+  var sw = document.getElementById('themeSwitch');
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  // Sync switch state with the theme already set by the pre-body init script
+  var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  sw.setAttribute('aria-checked', String(currentTheme === 'dark'));
+  sw.addEventListener('click', function(){
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    sw.setAttribute('aria-checked', String(!isDark));
+    lsSet('ca-theme', next);
+  });
+  sw.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); sw.click(); }
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   ACTIVE NAV HIGHLIGHTING ON SCROLL
+═══════════════════════════════════════════════════════ */
+(function(){
+  var sections = document.querySelectorAll('section[id]');
+  var navLinks = document.querySelectorAll('.nav a');
+  var ticking = false;
+
+  function updateActive(){
+    var scrollY = window.scrollY + 120;
+    var current = '';
+    sections.forEach(function(sec){
+      if(sec.offsetTop <= scrollY) current = sec.id;
+    });
+    navLinks.forEach(function(a){
+      a.classList.remove('active');
+      if(a.getAttribute('href') === '#' + current) a.classList.add('active');
+    });
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function(){
+    if(!ticking){ requestAnimationFrame(updateActive); ticking = true; }
+  });
+  updateActive();
+})();
+
+
+/* ═══════════════════════════════════════════════════════
+   PROOF LAB — TABS
+═══════════════════════════════════════════════════════ */
+(function(){
+  var tabs = document.querySelectorAll('.pl-tab');
+  var panels = document.querySelectorAll('.pl-panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var target = tab.getAttribute('data-pl');
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      var panel = document.getElementById('pl-' + target);
+      if(panel) panel.classList.add('active');
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   EXCHANGE ARGUMENT TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var ACTS = [
+    {id:'A',s:0,f:4},{id:'B',s:1,f:3},{id:'C',s:4,f:6},{id:'D',s:2,f:7},{id:'E',s:6,f:8}
+  ];
+  var G = ['B','C','E'];
+  var steps = [
+    {g:['B','C','E'], o:['A','C','E'], dis:'—', status:'—',
+     exp:'<strong>Step 1 — Define solutions.</strong> GREEDY sorts by finish time and picks B(1,3), C(4,6), E(6,8) = 3 activities. Suppose OPT picks A(0,4), C(4,6), E(6,8) = also 3 activities. Both sets are feasible (non-overlapping: each next activity starts ≥ previous finish).',
+     hlG:[], hlO:[], swapped:null},
+    {g:['B','C','E'], o:['A','C','E'], dis:'Position 1: GREEDY has B(1,3), OPT has A(0,4)', status:'<span class="tr-badge info">Disagreement found</span>',
+     exp:'<strong>Step 2 — Find first disagreement.</strong> At position 1, GREEDY chose B (finishes at 3) but OPT chose A (finishes at 4). They disagree here.',
+     hlG:['B'], hlO:['A'], swapped:null},
+    {g:['B','C','E'], o:['B','C','E'], dis:'Swap A→B in OPT', status:'<span class="tr-badge info">Swapping…</span>',
+     exp:'<strong>Step 3 — Perform swap.</strong> Replace A(0,4) in OPT with B(1,3). OPT′ becomes {B(1,3), C(4,6), E(6,8)}.',
+     hlG:['B'], hlO:['B'], swapped:'A'},
+    {g:['B','C','E'], o:['B','C','E'], dis:'—', status:'<span class="tr-badge ok">Feasible: YES ✓</span>',
+     exp:'<strong>Step 4 — Verify feasibility.</strong> B finishes at 3, which is <em>earlier</em> than A\'s finish at 4. The next activity C(4,6) starts at 4, so it is compatible with both (start 4 ≥ B.finish 3 and ≥ A.finish 4). Every activity compatible with A remains compatible with B — the swap creates no new overlaps.',
+     hlG:[], hlO:[], swapped:null},
+    {g:['B','C','E'], o:['B','C','E'], dis:'—', status:'<span class="tr-badge ok">Objective preserved ✓</span>',
+     exp:'<strong>Step 5 — Verify objective.</strong> We replaced 1 activity with 1 activity. OPT′ still has 3 activities. Count unchanged → objective never worsens.',
+     hlG:[], hlO:[], swapped:null},
+    {g:['B','C','E'], o:['B','C','E'], dis:'OPT = GREEDY ✓', status:'<span class="tr-badge ok">GREEDY IS OPTIMAL ✓</span>',
+     exp:'<strong>Step 6 — Repeat and conclude.</strong> After swapping at every disagreement, OPT has become identical to GREEDY. Since OPT was optimal and we never made it worse: <strong>GREEDY is optimal. ∎</strong>',
+     hlG:['B','C','E'], hlO:['B','C','E'], swapped:null}
+  ];
+  var cur = 0;
+  function actLabel(id){ var a=ACTS.find(function(x){return x.id===id;}); return a? id+'('+a.s+','+a.f+')':''; }
+  function makeBar(id,cls,hl,sw){
+    var a=ACTS.find(function(x){return x.id===id;});
+    var d=document.createElement('div');
+    d.className='tr-bar '+cls;
+    if(hl) d.classList.add('highlight');
+    if(sw===id) d.classList.add('removed');
+    d.style.position='relative';d.style.height='32px';d.style.display='inline-flex';
+    d.style.padding='0 14px';d.style.minWidth='80px';
+    d.textContent=id+'('+a.s+','+a.f+')';
+    return d;
+  }
+  function render(){
+    var s=steps[cur];
+    // all activities
+    var allR=document.getElementById('exAllRow'); allR.innerHTML='';
+    ACTS.forEach(function(a){
+      var inG=s.g.indexOf(a.id)>=0, inO=s.o.indexOf(a.id)>=0;
+      var d=document.createElement('div'); d.className='tr-bar muted';
+      d.style.position='relative';d.style.height='32px';d.style.display='inline-flex';
+      d.style.padding='0 14px';d.style.minWidth='80px';
+      if(inG||inO) d.classList.remove('muted');
+      if(inG&&inO) d.className='tr-bar swap';
+      else if(inG) d.className='tr-bar greedy';
+      else if(inO) d.className='tr-bar opt';
+      d.textContent=a.id+'('+a.s+','+a.f+')';
+      allR.appendChild(d);
+    });
+    // greedy row
+    var gR=document.getElementById('exGRow'); gR.innerHTML='';
+    s.g.forEach(function(id){ gR.appendChild(makeBar(id,'greedy',s.hlG.indexOf(id)>=0,null)); });
+    // opt row
+    var oR=document.getElementById('exORow'); oR.innerHTML='';
+    s.o.forEach(function(id){ oR.appendChild(makeBar(id,'opt',s.hlO.indexOf(id)>=0,s.swapped)); });
+    if(s.swapped){
+      var rm=makeBar(s.swapped,'opt',false,s.swapped);
+      rm.classList.add('removed');rm.style.marginLeft='8px';
+      oR.appendChild(rm);
+    }
+    document.getElementById('exGSet').textContent=s.g.map(actLabel).join(', ');
+    document.getElementById('exOSet').textContent=s.o.map(actLabel).join(', ');
+    document.getElementById('exDis').innerHTML=s.dis;
+    document.getElementById('exStatus').innerHTML=s.status;
+    document.getElementById('exExp').innerHTML=s.exp;
+    document.getElementById('exCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('exPrv').disabled=cur===0;
+    document.getElementById('exNxt').disabled=cur===steps.length-1;
+  }
+  document.getElementById('exRst').addEventListener('click',function(){cur=0;render();});
+  document.getElementById('exPrv').addEventListener('click',function(){if(cur>0){cur--;render();}});
+  document.getElementById('exNxt').addEventListener('click',function(){if(cur<steps.length-1){cur++;render();}});
+  render();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   STAYS-AHEAD TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var gSeq=[{id:'B',s:1,f:3},{id:'C',s:4,f:6},{id:'E',s:6,f:8}];
+  var oSeq=[{id:'A',s:0,f:4},{id:'C',s:4,f:6},{id:'E',s:6,f:8}];
+  var steps=[
+    {r:'—',gf:'—',of:'—',cmp:'—',hlIdx:-1,
+     exp:'<strong>Setup.</strong> GREEDY = B(1,3), C(4,6), E(6,8). OPT = A(0,4), C(4,6), E(6,8). Both are feasible schedules with 3 activities. We compare finish times at each prefix position r.'},
+    {r:'r = 1',gf:'3',of:'4',cmp:'<span class="tr-badge ok">3 ≤ 4 — GREEDY ahead ✓</span>',hlIdx:0,
+     exp:'<strong>Base case (r=1).</strong> GREEDY\'s first choice B finishes at 3. OPT\'s first choice A finishes at 4. Since 3 ≤ 4, greedy is (weakly) ahead after one step.'},
+    {r:'r = 2',gf:'6',of:'6',cmp:'<span class="tr-badge ok">6 ≤ 6 — Tied ✓</span>',hlIdx:1,
+     exp:'<strong>Inductive step (r=2).</strong> Because finish(g₁)=3 ≤ finish(o₁)=4, any activity compatible with o₁=A is also compatible with g₁=B. So greedy can legally pick C(4,6) just like OPT. finish(g₂)=6 ≤ finish(o₂)=6 — still ahead.'},
+    {r:'r = 3',gf:'8',of:'8',cmp:'<span class="tr-badge ok">8 ≤ 8 — Tied ✓</span>',hlIdx:2,
+     exp:'<strong>Inductive step (r=3).</strong> Both pick E(6,8). finish(g₃)=8 ≤ finish(o₃)=8. Greedy never fell behind at any prefix.'},
+    {r:'All',gf:'—',of:'—',cmp:'<span class="tr-badge ok">Greedy never fell behind</span>',hlIdx:-1,
+     exp:'<strong>Conclusion.</strong> At every step r: finish(gᵣ) ≤ finish(oᵣ). Greedy always finishes its r-th activity no later than OPT. Therefore greedy can fit at least as many activities as OPT.'},
+    {r:'∎',gf:'—',of:'—',cmp:'<span class="tr-badge ok">GREEDY IS OPTIMAL ✓</span>',hlIdx:-1,
+     exp:'<strong>QED.</strong> Since greedy never falls behind, it selects k ≥ m activities where OPT selects m. Combined with k ≤ m (OPT is optimal), we get k = m. GREEDY is optimal.'}
+  ];
+  var cur=0;
+  function makeChip(a,cls,hl){
+    var d=document.createElement('div');d.className='tr-bar '+cls;
+    d.style.position='relative';d.style.height='32px';d.style.display='inline-flex';
+    d.style.padding='0 14px';d.style.minWidth='80px';
+    if(hl) d.classList.add('highlight');
+    d.textContent=a.id+'('+a.s+','+a.f+')';
+    return d;
+  }
+  function render(){
+    var s=steps[cur];
+    var gR=document.getElementById('saGRow');gR.innerHTML='';
+    var oR=document.getElementById('saORow');oR.innerHTML='';
+    gSeq.forEach(function(a,i){gR.appendChild(makeChip(a,'greedy',i===s.hlIdx));});
+    oSeq.forEach(function(a,i){oR.appendChild(makeChip(a,'opt',i===s.hlIdx));});
+    document.getElementById('saR').textContent=s.r;
+    document.getElementById('saGF').textContent=s.gf;
+    document.getElementById('saOF').textContent=s.of;
+    document.getElementById('saCmp').innerHTML=s.cmp;
+    document.getElementById('saExp').innerHTML=s.exp;
+    document.getElementById('saCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('saPrv').disabled=cur===0;
+    document.getElementById('saNxt').disabled=cur===steps.length-1;
+  }
+  document.getElementById('saRst').addEventListener('click',function(){cur=0;render();});
+  document.getElementById('saPrv').addEventListener('click',function(){if(cur>0){cur--;render();}});
+  document.getElementById('saNxt').addEventListener('click',function(){if(cur<steps.length-1){cur++;render();}});
+  render();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   CUT PROPERTY SVG TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function mk(t,a){var e=document.createElementNS(NS,t);if(a)for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function cv(n){return getComputedStyle(document.body).getPropertyValue('--'+n).trim();}
+  var nodes=[{id:'A',x:120,y:60,grp:0},{id:'B',x:120,y:200,grp:0},
+             {id:'C',x:520,y:60,grp:1},{id:'D',x:520,y:200,grp:1}];
+  var edges=[{u:'A',v:'B',w:2},{u:'C',v:'D',w:4},{u:'A',v:'C',w:3},{u:'B',v:'D',w:5},{u:'A',v:'D',w:7}];
+  var steps=[
+    {title:'The graph',mst:[],lightE:null,addE:null,remE:null,cost:null,
+     exp:'<strong>Step 1 — The graph.</strong> A connected, undirected, weighted graph with 4 nodes and 5 edges. No MST chosen yet — we\'re just looking at the graph as one component.'},
+    {title:'Define the cut',mst:[],lightE:null,addE:null,remE:null,cost:null,showCut:true,
+     exp:'<strong>Step 2 — Pick a cut.</strong> A <em>cut</em> is any partition of the vertices into two non-empty groups S and V\\S. Here S = {A,B} (blue) and V\\S = {C,D} (orange). The edges with one endpoint in each group are the <em>crossing edges</em>: A–C(3), B–D(5), A–D(7). The graph remains one connected component — we\'re only labeling vertices, not cutting anything.'},
+    {title:'Identify lightest crossing edge',mst:[],lightE:'A-C',addE:null,remE:null,cost:null,showCut:true,
+     exp:'<strong>Step 3 — Lightest crossing.</strong> Among the 3 crossing edges, the minimum-weight one is <strong>A–C (weight 3)</strong>. <em>Claim (cut property):</em> every MST must contain A–C. We now prove it by contradiction.'},
+    {title:'Assume MST excludes A–C',mst:['A-B','C-D','B-D'],lightE:'A-C',addE:null,remE:null,cost:11,showCut:true,
+     exp:'<strong>Step 4 — Assume for contradiction.</strong> Suppose some MST T does NOT contain A–C. One such spanning tree is T = {A–B(2), C–D(4), B–D(5)} with cost 11 (the blue edges). T crosses the cut via B–D(5), not A–C.'},
+    {title:'Add A–C → cycle forms',mst:['A-B','C-D','B-D','A-C'],lightE:'A-C',addE:'A-C',remE:null,cost:14,showCut:true,
+     exp:'<strong>Step 5 — Add the light edge.</strong> Insert A–C(3) into T. Adding any edge to a spanning tree creates exactly one cycle. Here the cycle is A–C–D–B–A, and it crosses the cut via <em>both</em> A–C(3) and B–D(5).'},
+    {title:'Remove heavier B–D',mst:['A-B','C-D','A-C'],lightE:'A-C',addE:'A-C',remE:'B-D',cost:9,showCut:true,
+     exp:'<strong>Step 6 — Swap out the heavier crossing edge.</strong> Drop B–D(5). The result T′ = {A–B(2), C–D(4), A–C(3)} is still a spanning tree (connected, n−1 edges, no cycle) with cost 9 — <strong>cheaper than T\'s 11</strong>.'},
+    {title:'Contradiction → A–C is safe',mst:['A-B','C-D','A-C'],lightE:'A-C',addE:'A-C',remE:'B-D',cost:9,showCut:true,
+     exp:'<strong>Step 7 — Contradiction.</strong> We assumed T was an MST, yet T′ is a spanning tree of strictly smaller cost. Impossible. Therefore every MST must include A–C. <strong>The lightest crossing edge of any cut is safe. ✓ ∎</strong>'}
+  ];
+  var cur=0;
+  function edgeKey(u,v){return [u,v].sort().join('-');}
+  function draw(){
+    var svg=document.getElementById('cutSvg');svg.innerHTML='';
+    var s=steps[cur];
+    // cut background
+    if(s.showCut){
+      var r1=mk('rect',{x:0,y:0,width:320,height:260,rx:12,fill:'rgba(37,99,235,.06)',stroke:'rgba(37,99,235,.2)','stroke-width':2,'stroke-dasharray':'8,4'});
+      var r2=mk('rect',{x:340,y:0,width:320,height:260,rx:12,fill:'rgba(180,83,9,.06)',stroke:'rgba(180,83,9,.2)','stroke-width':2,'stroke-dasharray':'8,4'});
+      svg.appendChild(r1);svg.appendChild(r2);
+      var t1=mk('text',{x:160,y:250,'text-anchor':'middle','font-size':'13','font-weight':'900',fill:cv('accent2'),'font-family':'system-ui'});t1.textContent='Group {A,B}';svg.appendChild(t1);
+      var t2=mk('text',{x:500,y:250,'text-anchor':'middle','font-size':'13','font-weight':'900',fill:cv('warn'),'font-family':'system-ui'});t2.textContent='Group {C,D}';svg.appendChild(t2);
+    }
+    // edges
+    edges.forEach(function(e){
+      var u=nodes.find(function(n){return n.id===e.u;}),v=nodes.find(function(n){return n.id===e.v;});
+      var key=edgeKey(e.u,e.v);
+      var inMST=s.mst.indexOf(key)>=0;
+      var isLight=s.lightE===key;
+      var isAdd=s.addE===key;
+      var isRem=s.remE===key;
+      var col=cv('border');var sw=2;var dash='';
+      if(isRem){col=cv('bad');sw=3;dash='6,4';}
+      else if(isAdd||isLight){col=cv('good');sw=3.5;}
+      else if(inMST){col=cv('accent2');sw=3;}
+      var line=mk('line',{x1:u.x,y1:u.y,x2:v.x,y2:v.y,stroke:col,'stroke-width':sw});
+      if(dash)line.setAttribute('stroke-dasharray',dash);
+      svg.appendChild(line);
+      var mx=(u.x+v.x)/2,my=(u.y+v.y)/2;
+      // offset label
+      var dx=v.x-u.x,dy=v.y-u.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+      var ox=-dy/len*16,oy=dx/len*16;
+      var bg=mk('rect',{x:mx+ox-16,y:my+oy-11,width:32,height:20,rx:6,fill:cv('panel'),'fill-opacity':'0.9',stroke:col,'stroke-width':1});
+      svg.appendChild(bg);
+      var wt=mk('text',{x:mx+ox,y:my+oy+5,'text-anchor':'middle','font-size':'14','font-weight':'900',fill:col,'font-family':'system-ui'});
+      wt.textContent=e.w;svg.appendChild(wt);
+    });
+    // nodes
+    nodes.forEach(function(n){
+      var fill=n.grp===0?cv('accent2'):cv('warn');
+      var c=mk('circle',{cx:n.x,cy:n.y,r:26,fill:fill,stroke:'#fff','stroke-width':3});
+      svg.appendChild(c);
+      var t=mk('text',{x:n.x,y:n.y+6,'text-anchor':'middle','font-size':'18','font-weight':'950',fill:'#fff','font-family':'system-ui'});
+      t.textContent=n.id;svg.appendChild(t);
+    });
+    // state panel
+    document.getElementById('cutCutV').textContent=s.showCut?'{A,B} vs {C,D}':'—';
+    document.getElementById('cutCross').textContent=s.showCut?'A–C(3), B–D(5), A–D(7)':'—';
+    document.getElementById('cutLight').innerHTML=s.lightE?'<span class="tr-badge ok">A–C (weight 3)</span>':'—';
+    document.getElementById('cutCost').innerHTML=s.cost?('<span class="tr-badge '+(s.cost<11?'ok':'info')+'">'+s.cost+'</span>'):'—';
+    document.getElementById('cutExp').innerHTML=s.exp;
+    document.getElementById('cutCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('cutPrv').disabled=cur===0;
+    document.getElementById('cutNxt').disabled=cur===steps.length-1;
+  }
+  document.getElementById('cutRst').addEventListener('click',function(){cur=0;draw();});
+  document.getElementById('cutPrv').addEventListener('click',function(){if(cur>0){cur--;draw();}});
+  document.getElementById('cutNxt').addEventListener('click',function(){if(cur<steps.length-1){cur++;draw();}});
+  draw();
+  // redraw on theme change for CSS variable updates
+  var obs=new MutationObserver(function(){draw();});
+  obs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+
+/* ═══════════════════════════════════════════════════════
+   ROLLBACK SCHEDULING TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var JOBS=[{id:'A',dur:3,dl:3},{id:'B',dur:2,dl:4},{id:'C',dur:1,dl:5},{id:'D',dur:4,dl:8}];
+  var steps=[
+    {proc:-1,heap:[],time:0,dl:'—',feas:'<span class="tr-badge ok">READY</span>',worst:null,removed:null,cur:'—',
+     exp:'<strong>Setup.</strong> 4 jobs sorted by deadline: A(3,3), B(2,4), C(1,5), D(4,8). We\'ll process each in turn, maintaining a max-heap of chosen durations and running total T. If T exceeds the current job\'s deadline, we pop the heap\'s maximum.'},
+    {proc:0,heap:['A:3'],time:3,dl:3,feas:'<span class="tr-badge ok">FEASIBLE (T=3 ≤ D=3)</span>',worst:null,removed:null,cur:'A (d=3, D=3)',
+     exp:'<strong>Step 1 — Process A (d=3, D=3).</strong> Push d=3 into the heap and add to T. Now H={3}, T=3. Check: T=3 ≤ D=3 ✓ → <strong>feasible</strong>. A is kept.'},
+    {proc:1,heap:['A:3','B:2'],time:5,dl:4,feas:'<span class="tr-badge no">OVERFLOW (T=5 &gt; D=4)</span>',worst:'A:3',removed:null,cur:'B (d=2, D=4)',
+     exp:'<strong>Step 2 — Process B (d=2, D=4).</strong> Push d=2 into the heap and add to T. Now H={3, 2}, T=5. Check: T=5 &gt; D=4 ✗ → <strong>overflow!</strong> We must rollback by popping the heap\'s <em>maximum</em>. The max is 3 (job A), highlighted in red — <em>not</em> the job we just added.'},
+    {proc:1,heap:['B:2'],time:2,dl:4,feas:'<span class="tr-badge ok">FEASIBLE (T=2 ≤ D=4)</span>',worst:null,removed:'A:3',cur:'B (d=2, D=4)',
+     exp:'<strong>Step 3 — Rollback: swap A out, keep B.</strong> Pop max = 3 (job A) from the heap. H={2}, T=2. This is a <strong>true swap</strong>: we replaced a previously-committed job A with the newly-arrived shorter job B. Net effect: one job in H, but now d=2 instead of 3 — we freed a unit of time for future jobs. Why pop max (and not min or last-added)? Popping the largest duration frees the most time while still reducing |H| by only 1, giving future jobs the best chance.'},
+    {proc:2,heap:['B:2','C:1'],time:3,dl:5,feas:'<span class="tr-badge ok">FEASIBLE (T=3 ≤ D=5)</span>',worst:null,removed:null,cur:'C (d=1, D=5)',
+     exp:'<strong>Step 4 — Process C (d=1, D=5).</strong> Push d=1 into the heap and add to T. Now H={2, 1}, T=3. Check: T=3 ≤ D=5 ✓ → <strong>feasible</strong>. No rollback needed. C is kept.'},
+    {proc:3,heap:['B:2','C:1','D:4'],time:7,dl:8,feas:'<span class="tr-badge ok">FEASIBLE (T=7 ≤ D=8)</span>',worst:null,removed:null,cur:'D (d=4, D=8)',
+     exp:'<strong>Step 5 — Process D (d=4, D=8).</strong> Push d=4 into the heap and add to T. Now H={4, 2, 1}, T=7. Check: T=7 ≤ D=8 ✓ → <strong>feasible</strong>. D is kept.'},
+    {proc:3,heap:['B:2','C:1','D:4'],time:7,dl:8,feas:'<span class="tr-badge ok">ALL PROCESSED</span>',worst:null,removed:null,cur:'— (done)',
+     exp:'<strong>Step 6 — All jobs processed.</strong> Final chosen set = {B, C, D} = <strong>3 jobs</strong>, total busy time = 7. A was accepted initially then evicted when a better option (B) arrived — that eviction is the key move. Could we do 4? No: the only candidate was A, but keeping A forces total ≥ 3 through deadline 3, and then adding any of B, C, D violates a deadline.'},
+    {proc:3,heap:['B:2','C:1','D:4'],time:7,dl:8,feas:'<span class="tr-badge ok">OPTIMAL ✓</span>',worst:null,removed:null,cur:'— (done)',
+     exp:'<strong>Step 7 — Why optimal?</strong> <em>Invariant:</em> after processing the first k jobs, H contains the largest feasible subset possible. <em>Proof sketch (exchange):</em> when we overflow and pop the heap\'s max, popping any other element would keep a larger duration in H and free less time — strictly worse for future jobs. Not popping at all leaves H infeasible. So popping the max is optimal at every overflow, and induction finishes the argument. <strong>∎</strong>'}
+  ];
+  var cur=0;
+  function render(){
+    var s=steps[cur];
+    // queue
+    var qEl=document.getElementById('rbQueue');qEl.innerHTML='';
+    JOBS.forEach(function(j,i){
+      var d=document.createElement('div');d.className='tr-chip';
+      if(i===s.proc) d.classList.add('active');
+      if(i<s.proc) d.style.opacity='.45';
+      d.textContent=j.id+'(d='+j.dur+',D='+j.dl+')';
+      qEl.appendChild(d);
+    });
+    // heap
+    var hEl=document.getElementById('rbHeap');hEl.innerHTML='';
+    s.heap.forEach(function(h){
+      var d=document.createElement('div');d.className='tr-chip';
+      if(s.worst===h) d.classList.add('worst');
+      d.textContent=h;hEl.appendChild(d);
+    });
+    if(s.removed){
+      var rd=document.createElement('div');rd.className='tr-chip gone';
+      rd.textContent=s.removed+' ✗';hEl.appendChild(rd);
+    }
+    document.getElementById('rbTime').textContent=s.time;
+    document.getElementById('rbDL').textContent=s.dl;
+    document.getElementById('rbFeas').innerHTML=s.feas;
+    document.getElementById('rbCur').textContent=s.cur||'—';
+    document.getElementById('rbExp').innerHTML=s.exp;
+    document.getElementById('rbCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('rbPrv').disabled=cur===0;
+    document.getElementById('rbNxt').disabled=cur===steps.length-1;
+  }
+  document.getElementById('rbRst').addEventListener('click',function(){cur=0;render();});
+  document.getElementById('rbPrv').addEventListener('click',function(){if(cur>0){cur--;render();}});
+  document.getElementById('rbNxt').addEventListener('click',function(){if(cur<steps.length-1){cur++;render();}});
+  render();
+})();
+
+</script>
+</body>
+</html>

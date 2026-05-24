@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "checkedAt": "2026-05-24T17:49:52.574Z",
+  "totals": {
+    "topics": 64,
+    "videos": 23,
+    "tutorialFiles": 64,
+    "checksums": 64
+  },
+  "errors": [],
+  "warnings": [
+    "Immutable Cloudflare artifact left unchanged in tutorials/graphs/03-graph-terminology.html: /cdn-cgi/l/email-protection#24474b45474c64474b45474c094547454041495d0a4a4150",
+    "Immutable Cloudflare artifact left unchanged in tutorials/graphs/03-graph-terminology.html: /cdn-cgi/l/email-protection#4d2c632c3e253f2c2b0d2e222c2e25602c2e2c2928203463232839",
+    "Immutable Cloudflare artifact left unchanged in tutorials/graphs/03-graph-terminology.html: /cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js",
+    "Immutable Cloudflare artifact left unchanged in tutorials/graphs/10-floyd-johnson-apsp.html: /cdn-cgi/l/email-protection#3b58545a58537b58545a5853165a585a5f5e564215555e4f",
+    "Immutable Cloudflare artifact left unchanged in tutorials/graphs/10-floyd-johnson-apsp.html: /cdn-cgi/l/email-protection#2c4d024d5f445e4d4a6c4f434d4f44014d4f4d4849415502424958"
+  ]
+}

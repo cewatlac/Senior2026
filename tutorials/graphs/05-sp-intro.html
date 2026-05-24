@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — Shortest Path: Introduction & Decision Framework</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --chip:#e8edff; --link:#1d4ed8;
+      --focus:0 0 0 6px rgba(37,99,235,.22);
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --hl-node: rgba(37,99,235,.30);
+      --hl-edge: rgba(180,83,9,.30);
+      --hl-cell: rgba(15,118,110,.30);
+      --green:#0f766e; --red:#b91c1c; --yellow:#b45309;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --chip:#0f2347; --link:#93c5fd;
+      --focus:0 0 0 6px rgba(99,102,241,.28);
+      --hl-node: rgba(79,140,255,.25);
+      --hl-edge: rgba(251,191,36,.25);
+      --hl-cell: rgba(52,211,153,.20);
+      --green:#34d399; --red:#fb7185; --yellow:#fbbf24;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .app{display:grid;grid-template-columns:1fr;height:100vh;}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);cursor:pointer;text-decoration:none;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+    .nav a:focus{outline:none;box-shadow:var(--focus)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;font-family:inherit;}
+    .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+    .btn.primary,.btn.active-btn{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+    .btn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.25);color:var(--text);}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+    .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:18px;}
+    @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+    .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+    .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+    .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+    .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5} .n{color:#fde68a}
+    .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+    .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+    .diagramTitle{font-weight:950;font-size:26px;}
+    .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+    .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;font-family:inherit;}
+    .miniBtn:focus{outline:none;box-shadow:var(--focus)}
+    .miniBtn.active,.miniBtn.active-btn{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+    svg.graphsvg{width:100%;height:300px;border-radius:16px;background:rgba(0,0,0,0);}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:20px;color:var(--muted);}
+    .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:8px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+    [data-theme="dark"] .legend span{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);}
+    .dot{width:14px;height:14px;border-radius:50%;display:inline-block;background:var(--accent2);border:2px solid rgba(255,255,255,.35);}
+    .tooltip{position:fixed;pointer-events:none;background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:10px 12px;font-weight:900;font-size:20px;box-shadow:var(--shadow);transform:translate(12px,12px);opacity:0;transition:opacity .08s ease;z-index:50;max-width:520px;}
+    .tooltip.show{opacity:1}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .infoStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0;}
+    .infoItem{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+    .infoItem .label{font-size:16px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+    .infoItem .val{font-size:28px;font-weight:950;}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .nextCard{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+    .ncTitle{font-weight:950;font-size:28px;margin-bottom:4px;}
+    .ncSub{font-weight:850;font-size:18px;color:var(--muted);margin-bottom:10px;}
+    .ncChip{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.18);padding:6px 10px;border-radius:999px;font-weight:900;font-size:16px;margin-right:6px;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;color:var(--text);}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .contactEmail:hover{background:rgba(37,99,235,.18);text-decoration:none;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .footer-copy a{color:var(--link);}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .path-edge{transition:opacity .6s ease}
+    .path-edge.animate{animation:pathGlow 1.2s ease infinite}
+    @keyframes pathGlow{0%,100%{filter:drop-shadow(0 0 0 transparent)} 50%{filter:drop-shadow(0 0 8px rgba(37,99,235,.6))}}
+    @media(max-width:800px){.infoStrip{grid-template-columns:1fr 1fr}}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .simTable{width:100%;border-collapse:collapse;margin:12px 0;font-size:20px;font-weight:800;}
+    .simTable th,.simTable td{padding:10px 12px;border:2px solid var(--border);text-align:center;}
+    .simTable th{background:var(--panel2);font-weight:950;}
+    .simTable .highlight{background:rgba(37,99,235,.15);font-weight:950;}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;box-shadow:0 16px 40px rgba(37,99,235,.20);}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;letter-spacing:-.01em;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+
+<div class="app">
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox" style="font-size:32px;letter-spacing:-.03em;">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Shortest Path — ICPC Decision Framework</div>
+      <div class="by-line">By The Coach, Dr. Wahab & Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundation</div>
+    <a href="#" class="navlink active" onclick="navTo('intuition')">01 · State Expansion Model<small>Frontier propagation metaphor</small></a>
+    <a href="#" class="navlink" onclick="navTo('relaxation')">02 · Relaxation Framework<small>The unifying operation</small></a>
+    <a href="#" class="navlink" onclick="navTo('invariants')">03 · Algorithm Invariants<small>Correctness guarantees</small></a>
+    <div class="groupTitle">Decision System</div>
+    <a href="#" class="navlink" onclick="navTo('decision')">04 · ICPC Selection Rules<small>Fast algorithm choice</small></a>
+    <a href="#" class="navlink" onclick="navTo('comparison')">05 · Algorithm Comparison<small>Complete reference table</small></a>
+    <a href="#" class="navlink" onclick="navTo('density')">06 · Density & Structure<small>Floyd vs Johnson thresholds</small></a>
+    <div class="groupTitle">Deep Understanding</div>
+    <a href="#" class="navlink" onclick="navTo('simulations')">07 · Step-by-Step Traces<small>BFS, Dijkstra & Bellman-Ford</small></a>
+    <a href="#" class="navlink" onclick="navTo('failures')">08 · Failure Analysis<small>Why algorithms break</small></a>
+    <a href="#" class="navlink" onclick="navTo('pitfalls')">09 · Competition Pitfalls<small>Overflow, precision, edges</small></a>
+    <div class="groupTitle">Mastery Path</div>
+    <a href="#" class="navlink" onclick="navTo('roadmap')">10 · Learning Roadmap<small>Progressive skill building</small></a>
+    <a href="#" class="navlink" onclick="navTo('recap')">11 · Guided Consolidation<small>Lecture-ready recap</small></a>
+    <div class="groupTitle">Info</div>
+    <a href="#" class="navlink" onclick="navTo('contact')">Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">Coach Academy<br>By The Coach, Dr. Wahab & Ashraf<br>© 2026 All rights reserved.</div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>Shortest Path Problem</h1>
+      <div class="subtitle">ICPC-ready decision framework: frontier expansion, relaxation-based reasoning, and instant algorithm selection.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill" title="Toggle Light/Dark">Theme
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 01 INTUITION ══════════════════════ -->
+  <div id="sec-intuition" class="section">
+
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 The Frontier Expansion Mental Model</h2>
+    <p class="note">Shortest path algorithms are <b>frontier expansion processes</b>. Imagine a wave spreading outward from the source vertex, discovering vertices in order of their distance. This is the unifying metaphor across all algorithms.</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Frontier Expansion: The Core Process</h3>
+    <p class="note" style="margin:10px 0">You begin at the source with one certainty: <code>dist[source] = 0</code>. Everything else is unknown (∞). The <b>frontier</b> is the boundary between explored territory (where distances are known or estimated) and unexplored territory.</p>
+    <p class="note" style="margin:10px 0">As you expand the frontier, you propagate distance information through edges. Each edge (u,v) with weight w says: "If you've reached u with distance d, I can help you reach v with distance d+w." You update your estimate: <code>dist[v] = min(dist[v], dist[u] + w)</code>.</p>
+    <p class="note">This propagation continues until the frontier has expanded to cover all reachable vertices. Algorithms differ in <b>how they choose which part of the frontier to expand next</b>.</p>
+    <div class="chips">
+      <div class="chip good">Start: source at distance 0</div>
+      <div class="chip">Expand frontier outward</div>
+      <div class="chip">Propagate via edge relaxation</div>
+      <div class="chip good">End: all reachable vertices discovered</div>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>How Algorithms Differ: Frontier Selection Strategy</h3>
+    <div class="grid2">
+      <div>
+        <p class="note" style="margin:0 0 10px"><b style="color:#2563eb">BFS:</b> Expands frontier <b>level by level</b>. All vertices at distance k discovered before any at distance k+1. Frontier is a wave moving uniformly outward.</p>
+        <p class="note" style="margin:0 0 10px"><b style="color:#7c3aed">0-1 BFS:</b> Expands frontier with <b>priority</b>: free edges (weight 0) processed immediately, costly edges (weight 1) deferred. Frontier has two levels at most.</p>
+        <p class="note" style="margin:0 0 10px"><b style="color:#b45309">Dijkstra:</b> <b>Greedily</b> expands closest vertex on frontier. Always chooses minimum-distance unexplored vertex. Frontier shrinks inward from all directions.</p>
+      </div>
+      <div>
+        <p class="note" style="margin:0 0 10px"><b style="color:#b91c1c">Bellman-Ford:</b> <b>Exhaustively</b> relaxes all edges V−1 times. No greedy choice — frontier expands in all directions simultaneously each round.</p>
+        <p class="note" style="margin:0 0 10px"><b style="color:#0f766e">DAG Relaxation:</b> Expands frontier in <b>topological order</b>. Process vertices such that all predecessors are handled before successors. One-pass frontier sweep.</p>
+        <p class="note" style="margin:0 0 10px"><b style="color:#059669">Floyd-Warshall:</b> Expands frontiers between all pairs simultaneously, allowing intermediate vertices k=0,1,...,V−1 progressively.</p>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- end sec-intuition -->
+
+  <!-- ══════════════════════ 02 RELAXATION ══════════════════════ -->
+  <div id="sec-relaxation" class="section">
+
+  <section id="relaxation" class="card scroll-reveal">
+    <h2>⚙️ Relaxation: The Unifying Framework</h2>
+    <p class="note"><b>All shortest path algorithms differ only in how they schedule relaxations.</b> This is the central insight that unifies the entire topic.</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>The Relaxation Operation</h3>
+    <p class="note" style="margin:10px 0">For edge (u,v) with weight w, relaxation attempts to improve the distance to v by routing through u:</p>
+    <div class="formula" style="font-size:26px;text-align:center;font-weight:950;">dist[v] ← min(dist[v], dist[u] + w)</div>
+    <p class="note" style="margin:10px 0 0">If the path source→u→v (with cost dist[u]+w) is cheaper than the current best path to v (dist[v]), we update. Otherwise, we keep the existing estimate.</p>
+    <p class="note" style="margin-top:10px"><b>This is frontier expansion in action:</b> we're propagating distance information from u (inside the explored frontier) to v (on or beyond the frontier).</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>All Algorithms Through the Relaxation Lens</h3>
+    
+    <details>
+      <summary>BFS — Relax Edges Level-by-Level</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> Process vertices in queue order (FIFO). When processing u, relax all edges (u,v).</p>
+        <div class="formula">for each edge (u,v): dist[v] ← min(dist[v], dist[u] + 1)</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Each edge relaxed exactly once. In unweighted graphs, first discovery = shortest path.</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> Wave expands uniformly, one level at a time.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>0-1 BFS — Relax with Deque Priority</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> Use deque. If edge has weight 0, relax and push to front (process immediately). If weight 1, relax and push to back (defer).</p>
+        <div class="formula">if w=0: dist[v] ← min(dist[v], dist[u]), push_front(v)<br>if w=1: dist[v] ← min(dist[v], dist[u]+1), push_back(v)</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Deque maintains two-level frontier: free edges expand frontier immediately, costly edges wait.</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> Free edges create instant jumps; costly edges create measured steps.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Dijkstra — Relax Greedily by Minimum Distance</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> Extract vertex u with minimum dist[u] from priority queue. Relax all edges (u,v).</p>
+        <div class="formula">u ← extractMin(PQ)<br>for each edge (u,v): dist[v] ← min(dist[v], dist[u] + w)</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Each vertex extracted once. Each edge relaxed once (when source vertex extracted).</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> Greedy selection shrinks frontier inward from closest points.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Bellman-Ford — Relax All Edges V−1 Times</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> Make V−1 passes over entire edge list. In each pass, relax every edge.</p>
+        <div class="formula">for i=1 to V−1:<br>&nbsp;&nbsp;for each edge (u,v):<br>&nbsp;&nbsp;&nbsp;&nbsp;dist[v] ← min(dist[v], dist[u] + w)</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Each edge relaxed V−1 times. After k passes, all k-edge paths correctly computed.</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> Exhaustive expansion in all directions each round.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>DAG Shortest Path — Relax in Topological Order</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> Compute topological sort. Process vertices in that order, relaxing outgoing edges.</p>
+        <div class="formula">topo_order ← topological_sort(G)<br>for u in topo_order:<br>&nbsp;&nbsp;for each edge (u,v):<br>&nbsp;&nbsp;&nbsp;&nbsp;dist[v] ← min(dist[v], dist[u] + w)</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Each edge relaxed exactly once, in correct order. No cycles mean no re-examination needed.</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> One-pass sweep following dependency order.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Floyd-Warshall — Relax via Intermediate Vertices</summary>
+      <div class="detailsBody">
+        <p class="note" style="margin:0 0 10px"><b>Relaxation pattern:</b> For each intermediate vertex k, relax all pairs (i,j) via k.</p>
+        <div class="formula">for k=0 to V−1:<br>&nbsp;&nbsp;for i=0 to V−1:<br>&nbsp;&nbsp;&nbsp;&nbsp;for j=0 to V−1:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dist[i][j] ← min(dist[i][j], dist[i][k] + dist[k][j])</div>
+        <p class="note" style="margin:10px 0 0"><b>Key insight:</b> Each pair relaxed V times (once per intermediate vertex). DP builds paths incrementally.</p>
+        <p class="note" style="margin:10px 0 0"><b>Frontier expansion:</b> All-pairs frontiers expand simultaneously through shared intermediates.</p>
+      </div>
+    </details>
+
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Why Relaxation Unifies Everything</h3>
+    <p class="note">By recognizing relaxation as the core operation, you can: (1) Debug any shortest path implementation by checking if relaxations are correct, (2) Understand new algorithms by identifying their relaxation pattern, (3) Optimize by reducing unnecessary relaxations, (4) See the deep similarity between seemingly different approaches.</p>
+  </section>
+
+  </div><!-- end sec-relaxation -->
+
+  <!-- ══════════════════════ 03 INVARIANTS ══════════════════════ -->
+  <div id="sec-invariants" class="section">
+
+  <section id="invariants" class="card scroll-reveal">
+    <h2>🔒 Core Invariants (Why Algorithms Work)</h2>
+    <p class="note">An invariant is a property that remains true throughout execution. Understanding invariants is the key to proving correctness and debugging failures.</p>
+  </section>
+
+  <div class="grid2 scroll-reveal">
+    
+    <section class="card" style="border-color:rgba(37,99,235,.4);background:rgba(37,99,235,.02)">
+      <h3 style="color:#2563eb;margin-top:0">BFS Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:var(--accent2)">Property: First visit = shortest path</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> The queue contains vertices at distances d and d+1 only. When vertex v enters the queue, dist[v] is final.</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> All edges have weight 1. If v is discovered at distance d, any other path to v must have ≥d edges (since it would need to traverse the same levels). BFS discovers vertices in increasing order of edge count = shortest path in unweighted graphs.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> Check that queue always has at most 2 distinct distance values. If a vertex at distance d+2 appears before all d+1 vertices are processed, invariant broken.</p>
+    </section>
+
+    <section class="card" style="border-color:rgba(124,58,237,.4);background:rgba(124,58,237,.02)">
+      <h3 style="color:#7c3aed;margin-top:0">0-1 BFS Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:#7c3aed">Property: Deque maintains non-decreasing distances</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> All vertices in deque have distances that are non-decreasing from front to back. At any moment, deque contains at most 2 distinct distance values.</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> Processing from front always extracts minimum-distance vertex among unprocessed. Weight-0 edges don't increase distance, so front insertion maintains order. Weight-1 edges increase distance by exactly 1, so back insertion maintains two-level structure.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> After each relaxation, check distances in deque are non-decreasing. If dist[front] > dist[back], invariant broken.</p>
+    </section>
+
+    <section class="card" style="border-color:rgba(180,83,9,.4);background:rgba(180,83,9,.02)">
+      <h3 style="color:#b45309;margin-top:0">Dijkstra's Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:var(--warn)">Property: Extracted vertex is final</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> For every vertex u extracted from priority queue, dist[u] is the true shortest distance from source. No future relaxation will improve dist[u].</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> Suppose dist[u] is not final when u is extracted. Then there exists a better path P from source to u. Let (x,y) be the first edge in P where y is not yet extracted. We would have relaxed (x,y), setting dist[y] ≤ dist[x] + w(x,y) < dist[u]. But u was extracted before y, so dist[u] ≤ dist[y], contradiction. This proof requires all weights ≥ 0.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> If a vertex is re-extracted or its distance improves after extraction, invariant broken (happens with negative edges).</p>
+    </section>
+
+    <section class="card" style="border-color:rgba(185,28,28,.4);background:rgba(185,28,28,.02)">
+      <h3 style="color:#b91c1c;margin-top:0">Bellman-Ford Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:var(--bad)">Property: Round k = k-edge shortest paths</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> After k relaxation rounds, dist[v] correctly represents the shortest path from source to v using at most k edges.</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> Base case (k=0): only source has distance 0. Inductive step: if all (k−1)-edge paths are correct, relaxing all edges computes all k-edge paths (each k-edge path = (k−1)-edge path + one edge). After V−1 rounds, all simple paths (which have ≤V−1 edges) are correct. Round V detects negative cycles: if any distance improves, a path with V edges is better than a V−1-edge path, implying a cycle was traversed with negative total weight.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> After round k, construct any k-edge path and check dist matches. If round V improves any distance, negative cycle exists.</p>
+    </section>
+
+    <section class="card" style="border-color:rgba(15,118,110,.4);background:rgba(15,118,110,.02)">
+      <h3 style="color:#0f766e;margin-top:0">DAG Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:var(--good)">Property: Predecessors finalized first</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> When processing vertex u in topological order, all vertices v that have edges v→u have already been processed. Therefore, dist[u] is final.</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> Topological order ensures no backward edges. When u is processed, all possible incoming paths to u have been fully explored (their source vertices were processed earlier). One relaxation pass suffices. Handles negative edges because we never revisit a vertex — the one-pass finality removes the greedy assumption that breaks Dijkstra.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> Check topological sort is valid. If processing u before some predecessor v (where v→u exists), invariant broken.</p>
+    </section>
+
+    <section class="card" style="border-color:rgba(5,150,105,.4);background:rgba(5,150,105,.02)">
+      <h3 style="color:#059669;margin-top:0">Floyd-Warshall Invariant</h3>
+      <p class="note" style="margin:8px 0;font-weight:950;color:#059669">Property: dist[i][j] via intermediates {0,...,k}</p>
+      <p class="note" style="margin:8px 0"><b>What stays true:</b> After considering intermediate vertices {0,1,...,k}, dist[i][j] is the shortest path from i to j using only vertices in {0,1,...,k} as intermediates (endpoints i,j excluded from intermediate set).</p>
+      <p class="note" style="margin:8px 0"><b>Why it guarantees correctness:</b> Either the shortest i→j path uses vertex k as an intermediate, or it doesn't. If it does, shortest path is dist[i][k] + dist[k][j] (both already correct from previous iteration). If it doesn't, shortest path is dist[i][j] from previous iteration. Taking min covers both cases. After considering all V vertices as intermediates, no restrictions remain — dist[i][j] is globally optimal.</p>
+      <p class="note" style="margin:8px 0 0"><b>How to verify:</b> After iteration k, verify dist[i][j] is correct when restricted to intermediates ≤k. Check via manual path construction.</p>
+    </section>
+
+  </div>
+
+  </div><!-- end sec-invariants -->
+
+  <!-- ══════════════════════ 04 DECISION ══════════════════════ -->
+  <div id="sec-decision" class="section">
+
+  <section id="decision" class="card scroll-reveal">
+    <h2>⚡ Shortest Path Decision Rules (ICPC Ready)</h2>
+    <p class="note" style="margin-bottom:16px">Use this during contests for instant algorithm selection. Check conditions top-to-bottom — first match wins.</p>
+  </section>
+
+  <section class="scroll-reveal">
+    <div class="decisionBox">
+      <h3>🎯 Single-Source Shortest Path</h3>
+      
+      <div class="ruleBox" style="background:rgba(37,99,235,.08);border-color:#2563eb">
+        <span class="cond">IF</span> unweighted (all edges weight 1)<br>
+        <span class="arrow">→</span> <b style="color:#2563eb">BFS</b> — O(V+E)
+      </div>
+
+      <div class="ruleBox" style="background:rgba(124,58,237,.08);border-color:#7c3aed">
+        <span class="cond">IF</span> weights ∈ {0,1} only<br>
+        <span class="arrow">→</span> <b style="color:#7c3aed">0-1 BFS</b> — O(V+E)
+      </div>
+
+      <div class="ruleBox" style="background:rgba(15,118,110,.08);border-color:#0f766e">
+        <span class="cond">IF</span> graph is DAG (no cycles)<br>
+        <span class="arrow">→</span> <b style="color:#0f766e">DAG Topological Relaxation</b> — O(V+E), handles negative edges
+      </div>
+
+      <div class="ruleBox" style="background:rgba(180,83,9,.08);border-color:#b45309">
+        <span class="cond">IF</span> all weights ≥ 0<br>
+        <span class="arrow">→</span> <b style="color:#b45309">Dijkstra</b> — O((V+E)logV) sparse, O(V²) dense
+      </div>
+
+      <div class="ruleBox" style="background:rgba(185,28,28,.08);border-color:#b91c1c">
+        <span class="cond">IF</span> negative edges exist<br>
+        <span class="arrow">→</span> <b style="color:#b91c1c">Bellman-Ford</b> — O(V·E), detects neg cycles
+      </div>
+    </div>
+
+    <div class="decisionBox">
+      <h3>🎯 All-Pairs Shortest Path</h3>
+
+      <div class="ruleBox" style="background:rgba(5,150,105,.08);border-color:#059669">
+        <span class="cond">IF</span> dense (E ≈ V²) OR small n (V ≤ 400)<br>
+        <span class="arrow">→</span> <b style="color:#059669">Floyd-Warshall</b> — O(V³)
+      </div>
+
+      <div class="ruleBox" style="background:rgba(109,40,217,.08);border-color:#6d28d9">
+        <span class="cond">IF</span> sparse (E ≪ V²) AND may have negative edges<br>
+        <span class="arrow">→</span> <b style="color:#6d28d9">Johnson's Algorithm</b> — O(V²logV + VE)
+      </div>
+
+      <div class="ruleBox" style="background:rgba(180,83,9,.08);border-color:#b45309">
+        <span class="cond">IF</span> sparse AND all weights ≥ 0<br>
+        <span class="arrow">→</span> <b style="color:#b45309">Run Dijkstra V times</b> — O(V(V+E)logV)
+      </div>
+    </div>
+  </section>
+
+  </div><!-- end sec-decision -->
+
+  <!-- ══════════════════════ 05 COMPARISON ══════════════════════ -->
+  <div id="sec-comparison" class="section">
+
+  <section id="comparison" class="card scroll-reveal">
+    <h2>📊 Complete Algorithm Comparison</h2>
+    <p class="note" style="margin-bottom:14px">Comprehensive reference for all shortest path algorithms. Use during problem analysis and implementation.</p>
+    
+    <div style="overflow-x:auto;">
+    <table style="font-size:20px;">
+      <tr>
+        <th>Algorithm</th>
+        <th>Time Complexity</th>
+        <th>Space</th>
+        <th>Weights</th>
+        <th>Negative Edges</th>
+        <th>Negative Cycles</th>
+        <th>Scope</th>
+        <th>When to Use</th>
+      </tr>
+      <tr style="background:rgba(37,99,235,.05)">
+        <td><b style="color:#2563eb">BFS</b></td>
+        <td><code>O(V+E)</code></td>
+        <td>O(V)</td>
+        <td>Unweighted</td>
+        <td>✗</td>
+        <td>✗</td>
+        <td>Single-source</td>
+        <td>Unweighted graphs, grid problems</td>
+      </tr>
+      <tr style="background:rgba(124,58,237,.05)">
+        <td><b style="color:#7c3aed">0-1 BFS</b></td>
+        <td><code>O(V+E)</code></td>
+        <td>O(V)</td>
+        <td>0 or 1 only</td>
+        <td>✗</td>
+        <td>✗</td>
+        <td>Single-source</td>
+        <td>Grid with free moves, binary weights</td>
+      </tr>
+      <tr style="background:rgba(15,118,110,.05)">
+        <td><b style="color:#0f766e">DAG Relax</b></td>
+        <td><code>O(V+E)</code></td>
+        <td>O(V)</td>
+        <td>Any</td>
+        <td>✓</td>
+        <td>N/A (no cycles)</td>
+        <td>Single-source</td>
+        <td>DAGs, scheduling, longest path</td>
+      </tr>
+      <tr style="background:rgba(180,83,9,.05)">
+        <td><b style="color:#b45309">Dijkstra (heap)</b></td>
+        <td><code>O((V+E)logV)</code></td>
+        <td>O(V)</td>
+        <td>Non-negative</td>
+        <td>✗</td>
+        <td>✗</td>
+        <td>Single-source</td>
+        <td>Sparse graphs, general weighted</td>
+      </tr>
+      <tr style="background:rgba(180,83,9,.05)">
+        <td><b style="color:#b45309">Dijkstra (array)</b></td>
+        <td><code>O(V²)</code></td>
+        <td>O(V²)</td>
+        <td>Non-negative</td>
+        <td>✗</td>
+        <td>✗</td>
+        <td>Single-source</td>
+        <td>Dense graphs (E ≈ V²)</td>
+      </tr>
+      <tr style="background:rgba(185,28,28,.05)">
+        <td><b style="color:#b91c1c">Bellman-Ford</b></td>
+        <td><code>O(V·E)</code></td>
+        <td>O(V)</td>
+        <td>Any</td>
+        <td>✓</td>
+        <td>Detects</td>
+        <td>Single-source</td>
+        <td>Negative edges, difference constraints</td>
+      </tr>
+      <tr style="background:rgba(5,150,105,.05)">
+        <td><b style="color:#059669">Floyd-Warshall</b></td>
+        <td><code>O(V³)</code></td>
+        <td>O(V²)</td>
+        <td>Any</td>
+        <td>✓</td>
+        <td>Detects</td>
+        <td>All-pairs</td>
+        <td>Dense or V ≤ 400, transitive closure</td>
+      </tr>
+      <tr style="background:rgba(109,40,217,.05)">
+        <td><b style="color:#6d28d9">Johnson's</b></td>
+        <td><code>O(V²logV+VE)</code></td>
+        <td>O(V²)</td>
+        <td>Any</td>
+        <td>✓</td>
+        <td>Detects</td>
+        <td>All-pairs</td>
+        <td>Sparse graphs with negative edges</td>
+      </tr>
+    </table>
+    </div>
+  </section>
+
+  </div><!-- end sec-comparison -->
+
+  <!-- ══════════════════════ 06 DENSITY ══════════════════════ -->
+  <div id="sec-density" class="section">
+
+  <section id="density" class="card scroll-reveal">
+    <h2>📐 Graph Density & Data Structure Selection</h2>
+    <p class="note">Density determines both storage choice and algorithm variant. Understand the thresholds.</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Adjacency List vs Matrix: Precise Thresholds</h3>
+    <div class="grid2">
+      <div style="background:rgba(37,99,235,.06);padding:18px;border-radius:var(--radius);border:3px solid var(--accent2)">
+        <p class="note" style="margin:0 0 10px;font-weight:950;color:var(--accent2)">Use Adjacency List when:</p>
+        <p class="note" style="margin:0 0 8px">• E < V² / 2 (less than half-full)</p>
+        <p class="note" style="margin:0 0 8px">• Need to iterate over neighbors efficiently</p>
+        <p class="note" style="margin:0 0 8px">• Memory is constrained</p>
+        <p class="note" style="margin:8px 0 0"><b>Storage:</b> O(V+E) — each edge stored once/twice</p>
+        <p class="note" style="margin:4px 0 0"><b>Edge check:</b> O(deg(v)) — must scan list</p>
+        <p class="note" style="margin:4px 0 0"><b>Neighbor iteration:</b> O(deg(v)) — optimal</p>
+      </div>
+      <div style="background:rgba(180,83,9,.06);padding:18px;border-radius:var(--radius);border:3px solid var(--warn)">
+        <p class="note" style="margin:0 0 10px;font-weight:950;color:var(--warn)">Use Adjacency Matrix when:</p>
+        <p class="note" style="margin:0 0 8px">• E > V² / 2 (more than half-full)</p>
+        <p class="note" style="margin:0 0 8px">• Need O(1) edge existence queries</p>
+        <p class="note" style="margin:0 0 8px">• Running Floyd-Warshall</p>
+        <p class="note" style="margin:8px 0 0"><b>Storage:</b> O(V²) — always, wastes space if sparse</p>
+        <p class="note" style="margin:4px 0 0"><b>Edge check:</b> O(1) — direct array access</p>
+        <p class="note" style="margin:4px 0 0"><b>Neighbor iteration:</b> O(V) — must scan row</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Floyd-Warshall vs Johnson's: When to Use Which</h3>
+    
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:20px;margin:16px 0">
+      <p class="note" style="margin:0 0 12px;font-weight:950;font-size:28px">Complexity Analysis</p>
+      <p class="note" style="margin:0 0 8px"><b>Floyd-Warshall:</b> O(V³) always, regardless of edge count</p>
+      <p class="note" style="margin:0 0 8px"><b>Johnson's:</b> O(V² log V + VE) = O(V² log V) if E ≈ V, O(V³) if E ≈ V²</p>
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Crossover Point:</p>
+      <p class="note" style="margin:0 0 8px">When E > V² / log V, Floyd-Warshall becomes competitive</p>
+      <p class="note" style="margin:0 0 0">For V=1000: if E > 100,000, Floyd-Warshall likely faster</p>
+    </div>
+
+    <div class="grid2">
+      <div style="background:rgba(5,150,105,.08);padding:16px;border-radius:var(--radius);border:2px solid var(--good)">
+        <p class="note" style="margin:0 0 10px;font-weight:950;color:var(--good)">Choose Floyd-Warshall when:</p>
+        <p class="note" style="margin:0 0 6px">✓ V ≤ 400 (V³ ≤ 64 million operations)</p>
+        <p class="note" style="margin:0 0 6px">✓ Graph is dense (E ≥ V² / 4)</p>
+        <p class="note" style="margin:0 0 6px">✓ Implementation simplicity matters</p>
+        <p class="note" style="margin:0 0 6px">✓ Need negative cycle detection</p>
+        <p class="note" style="margin:0 0 0">✓ Need transitive closure</p>
+      </div>
+      <div style="background:rgba(109,40,217,.08);padding:16px;border-radius:var(--radius);border:2px solid #6d28d9">
+        <p class="note" style="margin:0 0 10px;font-weight:950;color:#6d28d9">Choose Johnson's when:</p>
+        <p class="note" style="margin:0 0 6px">✓ Graph is sparse (E ≈ V or E ≈ V log V)</p>
+        <p class="note" style="margin:0 0 6px">✓ V > 400 but E is small relative to V²</p>
+        <p class="note" style="margin:0 0 6px">✓ May have negative edges</p>
+        <p class="note" style="margin:0 0 6px">✓ Asymptotic optimality matters</p>
+        <p class="note" style="margin:0 0 0">✓ Can afford higher implementation complexity</p>
+      </div>
+    </div>
+
+    <p class="note" style="margin:16px 0 0"><b>Why these thresholds?</b> Floyd-Warshall has simple operations (one comparison, one addition) that run fast in practice. Johnson's has overhead from Bellman-Ford reweighting and V Dijkstra runs. The crossover happens when the asymptotic advantage of Johnson's overcomes its constant-factor disadvantage.</p>
+  </section>
+
+  </div><!-- end sec-density -->
+
+  <!-- ══════════════════════ 07 SIMULATIONS ══════════════════════ -->
+  <div id="sec-simulations" class="section">
+
+  <section id="simulations" class="card scroll-reveal">
+    <h2>🎬 Complete Step-by-Step Simulations</h2>
+    <p class="note">Trace algorithm execution step-by-step. Watch frontier expansion, distance updates, and data structure evolution. Each simulation shows the relaxation operation in action — the same dist[v] ← min(dist[v], dist[u]+w) applied with different scheduling strategies.</p>
+  </section>
+
+  <details class="scroll-reveal">
+    <summary>BFS Complete Simulation — 6-Vertex Graph</summary>
+    <div class="detailsBody">
+      <p class="note" style="margin:0 0 12px"><b>Graph:</b> A→B, A→C, B→D, C→D, C→E, D→F, E→F (all edges weight 1). Source: A. Find shortest paths to all vertices.</p>
+      
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Initialization:</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td class="highlight">0</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td></tr>
+        <tr><td>parent</td><td>−</td><td>−</td><td>−</td><td>−</td><td>−</td><td>−</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [A]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {A}</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 1: Process A (dist=0)</p>
+      <p class="note" style="margin:0 0 8px">Relax edges: A→B (dist[B]=0+1=1), A→C (dist[C]=0+1=1)</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td>0</td><td class="highlight">1</td><td class="highlight">1</td><td>∞</td><td>∞</td><td>∞</td></tr>
+        <tr><td>parent</td><td>−</td><td class="highlight">A</td><td class="highlight">A</td><td>−</td><td>−</td><td>−</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [B, C]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {B, C} (all at distance 1)</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 2: Process B (dist=1)</p>
+      <p class="note" style="margin:0 0 8px">Relax edges: B→D (dist[D]=1+1=2)</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td>0</td><td>1</td><td>1</td><td class="highlight">2</td><td>∞</td><td>∞</td></tr>
+        <tr><td>parent</td><td>−</td><td>A</td><td>A</td><td class="highlight">B</td><td>−</td><td>−</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [C, D]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {C} at dist 1, {D} at dist 2</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 3: Process C (dist=1)</p>
+      <p class="note" style="margin:0 0 8px">Relax edges: C→D (already 2, no improvement), C→E (dist[E]=1+1=2)</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td>0</td><td>1</td><td>1</td><td>2</td><td class="highlight">2</td><td>∞</td></tr>
+        <tr><td>parent</td><td>−</td><td>A</td><td>A</td><td>B</td><td class="highlight">C</td><td>−</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [D, E]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {D, E} (both at distance 2)</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 4: Process D (dist=2)</p>
+      <p class="note" style="margin:0 0 8px">Relax edges: D→F (dist[F]=2+1=3)</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td>0</td><td>1</td><td>1</td><td>2</td><td>2</td><td class="highlight">3</td></tr>
+        <tr><td>parent</td><td>−</td><td>A</td><td>A</td><td>B</td><td>C</td><td class="highlight">D</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [E, F]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {E} at dist 2, {F} at dist 3</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 5: Process E (dist=2)</p>
+      <p class="note" style="margin:0 0 8px">Relax edges: E→F (dist[F]=min(3, 2+1)=3, no improvement)</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>dist</td><td>0</td><td>1</td><td>1</td><td>2</td><td>2</td><td>3</td></tr>
+        <tr><td>parent</td><td>−</td><td>A</td><td>A</td><td>B</td><td>C</td><td>D</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Queue:</b> [F]</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Step 6: Process F (dist=3)</p>
+      <p class="note" style="margin:0 0 8px">No outgoing edges. Queue empty. Done.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+        <tr><td>Final dist</td><td>0</td><td>1</td><td>1</td><td>2</td><td>2</td><td>3</td></tr>
+      </table>
+
+      <p class="note" style="margin:16px 0 0"><b>Observation:</b> Each vertex discovered exactly once. Queue maintained level-by-level property: at most 2 distinct distances present at any time. First discovery = shortest path.</p>
+    </div>
+  </details>
+
+  <details class="scroll-reveal">
+    <summary>Dijkstra Complete Simulation — Weighted Graph with Lazy Deletion</summary>
+    <div class="detailsBody">
+      <p class="note" style="margin:0 0 12px"><b>Graph:</b> A→B(4), A→C(2), B→D(3), C→B(1), C→D(5), D→E(2). Source: A. Find shortest paths to all.</p>
+      
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Initialization:</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td class="highlight">0</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td></tr>
+        <tr><td>settled?</td><td>No</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Priority Queue (min-heap):</b> [(A,0)]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {A}</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 1: Extract (A,0) — Settle A</p>
+      <p class="note" style="margin:0 0 8px">Relax: A→B (dist[B]=0+4=4), A→C (dist[C]=0+2=2). Insert (B,4) and (C,2) into PQ.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td>0</td><td class="highlight">4</td><td class="highlight">2</td><td>∞</td><td>∞</td></tr>
+        <tr><td>settled?</td><td class="highlight">Yes</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(C,2), (B,4)]</p>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> {B,C}</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 2: Extract (C,2) — Settle C</p>
+      <p class="note" style="margin:0 0 8px">Relax: C→B (dist[B]=min(4,2+1)=3, improvement! Insert (B,3)), C→D (dist[D]=2+5=7, insert (D,7)).</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td>0</td><td class="highlight">3</td><td>2</td><td class="highlight">7</td><td>∞</td></tr>
+        <tr><td>settled?</td><td>Yes</td><td>No</td><td class="highlight">Yes</td><td>No</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(B,3), (B,4 <i>stale</i>), (D,7)]</p>
+      <p class="note" style="margin:4px 0"><b>Note:</b> Old entry (B,4) still in heap — lazy deletion will skip it later</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 3: Extract (B,3) — Settle B</p>
+      <p class="note" style="margin:0 0 8px">Check: dist[B]=3 matches extracted value, not stale. Relax: B→D (dist[D]=min(7,3+3)=6, insert (D,6)).</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td>0</td><td>3</td><td>2</td><td class="highlight">6</td><td>∞</td></tr>
+        <tr><td>settled?</td><td>Yes</td><td class="highlight">Yes</td><td>Yes</td><td>No</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(B,4 <i>stale</i>), (D,6), (D,7 <i>stale</i>)]</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 4: Extract (B,4) — SKIP (stale entry)</p>
+      <p class="note" style="margin:0 0 8px">Check: dist[B]=3 ≠ 4, so this is a stale entry. Skip processing. B already settled.</p>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(D,6), (D,7 <i>stale</i>)]</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 5: Extract (D,6) — Settle D</p>
+      <p class="note" style="margin:0 0 8px">Check: dist[D]=6 matches. Relax: D→E (dist[E]=6+2=8, insert (E,8)).</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td>0</td><td>3</td><td>2</td><td>6</td><td class="highlight">8</td></tr>
+        <tr><td>settled?</td><td>Yes</td><td>Yes</td><td>Yes</td><td class="highlight">Yes</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(D,7 <i>stale</i>), (E,8)]</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 6: Extract (D,7) — SKIP (stale)</p>
+      <p class="note" style="margin:0 0 8px">dist[D]=6 ≠ 7, skip.</p>
+      <p class="note" style="margin:4px 0"><b>PQ:</b> [(E,8)]</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 7: Extract (E,8) — Settle E</p>
+      <p class="note" style="margin:0 0 8px">No outgoing edges. All vertices settled. Done.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>Final dist</td><td>0</td><td>3</td><td>2</td><td>6</td><td>8</td></tr>
+      </table>
+
+      <p class="note" style="margin:16px 0 0"><b>Key observations:</b> (1) Lazy deletion: stale entries skipped when extracted. (2) Each vertex settled exactly once. (3) Greedy choice always extracted minimum. (4) Path: A→C(2)→B(3)→D(6)→E(8).</p>
+    </div>
+  </details>
+
+  <details class="scroll-reveal">
+    <summary>Bellman-Ford Complete Simulation — 5-Vertex Graph with Negative Edge</summary>
+    <div class="detailsBody">
+      <p class="note" style="margin:0 0 12px"><b>Graph:</b> A→B(6), A→C(7), B→C(8), B→D(5), B→E(−4), C→D(−3), C→E(9), D→B(−2), E→D(7). Source: A. Five vertices, nine edges. Note the negative edges — Dijkstra cannot handle this graph.</p>
+      <p class="note" style="margin:0 0 12px"><b>Edge list (relaxation order):</b> (A,B,6), (A,C,7), (B,C,8), (B,D,5), (B,E,−4), (C,D,−3), (C,E,9), (D,B,−2), (E,D,7)</p>
+      <p class="note" style="margin:0 0 12px"><b>Recall the invariant:</b> After round k, dist[v] is the shortest path from source to v using at most k edges. We need V−1 = 4 rounds to guarantee all simple paths are found.</p>
+
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Initialization (Round 0):</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist</td><td class="highlight">0</td><td>∞</td><td>∞</td><td>∞</td><td>∞</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Frontier:</b> Only source A is reachable. All other vertices at ∞.</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 1 — Relax all 9 edges (finding 1-edge paths):</p>
+      <p class="note" style="margin:0 0 4px">(A,B,6): dist[B] = min(∞, 0+6) = <b>6</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(A,C,7): dist[C] = min(∞, 0+7) = <b>7</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(B,C,8): dist[C] = min(7, 6+8) = 7, no change</p>
+      <p class="note" style="margin:0 0 4px">(B,D,5): dist[D] = min(∞, 6+5) = <b>11</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(B,E,−4): dist[E] = min(∞, 6−4) = <b>2</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(C,D,−3): dist[D] = min(11, 7−3) = <b>4</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(C,E,9): dist[E] = min(2, 7+9) = 2, no change</p>
+      <p class="note" style="margin:0 0 4px">(D,B,−2): dist[B] = min(6, 4−2) = <b>2</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(E,D,7): dist[D] = min(4, 2+7) = 4, no change</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist after R1</td><td>0</td><td class="highlight">2</td><td class="highlight">7</td><td class="highlight">4</td><td class="highlight">2</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Invariant check:</b> All paths using ≤1 edge from A are correctly captured. Note that within a single round, later relaxations can use values updated earlier in the same round — this is valid and may accelerate convergence (this is the "online" variant of Bellman-Ford).</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 2 — Relax all 9 edges (finding 2-edge paths):</p>
+      <p class="note" style="margin:0 0 4px">(A,B,6): dist[B] = min(2, 0+6) = 2, no change</p>
+      <p class="note" style="margin:0 0 4px">(A,C,7): dist[C] = min(7, 0+7) = 7, no change</p>
+      <p class="note" style="margin:0 0 4px">(B,C,8): dist[C] = min(7, 2+8) = 7, no change</p>
+      <p class="note" style="margin:0 0 4px">(B,D,5): dist[D] = min(4, 2+5) = 4, no change</p>
+      <p class="note" style="margin:0 0 4px">(B,E,−4): dist[E] = min(2, 2−4) = <b>−2</b> ✓ updated</p>
+      <p class="note" style="margin:0 0 4px">(C,D,−3): dist[D] = min(4, 7−3) = 4, no change</p>
+      <p class="note" style="margin:0 0 4px">(C,E,9): dist[E] = min(−2, 7+9) = −2, no change</p>
+      <p class="note" style="margin:0 0 4px">(D,B,−2): dist[B] = min(2, 4−2) = 2, no change</p>
+      <p class="note" style="margin:0 0 4px">(E,D,7): dist[D] = min(4, −2+7) = 4, no change</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist after R2</td><td>0</td><td>2</td><td>7</td><td>4</td><td class="highlight">−2</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Invariant check:</b> The path A→C(7)→D(4)→B(2)→E(−2) uses multiple edges and has been discovered via propagation across rounds. All ≤2-edge paths are now correct.</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 3 — Relax all 9 edges (finding 3-edge paths):</p>
+      <p class="note" style="margin:0 0 4px">All 9 relaxations produce no changes. Distances are stable.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>dist after R3</td><td>0</td><td>2</td><td>7</td><td>4</td><td>−2</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0"><b>Early termination:</b> No distances changed this round, so the algorithm can terminate early. All subsequent rounds will also produce no changes.</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 4 (V−1 = 4) — Verification round:</p>
+      <p class="note" style="margin:0 0 4px">No changes. Confirms convergence. All simple paths have been found.</p>
+
+      <p class="note" style="margin:16px 0 8px;font-weight:950">Round 5 (Round V = 5) — Negative Cycle Detection:</p>
+      <p class="note" style="margin:0 0 8px">Relax all edges one more time. No distance improves → <b style="color:var(--good)">No negative cycle exists.</b></p>
+
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><td>Final dist</td><td>0</td><td>2</td><td>7</td><td>4</td><td>−2</td></tr>
+        <tr><td>Shortest path</td><td>—</td><td>A→C→D→B</td><td>A→C</td><td>A→C→D</td><td>A→C→D→B→E</td></tr>
+      </table>
+
+      <p class="note" style="margin:16px 0 0"><b>Key observations:</b> (1) Bellman-Ford correctly handles the negative edge B→E(−4) that would break Dijkstra. (2) The "online" variant where we use updated values within the same round often converges faster than V−1 rounds. (3) Early termination when no distance changes is a practical optimization (SPFA exploits this further). (4) Round V detects negative cycles via the pigeonhole principle: V edges in a path with V vertices means a vertex was revisited, forming a cycle.</p>
+    </div>
+  </details>
+
+  </div><!-- end sec-simulations -->
+
+  <!-- ══════════════════════ 08 FAILURES ══════════════════════ -->
+  <div id="sec-failures" class="section">
+
+  <section id="failures" class="card scroll-reveal">
+    <h2>💥 Where Algorithms Fail</h2>
+    <p class="note">Deep understanding comes from studying failures. See exactly where and why algorithms break.</p>
+  </section>
+
+  <details class="scroll-reveal">
+    <summary>Why Dijkstra Fails with Negative Edges — Complete Proof</summary>
+    <div class="detailsBody">
+      <p class="note" style="margin:0 0 12px;font-weight:950;font-size:24px">The Critical Failure Case</p>
+      <p class="note" style="margin:0 0 12px"><b>Graph:</b> Three vertices A, B, C. Edges: A→B(2), A→C(5), C→B(−10). Source: A. True shortest A→B = 5+(−10) = −5 via C.</p>
+      
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Dijkstra's Execution:</p>
+
+      <p class="note" style="margin:12px 0 6px"><b>Round 1:</b> Extract A (dist=0), settle as FINAL</p>
+      <p class="note" style="margin:0 0 8px">Relax: A→B sets dist[B]=2, A→C sets dist[C]=5</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th></tr>
+        <tr><td>dist</td><td>0</td><td>2</td><td>5</td></tr>
+        <tr><td>settled?</td><td class="highlight">Yes (FINAL)</td><td>No</td><td>No</td></tr>
+      </table>
+      <p class="note" style="margin:4px 0">PQ: [(B,2), (C,5)]</p>
+
+      <p class="note" style="margin:12px 0 6px"><b>Round 2:</b> Extract B (dist=2), <b style="color:var(--bad)">COMMIT AS FINAL</b></p>
+      <p class="note" style="margin:0 0 8px">Dijkstra's greedy invariant: "B has minimum distance among unsettled vertices, therefore dist[B]=2 is optimal." B is now locked — no future updates allowed.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th></tr>
+        <tr><td>dist</td><td>0</td><td class="highlight">2 (WRONG!)</td><td>5</td></tr>
+        <tr><td>settled?</td><td>Yes</td><td class="highlight">Yes (LOCKED)</td><td>No</td></tr>
+      </table>
+
+      <p class="note" style="margin:12px 0 6px"><b>Round 3:</b> Extract C (dist=5)</p>
+      <p class="note" style="margin:0 0 8px">Relax: C→B tries dist[B] = min(2, 5+(−10)) = min(2, −5) = −5. But <b style="color:var(--bad)">B is already settled!</b> Dijkstra's implementation ignores this update because B was removed from the priority queue.</p>
+      <table class="simTable">
+        <tr><th>Vertex</th><th>A</th><th>B</th><th>C</th></tr>
+        <tr><td>Dijkstra's dist</td><td>0</td><td class="highlight">2</td><td>5</td></tr>
+        <tr><td>True dist</td><td>0</td><td class="highlight">−5</td><td>5</td></tr>
+        <tr><td>Error</td><td>✓</td><td class="highlight">+7 error</td><td>✓</td></tr>
+      </table>
+
+      <p class="note" style="margin:16px 0 10px;font-weight:950;font-size:24px">Why the Greedy Invariant Breaks</p>
+      <p class="note" style="margin:0 0 8px">Dijkstra's correctness proof relies on: "When vertex u is extracted with distance d, all paths to u have cost ≥d because all edges have weight ≥0."</p>
+      <p class="note" style="margin:0 0 8px"><b>With negative edges, this fails:</b> A path that arrives later (via more hops) can have lower total cost if it uses a negative edge. In this case, the 2-edge path A→C→B (cost −5) beats the 1-edge path A→B (cost 2), even though it's discovered later.</p>
+      <p class="note" style="margin:8px 0 0"><b>Fundamental issue:</b> Dijkstra commits to distances too early. Once a vertex is settled, it assumes no future path can improve it. Negative edges violate this assumption.</p>
+
+      <p class="note" style="margin:16px 0 10px;font-weight:950;font-size:24px">Visualization of the Contradiction</p>
+      <table class="simTable">
+        <tr><th>Path</th><th>Edges</th><th>Cost</th><th>Dijkstra's State When Discovered</th></tr>
+        <tr><td>A→B</td><td>1</td><td>2</td><td>B unsettled, dist[B]=2</td></tr>
+        <tr><td>A→C→B</td><td>2</td><td>−5</td><td>B already settled, update rejected</td></tr>
+      </table>
+      <p class="note" style="margin:8px 0 0">Dijkstra discovers the worse path first, commits to it, then ignores the better path discovered later.</p>
+    </div>
+  </details>
+
+  <details class="scroll-reveal">
+    <summary>Why Negative Cycles Break Shortest Path — Mathematical Proof</summary>
+    <div class="detailsBody">
+      <p class="note" style="margin:0 0 12px;font-weight:950;font-size:24px">The Infinite Descent Problem</p>
+      <p class="note" style="margin:0 0 12px"><b>Graph:</b> Vertices A, B, C. Edges: A→B(3), B→C(4), C→B(−8). Cycle B→C→B has weight 4+(−8)=−4. Source: A. Target: B.</p>
+
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Path Cost Analysis:</p>
+      <table class="simTable">
+        <tr><th>Path</th><th>Traversals</th><th>Total Cost</th></tr>
+        <tr><td>A→B</td><td>No cycle</td><td>3</td></tr>
+        <tr><td>A→B→C→B</td><td>Cycle ×1</td><td>3 + (−4) = −1</td></tr>
+        <tr><td>A→B→(C→B)×2</td><td>Cycle ×2</td><td>3 + 2(−4) = −5</td></tr>
+        <tr><td>A→B→(C→B)×3</td><td>Cycle ×3</td><td>3 + 3(−4) = −9</td></tr>
+        <tr><td>A→B→(C→B)×k</td><td>Cycle ×k</td><td>3 + k(−4) = 3 − 4k</td></tr>
+      </table>
+
+      <p class="note" style="margin:12px 0 8px;font-weight:950">Limit Analysis:</p>
+      <div class="formula">cost(k) = 3 − 4k<br>lim(k→∞) cost(k) = lim(k→∞) (3 − 4k) = −∞</div>
+      <p class="note" style="margin:8px 0 0">For any proposed "shortest path" with cost C, we can find k large enough such that 3−4k < C. Therefore, no finite minimum exists.</p>
+
+      <p class="note" style="margin:16px 0 10px;font-weight:950;font-size:24px">Why Algorithms Cannot Solve This</p>
+      <p class="note" style="margin:0 0 8px"><b>Bellman-Ford's behavior:</b> After V−1 iterations, dist[B] might be some negative value (e.g., −9). On the V-th iteration, Bellman-Ford would relax the cycle again and find an even better value (e.g., −13). This signals: "a negative cycle exists; shortest path is undefined."</p>
+      <p class="note" style="margin:8px 0 0"><b>Mathematical impossibility:</b> The problem asks for min{S} where S = {3, −1, −5, −9, ...} is unbounded below. The infimum is −∞, not a real number. Shortest path is undefined.</p>
+
+      <p class="note" style="margin:16px 0 10px;font-weight:950;font-size:24px">Bellman-Ford Detection Mechanism</p>
+      <p class="note" style="margin:0 0 8px"><b>After round V−1:</b> All simple paths (≤V−1 edges) correctly computed. If no negative cycles exist, distances are final.</p>
+      <p class="note" style="margin:0 0 8px"><b>Round V (detection round):</b> If any distance still improves, this means a path with V edges is better than a path with V−1 edges. Since we can't use V edges without repeating a vertex (pigeonhole principle with V vertices), we must have traversed a cycle. If this cycle improved the distance, it must have negative weight.</p>
+      <p class="note" style="margin:8px 0 0"><b>Conclusion:</b> If round V finds improvement → negative cycle exists → shortest path = −∞ (undefined).</p>
+    </div>
+  </details>
+
+  </div><!-- end sec-failures -->
+
+  <!-- ══════════════════════ 09 PITFALLS ══════════════════════ -->
+  <div id="sec-pitfalls" class="section">
+
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>⚠️ ICPC Competition Pitfalls</h2>
+    <p class="note" style="margin-bottom:18px">These mistakes cost points in contests. Know them before implementation.</p>
+
+    <div class="warnRow">
+      <div class="wLabel">Integer Overflow with INT_MAX Infinity</div>
+      <div class="wDesc"><b>Problem:</b> Using <code>INT_MAX</code> as ∞, then computing <code>dist[u] + w</code> overflows to negative. <b>Fix:</b> Use <code>1e18</code> (long long) or <code>1e9</code> (int), or check <code>if (dist[u] != INF)</code> before relaxing.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Unreachable Nodes Printed as Zero or Garbage</div>
+      <div class="wDesc"><b>Problem:</b> Forgetting that unreachable vertices remain at ∞. <b>Fix:</b> After algorithm, check <code>if (dist[v] == INF)</code> print "unreachable" or −1. Never print 0 or uninitialized values.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Multigraph: Wrong Weight in Adjacency Matrix</div>
+      <div class="wDesc"><b>Problem:</b> Multiple edges between (u,v) with different weights — which to keep in matrix[u][v]? <b>Fix:</b> For shortest path, <code>matrix[u][v] = min(all parallel edge weights)</code>. Keeping max, sum, or last-seen gives wrong answers.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Self-Loop with Negative Weight</div>
+      <div class="wDesc"><b>Problem:</b> Edge u→u with w < 0 is a trivial negative cycle. <b>Fix:</b> If reachable from source, shortest path to u is −∞. Detect and report. Positive/zero self-loops are harmless (ignore them).</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Dense Graph with Heap-Based Dijkstra</div>
+      <div class="wDesc"><b>Problem:</b> Using heap on E ≈ V² gives O(V² log V) > O(V²) of array version. <b>Fix:</b> For dense graphs, use array-based Dijkstra or switch to Floyd-Warshall for all-pairs.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">0-1 BFS with Weight ≥ 2</div>
+      <div class="wDesc"><b>Problem:</b> 0-1 BFS only works when weights ∈ {0,1} exactly. Edge with weight 2 breaks deque invariant. <b>Fix:</b> Verify all weights are 0 or 1 before using 0-1 BFS. Otherwise use Dijkstra.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Floating-Point Precision in Edge Weights</div>
+      <div class="wDesc"><b>Problem:</b> Comparisons like <code>dist[u] + w < dist[v]</code> fail due to rounding errors. <b>Fix:</b> Use epsilon tolerance: <code>dist[u] + w + EPS < dist[v]</code> where EPS=1e-9. Or scale weights to integers.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Forgetting Negative Cycle Detection</div>
+      <div class="wDesc"><b>Problem:</b> Running Bellman-Ford or Floyd-Warshall without checking for negative cycles. <b>Fix:</b> Bellman-Ford: run V-th iteration, check if any dist improves. Floyd-Warshall: after completion, check <code>if (dist[v][v] < 0)</code> for any v.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">DAG Relaxation Without Verifying Acyclic</div>
+      <div class="wDesc"><b>Problem:</b> Assuming graph is a DAG without verification. If cycle exists, topological sort fails or produces wrong order. <b>Fix:</b> Run cycle detection first, or verify topological sort succeeded (Kahn's algorithm will detect cycles).</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Disconnected Graph Components</div>
+      <div class="wDesc"><b>Problem:</b> Single-source algorithms only reach source's component. Other components remain at ∞. <b>Fix:</b> Handle in output (print "unreachable") or run algorithm from multiple sources if problem requires.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Stale Entries in Priority Queue (Lazy Deletion)</div>
+      <div class="wDesc"><b>Problem:</b> After relaxing edge (u,v), old entry for v remains in PQ alongside new entry. <b>Fix:</b> Before processing vertex v from PQ, check <code>if (extracted_dist != dist[v])</code> skip (stale entry). Only process if values match.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Wrong Parent Tracking for Path Reconstruction</div>
+      <div class="wDesc"><b>Problem:</b> Forgetting to update parent array during relaxation. <b>Fix:</b> When relaxing (u,v) improves dist[v], set <code>parent[v] = u</code>. Reconstruct path by backtracking from target to source via parent pointers.</div>
+    </div>
+
+    <div class="warnRow">
+      <div class="wLabel">Off-by-One in Bellman-Ford Rounds</div>
+      <div class="wDesc"><b>Problem:</b> Running V rounds instead of V−1 for main algorithm. <b>Fix:</b> Main algorithm needs exactly V−1 rounds. V-th round is ONLY for negative cycle detection, not part of normal computation.</div>
+    </div>
+
+  </section>
+
+  </div><!-- end sec-pitfalls -->
+
+  <!-- ══════════════════════ 10 ROADMAP ══════════════════════ -->
+  <div id="sec-roadmap" class="section">
+
+  <section id="roadmap" class="card scroll-reveal">
+    <h2>🗺️ Progressive Learning Roadmap</h2>
+    <p class="note" style="margin-bottom:18px">Master shortest path algorithms in hierarchical order. Each level builds on previous understanding.</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 1: Foundation — BFS</h3>
+    <div style="background:rgba(37,99,235,.06);padding:18px;border-radius:var(--radius);border:2px solid var(--accent2);margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:var(--accent2);font-size:24px">Why start here:</b> BFS is the simplest shortest path algorithm and the purest expression of frontier expansion. Master the queue-based, level-by-level wave and the "first visit = shortest path" invariant. Every algorithm you learn later is a variation of this idea.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master:</b> Queue implementation, visited tracking, distance array, parent pointers for path reconstruction, multi-source BFS</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Each edge relaxed exactly once. Weight is always 1, so dist[v] = dist[u] + 1. FIFO order guarantees non-decreasing distance processing.</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 15+ problems on: unweighted graphs, grid shortest paths, tree level problems, multi-source BFS</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 1–2 weeks until you can code BFS blind in under 5 minutes</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 2: Binary Weights — 0-1 BFS</h3>
+    <div style="background:rgba(124,58,237,.06);padding:18px;border-radius:var(--radius);border:2px solid #7c3aed;margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:#7c3aed;font-size:24px">Why now:</b> Natural next step from BFS. Same O(V+E) complexity but handles binary-weight graphs. Introduces deque-based frontier management — weight-0 edges expand the current level instantly, weight-1 edges create the next level.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master:</b> Deque operations (push_front / push_back), the two-level invariant, recognizing binary-weight patterns in grid problems (e.g., free moves vs costly moves)</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Same as BFS, but frontier has two priority levels managed by deque. Zero-cost relaxations go to front, unit-cost to back.</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 10+ problems on: grid problems with free moves, obstacle toggling, binary-cost transformations</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 1 week. Builds directly on BFS intuition</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 3: General Non-Negative — Dijkstra's Algorithm</h3>
+    <div style="background:rgba(180,83,9,.06);padding:18px;border-radius:var(--radius);border:2px solid var(--warn);margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:var(--warn);font-size:24px">Why now:</b> The most common contest algorithm. Generalizes frontier expansion to arbitrary non-negative weights using a priority queue instead of a simple queue. The greedy invariant ("extracted vertex is final") is the key insight to internalize.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master:</b> Both heap-based O((V+E)logV) for sparse and array-based O(V²) for dense, lazy deletion pattern, early termination, edge cases with duplicate PQ entries</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Each vertex extracted once, each edge relaxed once at extraction time. Priority queue schedules relaxations in optimal order.</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 20+ problems on: weighted graphs, routing, grid with costs, single-source to single-destination optimization</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 2–3 weeks. Goal: Dijkstra implementation + debugging in under 10 minutes</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 4: Acyclic Graphs — DAG Shortest Path</h3>
+    <div style="background:rgba(15,118,110,.06);padding:18px;border-radius:var(--radius);border:2px solid var(--good);margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:var(--good);font-size:24px">Why now:</b> DAGs allow a single-pass frontier sweep in topological order — O(V+E) with any edge weights, including negative. This is the first algorithm that handles negatives and shows that graph structure (acyclic) can compensate for harder weight constraints.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master:</b> Topological sort (both Kahn's and DFS-based), recognizing DAG structure, longest path via negation, PERT/CPM scheduling</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Each edge relaxed exactly once, in topological order. No re-examination needed because predecessors are always finalized first.</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 10+ problems on: task scheduling, longest path in DAG, PERT charts, DP on DAGs</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 1 week. The algorithm itself is simple; focus on recognizing DAG applicability</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 5: Negative Edges — Bellman-Ford</h3>
+    <div style="background:rgba(185,28,28,.06);padding:18px;border-radius:var(--radius);border:2px solid var(--bad);margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:var(--bad);font-size:24px">Why now:</b> The general-purpose algorithm for graphs with negative edges and possible cycles. Drops all structural assumptions — no greedy choice, no acyclic requirement. Exhaustive V−1 rounds of relaxation guarantee correctness, and round V detects negative cycles.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master:</b> V−1 relaxation rounds, negative cycle detection (round V), SPFA optimization, difference constraints formulation</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Every edge relaxed V−1 times. Round k guarantees all k-edge paths are correct (inductive argument).</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 15+ problems on: negative weight graphs, currency arbitrage, difference constraints, negative cycle detection</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 2 weeks. Understand deeply why Dijkstra fails and Bellman-Ford succeeds with negatives</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>Level 6: All-Pairs — Floyd-Warshall & Johnson's</h3>
+    <div style="background:rgba(5,150,105,.06);padding:18px;border-radius:var(--radius);border:2px solid var(--good);margin:12px 0">
+      <p class="note" style="margin:0 0 10px"><b style="color:var(--good);font-size:24px">Why last:</b> All-pairs problems require computing shortest paths between every pair of vertices. Floyd-Warshall uses a DP approach: O(V³), simple 3-loop, ideal when V ≤ 400 or the graph is dense. Johnson's combines Bellman-Ford reweighting + V Dijkstra runs: O(V²logV + VE), better for sparse graphs with negative edges.</p>
+      <p class="note" style="margin:0 0 8px"><b>Master (Floyd):</b> 3-loop DP structure (k outermost!), intermediate vertex reasoning, negative cycle detection on diagonal, path reconstruction, transitive closure</p>
+      <p class="note" style="margin:0 0 8px"><b>Master (Johnson):</b> Reweighting technique, potential functions, why reweighting preserves shortest paths, when it asymptotically beats Floyd-Warshall</p>
+      <p class="note" style="margin:0 0 8px"><b>Relaxation view:</b> Floyd relaxes all pairs via each intermediate vertex. Johnson reweights to eliminate negatives, then runs V Dijkstra relaxation passes.</p>
+      <p class="note" style="margin:0 0 8px"><b>Practice:</b> 10+ problems on: small dense graphs (V ≤ 400), all-pairs queries, transitive closure, sparse all-pairs with negative edges</p>
+      <p class="note" style="margin:0 0 0"><b>Time investment:</b> 2 weeks total. Floyd-Warshall is straightforward; Johnson's requires understanding the reweighting idea deeply</p>
+    </div>
+  </section>
+
+  </div><!-- end sec-roadmap -->
+
+  <!-- ══════════════════════ 11 RECAP ══════════════════════ -->
+  <div id="sec-recap" class="section">
+
+  <section id="recap" class="card scroll-reveal">
+    <h2>🎓 Guided Consolidation for Offline Teaching</h2>
+    <p class="note" style="margin-bottom:18px">Designed for lecture recording. Reflective prompts and thought questions — no interaction needed.</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>📋 Core Concepts Recap</h3>
+    <p class="note" style="margin:0 0 8px">• Shortest path = <b>frontier expansion process</b> — wave propagates from source discovering vertices by distance</p>
+    <p class="note" style="margin:0 0 8px">• <b>All shortest path algorithms differ only in how they schedule relaxations</b> — this is the unifying principle</p>
+    <p class="note" style="margin:0 0 8px">• <b>Relaxation</b> <code>dist[v] ← min(dist[v], dist[u]+w)</code> is the core operation across all algorithms</p>
+    <p class="note" style="margin:0 0 8px">• Each algorithm has an <b>invariant</b> that guarantees correctness: BFS (first visit=final), Dijkstra (extracted=final), Bellman-Ford (round k = k-edge paths)</p>
+    <p class="note" style="margin:0 0 8px">• Dijkstra's greedy invariant breaks with negative edges — settled vertices can be improved later</p>
+    <p class="note" style="margin:0 0 8px">• Negative cycles make shortest path undefined (−∞) — detectable but not solvable</p>
+    <p class="note" style="margin:0 0 0">• Graph <b>density</b> determines structure choice and algorithm variant — sparse→list, dense→matrix</p>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>💭 Instructor Prompts — For Lecture Delivery</h3>
+    
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Pause and visualize: BFS expanding like a wave. Each level completely finished before the next begins. Can you see why this guarantees shortest paths in unweighted graphs?"</p>
+    </div>
+
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Write down the relaxation operation: dist[v] = min(dist[v], dist[u] + w). Now identify this exact operation in BFS, Dijkstra, Bellman-Ford, and Floyd-Warshall. See the unity?"</p>
+    </div>
+
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Think about Dijkstra's invariant: extracted vertex is final. Why does this guarantee correctness? What single assumption makes it work? What breaks if that assumption is violated?"</p>
+    </div>
+
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Before we continue: classify this graph in your head. Edge weights? Topology? Density? Query type? Which algorithm would you choose? Say it out loud."</p>
+    </div>
+
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Trace Bellman-Ford round-by-round on paper. After round k, verify all k-edge paths are correct. This is the invariant in action."</p>
+    </div>
+
+    <div style="background:var(--panel2);border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0;">
+      <p class="note" style="margin:0;font-style:italic;">"Look at the learning roadmap: BFS → 0-1 BFS → Dijkstra → DAG → Bellman-Ford → Floyd/Johnson. Each level adds one new capability or removes one assumption. Can you name the capability gained or assumption dropped at each transition?"</p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>🧩 Decision Checks — Mental Practice</h3>
+    
+    <div style="padding:14px 16px;border-left:4px solid var(--good);background:rgba(15,118,110,.06);margin:12px 0;border-radius:0 var(--radius) var(--radius) 0;">
+      <p class="note" style="margin:0;font-weight:950;">V=50,000, E=50,000, all edges weight 1. Single-source shortest path.</p>
+      <p class="note" style="margin:8px 0 0;color:var(--muted);font-size:20px;"><i>Answer: BFS — O(V+E) optimal for unweighted</i></p>
+    </div>
+
+    <div style="padding:14px 16px;border-left:4px solid var(--good);background:rgba(15,118,110,.06);margin:12px 0;border-radius:0 var(--radius) var(--radius) 0;">
+      <p class="note" style="margin:0;font-weight:950;">Grid 1000×1000, moving right/down costs 1, left/up costs 0. Shortest path (0,0)→(999,999).</p>
+      <p class="note" style="margin:8px 0 0;color:var(--muted);font-size:20px;"><i>Answer: 0-1 BFS — O(V+E), binary weights {0,1}</i></p>
+    </div>
+
+    <div style="padding:14px 16px;border-left:4px solid var(--good);background:rgba(15,118,110,.06);margin:12px 0;border-radius:0 var(--radius) var(--radius) 0;">
+      <p class="note" style="margin:0;font-weight:950;">DAG, V=10,000, some edges negative, single-source to all.</p>
+      <p class="note" style="margin:8px 0 0;color:var(--muted);font-size:20px;"><i>Answer: DAG topological relaxation — O(V+E), handles negatives, no cycles</i></p>
+    </div>
+
+    <div style="padding:14px 16px;border-left:4px solid var(--good);background:rgba(15,118,110,.06);margin:12px 0;border-radius:0 var(--radius) var(--radius) 0;">
+      <p class="note" style="margin:0;font-weight:950;">V=300, E=44,850 (dense, E ≈ V²/2), non-negative weights, all-pairs.</p>
+      <p class="note" style="margin:8px 0 0;color:var(--muted);font-size:20px;"><i>Answer: Floyd-Warshall — O(V³) = 27M ops, dense graph, V small</i></p>
+    </div>
+
+    <div style="padding:14px 16px;border-left:4px solid var(--good);background:rgba(15,118,110,.06);margin:12px 0;border-radius:0 var(--radius) var(--radius) 0;">
+      <p class="note" style="margin:0;font-weight:950;">V=5000, E=10,000 (sparse), negative edges present, need to detect negative cycles.</p>
+      <p class="note" style="margin:8px 0 0;color:var(--muted);font-size:20px;"><i>Answer: Bellman-Ford — O(V·E), handles negatives, detects cycles on round V</i></p>
+    </div>
+  </section>
+
+  <section class="card scroll-reveal">
+    <h3>✅ Mastery Verification</h3>
+    <p class="note" style="margin-bottom:14px">Before moving to individual algorithm tutorials, confirm you can pass every checkpoint:</p>
+    <div class="grid2">
+      <div>
+        <ul class="checklist">
+          <li>I can explain shortest path as frontier expansion — a wave propagating from the source</li>
+          <li>I can write the relaxation operation dist[v] ← min(dist[v], dist[u]+w) from memory and identify it in every algorithm</li>
+          <li>I can state the invariant for each algorithm and explain why it guarantees correctness</li>
+          <li>I can use the ICPC decision rules to select the right algorithm in under 30 seconds</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="checklist">
+          <li>I understand why Dijkstra fails with negative edges — with a step-by-step counterexample</li>
+          <li>I understand why negative cycles make shortest path undefined (−∞) — with mathematical proof</li>
+          <li>I can trace BFS, Dijkstra, and Bellman-Ford step-by-step on paper showing all data structures</li>
+          <li>I know density thresholds for choosing list vs matrix and Floyd vs Johnson</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- end sec-recap -->
+
+  <!-- ══════════════════════ CONTACT ══════════════════════ -->
+  <div id="sec-contact" class="section">
+
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+
+  </div><!-- end sec-contact -->
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">By The Coach, Dr. Wahab & Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;letter-spacing:.02em;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ── Theme Toggle ──
+const themeSwitch = document.getElementById('themeSwitch');
+themeSwitch.addEventListener('click', () => {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeSwitch.setAttribute('aria-checked', String(!isDark));
+});
+
+// ── Section Navigation ──
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Sidebar Toggle ──
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebarEl = document.getElementById('sidebar');
+
+// Auto-open sidebar on desktop
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+
+// ── Active nav highlight on scroll ──
+const sectionIds = ['intuition','relaxation','invariants','decision','comparison','density','simulations','failures','pitfalls','roadmap','recap','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector(`.navlink[onclick*="'${id}'"]`);
+  if (a) navLinks[id] = a;
+});
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+// ── Scroll Reveal ──
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+
+// ── Immediate fallback for embedded/preview environments ──
+// If IntersectionObserver doesn't trigger (e.g. iframe preview),
+// force-reveal all content after brief delay so nothing stays hidden.
+setTimeout(function(){
+  document.querySelectorAll('.scroll-reveal').forEach(function(el){
+    el.classList.add('revealed');
+  });
+}, 300);
+</script>
+</body>
+</html>

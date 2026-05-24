@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Mo on Trees · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-active: rgba(15,118,110,.30);
+    --hl-lca: rgba(180,83,9,.40);
+    --hl-path: rgba(37,99,235,.30);
+    --hl-subtree: rgba(124,58,237,.22);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-active: rgba(52,211,153,.30);
+    --hl-lca: rgba(251,191,36,.34);
+    --hl-path: rgba(79,140,255,.28);
+    --hl-subtree: rgba(167,139,250,.28);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);font-size:21px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:17px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:20px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  svg.treeSvg{width:100%;height:430px;border-radius:16px;background:rgba(0,0,0,0);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:700;overflow-x:auto;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:21px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:21px;font-weight:900;}
+  /* Tree-Mo specific */
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;font-size:22px;pointer-events:none;}
+  .eulerRow{display:flex;flex-wrap:wrap;padding:14px 4px 28px;}
+  .eulerCell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;height:64px;margin:0 3px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:950;font-size:22px;position:relative;transition:all .25s ease;}
+  .eulerCell .idx{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-weight:800;}
+  .eulerCell.entry{border-color:var(--good);background:rgba(15,118,110,.10);}
+  .eulerCell.exit{border-color:var(--bad);background:rgba(185,28,28,.10);}
+  .eulerCell.inRange{box-shadow:inset 0 0 0 3px var(--accent2);transform:translateY(-3px);}
+  .eulerCell.curPos{outline:4px solid var(--warn);outline-offset:2px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:18px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:6px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  .swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .queryRow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .queryChip{padding:8px 14px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:900;font-size:18px;font-family:ui-monospace,monospace;}
+  .queryChip.curQ{border-color:var(--warn);background:var(--hl-lca);}
+  .queryChip.doneQ{border-color:var(--good);background:rgba(15,118,110,.10);color:var(--good);opacity:.7;}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🌳</div>
+  <div class="brandTitle">
+    <div class="t1">Mo on Trees</div>
+    <div class="t2">Subtree · Path · Euler Linearization</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem" id="nav-problem">🧩 Problem Definition<small>Tree range queries</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition<small>Why direct Mo fails on trees</small></a>
+  <a href="#mental" id="nav-mental">🎯 Visual Mental Model<small>Euler tour as array</small></a>
+  <a href="#abstract" id="nav-abstract">🧠 Formal Abstraction<small>Tree → array embedding</small></a>
+  <a href="#observations" id="nav-observations">🔭 Key Observations<small>Subtree vs path</small></a>
+  <div class="groupTitle">Subtree Mo</div>
+  <a href="#subtree" id="nav-subtree">🌿 Subtree Algorithm<small>Preorder Euler</small></a>
+  <a href="#tracer-subtree">🎮 Subtree Tracer</a>
+  <a href="#subtree-master" id="nav-subtree-master">📄 Subtree Master Template<small>Reusable C++</small></a>
+  <div class="groupTitle">Path Mo</div>
+  <a href="#path" id="nav-path">🛤 Path Algorithm<small>Doubled Euler + LCA</small></a>
+  <a href="#toggle" id="nav-toggle">🔁 Toggle Invariant<small>Active iff odd count</small></a>
+  <a href="#tracer-path">🎮 Path Tracer</a>
+  <a href="#path-master" id="nav-path-master">📄 Path Master Template<small>Reusable C++</small></a>
+  <div class="groupTitle">Theory</div>
+  <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Subtree · Path · LCA</small></a>
+  <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Path-case argument</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O((N+Q)√N · F)</small></a>
+  <a href="#lbl" id="nav-lbl">🔎 Line-by-Line<small>Path code dissected</small></a>
+  <div class="groupTitle">Quality Gates</div>
+  <a href="#edges" id="nav-edges">🪜 Edge-Case Audit<small>11 must-checks</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>LCA · doubled Euler</small></a>
+  <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Mo vs DSU-on-tree</small></a>
+  <div class="groupTitle">Problems</div>
+  <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Edge weights · subtree+path mix</small></a>
+  <a href="#problems" id="nav-problems">🚀 Problem-Based Learning<small>CF 375D · SPOJ COT2</small></a>
+  <a href="#summary" id="nav-summary">📝 Final Summary</a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Mo Family · 2 / 4</div>
+        <h1>Mo on Trees — Subtree &amp; Path Queries</h1>
+        <div class="subtitle">Euler Tour Linearization · Doubled Euler · LCA Toggle · The Tree Variant of the Master Template</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+    <p>We are given a rooted tree on <code class="inlineCode">n</code> nodes. Each node carries a value (or color, or weight). Many queries arrive in one of two shapes. A <b>subtree query</b> asks for some aggregate <code class="inlineCode">F</code> over all values in the subtree of a given node <code class="inlineCode">v</code>. A <b>path query</b> asks for the same kind of aggregate, but over the values on the path between two nodes <code class="inlineCode">u</code> and <code class="inlineCode">v</code>. The aggregator <code class="inlineCode">F</code> is exactly the kind of frequency-based answer that Mo's algorithm handles well on flat arrays — distinct counts, colors with frequency at least <code class="inlineCode">k</code>, mode, and so on.</p>
+    <p>The whole point of this file is that we never invent a new algorithm. We transform the tree into a flat array, reduce every subtree (or path) query to an interval over that array, and then run the same master template from the classic Mo file. The transformation is the only thing that is new.</p>
+  </section>
+
+  <!-- INTUITION -->
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch — Why Direct Mo Fails on Trees</h2>
+    <p>A tree is not an array. Mo's whole engine assumes we can describe the current "active set" by two pointers <code class="inlineCode">curL</code>, <code class="inlineCode">curR</code> on a flat array and step from one query to the next by adding or removing one element. On a tree there is no obvious flat array to point into.</p>
+    <p>The naive idea is to recompute each query from scratch with a DFS. For a single subtree query this costs the size of the subtree; for a single path query it costs the path length. With <code class="inlineCode">q</code> queries we are back to <code class="inlineCode">O(nq)</code> in the worst case.</p>
+    <p>The right move is to <b>linearize the tree</b>. There exists a well-known DFS traversal — the Euler tour — that turns the tree into an array with two essential properties. First, the subtree of any node corresponds to a <em>contiguous interval</em> in this array. Second, the path between any two nodes can be embedded in a slightly different Euler array (the doubled Euler tour) so that the path's nodes are precisely the indices that appear an odd number of times in some interval. Once the tree becomes an array, Mo is a black box: we sort intervals, move two pointers, and call our problem-specific <code class="inlineCode">add</code>/<code class="inlineCode">remove</code> hooks.</p>
+    <p>So the Mo-on-tree algorithm is two layers stacked on top of the master template: an <b>Euler-tour linearization</b> on the bottom, and the same <b>movement + answer layer</b> from classic Mo on top. The only new code in this file builds the Euler array correctly and routes the right interval into Mo for each query.</p>
+  </section>
+
+  <!-- VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>🎯 Visual Mental Model — The Euler Tour</h2>
+    <p>Imagine running a DFS starting at the root. Every time the DFS <em>enters</em> a node, write the node's label into a growing array. For the path version, we also write the label a second time when the DFS <em>exits</em>. The first behavior gives the <b>preorder Euler array</b> used for subtree queries; the second gives the <b>doubled Euler array</b> used for path queries.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">🎮 Euler-Tour Demo — preorder vs doubled</div>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="etPreBtn">Preorder (subtree)</button>
+          <button class="miniBtn" id="etDblBtn">Doubled (path)</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="note" style="margin-bottom:6px;">Tree (root = 1). Each node is labeled with its <code class="inlineCode">tin</code> and (for doubled) <code class="inlineCode">tout</code>.</div>
+          <svg class="treeSvg" id="etTreeSvg" viewBox="0 0 580 420"></svg>
+        </div>
+        <div>
+          <div class="note" style="margin-bottom:6px;">Euler array. Entry-only cells are green, exit cells are red. Highlighted indices show the interval for the currently selected query.</div>
+          <div class="eulerRow" id="etEulerRow"></div>
+          <div class="statusPanel">
+            <div style="font-weight:950;font-size:22px;margin-bottom:6px;">Selected query</div>
+            <div class="dsBox" id="etStatus"></div>
+          </div>
+        </div>
+      </div>
+      <div class="queryRow" id="etQueries" style="margin-top:10px;"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--good)"></span> entry occurrence</span>
+        <span><span class="swatch" style="background:var(--bad)"></span> exit occurrence (doubled only)</span>
+        <span><span class="swatch" style="background:var(--accent2)"></span> in current Mo interval</span>
+      </div>
+    </div>
+
+    <p style="margin-top:14px;">The two important facts you should be able to read off the diagram are these: in the <b>preorder Euler array</b>, the subtree of any node <code class="inlineCode">v</code> occupies a single contiguous block of indices, from <code class="inlineCode">tin[v]</code> to <code class="inlineCode">tout[v]</code> inclusive. In the <b>doubled Euler array</b>, each node appears exactly twice (once on entry, once on exit), and the parity of how many times a node has appeared so far determines whether the node is "currently active" on the implicit path.</p>
+  </section>
+
+  <!-- FORMAL ABSTRACTION -->
+  <section class="card" id="abstract">
+    <h2>🧠 Formal Abstraction — Tree to Array Embedding</h2>
+    <p>The Euler tour is produced by a simple DFS that maintains a counter, called <code class="inlineCode">timer</code>. Each time we enter a node, we record <code class="inlineCode">tin[u] = timer</code> and write <code class="inlineCode">u</code> into <code class="inlineCode">euler[timer]</code>, then bump the timer. For preorder, that is all we do. For the doubled Euler tour, we also write <code class="inlineCode">u</code> a second time on the way out and record <code class="inlineCode">tout[u]</code>. The Euler array therefore has length <code class="inlineCode">n</code> in preorder, or length <code class="inlineCode">2n</code> in doubled form.</p>
+    <p>Subtree-Mo lifts this to a Mo problem directly. Map the query "aggregate over the subtree of <code class="inlineCode">v</code>" to the array query "aggregate over <code class="inlineCode">euler[tin[v] .. tout[v]]</code>". Then plug into the master template with the same <code class="inlineCode">add(idx)</code> = "include the value at <code class="inlineCode">euler[idx]</code> into the maintained state" and <code class="inlineCode">remove(idx)</code> = "remove the value at <code class="inlineCode">euler[idx]</code> from the maintained state".</p>
+    <p>Path-Mo needs one extra layer of indirection: a <b>toggle</b>. Because each node appears twice in the doubled Euler array, we cannot just call <code class="inlineCode">add</code> for every index entering the interval. Instead, we maintain an <code class="inlineCode">active[u]</code> bit per node. Whenever the pointer movement causes node <code class="inlineCode">u</code> to be touched, we flip the bit: if it was inactive, we activate it (<code class="inlineCode">add_node(u)</code>); if it was active, we deactivate it (<code class="inlineCode">remove_node(u)</code>). The intuition is that the second visit to the same node cancels the first.</p>
+  </section>
+
+  <!-- OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>🔭 Key Observations</h2>
+
+    <h3>Observation 1 — Subtree intervals exist for free</h3>
+    <p>In preorder, the descendants of any node <code class="inlineCode">u</code> are visited consecutively right after <code class="inlineCode">u</code>. That is exactly what makes <code class="inlineCode">[tin[u], tout[u]]</code> a valid contiguous interval. No fancy structure is needed beyond <code class="inlineCode">tin</code> and <code class="inlineCode">tout</code> arrays.</p>
+
+    <h3>Observation 2 — Path intervals need both endpoints of doubled Euler</h3>
+    <p>Without loss of generality, assume <code class="inlineCode">tin[u] ≤ tin[v]</code> (swap otherwise), and let <code class="inlineCode">w = LCA(u, v)</code>. There are two cases. If <code class="inlineCode">w == u</code>, then <code class="inlineCode">u</code> is an ancestor of <code class="inlineCode">v</code>, and the path nodes appear with odd count in the doubled-Euler interval <code class="inlineCode">[tin[u], tin[v]]</code>. If <code class="inlineCode">w ≠ u</code>, then <code class="inlineCode">u</code> and <code class="inlineCode">v</code> are in separate subtrees of <code class="inlineCode">w</code>, and the doubled-Euler interval to use is <code class="inlineCode">[tout[u], tin[v]]</code>. In this second case, <code class="inlineCode">w</code> itself is <em>not</em> in that interval, so we must add it as a temporary node when answering the query and remove it afterwards.</p>
+
+    <h3>Observation 3 — Toggle invariant on the doubled Euler tour</h3>
+    <p>In the doubled Euler interval, a node <code class="inlineCode">u</code> is <em>active</em> (i.e., belongs to the implicit current path-set) iff <code class="inlineCode">u</code> appears an odd number of times in that interval. Each pointer move touches exactly one cell; that cell carries some node label <code class="inlineCode">u</code>; we flip <code class="inlineCode">active[u]</code> and call <code class="inlineCode">add_node</code> or <code class="inlineCode">remove_node</code> depending on the direction of the flip.</p>
+
+    <h3>Observation 4 — Block size scales with the Euler array, not with the tree size</h3>
+    <p>For subtree-Mo, the Euler array has length <code class="inlineCode">n</code>, so the natural block size is <code class="inlineCode">B = √n</code>. For path-Mo, the doubled Euler array has length <code class="inlineCode">2n</code>, so the block size used in the comparator should be <code class="inlineCode">B = √(2n)</code>. This is a small detail that matters in practice.</p>
+  </section>
+
+  <!-- SUBTREE -->
+  <section class="card" id="subtree">
+    <h2>🌿 Subtree Algorithm — Preorder Euler</h2>
+    <p>The subtree case is almost identical to classic array Mo. We replace the array <code class="inlineCode">a[]</code> with the preorder Euler array <code class="inlineCode">euler[]</code>, build the <code class="inlineCode">tin</code>/<code class="inlineCode">tout</code> tables once, and rewrite every subtree query as the interval <code class="inlineCode">[tin[v], tout[v]]</code>. From that moment on, the master template runs unchanged.</p>
+    <pre><code>void dfs(int u, int p) {
+    tin[u] = timer;
+    euler[timer] = u;
+    timer++;
+
+    for (int v : adj[u]) {
+        if (v != p) dfs(v, u);
+    }
+
+    tout[u] = timer - 1;   // last index of the subtree of u
+}
+
+// subtree(u) == euler[tin[u] .. tout[u]]</code></pre>
+    <p>The <code class="inlineCode">add(idx)</code> hook takes the index <code class="inlineCode">idx</code> in the Euler array, fetches <code class="inlineCode">euler[idx]</code> (a node), reads its color/value, and bumps the maintained state. <code class="inlineCode">remove(idx)</code> is the exact inverse. The pointer-movement layer is identical to classic Mo.</p>
+  </section>
+
+  <!-- SUBTREE TRACER -->
+  <section class="card" id="tracer-subtree">
+    <h2>🎮 Subtree Mo Tracer</h2>
+    <p>The tracer walks through the same DFS-built Euler array from the visual demo above, but now it processes two subtree queries with Mo. Watch how the two pointers expand and contract over the preorder Euler array to land on each <code class="inlineCode">[tin[v], tout[v]]</code> interval.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Preorder Euler · subtree queries · distinct colors</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="stResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="stStepBtn">▶ Next</button>
+          <button class="miniBtn" id="stAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <svg class="treeSvg" id="stTreeSvg" viewBox="0 0 580 420"></svg>
+        </div>
+        <div>
+          <div class="eulerRow" id="stEulerRow"></div>
+          <div class="queryRow" id="stQueries"></div>
+          <div class="grid2" style="margin-top:14px;">
+            <div class="statusPanel">
+              <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Color frequencies</div>
+              <div class="dsBox" id="stFreq"></div>
+            </div>
+            <div class="statusPanel">
+              <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Description</div>
+              <div class="dsBox" id="stDesc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUBTREE MASTER TEMPLATE -->
+  <section class="card" id="subtree-master">
+    <h2>📄 Subtree Master Template</h2>
+    <p>This template is structurally identical to the classic Mo master template. The only differences are the DFS preprocessing block, the indirection through <code class="inlineCode">euler[]</code>, and the query construction. Everything inside <code class="inlineCode">solve_mo</code> is reused verbatim.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id; /* plus problem-specific fields */ };
+int BLOCK;
+
+bool mo_cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int n;
+vector&lt;vector&lt;int&gt;&gt; adj;
+vector&lt;int&gt; tin, tout_, euler, val;   // val[u] = value/color of u
+int timer_ = 0;
+
+void dfs(int u, int p) {
+    tin[u] = timer_;
+    euler[timer_] = u;
+    timer_++;
+    for (int v : adj[u]) if (v != p) dfs(v, u);
+    tout_[u] = timer_ - 1;
+}
+
+// =====================================================
+// Problem-specific state (replace per problem)
+// =====================================================
+vector&lt;int&gt; freq;
+long long current_answer = 0;
+
+void add_index(int idx) {
+    int node = euler[idx];
+    int c = val[node];
+    // update freq[c] and current_answer
+}
+
+void remove_index(int idx) {
+    int node = euler[idx];
+    int c = val[node];
+    // inverse of add_index
+}
+
+long long get_answer(const Query&amp; q) { return current_answer; }
+
+// =====================================================
+// Generic Mo driver (unchanged from classic Mo)
+// =====================================================
+vector&lt;long long&gt; solve_mo(vector&lt;Query&gt; queries) {
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), mo_cmp);
+    vector&lt;long long&gt; ans(queries.size());
+
+    int curL = 0, curR = -1;
+    for (const Query&amp; q : queries) {
+        while (curL &gt; q.l) add_index(--curL);
+        while (curR &lt; q.r) add_index(++curR);
+        while (curL &lt; q.l) remove_index(curL++);
+        while (curR &gt; q.r) remove_index(curR--);
+        ans[q.id] = get_answer(q);
+    }
+    return ans;
+}
+
+// Then for each subtree query on node v: push {tin[v], tout_[v], id}.</code></pre>
+  </section>
+
+  <!-- PATH -->
+  <section class="card" id="path">
+    <h2>🛤 Path Algorithm — Doubled Euler + LCA</h2>
+    <p>Path queries are the more delicate case because a path between two arbitrary nodes is not contiguous in the simple DFS preorder. The trick is to build a <b>doubled Euler tour</b>: write each node into the array twice, once on the way in (entry) and once on the way out (exit). The resulting array has length <code class="inlineCode">2n</code>, and every node appears exactly twice. The key combinatorial fact, made precise in the toggle invariant below, is that the set of nodes appearing an odd number of times inside any sub-interval of this array equals the set of nodes on a specific tree-path. Choosing the right interval for the query gives exactly the path from <code class="inlineCode">u</code> to <code class="inlineCode">v</code>.</p>
+
+    <h3>Building the doubled Euler tour</h3>
+<pre><code>void dfs(int u, int p) {
+    tin[u] = timer_;
+    euler[timer_++] = u;           // entry
+
+    up[0][u] = p;
+    for (int j = 1; j &lt; LOG; j++) up[j][u] = up[j-1][up[j-1][u]];
+
+    for (int v : adj[u]) {
+        if (v == p) continue;
+        depth[v] = depth[u] + 1;
+        dfs(v, u);
+    }
+
+    tout_[u] = timer_;
+    euler[timer_++] = u;           // exit
+}</code></pre>
+    <p>Notice that <code class="inlineCode">tin[u]</code> stores the position of the entry occurrence and <code class="inlineCode">tout[u]</code> stores the position of the exit occurrence. Both are needed when building each query's interval.</p>
+
+    <h3>Picking the interval for a query</h3>
+    <p>Without loss of generality, assume <code class="inlineCode">tin[u] ≤ tin[v]</code> (swap them otherwise). Compute <code class="inlineCode">w = LCA(u, v)</code> with binary lifting. Two cases follow.</p>
+    <p><b>Case 1, ancestor case:</b> if <code class="inlineCode">w == u</code>, then <code class="inlineCode">u</code> is an ancestor of <code class="inlineCode">v</code>. The interval is <code class="inlineCode">[tin[u], tin[v]]</code>; no extra LCA correction is needed because <code class="inlineCode">u</code> already appears with odd count inside this interval (entry only).</p>
+    <p><b>Case 2, separate-subtrees case:</b> if <code class="inlineCode">w ≠ u</code>, then the interval is <code class="inlineCode">[tout[u], tin[v]]</code>, and <code class="inlineCode">w</code> is <em>not</em> in that interval. Before reading the answer we toggle <code class="inlineCode">w</code> in (so it counts), and after reading we toggle it back out. We record <code class="inlineCode">lca = w</code> in the second case and <code class="inlineCode">lca = -1</code> in the first case so the main loop knows whether to apply the temporary toggle.</p>
+  </section>
+
+  <!-- TOGGLE INVARIANT -->
+  <section class="card" id="toggle">
+    <h2>🔁 The Toggle Invariant</h2>
+    <p>The central piece of theory in path-Mo lives in a single sentence, which is worth memorizing.</p>
+    <p style="background:var(--panel2);padding:14px 18px;border-radius:14px;border:3px solid var(--accent);font-weight:850;font-size:23px;">A node <code class="inlineCode">u</code> is active in the current Mo state if and only if <code class="inlineCode">u</code> appears an odd number of times in the doubled-Euler interval <code class="inlineCode">[curL, curR]</code>.</p>
+    <p>This invariant is what makes the toggle trick legal. Each time a pointer moves over a cell holding node <code class="inlineCode">u</code>, the parity of <code class="inlineCode">u</code>'s occurrences inside the interval flips. We mirror that flip in our <code class="inlineCode">active[u]</code> bit and trigger exactly one <code class="inlineCode">add_node(u)</code> or one <code class="inlineCode">remove_node(u)</code>.</p>
+<pre><code>bool active[N];
+
+void toggle_node(int u) {
+    if (!active[u]) add_node(u);
+    else            remove_node(u);
+    active[u] = !active[u];
+}</code></pre>
+
+    <h3>Why "appears odd times" matches "on the path"</h3>
+    <p>Consider what happens during the DFS for a single node <code class="inlineCode">u</code>. Between <code class="inlineCode">tin[u]</code> and <code class="inlineCode">tout[u]</code> (inclusive), the DFS visits exactly the subtree of <code class="inlineCode">u</code>. Any node <code class="inlineCode">x</code> in that subtree contributes both its entry and its exit inside that interval, an <em>even</em> count, and therefore is not considered active. Any node <code class="inlineCode">x</code> on the path from <code class="inlineCode">u</code> downward to <code class="inlineCode">v</code> (when <code class="inlineCode">u</code> is an ancestor of <code class="inlineCode">v</code>) has its entry inside the interval but its exit outside, an <em>odd</em> count, and is therefore active. When <code class="inlineCode">u</code> and <code class="inlineCode">v</code> are in separate subtrees of their LCA <code class="inlineCode">w</code>, a similar accounting on the interval <code class="inlineCode">[tout[u], tin[v]]</code> picks up exactly the union of the two root-to-node paths, minus <code class="inlineCode">w</code> itself — which is why we add <code class="inlineCode">w</code> back temporarily.</p>
+  </section>
+
+  <!-- PATH TRACER -->
+  <section class="card" id="tracer-path">
+    <h2>🎮 Path Mo Tracer</h2>
+    <p>This tracer applies path-Mo to a small tree with three queries that exercise both the ancestor case and the separate-subtrees case. Pay attention to the doubled Euler array at the bottom: indices in the active interval get a blue ring, and toggled-in nodes light up green in the tree on the left. When the LCA correction fires, the LCA is briefly highlighted in orange.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Doubled Euler · path queries · toggle visualization</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="ptResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="ptStepBtn">▶ Next</button>
+          <button class="miniBtn" id="ptAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <svg class="treeSvg" id="ptTreeSvg" viewBox="0 0 580 420"></svg>
+        </div>
+        <div>
+          <div class="eulerRow" id="ptEulerRow"></div>
+          <div class="queryRow" id="ptQueries"></div>
+          <div class="grid2" style="margin-top:14px;">
+            <div class="statusPanel">
+              <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Color freqs &amp; active</div>
+              <div class="dsBox" id="ptFreq"></div>
+            </div>
+            <div class="statusPanel">
+              <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Description</div>
+              <div class="dsBox" id="ptDesc"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PATH MASTER TEMPLATE -->
+  <section class="card" id="path-master">
+    <h2>📄 Path Master Template — Distinct Colors on a Tree Path</h2>
+    <p>This is the SPOJ COT2 accepted template, taken directly from the source corpus, reformatted to match the family naming. The only thing that changes when you adapt it to another path problem is the <code class="inlineCode">add_node</code> / <code class="inlineCode">remove_node</code> pair and the <code class="inlineCode">distinct</code> scalar.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id, lca; };
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; val(n + 1), all;
+    for (int i = 1; i &lt;= n; i++) { cin &gt;&gt; val[i]; all.push_back(val[i]); }
+    sort(all.begin(), all.end());
+    all.erase(unique(all.begin(), all.end()), all.end());
+    for (int i = 1; i &lt;= n; i++)
+        val[i] = lower_bound(all.begin(), all.end(), val[i]) - all.begin();
+
+    vector&lt;vector&lt;int&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; n - 1; i++) {
+        int u, v; cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v); adj[v].push_back(u);
+    }
+
+    int LOG = 1; while ((1 &lt;&lt; LOG) &lt;= n) LOG++;
+    vector&lt;vector&lt;int&gt;&gt; up(LOG, vector&lt;int&gt;(n + 1, 0));
+    vector&lt;int&gt; depth(n + 1, 0), tin(n + 1), tout_(n + 1), euler(2 * n);
+    int timer_ = 0;
+
+    function&lt;void(int,int)&gt; dfs = [&amp;](int u, int p) {
+        tin[u] = timer_; euler[timer_++] = u;
+        up[0][u] = p;
+        for (int j = 1; j &lt; LOG; j++) up[j][u] = up[j - 1][up[j - 1][u]];
+        for (int v : adj[u]) {
+            if (v == p) continue;
+            depth[v] = depth[u] + 1; dfs(v, u);
+        }
+        tout_[u] = timer_; euler[timer_++] = u;
+    };
+    dfs(1, 1);
+
+    auto lca = [&amp;](int a, int b) {
+        if (depth[a] &lt; depth[b]) swap(a, b);
+        int diff = depth[a] - depth[b];
+        for (int j = 0; j &lt; LOG; j++)
+            if (diff &amp; (1 &lt;&lt; j)) a = up[j][a];
+        if (a == b) return a;
+        for (int j = LOG - 1; j &gt;= 0; j--)
+            if (up[j][a] != up[j][b]) { a = up[j][a]; b = up[j][b]; }
+        return up[0][a];
+    };
+
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int u, v; cin &gt;&gt; u &gt;&gt; v;
+        if (tin[u] &gt; tin[v]) swap(u, v);
+        int w = lca(u, v);
+        if (w == u) queries[i] = {tin[u],  tin[v], i, -1};
+        else        queries[i] = {tout_[u], tin[v], i, w};
+    }
+
+    BLOCK = max(1, (int)sqrt(2 * n));
+    sort(queries.begin(), queries.end(), cmp);
+
+    vector&lt;int&gt; freq(all.size(), 0);
+    vector&lt;char&gt; active(n + 1, false);
+    vector&lt;int&gt; ans(q);
+    int distinct = 0;
+
+    auto add_node = [&amp;](int u) {
+        int x = val[u];
+        if (freq[x] == 0) distinct++;
+        freq[x]++;
+    };
+    auto remove_node = [&amp;](int u) {
+        int x = val[u];
+        freq[x]--;
+        if (freq[x] == 0) distinct--;
+    };
+    auto toggle = [&amp;](int u) {
+        if (active[u]) remove_node(u);
+        else add_node(u);
+        active[u] = !active[u];
+    };
+
+    int curL = 0, curR = -1;
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) toggle(euler[--curL]);
+        while (curR &lt; qu.r) toggle(euler[++curR]);
+        while (curL &lt; qu.l) toggle(euler[curL++]);
+        while (curR &gt; qu.r) toggle(euler[curR--]);
+
+        if (qu.lca != -1) toggle(qu.lca);   // include LCA temporarily
+        ans[qu.id] = distinct;
+        if (qu.lca != -1) toggle(qu.lca);   // and undo
+    }
+
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+  </section>
+
+  <!-- INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 Invariants</h2>
+
+    <h3>State invariant (subtree case)</h3>
+    <p>At every moment during the main loop, the maintained state represents exactly the multiset of values <code class="inlineCode">{ val[euler[i]] : curL ≤ i ≤ curR }</code>. This is the direct lift of the classic Mo state invariant to a preorder Euler array.</p>
+
+    <h3>State invariant (path case)</h3>
+    <p>At every moment during the main loop, the maintained state represents exactly the multiset of values of <em>active</em> nodes, where <code class="inlineCode">active[u] = true</code> iff <code class="inlineCode">u</code> appears an odd number of times in <code class="inlineCode">euler[curL..curR]</code>. This is the toggle invariant.</p>
+
+    <h3>Transition invariant</h3>
+    <p>Each pointer movement touches one cell and triggers exactly one <code class="inlineCode">toggle</code> on the node label in that cell. The toggle then routes to either <code class="inlineCode">add_node</code> or <code class="inlineCode">remove_node</code>; in either case, exactly one state mutation happens per pointer step.</p>
+
+    <h3>Query invariant</h3>
+    <p>Immediately before storing <code class="inlineCode">ans[q.id]</code>, the interval matches the query's stored <code class="inlineCode">[l, r]</code>. If <code class="inlineCode">q.lca != -1</code>, the LCA has been toggled in once before reading and toggled out once after, so the temporary correction is balanced and does not corrupt subsequent queries.</p>
+  </section>
+
+  <!-- PROOF -->
+  <section class="card" id="proof">
+    <h2>📜 Proof of Correctness — Path Case</h2>
+
+    <h3>Lemma A — Parity argument on the doubled Euler tour</h3>
+    <p>Fix a node <code class="inlineCode">x</code>. Inside any sub-interval <code class="inlineCode">[L, R]</code> of the doubled-Euler array, <code class="inlineCode">x</code> appears either zero, one, or two times. It appears zero times iff <code class="inlineCode">x</code>'s entry and exit are both outside <code class="inlineCode">[L, R]</code>, equivalently <code class="inlineCode">tout[x] &lt; L</code> or <code class="inlineCode">tin[x] &gt; R</code>. It appears twice iff both <code class="inlineCode">tin[x]</code> and <code class="inlineCode">tout[x]</code> lie inside <code class="inlineCode">[L, R]</code>; in that case the subtree of <code class="inlineCode">x</code> is wholly inside the interval, which means <code class="inlineCode">x</code> is <em>not</em> on the path being queried. It appears exactly once otherwise — which is the only case where <code class="inlineCode">x</code> sits on the boundary of containment, i.e., on the path.</p>
+
+    <h3>Lemma B — Ancestor case</h3>
+    <p>If <code class="inlineCode">u</code> is an ancestor of <code class="inlineCode">v</code>, the interval <code class="inlineCode">[tin[u], tin[v]]</code> contains <code class="inlineCode">tin[x]</code> for every <code class="inlineCode">x</code> on the path from <code class="inlineCode">u</code> down to <code class="inlineCode">v</code>, but contains <code class="inlineCode">tout[x]</code> only for nodes strictly inside the subtree of <code class="inlineCode">x</code> that are visited completely before <code class="inlineCode">tin[v]</code>. A careful case analysis shows that for nodes on the path, the entry is inside and the exit is outside, giving odd count, and for nodes not on the path either both occurrences are inside (subtrees of off-path nodes visited fully before <code class="inlineCode">v</code>) or both are outside.</p>
+
+    <h3>Lemma C — Separate-subtrees case</h3>
+    <p>If <code class="inlineCode">w = LCA(u, v) ≠ u</code>, the interval <code class="inlineCode">[tout[u], tin[v]]</code> spans the gap between leaving <code class="inlineCode">u</code>'s subtree and entering <code class="inlineCode">v</code>'s subtree. The nodes on the path are partitioned into (i) <code class="inlineCode">u</code> itself, whose exit is inside and entry is outside (odd, included), (ii) ancestors of <code class="inlineCode">u</code> strictly below <code class="inlineCode">w</code>, whose entries and exits straddle the interval (odd, included), (iii) <code class="inlineCode">w</code> itself, whose entry is strictly before <code class="inlineCode">tout[u]</code> and whose exit is strictly after <code class="inlineCode">tin[v]</code>, giving an even count of zero inside the interval — therefore <code class="inlineCode">w</code> is missing and must be toggled in, then out, around the answer read.</p>
+
+    <h3>Theorem</h3>
+    <p>Combining Lemmas A, B, C with the transition invariant from Mo, the maintained state at each query exactly represents the multiset of values of the path nodes. Hence every stored answer is correct.</p>
+  </section>
+
+  <!-- COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+    <p>For subtree-Mo, the Euler array has length <code class="inlineCode">n</code>, so the complexity is <code class="inlineCode">O((n + q) · √n · F)</code>, where <code class="inlineCode">F</code> is the cost of one <code class="inlineCode">add_index</code> or <code class="inlineCode">remove_index</code>. The "375D"-style problem additionally pays a <code class="inlineCode">log n</code> factor for Fenwick lookups on frequency-of-frequency tables.</p>
+    <p>For path-Mo, the doubled Euler array has length <code class="inlineCode">2n</code>, and each pointer step is <code class="inlineCode">O(F)</code>. The Mo bound becomes <code class="inlineCode">O((n + q) · √n · F)</code>. LCA queries are <code class="inlineCode">O(log n)</code> each via binary lifting, paid only once per query during input reading, so they add <code class="inlineCode">O(q · log n)</code> to the running total — usually dwarfed by the Mo factor unless <code class="inlineCode">F</code> is itself <code class="inlineCode">O(1)</code>.</p>
+    <p>The block-size choice is <code class="inlineCode">B = max(1, ⌊√(2n)⌋)</code> for path-Mo, because the comparator sorts indices into the doubled-Euler array. Using <code class="inlineCode">√n</code> instead works but is slightly suboptimal.</p>
+  </section>
+
+  <!-- LINE BY LINE -->
+  <section class="card" id="lbl">
+    <h2>🔎 Line-by-Line — Path Code Dissected</h2>
+
+    <h3>Reading the values and coordinate-compressing</h3>
+    <p>The values on the nodes can be huge; we compress them into a contiguous range starting from zero so that <code class="inlineCode">freq[]</code> can be a flat vector of size equal to the number of distinct values, rather than the value range. The <code class="inlineCode">all</code> vector is sorted, deduplicated, and then each <code class="inlineCode">val[i]</code> is replaced by its position in <code class="inlineCode">all</code>.</p>
+
+    <h3>Building the doubled Euler array and binary-lifting table together</h3>
+    <p>The DFS writes the node both on entry and on exit. The same DFS computes <code class="inlineCode">up[j][u]</code>, the <code class="inlineCode">2^j</code>-th ancestor of <code class="inlineCode">u</code>, used by the LCA function. Recording <code class="inlineCode">tin</code> and <code class="inlineCode">tout</code> in the global timer also gives us a constant-time test for "is <code class="inlineCode">a</code> an ancestor of <code class="inlineCode">b</code>?" via the interval-containment check <code class="inlineCode">tin[a] ≤ tin[b] &amp;&amp; tout[a] ≥ tout[b]</code>, although the binary-lifting LCA is the more general tool used in this template.</p>
+
+    <h3>Choosing the query interval</h3>
+    <p>After ensuring <code class="inlineCode">tin[u] ≤ tin[v]</code>, the code computes <code class="inlineCode">w = lca(u, v)</code>. If <code class="inlineCode">w == u</code>, the query interval is <code class="inlineCode">[tin[u], tin[v]]</code> and no LCA correction is needed. Otherwise, the query interval is <code class="inlineCode">[tout[u], tin[v]]</code> and <code class="inlineCode">w</code> is stored so it can be toggled in temporarily.</p>
+
+    <h3>The toggle wrapper</h3>
+    <p><code class="inlineCode">toggle(u)</code> consults <code class="inlineCode">active[u]</code> and dispatches to either <code class="inlineCode">add_node</code> or <code class="inlineCode">remove_node</code>, then flips <code class="inlineCode">active[u]</code>. This is the single point of indirection that makes the doubled-Euler array work with the classic Mo movement loop.</p>
+
+    <h3>The four-loop engine — unchanged from classic Mo</h3>
+    <p>The four loops are syntactically identical to the classic Mo file. The only difference is that each step calls <code class="inlineCode">toggle(euler[idx])</code> instead of <code class="inlineCode">add_index(idx)</code>/<code class="inlineCode">remove_index(idx)</code>. The pre/post-increment ordering is the same as before.</p>
+
+    <h3>The LCA correction sandwich</h3>
+    <p>If <code class="inlineCode">qu.lca != -1</code>, the code toggles the LCA in before reading <code class="inlineCode">distinct</code>, then toggles it out again. This pair of calls is symmetric and balanced, so the active set is exactly the same after the read as it was before the read — which is critical for the next query to start from a correct state.</p>
+  </section>
+
+  <!-- EDGE-CASE AUDIT -->
+  <section class="card" id="edges">
+    <h2>🪜 Centralized Edge-Case Audit</h2>
+    <p>The classic-Mo audit applies in full, plus the additional checks below that are specific to running Mo on top of a tree linearization.</p>
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Is the tree 1-indexed in input but you're using 0-indexed Euler positions internally?</td><td>Off-by-one bugs in the <code class="inlineCode">tin</code>/<code class="inlineCode">tout</code> tables show up as queries returning answers for the wrong subtree.</td></tr>
+        <tr><td>2</td><td>Did you size the Euler array to <code class="inlineCode">n</code> for subtree, or <code class="inlineCode">2n</code> for path?</td><td>Mixing the two corrupts the very last few entries silently; the longest test cases will fail.</td></tr>
+        <tr><td>3</td><td>For path-Mo, did you ensure <code class="inlineCode">tin[u] ≤ tin[v]</code> before picking the interval?</td><td>The interval-selection rule is asymmetric in <code class="inlineCode">u</code> and <code class="inlineCode">v</code>; swapping them is mandatory.</td></tr>
+        <tr><td>4</td><td>For path-Mo, did you toggle the LCA both times (in and out)?</td><td>Forgetting the second toggle pollutes the active set for the next query, breaking everything downstream.</td></tr>
+        <tr><td>5</td><td>Is the block size based on the Euler length, not the tree size?</td><td><code class="inlineCode">B = √(2n)</code> for path-Mo; <code class="inlineCode">B = √n</code> for subtree-Mo.</td></tr>
+        <tr><td>6</td><td>Are values coordinate-compressed if they can be large?</td><td>Without compression, <code class="inlineCode">freq[val[u]]</code> can allocate an unworkable array.</td></tr>
+        <tr><td>7</td><td>Does the binary-lifting <code class="inlineCode">LOG</code> cover the deepest node?</td><td>If <code class="inlineCode">2^LOG ≤ n</code>, the LCA function returns wrong answers for deep nodes; pick <code class="inlineCode">LOG</code> so <code class="inlineCode">2^LOG &gt; n</code>.</td></tr>
+        <tr><td>8</td><td>Is the DFS iterative or recursive deep enough?</td><td>Recursive DFS on a tree of 200k nodes can blow the stack. Use an iterative DFS or raise the stack limit explicitly.</td></tr>
+        <tr><td>9</td><td>Are subtree-Mo queries sorted by <code class="inlineCode">tin[v]</code> blocks, not by <code class="inlineCode">v</code>?</td><td>Mo sorts by interval endpoints, not by node IDs. Storing <code class="inlineCode">{tin[v], tout[v], …}</code> at read-time keeps the comparator pure.</td></tr>
+        <tr><td>10</td><td>For subtree-Mo with frequency-of-frequency, did you avoid storing <code class="inlineCode">freqCount[0]</code>?</td><td><code class="inlineCode">freqCount[0]</code> is the number of "missing" values; it's a Fenwick noise source if you index it.</td></tr>
+        <tr><td>11</td><td>If the problem has values on edges rather than nodes, did you fold edge values onto the deeper endpoint?</td><td>Trees with edge values can be reduced to trees with node values by pushing each edge's value to its child; this lets you reuse the same template with only the LCA's value adjustment.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+
+    <h3>Pitfall 1 — Using the wrong interval in path-Mo</h3>
+    <p>The two cases <code class="inlineCode">w == u</code> and <code class="inlineCode">w ≠ u</code> require different intervals. Mixing them up leads to mostly-correct answers that fail on the trickiest tests. Always normalize by swapping so that <code class="inlineCode">tin[u] ≤ tin[v]</code>, then check the LCA case.</p>
+
+    <h3>Pitfall 2 — Forgetting the LCA correction</h3>
+    <p>Even after picking the right interval, the separate-subtrees case excludes the LCA. The temporary toggle around the answer read is non-optional. Without it, you produce wrong answers exactly on the queries whose LCA is neither <code class="inlineCode">u</code> nor <code class="inlineCode">v</code>.</p>
+
+    <h3>Pitfall 3 — Forgetting the second toggle of the LCA</h3>
+    <p>The LCA must be toggled out after reading the answer. If you forget, the next query starts with the LCA still active, which corrupts every subsequent answer. The bug is easy to introduce when refactoring and very hard to find without targeted tests.</p>
+
+    <h3>Pitfall 4 — Re-entering a node through <code class="inlineCode">toggle</code> in subtree-Mo</h3>
+    <p>Subtree-Mo does <em>not</em> use the toggle trick — each node appears exactly once in the preorder Euler array. If you accidentally borrow the path-Mo template for a subtree problem and keep the <code class="inlineCode">active[]</code> bit, you will under-count nodes because the bit will get stuck. Use <code class="inlineCode">add_index</code>/<code class="inlineCode">remove_index</code> directly for subtree problems.</p>
+
+    <h3>Pitfall 5 — Confusing entry-time and exit-time when storing intervals</h3>
+    <p>Subtree-Mo uses <code class="inlineCode">[tin[v], tout[v]]</code>. Path-Mo case 1 uses <code class="inlineCode">[tin[u], tin[v]]</code>. Path-Mo case 2 uses <code class="inlineCode">[tout[u], tin[v]]</code>. Three different rules, all using mixtures of <code class="inlineCode">tin</code> and <code class="inlineCode">tout</code>. Write them in one place and never inline them.</p>
+
+    <h3>Pitfall 6 — Stack overflow on recursive DFS</h3>
+    <p>For <code class="inlineCode">n = 2·10⁵</code> a chain-shaped tree has DFS depth 200000. Many judges' default stack size handles 10k but not 200k. Solutions either rewrite the DFS iteratively with an explicit stack, or pre-allocate a larger stack at process start.</p>
+  </section>
+
+  <!-- DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 Decision Guide — Mo on Tree vs Alternatives</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Prefer</th></tr></thead>
+      <tbody>
+        <tr><td>Subtree frequency-style queries (e.g., colors with frequency ≥ k)</td><td>subtree-Mo via preorder Euler; this file.</td></tr>
+        <tr><td>Path frequency-style queries (e.g., distinct colors on a path)</td><td>path-Mo via doubled Euler + LCA toggle; this file.</td></tr>
+        <tr><td>Subtree queries where the answer has a clean merge</td><td>small-to-large / sack / DSU-on-tree, often <code class="inlineCode">O(n log n)</code>.</td></tr>
+        <tr><td>Single-element subtree sums or counts</td><td>Euler + Fenwick tree, online and faster.</td></tr>
+        <tr><td>Path sums or path XOR</td><td>LCA + prefix-sum on root paths, <code class="inlineCode">O(log n)</code> per query.</td></tr>
+        <tr><td>Queries with updates on tree</td><td>HLD + segtree, or 3D Mo on a flattened tree (advanced).</td></tr>
+        <tr><td>The answer combines well for subtrees but not for paths</td><td>DSU-on-tree (small-to-large) is usually preferable for subtree problems with merge.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules</h3>
+    <p>For <em>subtree</em> queries, ask first: "does this problem have a merge that DSU-on-tree could handle in <code class="inlineCode">O(n log² n)</code> or better?" If yes, prefer DSU-on-tree; it is usually faster and has smaller constants. Pick subtree-Mo when the answer fundamentally needs a frequency table that is hard to merge — counts of colors with frequency at least <code class="inlineCode">k</code> being the canonical example.</p>
+    <p>For <em>path</em> queries, ask first: "does this aggregate decompose as <code class="inlineCode">F(u, v) = F(root, u) + F(root, v) − F(root, LCA) − F(root, parent(LCA))</code>?" If yes, prefix-on-root is online and <code class="inlineCode">O(log n)</code> per query. Pick path-Mo only when the aggregate has the frequency-based, non-mergeable flavor — distinct colors, mode, threshold frequencies.</p>
+  </section>
+
+  <!-- VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 Variants &amp; Extensions</h2>
+
+    <h3>Edge values instead of node values</h3>
+    <p>If the problem assigns values to edges instead of nodes, "fold" each edge's value onto its child endpoint. Then the path from <code class="inlineCode">u</code> to <code class="inlineCode">v</code> in the new node-valued tree contains exactly the edge values of the original path, plus the value that was folded onto the LCA. Since the LCA itself is on both sides of the boundary, we adjust by <em>not</em> toggling the LCA (i.e., always treat <code class="inlineCode">qu.lca = -1</code> in the answer-read step, but be careful that <code class="inlineCode">u</code> and <code class="inlineCode">v</code> themselves are treated correctly — usually meaning the values of <code class="inlineCode">u</code> and <code class="inlineCode">v</code> are <em>their</em> incoming edges, so they automatically participate).</p>
+    <p><b>Why it fits:</b> the bijection between original-edge sets and "edges below a node" sets is exact, so the toggle invariant transfers.</p>
+    <p><b>Algorithm choice:</b> reuse the path-Mo template; change only the value-folding step at input time.</p>
+    <p><b>Problem link suggestions:</b> classical problems on tree edge weights with frequency-based answers; the SPOJ COT2 setup adapts trivially.</p>
+
+    <h3>Mixed subtree + path queries</h3>
+    <p>If the same problem has both subtree and path queries, prefer two separate solvers in the same offline pass. Both use Euler tours, but the path solver doubles the Euler array. Mixing them in a single Mo over the doubled Euler is possible if and only if the subtree intervals can be re-expressed in the doubled Euler — and they can, using <code class="inlineCode">[tin[v], tout[v] − 1]</code> with care — but the simpler choice in contests is to run two passes.</p>
+
+    <h3>Block-precomputed online tree-Mo</h3>
+    <p>The online variant precomputes structures for full Euler blocks and answers each query by combining a full-block answer with boundary toggles. It is uncommon in contests but appears in the extracted source files (covered in the <em>Other Variants</em> file). Use only when the problem forbids offline reordering.</p>
+  </section>
+
+  <!-- PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 Problem-Based Learning</h2>
+
+    <details open>
+      <summary>23.5 — Codeforces 375D: Tree and Queries <span class="rightHint">subtree · color frequency ≥ k</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeForces-375D">https://vjudge.net/problem/CodeForces-375D</a></p>
+        <p><b>Story.</b> Each node has a color. For each query <code class="inlineCode">(v, k)</code>, count how many colors appear at least <code class="inlineCode">k</code> times in the subtree of <code class="inlineCode">v</code>.</p>
+        <p><b>Abstraction.</b> The subtree of <code class="inlineCode">v</code> becomes the interval <code class="inlineCode">[tin[v], tout[v]]</code> in the preorder Euler array. Within that interval we maintain a frequency-of-frequency table: <code class="inlineCode">colorFreq[c]</code> tells how often color <code class="inlineCode">c</code> appears, and a Fenwick tree over frequencies supports the "sum of <code class="inlineCode">freqCount[f]</code> for <code class="inlineCode">f ≥ k</code>" suffix query.</p>
+        <p><b>Why Mo fits.</b> The answer needs frequencies of frequencies — there is no clean associative merge — and add/remove of one Euler position changes exactly one color frequency.</p>
+        <p><b>Algorithm choice.</b> Subtree-Mo + Fenwick over frequencies. The <code class="inlineCode">change_color_frequency</code> helper performs the standard "remove old contribution, mutate, add new contribution" pattern.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, k, id; };
+
+struct Fenwick {
+    int n; vector&lt;int&gt; bit;
+    Fenwick(int n = 0) { init(n); }
+    void init(int n_) { n = n_; bit.assign(n + 1, 0); }
+    void add(int idx, int val) {
+        for (; idx &lt;= n; idx += idx &amp; -idx) bit[idx] += val;
+    }
+    int sumPrefix(int idx) const {
+        int res = 0;
+        for (; idx &gt; 0; idx -= idx &amp; -idx) res += bit[idx];
+        return res;
+    }
+    int sumRange(int l, int r) const {
+        if (l &gt; r) return 0;
+        return sumPrefix(r) - sumPrefix(l - 1);
+    }
+};
+
+int BLOCK;
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; color(n + 1);
+    for (int i = 1; i &lt;= n; i++) cin &gt;&gt; color[i];
+
+    vector&lt;vector&lt;int&gt;&gt; adj(n + 1);
+    for (int i = 0; i &lt; n - 1; i++) {
+        int u, v; cin &gt;&gt; u &gt;&gt; v;
+        adj[u].push_back(v); adj[v].push_back(u);
+    }
+
+    vector&lt;int&gt; tin(n + 1), tout_(n + 1), euler(n);
+    int timer_ = 0;
+    function&lt;void(int,int)&gt; dfs = [&amp;](int u, int p) {
+        tin[u] = timer_; euler[timer_++] = u;
+        for (int v : adj[u]) if (v != p) dfs(v, u);
+        tout_[u] = timer_ - 1;
+    };
+    dfs(1, 0);
+
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int v, k; cin &gt;&gt; v &gt;&gt; k;
+        queries[i] = {tin[v], tout_[v], k, i};
+    }
+
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), cmp);
+
+    int maxColor = *max_element(color.begin() + 1, color.end());
+    vector&lt;int&gt; colorFreq(maxColor + 1, 0);
+    Fenwick fw(n + 2);
+    vector&lt;int&gt; ans(q);
+    int curL = 0, curR = -1;
+
+    auto change_color_frequency = [&amp;](int c, int delta) {
+        int oldFreq = colorFreq[c];
+        if (oldFreq &gt; 0) fw.add(oldFreq, -1);
+        colorFreq[c] += delta;
+        int newFreq = colorFreq[c];
+        if (newFreq &gt; 0) fw.add(newFreq, +1);
+    };
+    auto add = [&amp;](int idx) {
+        int node = euler[idx];
+        change_color_frequency(color[node], +1);
+    };
+    auto remove_ = [&amp;](int idx) {
+        int node = euler[idx];
+        change_color_frequency(color[node], -1);
+    };
+
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) add(--curL);
+        while (curR &lt; qu.r) add(++curR);
+        while (curL &lt; qu.l) remove_(curL++);
+        while (curR &gt; qu.r) remove_(curR--);
+
+        if (qu.k &gt; n) ans[qu.id] = 0;
+        else ans[qu.id] = fw.sumRange(qu.k, n);
+    }
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <p><b>Complexity.</b> <code class="inlineCode">O((N + Q) · √N · log N)</code> — the log comes from the Fenwick updates and the suffix query.</p>
+        <p><b>Pitfalls.</b> Do not let <code class="inlineCode">freqCount[0]</code> enter the Fenwick. If color values are huge, coordinate-compress; otherwise <code class="inlineCode">colorFreq</code> can be indexed directly by raw color.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>23.6 — SPOJ COT2: Count on a Tree II <span class="rightHint">path · distinct values</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-COT2">https://vjudge.net/problem/SPOJ-COT2</a></p>
+        <p><b>Story.</b> Each node has a value. For each query <code class="inlineCode">(u, v)</code>, count the number of distinct values on the path from <code class="inlineCode">u</code> to <code class="inlineCode">v</code>.</p>
+        <p><b>Abstraction.</b> Build the doubled Euler tour. Compute each query's interval via the LCA rules, store the LCA only in the separate-subtrees case, and route to the Mo template. The state is the same distinct-count state from the classic file, but updated through <code class="inlineCode">toggle</code> rather than direct <code class="inlineCode">add</code>/<code class="inlineCode">remove</code>.</p>
+        <p><b>Why Mo fits.</b> Distinct count is the canonical example of a frequency-based answer with no associative merge, and the path can be embedded into a 1-D doubled-Euler interval.</p>
+        <p><b>Algorithm choice.</b> Path-Mo with binary-lifting LCA and the toggle wrapper. The full template code in the <em>Path Master Template</em> section above is the accepted solution to this problem.</p>
+        <p><b>Complexity.</b> <code class="inlineCode">O((N + Q) · √N · log N)</code>. The Mo movement is <code class="inlineCode">O(1)</code> per step; the log factor comes from preprocessing-time LCA queries.</p>
+        <p><b>Pitfalls.</b> Use a doubled Euler array of size <code class="inlineCode">2N</code>. Toggle the LCA exactly once when needed (case 2), and exactly once again to undo it after reading. Sort queries by <code class="inlineCode">l</code>-block of size <code class="inlineCode">√(2N)</code>.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 Final Summary</h2>
+    <p>Mo on trees is the master template plus an Euler-tour translation. For subtrees, the preorder Euler array makes each subtree a contiguous interval and the classic template applies unchanged. For paths, the doubled Euler array plus the toggle invariant turns each path into a sub-interval, with the LCA correction handled by a balanced pair of toggles around the answer read.</p>
+    <p>The single new theorem worth carrying in your head:</p>
+    <pre><code>A node is on the current Mo path iff it appears
+an odd number of times in the doubled-Euler interval.</code></pre>
+    <p>Everything else — the four-loop engine, the comparator, the answer-state design — is the same as classic Mo. Continue with <code class="inlineCode">24-mo-with-updates.html</code> for the time-dimension extension and <code class="inlineCode">25-mo-other-variants.html</code> for rollback and 4D Mo.</p>
+  </section>
+
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🌳</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Mo's Algorithm Family · Mo on Trees · Euler Linearization</div>
+    <div class="footer-copy">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+// =============================================================
+// HELPERS
+// =============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+function makeSVG(tag, attrs={}){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// =============================================================
+// THEME TOGGLE
+// =============================================================
+const savedTheme=localStorage.getItem('mo_tree_theme');
+if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
+$('#themeSwitch').onclick=()=>{
+  const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorage.setItem('mo_tree_theme', next);
+  // Re-render the SVG tracers so their colours match the theme.
+  window.__rerenderTracers && window.__rerenderTracers();
+};
+
+// ============================================================
+// SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+// ============================================================
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (window.innerWidth > 1400) {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      } else {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+      setSidebar(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1400) {
+      setSidebar(true);
+    } else {
+      setSidebar(false);
+    }
+  });
+
+  setSidebar(open);
+})();
+// =============================================================
+// SCROLL NAV HIGHLIGHT
+// =============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<200) cur=s.id; });
+  navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+$('.content').addEventListener('scroll', updateNav);
+updateNav();
+
+// =============================================================
+// SHARED SAMPLE TREE
+// 7 nodes; root=1.
+// Edges chosen to exercise BOTH path-Mo cases:
+//   - Case 1 (w==u, ancestor): query (1, 5) or (2, 4)
+//   - Case 2 (w!=u, separate subtrees): query (4, 6)
+//
+//        1
+//       / \
+//      2   3
+//     / \   \
+//    4   5   6
+//   /
+//  7
+// =============================================================
+function buildTree(){
+  const adj=[[],[2,3],[4,5],[6],[7],[],[],[]];
+  // colors used in subtree/path demos
+  const color=[0, 1, 2, 1, 3, 2, 4, 1];
+  // BFS positions for layout in SVG (width=580, height=420)
+  const pos = {
+    1:{x:290,y:50},
+    2:{x:170,y:140},
+    3:{x:430,y:140},
+    4:{x:90, y:240},
+    5:{x:250,y:240},
+    6:{x:430,y:240},
+    7:{x:90, y:340},
+  };
+  // Preorder Euler array
+  const tin={}, tout_={}, euler=[];
+  let timer=0;
+  (function dfs(u,p){
+    tin[u]=timer; euler.push(u); timer++;
+    for(const v of adj[u]) if(v!==p) dfs(v,u);
+    tout_[u]=timer-1;
+  })(1,0);
+  // Doubled Euler array
+  const dblTin={}, dblTout={}, dblEuler=[];
+  let t2=0;
+  (function dfs2(u,p){
+    dblTin[u]=t2; dblEuler.push(u); t2++;
+    for(const v of adj[u]) if(v!==p) dfs2(v,u);
+    dblTout[u]=t2; dblEuler.push(u); t2++;
+  })(1,0);
+  // Depth + binary lifting for LCA
+  const depth={}, parent={};
+  (function dfs3(u,p,d){
+    depth[u]=d; parent[u]=p;
+    for(const v of adj[u]) if(v!==p) dfs3(v,u,d+1);
+  })(1,0,0);
+  function lca(a,b){
+    while(depth[a]>depth[b]) a=parent[a];
+    while(depth[b]>depth[a]) b=parent[b];
+    while(a!==b){ a=parent[a]; b=parent[b]; }
+    return a;
+  }
+  return {adj,color,pos,tin,tout_,euler,dblTin,dblTout,dblEuler,depth,parent,lca};
+}
+const TREE = buildTree();
+
+// =============================================================
+// SHARED: draw a tree into an SVG element with per-node styling
+// =============================================================
+function renderTree(svg, nodeStyles){
+  // nodeStyles: { nodeId -> { fill, stroke, label?, ring? } }
+  clearEl(svg);
+  const {adj, pos, color} = TREE;
+  // Edges
+  for(let u=1; u<=7; u++){
+    for(const v of adj[u]){
+      if(v<u) continue; // draw each edge once
+      const a=pos[u], b=pos[v];
+      svg.appendChild(makeSVG('line',{
+        x1:a.x, y1:a.y, x2:b.x, y2:b.y,
+        stroke: cssVar('--border'), 'stroke-width':3
+      }));
+    }
+  }
+  // Nodes
+  const COLOR_PALETTE = [
+    null,
+    '#ef4444', // red    (color 1)
+    '#3b82f6', // blue   (color 2)
+    '#10b981', // green  (color 3)
+    '#f59e0b', // amber  (color 4)
+    '#a855f7', // purple
+  ];
+  for(let u=1; u<=7; u++){
+    const p=pos[u];
+    const style = (nodeStyles && nodeStyles[u]) || {};
+    const baseFill = COLOR_PALETTE[color[u]] || '#94a3b8';
+    const fill = style.fill || baseFill;
+    const stroke = style.stroke || cssVar('--text');
+    const sw = style.stroke ? 5 : 2;
+    if(style.ring){
+      svg.appendChild(makeSVG('circle',{
+        cx:p.x, cy:p.y, r:32,
+        fill:'none', stroke:style.ring, 'stroke-width':5,
+        'stroke-dasharray':'6 4'
+      }));
+    }
+    svg.appendChild(makeSVG('circle',{
+      cx:p.x, cy:p.y, r:25, fill, stroke, 'stroke-width':sw,
+      class:'nodeCircle',
+      opacity: style.dim ? 0.35 : 1.0
+    }));
+    const txt=makeSVG('text',{
+      x:p.x, y:p.y+8, 'text-anchor':'middle',
+      fill:'#ffffff', class:'nodeLabel',
+      'paint-order':'stroke','stroke':'rgba(0,0,0,.45)','stroke-width':3
+    });
+    txt.textContent = String(u);
+    svg.appendChild(txt);
+    // color label below the node
+    const cTxt=makeSVG('text',{
+      x:p.x, y:p.y+48, 'text-anchor':'middle',
+      fill: cssVar('--muted'),
+      'font-size':14, 'font-weight':900
+    });
+    cTxt.textContent = `c=${color[u]}`;
+    svg.appendChild(cTxt);
+  }
+}
+
+// =============================================================
+// TRACER 1 — Euler-Tour Demo (preorder vs doubled, no Mo run yet)
+// =============================================================
+(function(){
+  let mode='preorder'; // or 'doubled'
+  let selectedQ = 0;
+  // Demo queries (mode-dependent)
+  const subtreeQueries = [
+    {label:'subtree(2)', node:2},
+    {label:'subtree(3)', node:3},
+    {label:'subtree(1)', node:1},
+  ];
+  const pathQueries = [
+    {label:'path(1,5) — ancestor', u:1, v:5},
+    {label:'path(4,6) — separate subtrees', u:4, v:6},
+    {label:'path(7,5)', u:7, v:5},
+  ];
+
+  function getQueries(){ return mode==='preorder' ? subtreeQueries : pathQueries; }
+  function getInterval(){
+    const q=getQueries()[selectedQ];
+    if(mode==='preorder'){
+      return {L: TREE.tin[q.node], R: TREE.tout_[q.node], lca: null, q};
+    } else {
+      let u=q.u, v=q.v;
+      if(TREE.dblTin[u] > TREE.dblTin[v]) { [u,v]=[v,u]; }
+      const w = TREE.lca(u,v);
+      if(w===u) return {L: TREE.dblTin[u], R: TREE.dblTin[v], lca: null, q};
+      return {L: TREE.dblTout[u], R: TREE.dblTin[v], lca: w, q};
+    }
+  }
+
+  function render(){
+    // Tree colouring: highlight nodes in current interval (preorder),
+    // or odd-count active nodes (doubled)
+    const arr = mode==='preorder' ? TREE.euler : TREE.dblEuler;
+    const {L, R, lca, q} = getInterval();
+    const oddCount = {};
+    for(let i=L; i<=R; i++){
+      const u = arr[i];
+      oddCount[u] = (oddCount[u]||0) + 1;
+    }
+    const styles = {};
+    for(let u=1; u<=7; u++){
+      const inactive = !oddCount[u] || (oddCount[u]%2===0);
+      const isLCA = (mode==='doubled' && lca===u);
+      const isPathEndpoint = (mode==='doubled' && (u===q.u || u===q.v));
+      styles[u] = {
+        dim: inactive && !isLCA,
+        stroke: isLCA ? '#f59e0b' : (isPathEndpoint ? '#22d3ee' : (oddCount[u]%2===1 ? '#10b981' : null)),
+        ring: isLCA ? '#f59e0b' : null
+      };
+    }
+    renderTree($('#etTreeSvg'), styles);
+
+    // Euler row
+    const row = $('#etEulerRow'); clearEl(row);
+    for(let i=0; i<arr.length; i++){
+      const u = arr[i];
+      const cell = document.createElement('div');
+      cell.className='eulerCell';
+      // For doubled Euler, mark entry vs exit
+      if(mode==='doubled'){
+        if(i === TREE.dblTin[u]) cell.classList.add('entry');
+        else cell.classList.add('exit');
+      } else {
+        cell.classList.add('entry');
+      }
+      if(i >= L && i <= R) cell.classList.add('inRange');
+      cell.innerHTML = `${u}<span class="idx">i=${i}</span>`;
+      row.appendChild(cell);
+    }
+
+    // Queries row
+    const qr = $('#etQueries'); clearEl(qr);
+    getQueries().forEach((q,idx)=>{
+      const chip = document.createElement('div');
+      chip.className = 'queryChip' + (idx===selectedQ ? ' curQ' : '');
+      chip.textContent = q.label;
+      chip.style.cursor = 'pointer';
+      chip.onclick = ()=>{ selectedQ = idx; render(); };
+      qr.appendChild(chip);
+    });
+
+    // Status panel
+    const st = $('#etStatus');
+    if(mode==='preorder'){
+      st.textContent = `mode = preorder Euler\n` +
+        `query: ${q.label}\n` +
+        `tin[${q.node}] = ${TREE.tin[q.node]}\n` +
+        `tout[${q.node}] = ${TREE.tout_[q.node]}\n` +
+        `interval = [${L}, ${R}]\n` +
+        `subtree size = ${R-L+1}`;
+    } else {
+      let u=q.u, v=q.v;
+      if(TREE.dblTin[u] > TREE.dblTin[v]) { [u,v]=[v,u]; }
+      const w = TREE.lca(u,v);
+      const caseStr = (w===u) ? 'Case 1 (ancestor)' : 'Case 2 (separate subtrees)';
+      st.textContent = `mode = doubled Euler\n` +
+        `query: ${q.label}\n` +
+        `swapped order: u=${u}, v=${v}\n` +
+        `LCA(u,v) = ${w}  → ${caseStr}\n` +
+        (w===u
+          ? `interval = [tin[u], tin[v]] = [${L}, ${R}]\nno LCA correction needed`
+          : `interval = [tout[u], tin[v]] = [${L}, ${R}]\nLCA ${w} toggled in temporarily`);
+    }
+  }
+
+  $('#etPreBtn').onclick = function(){
+    mode='preorder'; selectedQ=0;
+    this.classList.add('active'); $('#etDblBtn').classList.remove('active');
+    render();
+  };
+  $('#etDblBtn').onclick = function(){
+    mode='doubled'; selectedQ=0;
+    this.classList.add('active'); $('#etPreBtn').classList.remove('active');
+    render();
+  };
+
+  window.__et_render = render;
+  render();
+})();
+
+// =============================================================
+// TRACER 2 — Subtree Mo Tracer (preorder Euler, distinct colors)
+// =============================================================
+(function(){
+  const queries = [
+    {node:2, id:0, label:'subtree(2)'},
+    {node:3, id:1, label:'subtree(3)'},
+    {node:1, id:2, label:'subtree(1)'},
+  ];
+  const BLOCK = Math.max(1, Math.floor(Math.sqrt(TREE.euler.length)));
+  const moQueries = queries.map(q => ({
+    l: TREE.tin[q.node],
+    r: TREE.tout_[q.node],
+    id: q.id,
+    label: q.label,
+    node: q.node
+  }));
+  const sorted = [...moQueries].sort((a,b)=>{
+    const ba=Math.floor(a.l/BLOCK), bb=Math.floor(b.l/BLOCK);
+    if(ba!==bb) return ba-bb;
+    return (ba&1) ? b.r-a.r : a.r-b.r;
+  });
+
+  // Build frames
+  const frames = [];
+  const freq = new Array(6).fill(0);
+  let distinct = 0;
+  let curL=0, curR=-1;
+  const doneIds = [];
+  function snap(desc, curQid, lastIdx=null){
+    frames.push({
+      curL, curR,
+      freq:[...freq], distinct, desc, curQid,
+      doneIds:[...doneIds], lastIdx
+    });
+  }
+  function add(idx){
+    const node = TREE.euler[idx];
+    const c = TREE.color[node];
+    if(freq[c]===0) distinct++;
+    freq[c]++;
+  }
+  function rem(idx){
+    const node = TREE.euler[idx];
+    const c = TREE.color[node];
+    freq[c]--;
+    if(freq[c]===0) distinct--;
+  }
+  snap('Initial: curL=0, curR=-1, empty interval, distinct=0.', -1);
+  for(const q of sorted){
+    snap(`▶ Query #${q.id}: ${q.label} → interval [${q.l}, ${q.r}].`, q.id);
+    while(curL>q.l){ curL--; add(curL); snap(`Expand left: add euler[${curL}]=node ${TREE.euler[curL]} (color ${TREE.color[TREE.euler[curL]]}). distinct=${distinct}.`, q.id, curL); }
+    while(curR<q.r){ curR++; add(curR); snap(`Expand right: add euler[${curR}]=node ${TREE.euler[curR]} (color ${TREE.color[TREE.euler[curR]]}). distinct=${distinct}.`, q.id, curR); }
+    while(curL<q.l){ rem(curL); snap(`Shrink left: remove euler[${curL}]=node ${TREE.euler[curL]}. distinct=${distinct}.`, q.id, curL); curL++; }
+    while(curR>q.r){ rem(curR); snap(`Shrink right: remove euler[${curR}]=node ${TREE.euler[curR]}. distinct=${distinct}.`, q.id, curR); curR--; }
+    doneIds.push(q.id);
+    snap(`✓ ans[${q.id}] = ${distinct}.`, q.id);
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f = frames[step];
+    // Tree highlight: which nodes are currently in interval?
+    const inInterval = {};
+    for(let i=f.curL; i<=f.curR; i++) inInterval[TREE.euler[i]] = true;
+    const styles = {};
+    for(let u=1; u<=7; u++){
+      styles[u] = { dim: !inInterval[u], stroke: inInterval[u] ? '#10b981' : null };
+    }
+    renderTree($('#stTreeSvg'), styles);
+
+    // Euler row
+    const row = $('#stEulerRow'); clearEl(row);
+    for(let i=0; i<TREE.euler.length; i++){
+      const u = TREE.euler[i];
+      const cell = document.createElement('div');
+      cell.className='eulerCell entry';
+      if(i >= f.curL && i <= f.curR) cell.classList.add('inRange');
+      if(f.lastIdx === i) cell.classList.add('curPos');
+      cell.innerHTML = `${u}<span class="idx">i=${i}</span>`;
+      row.appendChild(cell);
+    }
+
+    // Queries
+    const qr = $('#stQueries'); clearEl(qr);
+    for(const q of moQueries){
+      const chip = document.createElement('div');
+      chip.className='queryChip';
+      chip.textContent = `#${q.id}: ${q.label} → [${q.l},${q.r}]`;
+      if(f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qr.appendChild(chip);
+    }
+
+    // Freq panel
+    let s='';
+    for(let c=1; c<=4; c++){
+      s += `freq[${c}] = ${f.freq[c]||0}\n`;
+    }
+    s += `\ndistinct = ${f.distinct}`;
+    $('#stFreq').textContent = s;
+
+    // Desc panel
+    $('#stDesc').textContent = `curL=${f.curL}, curR=${f.curR}\nstep ${step+1} / ${frames.length}\n\n${f.desc}`;
+  }
+  $('#stResetBtn').onclick = ()=>{
+    step=0;
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; $('#stAutoBtn').classList.remove('active'); }
+    render();
+  };
+  $('#stStepBtn').onclick = ()=>{ if(step<frames.length-1){ step++; render(); } };
+  $('#stAutoBtn').onclick = function(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; this.classList.remove('active'); }
+    else {
+      this.classList.add('active');
+      autoTimer = setInterval(()=>{
+        if(step>=frames.length-1){ clearInterval(autoTimer); autoTimer=null; $('#stAutoBtn').classList.remove('active'); }
+        else { step++; render(); }
+      }, 800);
+    }
+  };
+  window.__st_render = render;
+  render();
+})();
+
+// =============================================================
+// TRACER 3 — Path Mo Tracer (doubled Euler, distinct colors, LCA toggle)
+// =============================================================
+(function(){
+  const rawQueries = [
+    {u:1, v:5, id:0, label:'path(1,5)'},   // ancestor case
+    {u:4, v:6, id:1, label:'path(4,6)'},   // separate subtrees, LCA=1
+    {u:7, v:5, id:2, label:'path(7,5)'},   // separate subtrees, LCA=2
+  ];
+
+  // Build Mo queries
+  const moQueries = rawQueries.map(q=>{
+    let u=q.u, v=q.v;
+    if(TREE.dblTin[u] > TREE.dblTin[v]) { [u,v]=[v,u]; }
+    const w = TREE.lca(u,v);
+    if(w===u) return {l: TREE.dblTin[u], r: TREE.dblTin[v], lca: -1, id: q.id, label: q.label, u, v, w};
+    return {l: TREE.dblTout[u], r: TREE.dblTin[v], lca: w, id: q.id, label: q.label, u, v, w};
+  });
+
+  const BLOCK = Math.max(1, Math.floor(Math.sqrt(TREE.dblEuler.length)));
+  const sorted = [...moQueries].sort((a,b)=>{
+    const ba=Math.floor(a.l/BLOCK), bb=Math.floor(b.l/BLOCK);
+    if(ba!==bb) return ba-bb;
+    return (ba&1) ? b.r-a.r : a.r-b.r;
+  });
+
+  // Build frames
+  const frames=[];
+  const freq=new Array(6).fill(0);
+  const active=new Array(8).fill(false);
+  let distinct=0;
+  let curL=0, curR=-1;
+  const doneIds=[];
+  function snap(desc, curQid, lastIdx=null, lcaHighlight=null){
+    frames.push({
+      curL, curR, freq:[...freq], active:[...active],
+      distinct, desc, curQid, doneIds:[...doneIds],
+      lastIdx, lcaHighlight
+    });
+  }
+  function addNode(u){
+    const c = TREE.color[u];
+    if(freq[c]===0) distinct++;
+    freq[c]++;
+  }
+  function removeNode(u){
+    const c = TREE.color[u];
+    freq[c]--;
+    if(freq[c]===0) distinct--;
+  }
+  function toggle(u){
+    if(active[u]) removeNode(u);
+    else addNode(u);
+    active[u] = !active[u];
+  }
+
+  snap('Initial: empty interval, all nodes inactive, distinct=0.', -1);
+  for(const q of sorted){
+    snap(`▶ Query #${q.id}: ${q.label} → u=${q.u}, v=${q.v}, LCA=${q.w}, interval=[${q.l},${q.r}]${q.lca===-1?' (ancestor case)':` (separate subtrees, LCA correction needed)`}.`, q.id);
+    while(curL>q.l){ curL--; toggle(TREE.dblEuler[curL]); snap(`Expand left: toggle dblEuler[${curL}]=node ${TREE.dblEuler[curL]}. distinct=${distinct}.`, q.id, curL); }
+    while(curR<q.r){ curR++; toggle(TREE.dblEuler[curR]); snap(`Expand right: toggle dblEuler[${curR}]=node ${TREE.dblEuler[curR]}. distinct=${distinct}.`, q.id, curR); }
+    while(curL<q.l){ toggle(TREE.dblEuler[curL]); snap(`Shrink left: toggle dblEuler[${curL}]=node ${TREE.dblEuler[curL]}. distinct=${distinct}.`, q.id, curL); curL++; }
+    while(curR>q.r){ toggle(TREE.dblEuler[curR]); snap(`Shrink right: toggle dblEuler[${curR}]=node ${TREE.dblEuler[curR]}. distinct=${distinct}.`, q.id, curR); curR--; }
+    if(q.lca !== -1){
+      toggle(q.lca); snap(`🔶 Toggle LCA ${q.lca} IN (Case 2 correction). distinct=${distinct}.`, q.id, null, q.lca);
+    }
+    doneIds.push(q.id);
+    snap(`✓ ans[${q.id}] = ${distinct}.`, q.id, null, q.lca!==-1 ? q.lca : null);
+    if(q.lca !== -1){
+      toggle(q.lca); snap(`🔶 Toggle LCA ${q.lca} OUT (undo correction). distinct=${distinct}.`, q.id, null, q.lca);
+    }
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f = frames[step];
+    // Tree highlight: active nodes get green stroke; LCA highlight if present
+    const styles = {};
+    for(let u=1; u<=7; u++){
+      const isAct = f.active[u];
+      const isLCA = (f.lcaHighlight === u);
+      styles[u] = {
+        dim: !isAct && !isLCA,
+        stroke: isLCA ? '#f59e0b' : (isAct ? '#10b981' : null),
+        ring: isLCA ? '#f59e0b' : null
+      };
+    }
+    renderTree($('#ptTreeSvg'), styles);
+
+    // Doubled Euler row
+    const row = $('#ptEulerRow'); clearEl(row);
+    for(let i=0; i<TREE.dblEuler.length; i++){
+      const u = TREE.dblEuler[i];
+      const cell = document.createElement('div');
+      cell.className='eulerCell';
+      if(i === TREE.dblTin[u]) cell.classList.add('entry');
+      else cell.classList.add('exit');
+      if(i >= f.curL && i <= f.curR) cell.classList.add('inRange');
+      if(f.lastIdx === i) cell.classList.add('curPos');
+      cell.innerHTML = `${u}<span class="idx">i=${i}</span>`;
+      row.appendChild(cell);
+    }
+
+    // Queries
+    const qr = $('#ptQueries'); clearEl(qr);
+    for(const q of moQueries){
+      const chip = document.createElement('div');
+      chip.className='queryChip';
+      const caseLbl = (q.lca === -1) ? ' [anc]' : ' [sep, LCA='+q.w+']';
+      chip.textContent = `#${q.id}: ${q.label}${caseLbl}`;
+      if(f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qr.appendChild(chip);
+    }
+
+    // Freq panel
+    let s='';
+    for(let c=1; c<=4; c++){
+      s += `freq[${c}] = ${f.freq[c]||0}\n`;
+    }
+    s += `\nactive: `;
+    const actList=[];
+    for(let u=1; u<=7; u++) if(f.active[u]) actList.push(u);
+    s += actList.length ? '{'+actList.join(', ')+'}' : '∅';
+    s += `\ndistinct = ${f.distinct}`;
+    $('#ptFreq').textContent = s;
+
+    // Desc panel
+    $('#ptDesc').textContent = `curL=${f.curL}, curR=${f.curR}\nstep ${step+1} / ${frames.length}\n\n${f.desc}`;
+  }
+  $('#ptResetBtn').onclick = ()=>{
+    step=0;
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; $('#ptAutoBtn').classList.remove('active'); }
+    render();
+  };
+  $('#ptStepBtn').onclick = ()=>{ if(step<frames.length-1){ step++; render(); } };
+  $('#ptAutoBtn').onclick = function(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; this.classList.remove('active'); }
+    else {
+      this.classList.add('active');
+      autoTimer = setInterval(()=>{
+        if(step>=frames.length-1){ clearInterval(autoTimer); autoTimer=null; $('#ptAutoBtn').classList.remove('active'); }
+        else { step++; render(); }
+      }, 850);
+    }
+  };
+  window.__pt_render = render;
+  render();
+})();
+
+// =============================================================
+// Re-render hook for theme toggle (so SVG colours stay in sync)
+// =============================================================
+window.__rerenderTracers = function(){
+  if(window.__et_render) window.__et_render();
+  if(window.__st_render) window.__st_render();
+  if(window.__pt_render) window.__pt_render();
+};
+</script>
+</body>
+</html>

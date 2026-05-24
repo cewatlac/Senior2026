@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 10 · Closest Pair &amp; Advanced Mixed Geometry</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">◎</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 10 · Closest Pair &amp; Mixed Geometry</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Nearest two points</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Local, not global</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Sweep &amp; window</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>Squared distance</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Constant candidates</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>Brute &amp; sweep</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Active-set contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Why O(1) neighbors</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(n²) → O(n log n)</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Compare squared</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The closest-pair toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every routine explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Duplicates · overflow</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>sqrt · window · width</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Mixed-geometry map</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>D&amp;C · pair output</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>Closest-pair drills</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>Series recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">◎</div>
+    <div class="sf-text">Coach Academy · Geometry Class 10<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">◎</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 10 — Closest Pair &amp; Advanced Mixed Geometry</h1>
+        <div class="subtitle">The series finale. The closest-pair problem asks for the two nearest points among many, and its elegant solution shows how sorting plus a sliding active window turns an O(n²) search into O(n log n). We compare squared distances to stay exact, then close with a decision map and recap that tie together every technique from Classes 1–10.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Given <span class="inlineCode">n</span> points in the plane, the <b>closest pair</b> problem asks for the two points whose distance is smallest. The naive answer compares all pairs in O(n²); the classic result is that sorting and a localized search bring it down to O(n log n). Because only the <i>comparison</i> of distances matters, we work with <b>squared distance</b> and avoid <span class="inlineCode">sqrt</span> entirely — keeping integer inputs exact.</p>
+    <div class="chips">
+      <span class="chip">Two nearest points among many?</span>
+      <span class="chip">Minimum squared distance?</span>
+      <span class="chip">The actual pair, with ties resolved?</span>
+      <span class="chip">O(n²) brute vs O(n log n) sweep?</span>
+    </div>
+    <p style="margin-top:16px;">The key realization is that closeness is <b>local</b>: once we process points in sorted order and remember the best distance so far, a new point can only improve the answer by pairing with a handful of nearby points — not with the whole set. That locality is what the optimized algorithm exploits.</p>
+    <div class="callout warn">
+      <b>Exactness carry-over.</b> For integer points, squared distance <span class="inlineCode">dx² + dy²</span> is an exact integer; comparing squared distances needs no <span class="inlineCode">sqrt</span> and no <span class="inlineCode">EPS</span>. With coordinates up to <span class="inlineCode">10⁹</span>, a difference reaches <span class="inlineCode">2·10⁹</span> and its square <span class="inlineCode">4·10¹⁸</span>, so accumulate in <span class="inlineCode">__int128</span> to stay safe. Only take a real <span class="inlineCode">sqrt</span> at the very end if the problem demands the Euclidean distance itself.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — Why all-pairs is wasteful</h3>
+    <p>Comparing every pair tests <span class="inlineCode">n(n−1)/2</span> distances, but the vast majority involve points far apart that cannot possibly be the closest. If we already know some pair is distance <span class="inlineCode">d</span> apart, any point more than <span class="inlineCode">d</span> away in <i>x</i> alone is irrelevant — its full distance is at least its x-gap. So most comparisons are wasted, and a smarter method ignores them.</p>
+
+    <h3>2.2 — Sort, then keep a moving window</h3>
+    <p>Sort the points by <i>x</i>. Sweep left to right keeping a running best distance <span class="inlineCode">d</span>. Maintain an <b>active set</b> of recently seen points whose x-coordinate is within <span class="inlineCode">d</span> of the current point; anything farther back in <i>x</i> can be dropped because it can never beat <span class="inlineCode">d</span>. For the new point, only the active points within a vertical band of height <span class="inlineCode">2d</span> can improve the answer — and there are only a constant number of those.</p>
+
+    <h3>2.3 — Compare squared, not rooted</h3>
+    <p>Distances are only ever compared, never added, so we compare their squares. The squared distance of integer points is an exact integer, so the entire closest-pair computation can run without a single floating-point operation — converting to a real distance is a final, optional step.</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — The closest pair in a cloud</h3>
+    <p>Among scattered points, the closest pair is a single edge — usually two points that visually huddle together while the rest are spread out.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · The closest pair among a point cloud</div></div>
+      <svg class="graphsvg" viewBox="0 0 720 380" preserveAspectRatio="xMidYMid meet">
+        <g fill="var(--muted)">
+          <circle cx="100" cy="300" r="8"/><circle cx="250" cy="120" r="8"/><circle cx="600" cy="90" r="8"/>
+          <circle cx="540" cy="320" r="8"/><circle cx="180" cy="200" r="8"/><circle cx="660" cy="240" r="8"/>
+        </g>
+        <!-- the close pair -->
+        <circle cx="380" cy="200" r="9" fill="var(--accent)"/><circle cx="410" cy="215" r="9" fill="var(--accent)"/>
+        <line x1="380" y1="200" x2="410" y2="215" stroke="var(--bad)" stroke-width="4"/>
+        <text x="330" y="260" font-size="17" font-weight="900" fill="var(--bad)">closest pair</text>
+        <text x="120" y="355" font-size="16" font-weight="850" fill="var(--muted)">all other points are farther apart</text>
+      </svg>
+    </div>
+
+    <h3>3.2 — Brute force versus local candidates</h3>
+    <p>Brute force draws every possible connecting segment; the optimized method only ever checks a point against the few neighbors inside its active window. The difference in the number of comparisons is dramatic.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Brute force all-pairs vs optimized local candidates</div></div>
+      <svg class="graphsvg" viewBox="0 0 820 360" preserveAspectRatio="xMidYMid meet">
+        <!-- brute: many lines -->
+        <text x="190" y="40" font-size="18" font-weight="950" fill="var(--bad)" text-anchor="middle">brute: all pairs</text>
+        <g stroke="var(--bad)" stroke-width="1.5" opacity="0.5">
+          <line x1="80" y1="120" x2="200" y2="260"/><line x1="80" y1="120" x2="300" y2="140"/><line x1="80" y1="120" x2="240" y2="320"/>
+          <line x1="200" y1="260" x2="300" y2="140"/><line x1="200" y1="260" x2="240" y2="320"/><line x1="300" y1="140" x2="240" y2="320"/>
+        </g>
+        <g fill="var(--accent)"><circle cx="80" cy="120" r="7"/><circle cx="200" cy="260" r="7"/><circle cx="300" cy="140" r="7"/><circle cx="240" cy="320" r="7"/></g>
+        <!-- optimized: local only -->
+        <text x="620" y="40" font-size="18" font-weight="950" fill="var(--good)" text-anchor="middle">optimized: local window</text>
+        <rect x="540" y="120" width="120" height="200" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 6"/>
+        <g fill="var(--muted)"><circle cx="480" cy="160" r="7"/><circle cx="720" cy="300" r="7"/></g>
+        <g fill="var(--accent)"><circle cx="600" cy="180" r="7"/><circle cx="580" cy="260" r="7"/><circle cx="640" cy="220" r="7"/></g>
+        <line x1="600" y1="180" x2="580" y2="260" stroke="var(--good)" stroke-width="2.5"/>
+        <line x1="600" y1="180" x2="640" y2="220" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="555" y="345" font-size="15" font-weight="850" fill="var(--good)">only window neighbors checked</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — Squared distance</h3>
+    <p>The squared Euclidean distance between <span class="inlineCode">a</span> and <span class="inlineCode">b</span> is</p>
+<pre><code>dist2(a, b) = (a.x − b.x)² + (a.y − b.y)²</code></pre>
+    <p>Since <span class="inlineCode">d(a,b) ≤ d(c,e) ⟺ dist2(a,b) ≤ dist2(c,e)</span> for non-negative distances, every comparison the algorithm makes can use the squared form. The real distance is <span class="inlineCode">√dist2</span>, computed only if the output requires it.</p>
+
+    <h3>4.2 — The active set and its window</h3>
+    <p>Let <span class="inlineCode">d²</span> be the best squared distance found so far and <span class="inlineCode">d = ⌊√d²⌋</span>. Sweeping by <i>x</i>, the active set holds every earlier point whose x-gap to the current point is below <span class="inlineCode">d</span>. For the current point <span class="inlineCode">p</span>, only active points with <span class="inlineCode">y ∈ [p.y − d, p.y + d]</span> can improve the best — a window of width <span class="inlineCode">d</span> in <i>x</i> and height <span class="inlineCode">2d</span> in <i>y</i>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · The sweep-line active window</div></div>
+      <svg class="graphsvg" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid meet">
+        <!-- sweep line -->
+        <line x1="520" y1="40" x2="520" y2="340" stroke="var(--accent2)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="532" y="60" font-size="15" font-weight="900" fill="var(--accent2)">sweep →</text>
+        <!-- active window -->
+        <rect x="400" y="120" width="120" height="160" fill="rgba(37,99,235,.10)" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 6"/>
+        <text x="405" y="112" font-size="15" font-weight="850" fill="var(--good)">active window (x within d)</text>
+        <!-- current point -->
+        <circle cx="520" cy="200" r="9" fill="var(--bad)"/><text x="532" y="204" font-size="15" font-weight="900" fill="var(--bad)">current p</text>
+        <!-- active candidates -->
+        <g fill="var(--accent)"><circle cx="440" cy="170" r="7"/><circle cx="470" cy="240" r="7"/><circle cx="410" cy="210" r="7"/></g>
+        <!-- expired (dropped) -->
+        <g fill="var(--muted)" opacity="0.7"><circle cx="150" cy="180" r="7"/><circle cx="260" cy="260" r="7"/></g>
+        <text x="120" y="320" font-size="15" font-weight="850" fill="var(--muted)">dropped: x-gap already ≥ d</text>
+      </svg>
+    </div>
+
+    <h3>4.3 — Why the y-range is bounded</h3>
+    <p>Within the active window, all earlier points are mutually at least <span class="inlineCode">d</span> apart (otherwise we would have updated the best). Packing points that are pairwise <span class="inlineCode">d</span>-separated into a <span class="inlineCode">d × 2d</span> rectangle admits only a constant number — at most a handful — so each new point triggers only <span class="inlineCode">O(1)</span> distance checks.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · y-range candidate filtering inside the window</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <circle cx="520" cy="180" r="9" fill="var(--bad)"/><text x="532" y="184" font-size="15" font-weight="900" fill="var(--bad)">p</text>
+        <!-- y band -->
+        <line x1="360" y1="110" x2="540" y2="110" stroke="var(--good)" stroke-width="2" stroke-dasharray="5 5"/>
+        <line x1="360" y1="250" x2="540" y2="250" stroke="var(--good)" stroke-width="2" stroke-dasharray="5 5"/>
+        <text x="250" y="106" font-size="14" font-weight="850" fill="var(--good)">y = p.y + d</text>
+        <text x="250" y="256" font-size="14" font-weight="850" fill="var(--good)">y = p.y − d</text>
+        <!-- candidates in band -->
+        <g fill="var(--accent)"><circle cx="400" cy="150" r="7"/><circle cx="430" cy="220" r="7"/></g>
+        <!-- outside band -->
+        <g fill="var(--muted)" opacity="0.7"><circle cx="410" cy="70" r="7"/><circle cx="450" cy="300" r="7"/></g>
+        <text x="120" y="335" font-size="15" font-weight="850" fill="var(--muted)">only points with y in [p.y−d, p.y+d] are tested</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Compare squares, never roots.</b> Distance ordering equals squared-distance ordering, so the whole algorithm is integer-exact for integer points.</li>
+      <li><b>O2 — Closeness is local.</b> A point can only improve the best by pairing within a small window; far points are provably irrelevant.</li>
+      <li><b>O3 — Only O(1) candidates per point.</b> Mutually <span class="inlineCode">d</span>-separated points fit only a constant number into a <span class="inlineCode">d × 2d</span> box, so each step is constant amortized work.</li>
+      <li><b>O4 — Duplicates make the answer 0.</b> Two identical points have squared distance <span class="inlineCode">0</span>, the minimum possible, and the algorithm finds it immediately.</li>
+      <li><b>O5 — Overflow, not precision, is the risk.</b> Squared distances of large coordinates can exceed 64 bits; accumulate in <span class="inlineCode">__int128</span> rather than rounding.</li>
+      <li><b>O6 — The active set is a sorted-by-y structure.</b> Maintaining it as a balanced set lets the y-window be queried and pruned in logarithmic time.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — Brute force O(n²) baseline</h3>
+    <p>Try every pair, track the minimum squared distance. It is trivially correct and the right choice for small <span class="inlineCode">n</span> (up to a few thousand), and it serves as the oracle for testing the optimized version.</p>
+
+    <h3>6.2 — Sweep-line with an active set</h3>
+    <p>Sort by <i>x</i>. Keep an active set ordered by <i>y</i>. For each point in x-order: drop active points whose x-gap squared already exceeds the best; query the active set for the y-window <span class="inlineCode">[y−d, y+d]</span> and test those candidates; then insert the current point. Each point is inserted and removed once, and triggers <span class="inlineCode">O(1)</span> distance checks, for <span class="inlineCode">O(n log n)</span> overall (dominated by the sort and the set operations).</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Sweep-line: drop expired, query window, insert</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+        <rect x="30" y="120" width="180" height="74" rx="14" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="120" y="150" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">next point (x-order)</text>
+        <text x="120" y="174" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">d = ⌊√best⌋</text>
+        <line x1="210" y1="157" x2="258" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="258" y="120" width="190" height="74" rx="14" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="353" y="150" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">drop expired (x-gap²&gt;best)</text>
+        <text x="353" y="174" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">erase from active set</text>
+        <line x1="448" y1="157" x2="496" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="496" y="120" width="200" height="74" rx="14" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="596" y="150" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">query y-window [y−d,y+d]</text>
+        <text x="596" y="174" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">test O(1) candidates</text>
+        <line x1="696" y1="157" x2="744" y2="157" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="744" y="120" width="130" height="74" rx="14" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="809" y="150" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">insert point</text>
+        <text x="809" y="174" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">update best</text>
+        <text x="450" y="255" font-size="16" font-weight="850" fill="var(--muted)" text-anchor="middle">each point inserted and removed once ⇒ O(n log n)</text>
+      </svg>
+    </div>
+
+    <h3>6.3 — The divide-and-conquer alternative</h3>
+    <p>An equivalent O(n log n) method splits the sorted points at a middle line, solves each half recursively, then checks a <b>strip</b> of width <span class="inlineCode">2d</span> around the line. Within the strip, sorting by <i>y</i> means each point need only compare with a constant number of following points — the same packing bound as the sweep. Both methods rest on the identical locality fact.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Divide-and-conquer strip around the middle line</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="380" y1="40" x2="380" y2="320" stroke="var(--accent2)" stroke-width="3"/>
+        <text x="388" y="58" font-size="15" font-weight="900" fill="var(--accent2)">mid line</text>
+        <!-- strip -->
+        <rect x="320" y="40" width="120" height="280" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 6"/>
+        <text x="300" y="345" font-size="15" font-weight="850" fill="var(--good)">strip of width 2d</text>
+        <!-- left/right points -->
+        <g fill="var(--muted)"><circle cx="150" cy="120" r="7"/><circle cx="220" cy="240" r="7"/><circle cx="560" cy="160" r="7"/><circle cx="620" cy="280" r="7"/></g>
+        <!-- strip points -->
+        <g fill="var(--accent)"><circle cx="350" cy="120" r="7"/><circle cx="410" cy="170" r="7"/><circle cx="360" cy="230" r="7"/></g>
+        <line x1="350" y1="120" x2="410" y2="170" stroke="var(--bad)" stroke-width="2.5"/>
+        <text x="100" y="70" font-size="15" font-weight="850" fill="var(--muted)">cross-pairs only inside the strip matter</text>
+      </svg>
+    </div>
+
+    <h3>6.4 — Duplicate points and zero distance</h3>
+    <p>If two points coincide, their squared distance is <span class="inlineCode">0</span>. Both the brute force and the sweep detect this through the ordinary distance test. Once the optimized sweep sees <span class="inlineCode">best = 0</span>, it returns immediately because no smaller distance exists; this preserves the <span class="inlineCode">O(n log n)</span> guarantee even when many points are identical.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Duplicate points give zero distance</div></div>
+      <svg class="graphsvg" viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet">
+        <g fill="var(--muted)"><circle cx="150" cy="120" r="8"/><circle cx="560" cy="90" r="8"/><circle cx="480" cy="200" r="8"/></g>
+        <!-- two coincident points slightly offset for visibility -->
+        <circle cx="330" cy="140" r="11" fill="var(--bad)"/>
+        <circle cx="334" cy="143" r="11" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        <text x="350" y="140" font-size="16" font-weight="900" fill="var(--bad)">two identical points → d² = 0</text>
+        <text x="150" y="235" font-size="15" font-weight="850" fill="var(--muted)">zero is the minimum possible distance</text>
+      </svg>
+    </div>
+
+    <h3>6.5 — Integer squared-distance overflow</h3>
+    <p>With coordinates up to <span class="inlineCode">±10⁹</span>, a coordinate difference reaches <span class="inlineCode">2·10⁹</span>, whose square is <span class="inlineCode">4·10¹⁸</span> — already near the <span class="inlineCode">long long</span> ceiling of about <span class="inlineCode">9.2·10¹⁸</span>, and the sum <span class="inlineCode">dx² + dy²</span> can reach <span class="inlineCode">8·10¹⁸</span>. Use <span class="inlineCode">__int128</span> to keep the squared distance exact.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Integer squared-distance overflow thresholds</div></div>
+      <svg class="graphsvg" viewBox="0 0 820 320" preserveAspectRatio="xMidYMid meet">
+        <text x="410" y="40" font-size="17" font-weight="950" fill="var(--text)" text-anchor="middle">when does dx² + dy² overflow long long?</text>
+        <g font-size="16" font-weight="850">
+          <rect x="60" y="70" width="700" height="50" rx="10" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2"/>
+          <text x="80" y="101" fill="var(--good)">|coord| ≤ 3·10⁴ → dx²+dy² ≤ ~7·10⁹ : long long safe</text>
+          <rect x="60" y="130" width="700" height="50" rx="10" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="2"/>
+          <text x="80" y="161" fill="var(--warn)">|coord| ≤ 2·10⁹ → dx²+dy² up to ~8·10¹⁸ : long long borderline</text>
+          <rect x="60" y="190" width="700" height="50" rx="10" fill="rgba(185,28,28,.10)" stroke="var(--bad)" stroke-width="2"/>
+          <text x="80" y="221" fill="var(--bad)">products of large coords elsewhere → use __int128 to be safe</text>
+          <rect x="60" y="250" width="700" height="50" rx="10" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+          <text x="80" y="281" fill="var(--accent2)">rule of thumb: store dist² in __int128 whenever coords exceed ~3·10⁴</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Best is the true minimum over processed points.</b> After handling the first <span class="inlineCode">i</span> points, <span class="inlineCode">best</span> equals the smallest squared distance among them.</li>
+      <li><b>I2 — The active set holds exactly the x-relevant points.</b> Every point with x-gap below <span class="inlineCode">d</span> to the current point is present; everything farther back has been removed.</li>
+      <li><b>I3 — All comparisons are squared and exact.</b> No <span class="inlineCode">sqrt</span> enters the comparison path; squared distances are integer-exact in <span class="inlineCode">__int128</span>.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Each point enters and leaves the active set once.</b> Insertion happens when reached in x-order; removal happens when the sweep passes beyond its x-window — never twice.</li>
+      <li><b>I5 — Only window candidates are tested.</b> A new point compares only against active points in its y-band, a constant number, preserving the amortized bound.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>The sweep visits each point once; the active set sees one insert and one erase per point. With a balanced set the total work is <span class="inlineCode">O(n log n)</span>. The brute force is two finite nested loops. Both always terminate.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> Closest pair needs at least two points; with fewer, there is no pair and the routine returns a sentinel (here a negative squared distance). Duplicate points are valid input and yield distance <span class="inlineCode">0</span>.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Squared distance preserves ordering</h3>
+    <p>For non-negative reals, <span class="inlineCode">u ≤ v ⟺ u² ≤ v²</span>. Distances are non-negative, so comparing squared distances yields the identical ordering and the same minimizing pair. Hence replacing distance by squared distance never changes which pair is closest, while keeping integer inputs exact.</p>
+
+    <h3>8.2 — Far points cannot be the closest</h3>
+    <p>If the current best squared distance is <span class="inlineCode">d²</span>, any point whose x-gap to <span class="inlineCode">p</span> exceeds <span class="inlineCode">d</span> has full squared distance at least <span class="inlineCode">(x-gap)² &gt; d²</span>, so it cannot improve the best. Dropping such points from the active set therefore loses no candidate closer than the current best.</p>
+
+    <h3>8.3 — Only a constant number of candidates per point</h3>
+    <p>All earlier points in the active window are pairwise at least <span class="inlineCode">d</span> apart, because any closer pair would already have lowered <span class="inlineCode">d</span>. A region of width <span class="inlineCode">d</span> and height <span class="inlineCode">2d</span> can contain only a bounded number of points that are mutually <span class="inlineCode">d</span>-separated — partitioning the rectangle into cells of side <span class="inlineCode">d/2</span>, each cell holds at most one such point, giving a small constant bound. Therefore each new point performs <span class="inlineCode">O(1)</span> distance checks, and the sweep is <span class="inlineCode">O(n log n)</span> dominated by sorting and set operations.</p>
+
+    <h3>8.4 — Completeness of the sweep</h3>
+    <p>Consider the true closest pair <span class="inlineCode">(a, b)</span> with <span class="inlineCode">a</span> earlier in x-order. When the sweep reaches <span class="inlineCode">b</span>, point <span class="inlineCode">a</span> is still active because its x-gap to <span class="inlineCode">b</span> is at most their Euclidean distance, which is no larger than the current best distance threshold. Also, <span class="inlineCode">a</span> lies in <span class="inlineCode">b</span>'s y-window because its y-gap is at most their Euclidean distance. So <span class="inlineCode">a</span> is among the candidates tested against <span class="inlineCode">b</span>, and the pair's distance is recorded. No closer pair is ever missed.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Method</th><th>Time</th><th>Derivation</th></tr></thead>
+      <tbody>
+        <tr><td>Brute force</td><td>O(n²)</td><td>All <span class="inlineCode">n(n−1)/2</span> pairs, constant work each.</td></tr>
+        <tr><td>Sweep-line</td><td>O(n log n)</td><td>Sort O(n log n); each point: one insert, one erase, O(1) window tests, each set op O(log n).</td></tr>
+        <tr><td>Divide-and-conquer</td><td>O(n log n)</td><td><span class="inlineCode">T(n) = 2T(n/2) + O(n)</span> for the strip merge ⇒ O(n log n).</td></tr>
+        <tr><td>Distance comparison</td><td>O(1)</td><td>One squared-distance evaluation in <span class="inlineCode">__int128</span>.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">The leap from O(n²) to O(n log n) is the locality argument: sorting exposes x-order, and the active window confines each point to a constant number of comparisons. For small <span class="inlineCode">n</span>, brute force is simpler and just as fast in practice.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Compare squared distances.</b> Ordering is preserved, <span class="inlineCode">sqrt</span> is avoided, and integer inputs stay exact.</li>
+      <li><b>Sort once, sweep once.</b> x-order plus a y-ordered active set turns a quadratic search into a near-linear one.</li>
+      <li><b>Prune by the x-gap, query by the y-band.</b> Drop points too far back in x; test only the constant y-window.</li>
+      <li><b>Let the distance test detect duplicates, then stop.</b> Identical points give squared distance <span class="inlineCode">0</span>; once found, return immediately because the answer cannot improve.</li>
+      <li><b>Guard the squared-distance width.</b> Use <span class="inlineCode">__int128</span> once coordinates exceed a few times <span class="inlineCode">10⁴</span>.</li>
+      <li><b>Root only at the end.</b> Convert to a real distance solely if the output demands it.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Library/template block; compiles as a translation unit with <span class="inlineCode">g++ -std=c++17 -c</span>, or after adding a <span class="inlineCode">main</span>. Everything is integer-exact: squared distances are carried in <span class="inlineCode">__int128</span>, and no <span class="inlineCode">sqrt</span> appears in the comparison path. The brute force serves as an oracle for the sweep.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// ===================================================================
+// CLASS 10 — closest pair of points (exact integer).
+// Compare SQUARED distances so no sqrt is needed; the squared distance
+// of integer points is exact. Carry it in __int128 because a coordinate
+// difference up to ~2e9 squares to ~4e18, and dx*dx + dy*dy can reach
+// ~8e18 — close to the long long ceiling.
+// ===================================================================
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+
+// exact squared distance, safe in __int128.
+lll dist2(const Pt&amp; a, const Pt&amp; b){
+    lll dx = (lll)a.x - b.x;
+    lll dy = (lll)a.y - b.y;
+    return dx*dx + dy*dy;
+}
+
+// ---------- brute force O(n^2) baseline (oracle) -------------------
+// Returns the minimum squared distance, or -1 for fewer than 2 points.
+lll closestPairBrute(const vector&lt;Pt&gt;&amp; p){
+    int n = (int)p.size();
+    lll best = -1;
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++){
+            lll d = dist2(p[i], p[j]);
+            if (best &lt; 0 || d &lt; best) best = d;
+        }
+    return best;
+}
+
+// floor of the integer square root of a __int128 value (for the window width).
+static ll floorSqrtLL(lll v){
+    if (v &lt;= 0) return 0;
+    long double r = sqrtl((long double)v);
+    ll s = (ll)r;
+    while (s &gt; 0 &amp;&amp; s * (lll)s &gt; v) s--;
+    while ((s + 1) * (lll)(s + 1) &lt;= v) s++;
+    return s;                       // floor(sqrt(v))
+}
+
+// ---------- optimized O(n log n) sweep line ------------------------
+// Sort by x. Keep an active multiset ordered by (y, x). For each point,
+// drop active points whose x-gap squared already exceeds best, then test
+// only the active points within the y-window [y - d, y + d], where
+// d = floor(sqrt(best)). Each point is inserted and erased once, and only
+// a constant number of candidates are tested (proof 8.3).
+lll closestPairSweep(vector&lt;Pt&gt; p){
+    int n = (int)p.size();
+    if (n &lt; 2) return -1;
+    sort(p.begin(), p.end(), [](const Pt&amp; a, const Pt&amp; b){
+        return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y;
+    });
+    auto cmpY = [](const Pt&amp; a, const Pt&amp; b){
+        return a.y != b.y ? a.y &lt; b.y : a.x &lt; b.x;
+    };
+    multiset&lt;Pt, decltype(cmpY)&gt; active(cmpY);
+    lll best = dist2(p[0], p[1]);
+    if (best == 0) return 0;          // duplicate points: minimum possible distance
+    active.insert(p[0]);
+    int left = 0;
+    for (int i = 1; i &lt; n; i++){
+        ll d = floorSqrtLL(best);
+        // drop points whose x-gap alone already exceeds the best distance.
+        while (left &lt; i &amp;&amp;
+               (lll)(p[i].x - p[left].x) * (p[i].x - p[left].x) &gt; best){
+            active.erase(active.find(p[left]));
+            left++;
+        }
+        // test only the y-window [p[i].y - d, p[i].y + d].
+        Pt lo{LLONG_MIN / 2, p[i].y - d};
+        for (auto it = active.lower_bound(lo);
+             it != active.end() &amp;&amp; it-&gt;y &lt;= p[i].y + d; ++it){
+            lll dd = dist2(*it, p[i]);
+            if (dd &lt; best){
+                best = dd;
+                if (best == 0) return 0;      // cannot improve beyond zero
+            }
+        }
+        active.insert(p[i]);
+    }
+    return best;                    // minimum squared distance
+}
+
+// ---------- closest pair returning the pair too --------------------
+// Fills (ra, rb) with the closest pair. Returns the squared distance, or -1
+// if fewer than two points (in which case ra and rb are left unchanged).
+// Tie behavior: the first pair that achieves the minimum during the sweep is
+// kept (ties are not broken further).
+lll closestPairWithPoints(vector&lt;Pt&gt; p, Pt&amp; ra, Pt&amp; rb){
+    int n = (int)p.size();
+    if (n &lt; 2) return -1;             // no pair; ra, rb unchanged
+    sort(p.begin(), p.end(), [](const Pt&amp; a, const Pt&amp; b){
+        return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y;
+    });
+    auto cmpY = [](const Pt&amp; a, const Pt&amp; b){
+        return a.y != b.y ? a.y &lt; b.y : a.x &lt; b.x;
+    };
+    multiset&lt;Pt, decltype(cmpY)&gt; active(cmpY);
+    lll best = dist2(p[0], p[1]);
+    ra = p[0]; rb = p[1];
+    if (best == 0) return 0;          // duplicate points: pair already recorded
+    active.insert(p[0]);
+    int left = 0;
+    for (int i = 1; i &lt; n; i++){
+        ll d = floorSqrtLL(best);
+        while (left &lt; i &amp;&amp;
+               (lll)(p[i].x - p[left].x) * (p[i].x - p[left].x) &gt; best){
+            active.erase(active.find(p[left]));
+            left++;
+        }
+        Pt lo{LLONG_MIN / 2, p[i].y - d};
+        for (auto it = active.lower_bound(lo);
+             it != active.end() &amp;&amp; it-&gt;y &lt;= p[i].y + d; ++it){
+            lll dd = dist2(*it, p[i]);
+            if (dd &lt; best){
+                best = dd; ra = *it; rb = p[i];
+                if (best == 0) return 0;      // cannot improve beyond zero
+            }
+        }
+        active.insert(p[i]);
+    }
+    return best;
+}
+</code></pre>
+    <div class="callout">
+      <b>Why squared distance, not distance.</b> The algorithm only ever <i>compares</i> distances, and ordering is preserved by squaring, so <span class="inlineCode">sqrt</span> is never needed for correctness — only for a final human-readable output. Staying squared keeps integer inputs exact and removes the one place floating point could corrupt the answer.
+    </div>
+    <div class="callout">
+      <b>One rotation helper, never a macro.</b> This integer class does not rotate, but the family convention still holds: any rotation is the typed helper <span class="inlineCode">Point rot(const Point&amp; v, T t)</span>, never a <span class="inlineCode">rotate</span> macro (which would shadow <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>closestPairSweep <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (n &lt; 2) return -1;</div><div class="lineExpl">Fewer than two points has no pair; return the negative sentinel.</div>
+        <div class="lineNo">2</div><div class="lineCode">sort(... a.x &lt; b.x ...);</div><div class="lineExpl">Sort by <span class="inlineCode">x</span> so the sweep proceeds left to right and the x-window prune is valid.</div>
+        <div class="lineNo">3</div><div class="lineCode">multiset&lt;Pt,decltype(cmpY)&gt; active(cmpY);</div><div class="lineExpl">Active set ordered by <span class="inlineCode">y</span> so the candidate band is a contiguous range.</div>
+        <div class="lineNo">4</div><div class="lineCode">ll d = floorSqrtLL(best);</div><div class="lineExpl">The window half-width in real units: only points within <span class="inlineCode">d</span> in <span class="inlineCode">x</span> or <span class="inlineCode">y</span> can beat the best.</div>
+        <div class="lineNo">5</div><div class="lineCode">while (... x-gap² &gt; best) erase;</div><div class="lineExpl">Drop points whose x-gap alone already exceeds the best distance — they can never improve it.</div>
+        <div class="lineNo">6</div><div class="lineCode">for (it = lower_bound(lo); it-&gt;y &lt;= y+d; ++it)</div><div class="lineExpl">Scan only the y-window <span class="inlineCode">[y−d, y+d]</span>; a constant number of candidates (proof 8.3).</div>
+        <div class="lineNo">7</div><div class="lineCode">if (dd &lt; best){ best = dd; if (best==0) return 0; }</div><div class="lineExpl">Update the running minimum squared distance; return at once if it reaches <span class="inlineCode">0</span>, since no smaller distance exists and continuing could scan duplicates quadratically.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>dist2 · floorSqrtLL <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">lll dx = (lll)a.x - b.x;</div><div class="lineExpl">Promote to <span class="inlineCode">__int128</span> <i>before</i> subtracting so the difference and its square never overflow.</div>
+        <div class="lineNo">2</div><div class="lineCode">return dx*dx + dy*dy;</div><div class="lineExpl">Exact squared distance; the comparison primitive of the whole class.</div>
+        <div class="lineNo">3</div><div class="lineCode">long double r = sqrtl((long double)v);</div><div class="lineExpl">A floating estimate of the square root, then corrected to an exact integer floor.</div>
+        <div class="lineNo">4</div><div class="lineCode">while (s*(lll)s &gt; v) s--; while ((s+1)²&lt;=v) s++;</div><div class="lineExpl">Adjust up or down so <span class="inlineCode">s</span> is exactly <span class="inlineCode">⌊√v⌋</span>, immune to floating rounding.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>closestPairWithPoints (tie behavior) <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">ra = p[0]; rb = p[1];</div><div class="lineExpl">Seed the recorded pair with the first two points after sorting.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (dd &lt; best){ best = dd; ra = *it; rb = p[i]; }</div><div class="lineExpl">Record a new pair only on a strict improvement, so among equal-distance pairs the first one found during the sweep is kept.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Fewer than two points</td><td>No pair exists.</td><td>Returns <span class="inlineCode">-1</span> (negative squared-distance sentinel).</td></tr>
+        <tr><td>Exactly two points</td><td>The pair is the answer.</td><td>Both methods return their squared distance directly.</td></tr>
+        <tr><td>Duplicate points</td><td>Squared distance is <span class="inlineCode">0</span>.</td><td>Detected by the ordinary distance test; the optimized sweep returns immediately once <span class="inlineCode">best == 0</span>.</td></tr>
+        <tr><td>All points equal</td><td>Every pair is distance <span class="inlineCode">0</span>.</td><td>The first duplicate comparison sets <span class="inlineCode">best</span> to <span class="inlineCode">0</span>, and the sweep terminates immediately.</td></tr>
+        <tr><td>Many points on a vertical line</td><td>Equal x, varied y.</td><td>The y-ordered active set still bounds candidates to the y-window.</td></tr>
+        <tr><td>Large coordinates (±10⁹)</td><td>Squared distance up to <span class="inlineCode">~8·10¹⁸</span>.</td><td>The <span class="inlineCode">__int128</span> accumulator keeps it exact.</td></tr>
+        <tr><td>Real distance required</td><td>Output wants Euclidean distance.</td><td>Take <span class="inlineCode">sqrt</span> of the final squared distance once, at output.</td></tr>
+        <tr><td>Ties in closest distance</td><td>Several pairs equally close.</td><td>The pair-returning routine keeps the first such pair found in the sweep.</td></tr>
+        <tr><td>Small n</td><td>A few thousand points.</td><td>Brute force is simpler and effectively as fast.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Taking <span class="inlineCode">sqrt</span> inside the comparison loop.</b> It is slow and introduces rounding; compare squared distances and root only at the very end if needed.</li>
+      <li><b>P2 — 64-bit overflow on the squared distance.</b> Large coordinates square past the <span class="inlineCode">long long</span> range; promote to <span class="inlineCode">__int128</span> before multiplying.</li>
+      <li><b>P3 — Forgetting to prune the active set by x.</b> Without dropping far-back points, the active set grows and the y-window scan is no longer constant — the method degrades to quadratic.</li>
+      <li><b>P4 — Scanning the whole active set instead of the y-window.</b> Query only <span class="inlineCode">[y−d, y+d]</span>; iterating all active points loses the complexity guarantee.</li>
+      <li><b>P5 — A floating window width that is too small.</b> Use <span class="inlineCode">⌊√best⌋</span> corrected to an exact integer; a rounded-down estimate that is too small could skip a valid candidate.</li>
+      <li><b>P6 — Continuing after finding duplicate points.</b> Equal points give squared distance <span class="inlineCode">0</span> through the ordinary test, but the optimized sweep should return immediately once <span class="inlineCode">best == 0</span>; otherwise many identical points can cause unnecessary quadratic scanning.</li>
+      <li><b>P7 — Mixing exact and EPS comparisons.</b> Closest pair on integer points is fully exact; do not introduce an <span class="inlineCode">EPS</span> band that belongs to floating-point geometry like the polygon cut of Class 09.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <p>The whole series reduces to recognizing which tool a problem calls for. This map routes a problem from its objects to its technique.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Mixed-geometry decision map: objects → technique</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 460" preserveAspectRatio="xMidYMid meet">
+        <rect x="360" y="20" width="180" height="56" rx="14" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="450" y="54" font-size="17" font-weight="950" fill="var(--text)" text-anchor="middle">what objects?</text>
+        <!-- branches -->
+        <g stroke="currentColor" stroke-width="2" fill="none">
+          <line x1="450" y1="76" x2="120" y2="130" marker-end="url(#arrow1)"/>
+          <line x1="450" y1="76" x2="330" y2="130" marker-end="url(#arrow1)"/>
+          <line x1="450" y1="76" x2="560" y2="130" marker-end="url(#arrow1)"/>
+          <line x1="450" y1="76" x2="790" y2="130" marker-end="url(#arrow1)"/>
+        </g>
+        <!-- points -->
+        <rect x="40" y="130" width="170" height="60" rx="12" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+        <text x="125" y="156" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">points</text>
+        <text x="125" y="178" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">distance · closest pair · hull</text>
+        <!-- segments/lines -->
+        <rect x="250" y="130" width="170" height="60" rx="12" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+        <text x="335" y="156" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">segments / lines</text>
+        <text x="335" y="178" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">orientation · intersection</text>
+        <!-- circles -->
+        <rect x="475" y="130" width="170" height="60" rx="12" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+        <text x="560" y="156" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">circles / ellipses</text>
+        <text x="560" y="178" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">intersection · cover · membership</text>
+        <!-- polygons -->
+        <rect x="705" y="130" width="170" height="60" rx="12" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2"/>
+        <text x="790" y="156" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">polygons</text>
+        <text x="790" y="178" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">area · Pick · cut · hull</text>
+        <!-- technique row -->
+        <g font-size="13" font-weight="850">
+          <rect x="40" y="250" width="170" height="86" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2"/>
+          <text x="125" y="276" fill="var(--good)" text-anchor="middle">brute O(n²) small n</text>
+          <text x="125" y="298" fill="var(--good)" text-anchor="middle">sweep O(n log n)</text>
+          <text x="125" y="320" fill="var(--good)" text-anchor="middle">convex hull</text>
+          <rect x="250" y="250" width="170" height="86" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2"/>
+          <text x="335" y="276" fill="var(--good)" text-anchor="middle">cross-product side</text>
+          <text x="335" y="298" fill="var(--good)" text-anchor="middle">segment intersection</text>
+          <text x="335" y="320" fill="var(--good)" text-anchor="middle">(Classes 02–04)</text>
+          <rect x="475" y="250" width="170" height="86" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2"/>
+          <text x="560" y="276" fill="var(--good)" text-anchor="middle">circle-circle / line</text>
+          <text x="560" y="298" fill="var(--good)" text-anchor="middle">tangents · MEC</text>
+          <text x="560" y="320" fill="var(--good)" text-anchor="middle">(Classes 05–07)</text>
+          <rect x="705" y="250" width="170" height="86" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2"/>
+          <text x="790" y="276" fill="var(--good)" text-anchor="middle">shoelace · Pick</text>
+          <text x="790" y="298" fill="var(--good)" text-anchor="middle">clip · hull</text>
+          <text x="790" y="320" fill="var(--good)" text-anchor="middle">(Classes 08–09)</text>
+        </g>
+        <g stroke="currentColor" stroke-width="2" fill="none">
+          <line x1="125" y1="190" x2="125" y2="246" marker-end="url(#arrow1)"/>
+          <line x1="335" y1="190" x2="335" y2="246" marker-end="url(#arrow1)"/>
+          <line x1="560" y1="190" x2="560" y2="246" marker-end="url(#arrow1)"/>
+          <line x1="790" y1="190" x2="790" y2="246" marker-end="url(#arrow1)"/>
+        </g>
+        <text x="450" y="380" font-size="15" font-weight="850" fill="var(--muted)" text-anchor="middle">integer-exact where possible; EPS floats only when intersections are not lattice points</text>
+        <text x="450" y="410" font-size="15" font-weight="850" fill="var(--muted)" text-anchor="middle">prefer squared distance; reach for __int128 on large coordinates</text>
+      </svg>
+    </div>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Nearest two points ⇒ closest pair (sweep).</span>
+      <span class="chip good">Small n ⇒ brute O(n²) is fine.</span>
+      <span class="chip good">Compare squared distances, root last.</span>
+      <span class="chip good">Tightest wrap ⇒ convex hull (Class 09).</span>
+      <span class="chip good">Lattice counts ⇒ Pick (Class 08).</span>
+      <span class="chip warn">Big coords ⇒ __int128 squared distance.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"Closest pair needs the actual distance, so I must use <span class="inlineCode">sqrt</span> and floating point."</b> No — the pair that minimizes distance is the pair that minimizes squared distance, so the whole search is integer-exact. Take a single <span class="inlineCode">sqrt</span> at the end only if the problem prints the Euclidean distance.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Divide-and-conquer closest pair</h3>
+    <p>Sort by <i>x</i>, split at the median, recurse on each half for their best distances <span class="inlineCode">d</span>, then merge by checking the strip of width <span class="inlineCode">2d</span> around the dividing line, where points sorted by <i>y</i> compare only with a constant number of successors. <b>When to use:</b> a classic alternative to the sweep with the same <span class="inlineCode">O(n log n)</span> bound; the strip bound is the same packing argument.</p>
+<pre><code>// Strip check sketch (after recursive halves give best d):
+// keep points within |x - midX| &lt; d, sort the strip by y, and for each
+// point compare only with the next few (a bounded constant) points whose
+// y-gap is below d. Update best from these cross-pairs.</code></pre>
+
+    <h3>16.2 — Returning the actual Euclidean distance</h3>
+    <p>When the output is the real distance rather than its square, take a single square root of the final answer. <b>When to use:</b> problems that print the distance to a fixed precision.</p>
+<pre><code>// real distance from the exact squared distance, computed once at the end.
+long double closestPairDistance(const vector&lt;Pt&gt;&amp; p){
+    lll d2 = closestPairSweep(p);          // exact squared distance
+    if (d2 &lt; 0) return -1;                  // fewer than 2 points
+    return sqrtl((long double)d2);
+}</code></pre>
+
+    <h3>16.3 — Mixed-geometry composition</h3>
+    <p>Hard problems chain the series' tools: take the convex hull of a point set (Class 09), compute its area by the shoelace formula (Class 08), test whether query points fall inside it (orientation, Classes 02–04), or find the closest pair among the hull vertices (this class). <b>When to use:</b> multi-step geometry where each stage feeds the next; recognizing the composition is the skill the decision map trains.</p>
+
+    <h3>16.4 — Mirror / reflection unfolding</h3>
+    <p>Many "shortest path bouncing off a wall" problems collapse to a single straight line once you reflect the <em>target</em> across the wall instead of bending the ray. The reflected target <span class="inlineCode">T'</span> together with the source <span class="inlineCode">S</span> forms a straight segment whose crossing point with the mirror is the reflection point — and its length is the path length you were after.</p>
+
+    <div class="callout">
+      <b>The picture.</b><br>
+      Before unfolding: <span class="inlineCode">S → mirror → T</span> (a bent path).<br>
+      After unfolding: reflect <span class="inlineCode">T</span> across the mirror to get <span class="inlineCode">T'</span>; the segment <span class="inlineCode">S → T'</span> is straight, and its intersection with the mirror is the bounce point.
+    </div>
+
+    <p>The complex-number form of "reflect <span class="inlineCode">p</span> across the line through <span class="inlineCode">a</span> with direction <span class="inlineCode">b − a</span>" is a one-liner: divide by the direction (rotates the line onto the real axis), conjugate (flip across the real axis), multiply back. It is much cleaner than the dot/projection version when <span class="inlineCode">Point</span> is <span class="inlineCode">std::complex</span>.</p>
+
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+// Reflect p across the infinite line through a in direction (b - a).
+// Precondition: a != b. The result is exact for floating arithmetic up
+// to the usual rounding of one division and one multiplication.
+Point reflectPointLineFast(const Point&amp; p, const Point&amp; a, const Point&amp; b) {
+    Point m = b - a;                         // line direction (must be non-zero)
+    return a + conj((p - a) / m) * m;        // unfold around the line
+}</code></pre>
+
+    <p><b>Preconditions and caveats.</b></p>
+    <ul style="padding-left:24px;">
+      <li><b>Direction must be non-zero.</b> If <span class="inlineCode">a == b</span> the line is undefined; the division by <span class="inlineCode">m</span> blows up. Validate upstream.</li>
+      <li><b>Unfolding does not validate the bounce point.</b> After producing the straight segment <span class="inlineCode">S → T'</span>, you still need to verify that its intersection with the actual mirror lies within the mirror <em>segment</em>, not just the supporting line. Use the segment routines from Class 04 / 58.</li>
+      <li><b>Repeated reflections magnify error.</b> Each reflection is a complex multiplication and division — a few are fine, but unfolding across dozens of mirrors compounds rounding. Use <span class="inlineCode">long double</span> and the EPS-aware comparators from Class 01 / 56.</li>
+      <li><b>The mirror must be a line, not an arbitrary curve.</b> This trick is specific to straight-edged reflectors (polygon edges, walls).</li>
+    </ul>
+
+    <p><b>Problem-use sketch.</b> For UVA 1286 (and most "laser bouncing off a polygon edge" tasks), iterate over candidate reflection sequences. For each candidate, unfold the target across the chosen edges one by one (so the final reflected target <span class="inlineCode">T''…</span> sees a straight ray from <span class="inlineCode">S</span>), then walk back through the unfoldings checking that each segment really crosses the corresponding mirror segment. The candidate that survives every intersection test is the valid reflected path; its length is <span class="inlineCode">dist(S, T_unfolded)</span>.</p>
+
+    <h3>16.5 — Canonical integer line and segment splitting</h3>
+    <p>When coordinates are integers and you need to compare infinite lines <em>exactly</em> (group collinear segments, build a hash map keyed by line, decide whether two edges support the same line), the float form <span class="inlineCode">ax + by + c = 0</span> with floating-point comparison is brittle. The canonical form normalises the triple <span class="inlineCode">(A, B, C)</span> so that each line has exactly one representative: divide by <span class="inlineCode">gcd(|A|, |B|, |C|)</span>, then fix the sign of the leading non-zero coefficient. After that, two lines are equal iff their canonical triples are equal — perfect for <span class="inlineCode">std::map</span>, <span class="inlineCode">std::set</span>, or sort-and-unique passes.</p>
+
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// Canonical integer line: A*x + B*y + C = 0 in fully reduced form.
+struct IntLine {
+    long long A, B, C;
+    bool operator&lt;(const IntLine&amp; other) const {
+        if (A != other.A) return A &lt; other.A;
+        if (B != other.B) return B &lt; other.B;
+        return C &lt; other.C;
+    }
+    bool operator==(const IntLine&amp; other) const {
+        return A == other.A &amp;&amp; B == other.B &amp;&amp; C == other.C;
+    }
+};
+
+// Build the unique canonical line through two distinct integer points.
+// Precondition: (x1, y1) != (x2, y2). Identical points do NOT define a line.
+IntLine canonicalLine(long long x1, long long y1, long long x2, long long y2) {
+    long long dx = x1 - x2;
+    long long dy = y1 - y2;
+    long long A  = dy;
+    long long B  = -dx;
+    long long C  = -A * x1 - B * y1;          // plug (x1, y1) into A*x + B*y + C = 0
+
+    // Reduce by gcd so each line has one canonical triple.
+    long long g = __gcd(llabs(A), __gcd(llabs(B), llabs(C)));
+    if (g) { A /= g; B /= g; C /= g; }
+
+    // Fix the sign of the leading non-zero coefficient to remove the +/- ambiguity.
+    if (A &lt; 0 || (A == 0 &amp;&amp; B &lt; 0) || (A == 0 &amp;&amp; B == 0 &amp;&amp; C &lt; 0)) {
+        A = -A; B = -B; C = -C;
+    }
+    return { A, B, C };
+}</code></pre>
+
+    <p><b>Use it when:</b></p>
+    <ul style="padding-left:24px;">
+      <li>Coordinates are integers and you want <em>exact</em> equality of infinite lines (no EPS).</li>
+      <li>You need to group collinear segments — every segment's supporting line gets the same canonical key, so a single <span class="inlineCode">map&lt;IntLine, vector&lt;Segment&gt;&gt;</span> bucket-sorts them.</li>
+      <li>You need to deduplicate edges in a polygon arrangement before counting boundary uses.</li>
+    </ul>
+
+    <p><b>Do not use it when:</b></p>
+    <ul style="padding-left:24px;">
+      <li>Coordinates are floating-point — there is no canonical bit pattern; use EPS-aware comparators instead.</li>
+      <li>You need tolerant equality (two near-parallel lines that you want to treat as equal): canonicalisation only collapses <em>exactly</em> identical lines.</li>
+    </ul>
+
+    <h4>Segment splitting on shared canonical lines</h4>
+    <p>An arrangement that uses canonical lines as the grouping key lets you split overlapping collinear segments into elementary pieces exactly. The pattern (used in problems like Kattis <span class="inlineCode">triangularclouds</span>) is:</p>
+    <ol style="padding-left:24px;">
+      <li>Compute the canonical line for every segment.</li>
+      <li>Bucket all endpoints by canonical line.</li>
+      <li>Within a bucket, sort endpoints along the line (e.g. by lexicographic <span class="inlineCode">(x, y)</span> if the line is non-vertical, otherwise by <span class="inlineCode">y</span>).</li>
+      <li>For each original segment, split it into the elementary sub-segments between consecutive bucket points that fall inside it.</li>
+      <li>Count how many times each elementary piece is used. Pieces used <em>once</em> are boundary; pieces used <em>twice</em> (or more) are internal.</li>
+    </ol>
+
+    <div class="callout">
+      <b>Picture.</b><br>
+      Original segments on one canonical line:<br>
+      <span class="inlineCode">A──────────────────D</span><br>
+      <span class="inlineCode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B──────C</span><br>
+      Collected sorted points: <span class="inlineCode">A — B — C — D</span>. Elementary pieces: <span class="inlineCode">AB</span>, <span class="inlineCode">BC</span>, <span class="inlineCode">CD</span>.
+    </div>
+
+    <p><b>Edge cases to remember.</b></p>
+    <ul style="padding-left:24px;">
+      <li><b>Identical endpoints.</b> A zero-length "segment" does <em>not</em> define a line. Filter or skip such inputs before calling <span class="inlineCode">canonicalLine</span>.</li>
+      <li><b>Overflow.</b> <span class="inlineCode">A*x1 + B*y1</span> can overflow <span class="inlineCode">long long</span> when coordinates approach <span class="inlineCode">10⁹</span> and slopes are large. Promote to <span class="inlineCode">__int128</span> for the multiplication step if your inputs need it.</li>
+      <li><b>Mixed precision.</b> Never canonicalise floating coordinates by rounding them to integers first; the rounding itself destroys collinearity.</li>
+      <li><b>Direction is lost.</b> Two opposite directed segments that share the same supporting line produce the same canonical triple — by design. Track direction separately if it matters.</li>
+    </ul>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>Training drill — closest pair squared distance <span class="rightHint">not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A drill for the integer closest-pair sweep, not a standalone contest problem.</p>
+      <p><b>Story.</b> Read <span class="inlineCode">n</span> integer points and output the minimum squared distance between any two.</p>
+      <p><b>Abstraction.</b> Run <span class="inlineCode">closestPairSweep</span> and print its exact squared-distance result.</p>
+      <p><b>Why this geometry model fits.</b> Only comparisons matter, so squared distance is exact and sufficient (§8.1), and the sweep is <span class="inlineCode">O(n log n)</span>.</p>
+      <p><b>Algorithm.</b> Read points; sweep; print the squared distance (or <span class="inlineCode">NO_PAIR</span> for fewer than two).</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+
+lll dist2(const Pt&amp; a, const Pt&amp; b){
+    lll dx = (lll)a.x - b.x, dy = (lll)a.y - b.y;
+    return dx*dx + dy*dy;
+}
+static ll floorSqrtLL(lll v){
+    if (v &lt;= 0) return 0;
+    long double r = sqrtl((long double)v);
+    ll s = (ll)r;
+    while (s &gt; 0 &amp;&amp; s * (lll)s &gt; v) s--;
+    while ((s + 1) * (lll)(s + 1) &lt;= v) s++;
+    return s;
+}
+lll closestPairSweep(vector&lt;Pt&gt; p){
+    int n = (int)p.size();
+    if (n &lt; 2) return -1;
+    sort(p.begin(), p.end(), [](const Pt&amp; a, const Pt&amp; b){
+        return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y;
+    });
+    auto cmpY = [](const Pt&amp; a, const Pt&amp; b){
+        return a.y != b.y ? a.y &lt; b.y : a.x &lt; b.x;
+    };
+    multiset&lt;Pt, decltype(cmpY)&gt; active(cmpY);
+    lll best = dist2(p[0], p[1]);
+    if (best == 0) return 0;          // duplicate points: minimum possible distance
+    active.insert(p[0]);
+    int left = 0;
+    for (int i = 1; i &lt; n; i++){
+        ll d = floorSqrtLL(best);
+        while (left &lt; i &amp;&amp;
+               (lll)(p[i].x - p[left].x) * (p[i].x - p[left].x) &gt; best){
+            active.erase(active.find(p[left]));
+            left++;
+        }
+        Pt lo{LLONG_MIN / 2, p[i].y - d};
+        for (auto it = active.lower_bound(lo);
+             it != active.end() &amp;&amp; it-&gt;y &lt;= p[i].y + d; ++it){
+            lll dd = dist2(*it, p[i]);
+            if (dd &lt; best){
+                best = dd;
+                if (best == 0) return 0;      // cannot improve beyond zero
+            }
+        }
+        active.insert(p[i]);
+    }
+    return best;
+}
+string i128(lll v){
+    if (v == 0) return "0";
+    bool n = v &lt; 0; if (n) v = -v;
+    string s;
+    while (v){ s += char('0' + (int)(v % 10)); v /= 10; }
+    if (n) s += '-';
+    reverse(s.begin(), s.end());
+    return s;
+}
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Pt&gt; p(n);
+    for (auto&amp; q : p) cin &gt;&gt; q.x &gt;&gt; q.y;
+    if (n &lt; 2){ cout &lt;&lt; "NO_PAIR\n"; return 0; }
+    cout &lt;&lt; i128(closestPairSweep(p)) &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log n)</span>, integer-exact.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">NO_PAIR</span> for fewer than two points; otherwise the exact minimum squared distance (<span class="inlineCode">0</span> when points coincide).</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — closest pair with actual distance output <span class="rightHint">not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A drill that also prints the real Euclidean distance and the achieving pair, not a standalone contest problem.</p>
+      <p><b>Story.</b> Read <span class="inlineCode">n</span> integer points; output the squared distance, the real distance, and the closest pair.</p>
+      <p><b>Abstraction.</b> Run the pair-returning sweep, then take a single <span class="inlineCode">sqrt</span> of the exact squared distance for the printed value.</p>
+      <p><b>Why this geometry model fits.</b> The search stays integer-exact; only the final output needs a root (§16.2).</p>
+      <p><b>Algorithm.</b> Sweep keeping the best pair; print squared distance, its root, and the two points. Ties keep the first pair found.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+
+lll dist2(const Pt&amp; a, const Pt&amp; b){
+    lll dx = (lll)a.x - b.x, dy = (lll)a.y - b.y;
+    return dx*dx + dy*dy;
+}
+static ll floorSqrtLL(lll v){
+    if (v &lt;= 0) return 0;
+    long double r = sqrtl((long double)v);
+    ll s = (ll)r;
+    while (s &gt; 0 &amp;&amp; s * (lll)s &gt; v) s--;
+    while ((s + 1) * (lll)(s + 1) &lt;= v) s++;
+    return s;
+}
+// closest pair returning the achieving points; ties keep the first found.
+// Returns -1 (ra, rb unchanged) if fewer than two points.
+lll closestPair(vector&lt;Pt&gt; p, Pt&amp; ra, Pt&amp; rb){
+    int n = (int)p.size();
+    if (n &lt; 2) return -1;
+    sort(p.begin(), p.end(), [](const Pt&amp; a, const Pt&amp; b){
+        return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y;
+    });
+    auto cmpY = [](const Pt&amp; a, const Pt&amp; b){
+        return a.y != b.y ? a.y &lt; b.y : a.x &lt; b.x;
+    };
+    multiset&lt;Pt, decltype(cmpY)&gt; active(cmpY);
+    lll best = dist2(p[0], p[1]);
+    ra = p[0]; rb = p[1];
+    if (best == 0) return 0;          // duplicate points: pair already recorded
+    active.insert(p[0]);
+    int left = 0;
+    for (int i = 1; i &lt; n; i++){
+        ll d = floorSqrtLL(best);
+        while (left &lt; i &amp;&amp;
+               (lll)(p[i].x - p[left].x) * (p[i].x - p[left].x) &gt; best){
+            active.erase(active.find(p[left]));
+            left++;
+        }
+        Pt lo{LLONG_MIN / 2, p[i].y - d};
+        for (auto it = active.lower_bound(lo);
+             it != active.end() &amp;&amp; it-&gt;y &lt;= p[i].y + d; ++it){
+            lll dd = dist2(*it, p[i]);
+            if (dd &lt; best){
+                best = dd; ra = *it; rb = p[i];
+                if (best == 0) return 0;      // cannot improve beyond zero
+            }
+        }
+        active.insert(p[i]);
+    }
+    return best;
+}
+string i128(lll v){
+    if (v == 0) return "0";
+    bool n = v &lt; 0; if (n) v = -v;
+    string s;
+    while (v){ s += char('0' + (int)(v % 10)); v /= 10; }
+    if (n) s += '-';
+    reverse(s.begin(), s.end());
+    return s;
+}
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Pt&gt; p(n);
+    for (auto&amp; q : p) cin &gt;&gt; q.x &gt;&gt; q.y;
+    if (n &lt; 2){ cout &lt;&lt; "NO_PAIR\n"; return 0; }
+    Pt a, b;
+    lll d2 = closestPair(p, a, b);
+    cout &lt;&lt; fixed &lt;&lt; setprecision(6);
+    cout &lt;&lt; i128(d2) &lt;&lt; " " &lt;&lt; sqrtl((long double)d2) &lt;&lt; " "
+         &lt;&lt; a.x &lt;&lt; " " &lt;&lt; a.y &lt;&lt; " " &lt;&lt; b.x &lt;&lt; " " &lt;&lt; b.y &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log n)</span>; one <span class="inlineCode">sqrt</span> at the end.</p>
+      <p><b>Output meaning.</b> Squared distance, then real distance, then the two closest points; <span class="inlineCode">NO_PAIR</span> for fewer than two points.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary &amp; Series Recap</h2>
+    <div class="twoCol">
+      <div>
+        <h3>Closest pair, in one screen</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Compare</b> squared distances; root only at output.</li>
+          <li><b>Brute</b> O(n²) for small <span class="inlineCode">n</span>; <b>sweep</b> O(n log n) otherwise.</li>
+          <li><b>Sort</b> by x, keep a y-ordered active set.</li>
+          <li><b>Prune</b> by x-gap, <b>query</b> the y-window.</li>
+          <li><b>Only O(1)</b> candidates per point (packing bound).</li>
+          <li><b>Duplicates</b> give distance <span class="inlineCode">0</span> naturally; use <span class="inlineCode">__int128</span> for big coordinates.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>No <span class="inlineCode">sqrt</span> in the comparison path.</li>
+          <li>Promote to <span class="inlineCode">__int128</span> before squaring.</li>
+          <li>Prune the active set or the bound is lost.</li>
+          <li>Query only the y-band, not the whole set.</li>
+          <li>Keep integer-exact; no stray <span class="inlineCode">EPS</span>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>The series, Classes 1–10</h3>
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Series recap map linking Classes 1–10</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <!-- foundations -->
+        <rect x="40" y="40" width="240" height="110" rx="14" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="160" y="68" font-size="16" font-weight="950" fill="var(--accent2)" text-anchor="middle">Foundations (1–4)</text>
+        <text x="160" y="94" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">distance · orientation</text>
+        <text x="160" y="114" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">point-on-segment</text>
+        <text x="160" y="134" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">segment intersection</text>
+        <!-- circles -->
+        <rect x="330" y="40" width="240" height="110" rx="14" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="450" y="68" font-size="16" font-weight="950" fill="var(--good)" text-anchor="middle">Circles &amp; shapes (5–7)</text>
+        <text x="450" y="94" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">triangles · circle intersection</text>
+        <text x="450" y="114" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">tangents · cover · MEC</text>
+        <text x="450" y="134" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">ellipse utilities</text>
+        <!-- polygons -->
+        <rect x="620" y="40" width="240" height="110" rx="14" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="740" y="68" font-size="16" font-weight="950" fill="var(--warn)" text-anchor="middle">Polygons (8–9)</text>
+        <text x="740" y="94" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">shoelace area · Pick</text>
+        <text x="740" y="114" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">polygon cut</text>
+        <text x="740" y="134" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">convex hull</text>
+        <!-- arrows down to finale -->
+        <g stroke="currentColor" stroke-width="2.5" fill="none">
+          <line x1="160" y1="150" x2="400" y2="250" marker-end="url(#arrow1)"/>
+          <line x1="450" y1="150" x2="450" y2="250" marker-end="url(#arrow1)"/>
+          <line x1="740" y1="150" x2="500" y2="250" marker-end="url(#arrow1)"/>
+        </g>
+        <!-- finale -->
+        <rect x="300" y="250" width="300" height="90" rx="14" fill="rgba(37,99,235,.12)" stroke="var(--accent)" stroke-width="3"/>
+        <text x="450" y="282" font-size="17" font-weight="950" fill="var(--accent)" text-anchor="middle">Class 10 — finale</text>
+        <text x="450" y="308" font-size="14" font-weight="850" fill="var(--muted)" text-anchor="middle">closest pair · mixed geometry</text>
+        <text x="450" y="328" font-size="14" font-weight="850" fill="var(--muted)" text-anchor="middle">recognition &amp; composition</text>
+        <text x="450" y="385" font-size="15" font-weight="850" fill="var(--muted)" text-anchor="middle">one cross product, one distance test, one comparison policy — reused everywhere</text>
+      </svg>
+    </div>
+
+    <p style="margin-top:14px;">Across ten classes, two-dimensional computational geometry came down to a few primitives used with discipline: the signed cross product for orientation and area, the squared distance for comparison, a single consistent comparison policy, and a clear-eyed choice of integer-exact versus <span class="inlineCode">EPS</span>-based arithmetic. Closest pair is a fitting finale — it shows how sorting and locality turn a brute-force quadratic into an elegant near-linear sweep, and the decision map ties every technique back to the shape of the problem.</p>
+    <div class="callout good">
+      <b>Series complete.</b> Classes 1–10 form a full 2-D computational-geometry toolkit: foundations, circles and shapes, polygons, and the closest-pair finale, each compile-verified and projector-ready.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using these closest-pair routines in a contest solution, verify each item below. The Class 01–09 numeric, geometric, signed-area, and exactness checklists still apply underneath.</p>
+
+    <h4>Closest pair</h4>
+    <ul class="checklist">
+      <li>Distances are compared as squared distances; no <span class="inlineCode">sqrt</span> appears in the comparison path.</li>
+      <li>Squared distance is accumulated in <span class="inlineCode">__int128</span>, with operands promoted before multiplying.</li>
+      <li>The points are sorted by <span class="inlineCode">x</span>, and the active set is ordered by <span class="inlineCode">y</span>.</li>
+      <li>Far-back points are pruned by the x-gap, and only the <span class="inlineCode">[y−d, y+d]</span> window is queried.</li>
+      <li>The window width uses an exact <span class="inlineCode">⌊√best⌋</span>, corrected for floating rounding.</li>
+    </ul>
+
+    <h4>Outputs &amp; preconditions</h4>
+    <ul class="checklist">
+      <li>Fewer than two points returns the negative sentinel (no pair).</li>
+      <li>Duplicate or coincident points yield squared distance <span class="inlineCode">0</span>; the optimized sweep returns immediately once zero is found.</li>
+      <li>The real Euclidean distance, if needed, is one <span class="inlineCode">sqrt</span> of the final squared value.</li>
+      <li>The pair-returning routine keeps the first pair achieving the minimum (documented tie behavior).</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li>Points <span class="inlineCode">(0,0),(3,4),(10,10),(11,11),(100,100)</span>: minimum squared distance <span class="inlineCode">2</span> (the pair <span class="inlineCode">(10,10),(11,11)</span>).</li>
+      <li>Points with a duplicate, e.g. <span class="inlineCode">(5,5),(1,1),(5,5),(9,9)</span>: squared distance <span class="inlineCode">0</span>.</li>
+      <li>All points equal: squared distance <span class="inlineCode">0</span>.</li>
+      <li>Two points <span class="inlineCode">(0,0),(6,8)</span>: squared distance <span class="inlineCode">100</span>, real distance <span class="inlineCode">10</span>.</li>
+      <li>The sweep agrees with the brute force on every randomized small input.</li>
+      <li>100000 identical points <span class="inlineCode">(5,5)</span>: the answer is <span class="inlineCode">0</span>, returned immediately once zero is detected — no quadratic scan of the active set.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 10</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Closest pair &amp; mixed geometry · The series finale.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

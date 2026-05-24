@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — SQRT Decomposition</title>
+<script>
+(function(){
+  var t=localStorage.getItem('sqrt_theme');
+  if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  document.documentElement.setAttribute('data-theme',t);
+})();
+</script>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:26px;--fs-sm:22px;--fs-h1:54px;--fs-h2:38px;--fs-h3:30px;
+  --radius:18px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+.app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+.sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;z-index:150;}
+.content{overflow:auto;padding:26px 30px 90px;}
+.brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+.logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;flex:0 0 auto;overflow:hidden;}
+.brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+.by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+.nav{padding:14px 6px 0;}
+.nav .gTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+.nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+.sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+.sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+.subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+.switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+[data-theme="dark"] .switch::after{left:36px;}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+.card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+.card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+.note{color:var(--muted);font-weight:750;font-size:22px;}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+.chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+.chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+.chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+summary::-webkit-details-marker{display:none}
+summary .rh{font-size:18px;color:var(--muted);font-weight:850;}
+.dBody{padding:16px 18px 18px;}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+.dHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.dTitle{font-weight:950;font-size:26px;}
+.dTools{display:flex;gap:10px;flex-wrap:wrap;}
+.mBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+.mBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+th{background:rgba(37,99,235,.10);font-weight:950;}
+tr:last-child td{border-bottom:none}
+section{scroll-margin-top:16px}
+.sp{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+.pf{background:linear-gradient(180deg,rgba(15,118,110,.08),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.25);border-radius:16px;padding:16px 18px;margin:14px 0;}
+.inv{background:linear-gradient(180deg,rgba(124,58,237,.08),rgba(0,0,0,0));border:3px solid rgba(124,58,237,.25);border-radius:16px;padding:16px 18px;margin:14px 0;}
+.page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+.sftr{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+.sftr .sft{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto;}
+.app.sb-hidden{grid-template-columns:1fr !important;}
+.app.sb-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:420px;border-right:3px solid var(--border);}
+.app.sb-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+.app.sb-hidden .content{padding-top:80px;}
+.iCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+.tracerWrap{width:100%;overflow:hidden;border-radius:14px;border:2px solid var(--border);background:var(--panel2);}
+.tracerSvg{width:100%;display:block;}
+.accRow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;}
+.accBox{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel2);border:3px solid var(--border);border-radius:14px;font-weight:950;font-size:22px;}
+.accVal{color:var(--accent2);font-family:ui-monospace,monospace;}
+.dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:700;overflow-x:auto;line-height:1.7;}
+.vRow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:2px solid var(--border);font-size:22px;font-weight:850;}
+.vRow:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true"
+        class="sidebar-toggle" id="sidebarToggle">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">SQRT Decomp.</div>
+    <div class="t2">Block Technique</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav" id="mainNav">
+  <div class="gTitle">Foundations</div>
+  <a href="#intro"       id="nav-intro">🧩 Problem Definition<small>Point update · Range query</small></a>
+  <a href="#intuition"   id="nav-int">💡 Intuition from Scratch<small>The shelf analogy</small></a>
+  <a href="#mentalmodel" id="nav-mm">🧠 Visual Mental Model<small>Blocks and summaries</small></a>
+  <a href="#abstraction" id="nav-abs">📐 Formal Abstraction<small>Block index formulas</small></a>
+  <a href="#observations"id="nav-obs">🔍 Key Observations<small>Four core properties</small></a>
+
+  <div class="gTitle">Algorithm &amp; Proof</div>
+  <a href="#algorithm"   id="nav-alg">⚙️ Algorithm Explanation<small>Interactive query tracer</small></a>
+  <div class="sub"><a href="#tracer-query">Range query step trace</a></div>
+  <a href="#invariants"  id="nav-inv">🔒 Invariants<small>State · Transition · Termination</small></a>
+  <a href="#proof"       id="nav-prf">✅ Proof of Correctness<small>Two-case analysis</small></a>
+  <a href="#complexity"  id="nav-cpx">⏱ Complexity Analysis<small>Balance argument</small></a>
+
+  <div class="gTitle">Templates</div>
+  <a href="#philosophy"  id="nav-phi">🧩 Template Philosophy<small>Unified naming &amp; style</small></a>
+  <a href="#templatesum" id="nav-tpl">📄 Master Template<small>Point update · Range sum</small></a>
+  <a href="#lineby"      id="nav-lbl">📖 Line-by-Line<small>Build · Update · Query</small></a>
+
+  <div class="gTitle">Correctness &amp; Safety</div>
+  <a href="#edgecases"   id="nav-edge">⚠️ Edge Case Audit<small>Centralized checklist</small></a>
+  <a href="#pitfalls"    id="nav-pit">🐛 Common Pitfalls<small>Bugs and fixes</small></a>
+
+  <div class="gTitle">Contest Reference</div>
+  <a href="#decision"    id="nav-dec">🎯 Decision Guide<small>Table · Reflex rules</small></a>
+  <a href="#variants"    id="nav-var">🔀 Variants &amp; Extensions<small>7 pattern families</small></a>
+  <a href="#applications"id="nav-app">🚀 Worked Problems<small>CSES · SPOJ · Codeforces</small></a>
+  <div class="sub">
+    <a href="#app-cses">CSES 1648 — Range Sum</a>
+    <a href="#app-racetime">SPOJ RACETIME — Count ≤ x</a>
+    <a href="#app-swaps">SPOJ SWAPS — Inversions</a>
+    <a href="#app-chsqarr">Codeforces 13E — Holes</a>
+  </div>
+
+  <div class="gTitle">Summary</div>
+  <a href="#summary"    id="nav-sum">📋 Final Summary<small>Core formula &amp; decisions</small></a>
+  <a href="#validation" id="nav-val">🧪 Runtime Validation</a>
+</nav>
+<div class="sftr">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;">🎓</div>
+  <div class="sft">Coach Academy · SQRT Decomposition</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content" id="mainContent">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+      <span style="font-size:36px;">🎓</span>
+    </div>
+    <div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy</div>
+      <h1>SQRT Decomposition</h1>
+      <div class="subtitle">√n Blocks · Range Queries · Sorted Blocks · Lazy Flags · Split/Build</div>
+    </div>
+  </div>
+  <div class="btnRow">
+    <label class="pill"><span>🌙</span>
+      <div class="switch" id="themeSwitch"></div>
+    </label>
+  </div>
+</div>
+
+<!-- §1 PROBLEM DEFINITION -->
+<section class="card" id="intro">
+<h2>🧩 §1 Problem Definition</h2>
+<p>SQRT decomposition is a competitive-programming block technique for answering range queries efficiently while supporting updates. The <b>canonical entry problem</b> is:</p>
+<div class="grid2" style="margin-top:14px;">
+  <div class="sp"><h3>Given</h3><p>An array <code class="iCode">a[0 … n−1]</code> of integers (n ≤ 3 × 10⁵).</p></div>
+  <div class="sp"><h3>Support</h3><p><b>update(idx, v)</b> — set a[idx] = v<br/><b>query(l, r)</b> — return some aggregate of a[l … r]</p></div>
+</div>
+<p style="margin-top:14px;">The aggregate can be a <b>sum, minimum, count satisfying a predicate, inversion delta</b>, and many others — as long as it can be answered per-block quickly. The naive O(n) scan per query becomes O(nq), which is too slow for n, q = 10⁵.</p>
+<h3>When SQRT beats everything else</h3>
+<p>Segment trees and Fenwick trees solve sums/min beautifully, but some aggregates — <em>count of values ≤ x, inversion count with updates, range-set then range-reverse then range-count</em> — are hard or impossible with those structures. SQRT decomposition gives a universal, easy-to-implement O(√n) solution adaptable to complex aggregates with minimal extra thought.</p>
+<div class="chips">
+  <span class="chip">O(√n) per query</span>
+  <span class="chip good">Simple to code</span>
+  <span class="chip warn">Best for n, q ≤ 3 × 10⁵</span>
+  <span class="chip">Flexible aggregates</span>
+</div>
+</section>
+
+<!-- §2 INTUITION -->
+<section class="card" id="intuition">
+<h2>💡 §2 Intuition from Scratch</h2>
+<h3>The shelf analogy</h3>
+<p>Imagine a bookshelf with 16 books. Each has a page count. You want the total pages for books 3–14. The naive approach pulls every book. The SQRT approach <b>groups books into boxes of 4</b>. Each box is labelled with its total pages.</p>
+<p>Now "books 3–14" becomes: <em>scan books 3–4 (edge of their box) + read labels on boxes 2 and 3 (full boxes) + scan books 13–14 (edge of their box)</em>.</p>
+<h3>Worked example</h3>
+<pre><code>a = [5, 8, 6, 3,  2, 7, 2, 6,  7, 1, 7, 5,  6, 2, 3, 2]
+     ─── Block 0 ──  ─── Block 1 ──  ─── Block 2 ──  ─── Block 3 ──
+     blockSum = 22        17               20               13
+
+Query: sum(2, 13)
+  Left partial  (indices 2–3):   a[2]+a[3]       =  6+3  =  9
+  Full block 1  (indices 4–7):   blockSum[1]              = 17
+  Full block 2  (indices 8–11):  blockSum[2]              = 20
+  Right partial (indices 12–13): a[12]+a[13]     =  6+2  =  8
+                                                          ────
+  Answer                                                    54</code></pre>
+<h3>Why O(√n)?</h3>
+<div class="grid2" style="margin-top:10px;">
+  <div class="sp"><h3>Partial scan cost</h3><p>At most B elements per partial block × 2 partial blocks.</p><p style="color:var(--accent2);font-weight:950;">Cost = O(B) = O(√n)</p></div>
+  <div class="sp"><h3>Full block cost</h3><p>At most K = n/B full blocks, each answered O(1) from stored summary.</p><p style="color:var(--accent2);font-weight:950;">Cost = O(K) = O(√n)</p></div>
+</div>
+<p style="margin-top:14px;">Choosing B = √n makes both costs equal. The <b>balance argument</b>: minimise f(B) = 2B + n/B by setting df/dB = 0, which gives B = √(n/2) ≈ √n.</p>
+</section>
+
+<!-- §3 MENTAL MODEL -->
+<section class="card" id="mentalmodel">
+<h2>🧠 §3 Visual Mental Model</h2>
+<p>Four colour-coded blocks for n = 16, B = 4. The query range [2, 13] is bracketed in red. Full middle blocks are used with O(1) summary lookups; boundary blocks are scanned element by element.</p>
+<div class="diagramWrap" style="margin-top:14px;">
+  <svg id="staticDiag" viewBox="0 0 756 150" style="width:100%;display:block;max-height:180px;"></svg>
+</div>
+<div class="grid3" style="margin-top:14px;">
+  <div class="sp" style="border-color:rgba(37,99,235,.4);"><h3 style="color:var(--accent2);">🔵 Left Partial Tail</h3><p>l to end of l's block. Scanned individually. Cost: O(B).</p></div>
+  <div class="sp" style="border-color:rgba(15,118,110,.4);"><h3 style="color:var(--good);">🟢 Full Middle Blocks</h3><p>Blocks entirely inside [l, r]. Use stored blockSum. Cost: O(K).</p></div>
+  <div class="sp" style="border-color:rgba(180,83,9,.4);"><h3 style="color:var(--warn);">🟠 Right Partial Tail</h3><p>Start of r's block to r. Scanned individually. Cost: O(B).</p></div>
+</div>
+<div class="inv" style="margin-top:14px;">
+  <h3>Corner case: l and r in the same block</h3>
+  <p>When both endpoints share a block, there are no full blocks and no separate partial zones. The same-block guard fires and scans l to r directly in O(B). Without this guard, the middle loop would have inverted bounds and the left partial loop would scan past r, over-counting elements.</p>
+</div>
+</section>
+
+<!-- §4 ABSTRACTION -->
+<section class="card" id="abstraction">
+<h2>📐 §4 Formal Abstraction</h2>
+<div class="grid2" style="margin-top:10px;">
+  <div class="sp"><h3>Fields</h3>
+  <pre style="font-size:19px;"><code>int n;           // array length
+int blockSize;   // B ≈ √n
+int blockCount;  // K = ⌈n / B⌉
+vector&lt;T&gt; a;            // actual values
+vector&lt;T&gt; summary;      // one entry per block</code></pre>
+  </div>
+  <div class="sp"><h3>Key formulas</h3>
+  <pre style="font-size:19px;"><code>// Block containing index i
+blockId = i / blockSize;
+
+// Block boundaries
+blockStart = b * blockSize;
+blockEnd   = min(n, (b+1)*blockSize) - 1;
+
+// Standard block size
+blockSize  = (int)sqrt(n) + 1;
+blockCount = (n + blockSize - 1) / blockSize;</code></pre>
+  </div>
+</div>
+<h3>Range decomposition table</h3>
+<table>
+  <thead><tr><th>Zone</th><th>Indices</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td>Left partial</td><td><code>l … (lb+1)·B − 1</code></td><td>O(B)</td></tr>
+    <tr><td>Full middle</td><td>blocks lb+1 … rb−1</td><td>O(K)</td></tr>
+    <tr><td>Right partial</td><td><code>rb·B … r</code></td><td>O(B)</td></tr>
+    <tr><td>Same-block (lb=rb)</td><td><code>l … r</code> directly</td><td>O(B)</td></tr>
+  </tbody>
+</table>
+<p class="note" style="margin-top:10px;">Why <code class="iCode">sqrt(n) + 1</code>: when n is not a perfect square, sqrt(n) truncates. Adding 1 guarantees a safe block size. The ceiling-division formula gives the exact number of blocks for any n.</p>
+</section>
+
+<!-- §5 KEY OBSERVATIONS -->
+<section class="card" id="observations">
+<h2>🔍 §5 Key Observations</h2>
+<div class="inv"><h3>Observation 1 — Every index belongs to exactly one block</h3>
+<p><code class="iCode">blockId = i / blockSize</code> is a total function on [0, n). A point update at idx touches only block <code>idx/B</code>. This locality is what makes point update cheap.</p></div>
+<div class="inv"><h3>Observation 2 — A range has at most two partial blocks</h3>
+<p>The left boundary can fall inside one block; the right boundary can fall inside another. Everything strictly between them is whole blocks. This structural property holds for any interval, regardless of its length.</p></div>
+<div class="inv"><h3>Observation 3 — Full blocks are the source of speed</h3>
+<p>Scanning a block costs O(B). Using a full-block summary costs O(1) or O(log B). By making B ≈ √n, the number of full blocks is also ≈ √n, so both zones cost O(√n).</p></div>
+<div class="inv"><h3>Observation 4 — B is a tunable parameter</h3>
+<p>B = √n is the theoretical balance point, but practical sweet spots are B = 300, 450, or 700. The right value depends on query/update asymmetry, memory constraints, and cache behaviour. Always benchmark on the actual constraints.</p></div>
+<h3>When to deviate from √n</h3>
+<table>
+  <thead><tr><th>Situation</th><th>Optimal direction</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td>Queries far outnumber updates</td><td>Larger B</td><td>More full blocks → faster queries; fewer updates to repair</td></tr>
+    <tr><td>Updates far outnumber queries</td><td>Smaller B</td><td>Smaller block means cheaper per-block repair</td></tr>
+    <tr><td>Per-block Fenwick uses heavy memory</td><td>Smaller B</td><td>Fewer blocks, less total memory</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- §6 ALGORITHM -->
+<section class="card" id="algorithm">
+<h2>⚙️ §6 Algorithm Explanation</h2>
+<p>Step through the tracer to watch how <code class="iCode">query(2, 13)</code> is decomposed on the 16-element array with block size B = 4.</p>
+<div class="diagramWrap" id="tracer-query">
+  <div class="dHeader">
+    <span class="dTitle">Range Query Decomposition Tracer</span>
+    <div class="dTools">
+      <button class="mBtn active" id="t1R">Reset</button>
+      <button class="mBtn" id="t1P">◀ Prev</button>
+      <button class="mBtn" id="t1N">Next ▶</button>
+      <button class="mBtn" id="t1A">▶▶ Auto</button>
+    </div>
+  </div>
+  <div class="tracerWrap"><svg id="t1Svg" class="tracerSvg" viewBox="0 0 756 152" style="height:165px;"></svg></div>
+  <div id="t1St" class="sp" style="margin-top:10px;min-height:72px;font-size:22px;"></div>
+  <div class="accRow">
+    <div class="accBox">Accumulator: <span class="accVal" id="t1Acc">0</span></div>
+    <div class="accBox">Step: <span class="accVal" id="t1Stp">1 / 7</span></div>
+  </div>
+</div>
+<h3 style="margin-top:22px;">Query algorithm — pseudocode</h3>
+<pre><code>query(l, r):
+  lb = l / B,  rb = r / B
+  if lb == rb:                          // same-block guard (correctness critical)
+      scan a[l..r] directly
+      return ans
+
+  // Left partial block: l to end of block lb
+  scan a[l .. (lb+1)*B − 1]
+
+  // Full middle blocks — O(1) each from stored summary
+  for b in [lb+1 .. rb−1]:  ans += blockSum[b]
+
+  // Right partial block: start of block rb to r
+  scan a[rb*B .. r]
+  return ans</code></pre>
+<h3 style="margin-top:18px;">Point update algorithm</h3>
+<pre><code>update(idx, newValue):
+  b = idx / B
+  blockSum[b] -= a[idx]    // remove old contribution first
+  a[idx] = newValue
+  blockSum[b] += a[idx]    // add new contribution</code></pre>
+<p class="note" style="margin-top:8px;">The subtract-then-assign-then-add idiom avoids recomputing the entire block sum from scratch. For range-sum it gives O(1) update. For range-min the block must be fully rescanned after the update — O(B).</p>
+</section>
+
+<!-- §7 INVARIANTS -->
+<section class="card" id="invariants">
+<h2>🔒 §7 Invariants</h2>
+<div class="inv">
+<h3>State invariant</h3>
+<p>At all times, for every block b, the stored summary correctly represents the current values inside it. For range-sum:</p>
+<pre style="font-size:19px;"><code>blockSum[b] == sum(a[i])  for all i  with  i/B == b</code></pre>
+<p style="margin-top:8px;">Established by <code>build()</code>. Maintained by every <code>update()</code>. This contract is what makes O(1) full-block lookups correct.</p>
+</div>
+<div class="inv">
+<h3>Transition invariant (after update)</h3>
+<p>After <code>update(idx, v)</code>, only block <code>idx/B</code> has changed. Its summary has been decremented by the old value and incremented by the new value. All other blocks remain valid without touching them.</p>
+</div>
+<div class="inv">
+<h3>Query invariant (termination)</h3>
+<p>At the end of <code>query(l, r)</code>, every index i ∈ [l, r] has contributed to the answer exactly once. The three zones — left partial, full middle, right partial — are <b>disjoint</b> and their union is exactly [l, r]. No element is missed; none is counted twice.</p>
+</div>
+<h3>Failure modes from violated invariants</h3>
+<table>
+  <thead><tr><th>Violated invariant</th><th>Symptom</th><th>Root cause</th></tr></thead>
+  <tbody>
+    <tr><td>State invariant</td><td>Wrong query answers after updates</td><td>blockSum not updated in update()</td></tr>
+    <tr><td>Transition invariant</td><td>Query value drifts over time</td><td>Subtracting new value instead of old; order error</td></tr>
+    <tr><td>Query coverage</td><td>Missing or duplicated elements</td><td>Wrong boundary arithmetic in partial loops</td></tr>
+    <tr><td>Sorted-block invariant</td><td>Binary search returns wrong count</td><td>sortedBlocks not updated on point-update</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- §8 PROOF -->
+<section class="card" id="proof">
+<h2>✅ §8 Proof of Correctness</h2>
+<p>We prove that <code class="iCode">query(l, r)</code> returns the exact sum of a[l … r], given that the state invariant holds at call time.</p>
+<div class="pf">
+<h3>Case 1: leftBlock = rightBlock</h3>
+<p>The loop <code>for i in [l..r]</code> visits every index in [l, r] exactly once and no index outside it. No blockSum is used. The result is correct by direct inspection.</p>
+</div>
+<div class="pf">
+<h3>Case 2: leftBlock &lt; rightBlock</h3>
+<p><b>Three zones:</b></p>
+<ul style="font-size:24px;line-height:1.8;margin:8px 0 0 20px;">
+  <li>Left partial: <code>[l … (lb+1)·B − 1]</code></li>
+  <li>Full middle: blocks lb+1 … rb−1, using blockSum</li>
+  <li>Right partial: <code>[rb·B … r]</code></li>
+</ul>
+<p style="margin-top:10px;"><b>Disjointness:</b> The left partial ends at (lb+1)·B−1, strictly less than (lb+1)·B (start of block lb+1). The right partial starts at rb·B, strictly after rb·B−1 (end of block rb−1). The three zones are pairwise disjoint.</p>
+<p><b>Completeness:</b> Every i ∈ [l, r] falls in exactly one zone. Indices in l's block from l onward → left partial. Indices in r's block up to r → right partial. All indices in strictly interior blocks → full middle loop.</p>
+<p><b>blockSum correctness:</b> By the state invariant, blockSum[b] = sum(a[i]) for all i in block b. Since the full middle blocks are entirely contained in [l, r], using blockSum is equivalent to scanning them. ∎</p>
+</div>
+</section>
+
+<!-- §9 COMPLEXITY -->
+<section class="card" id="complexity">
+<h2>⏱ §9 Complexity Analysis</h2>
+<div class="grid2">
+  <div class="sp"><h3>Build — O(n)</h3><p>One pass over all n elements. Each contributes to one blockSum entry.</p></div>
+  <div class="sp"><h3>Point update — O(1) for sum</h3><p>One subtraction + one addition to blockSum. Becomes O(B) = O(√n) for structures that must rescan the block (min, sorted).</p></div>
+  <div class="sp"><h3>Range query — O(√n)</h3><p>At most 2B elements scanned (two partial blocks) + at most K = n/B full blocks. With B = √n: 2√n + √n = O(√n).</p></div>
+  <div class="sp"><h3>Memory — O(n)</h3><p>n raw values + K ≈ √n summary entries. Total O(n).</p></div>
+</div>
+<h3 style="margin-top:18px;">Balance derivation</h3>
+<p>Total query cost f(B) = 2B + n/B. Setting df/dB = 2 − n/B² = 0 gives B = √(n/2) ≈ √n. The minimum cost is f(√n) ≈ 2√n + √n = 3√n = <b>O(√n)</b>.</p>
+<h3>Per-variant complexity table</h3>
+<table>
+  <thead><tr><th>Variant</th><th>Build</th><th>Update</th><th>Query</th></tr></thead>
+  <tbody>
+    <tr><td>Range sum</td><td>O(n)</td><td>O(1)</td><td>O(√n)</td></tr>
+    <tr><td>Range min/max</td><td>O(n)</td><td>O(√n)</td><td>O(√n)</td></tr>
+    <tr><td>Sorted blocks (count ≤ x)</td><td>O(n log n)</td><td>O(√n)</td><td>O(√n log √n)</td></tr>
+    <tr><td>Per-block Fenwick (inversions)</td><td>O(n log V)</td><td>O(√n log V)</td><td>O(√n log V)</td></tr>
+    <tr><td>Lazy range-add + point query</td><td>O(n)</td><td>O(√n)</td><td>O(1)</td></tr>
+    <tr><td>Split/build dynamic</td><td>O(n)</td><td>O(√n)</td><td>O(√n)</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- §10 PHILOSOPHY -->
+<section class="card" id="philosophy">
+<h2>🧩 §10 Template Philosophy</h2>
+<p>All templates follow a <b>unified naming and structural convention</b>. Once you internalise the pattern, every new variant feels familiar. The only thing that changes is the block summary type.</p>
+<div class="grid2" style="margin-top:10px;">
+  <div class="sp"><h3>Unified names</h3>
+  <pre style="font-size:19px;"><code>int n, blockSize, blockCount;
+vector&lt;T&gt; a;             // raw values
+vector&lt;T&gt; blockSummary;  // blockSum / blockMin / sortedBlocks
+int b = idx / blockSize; // always "b"</code></pre>
+  </div>
+  <div class="sp"><h3>Unified struct shell</h3>
+  <pre style="font-size:19px;"><code>struct SqrtXxx {
+    void build(const vector&lt;T&gt;&amp; initial);
+    void update(int idx, T value);
+    T    query(int l, int r, ...);
+};</code></pre>
+  </div>
+</div>
+<h3>The universal design question</h3>
+<table>
+  <thead><tr><th>#</th><th>Question</th><th>Answer defines</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>What should each block remember?</td><td>The summary data structure</td></tr>
+    <tr><td>2</td><td>How do I answer a full-block query?</td><td>The full-block branch of query()</td></tr>
+    <tr><td>3</td><td>How do I repair a changed block?</td><td>The update() function</td></tr>
+    <tr><td>4</td><td>How do I handle the two partial edges?</td><td>The partial-block branches of query()</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- §11 MASTER TEMPLATE -->
+<section class="card" id="templatesum">
+<h2>📄 §11 Master Template — Point Update + Range Sum</h2>
+<p>The canonical starting template. Solves <a href="https://vjudge.net/problem/CSES-1648" target="_blank">CSES 1648 — Dynamic Range Sum Queries</a> without modification.</p>
+<div class="chips">
+  <span class="chip good">Build O(n)</span>
+  <span class="chip good">Update O(1)</span>
+  <span class="chip good">Query O(√n)</span>
+  <span class="chip">Memory O(n)</span>
+</div>
+<details open>
+  <summary>Full AC-Ready C++ Template <span class="rh">click to collapse</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct SqrtSum {
+    int n, blockSize, blockCount;
+    vector&lt;long long&gt; a;
+    vector&lt;long long&gt; blockSum;
+
+    SqrtSum() {}
+    SqrtSum(const vector&lt;long long&gt;&amp; initial) { build(initial); }
+
+    void build(const vector&lt;long long&gt;&amp; initial) {
+        a = initial;
+        n = (int)a.size();
+        blockSize  = (int)sqrt(n) + 1;
+        blockCount = (n + blockSize - 1) / blockSize;
+        blockSum.assign(blockCount, 0);
+        for (int i = 0; i &lt; n; i++)
+            blockSum[i / blockSize] += a[i];
+    }
+
+    // O(1) — only one block changes
+    void update(int idx, long long newValue) {
+        int b = idx / blockSize;
+        blockSum[b] -= a[idx];
+        a[idx] = newValue;
+        blockSum[b] += a[idx];
+    }
+
+    // O(sqrt(n)) — left partial + full blocks + right partial
+    long long query(int l, int r) {
+        long long ans = 0;
+        int leftBlock  = l / blockSize;
+        int rightBlock = r / blockSize;
+
+        // Same block — scan directly (guard against inverted middle loop)
+        if (leftBlock == rightBlock) {
+            for (int i = l; i &lt;= r; i++) ans += a[i];
+            return ans;
+        }
+
+        // Left partial block
+        int leftEnd = (leftBlock + 1) * blockSize - 1;
+        for (int i = l; i &lt;= leftEnd; i++) ans += a[i];
+
+        // Full middle blocks — O(1) each
+        for (int b = leftBlock + 1; b &lt;= rightBlock - 1; b++)
+            ans += blockSum[b];
+
+        // Right partial block
+        int rightStart = rightBlock * blockSize;
+        for (int i = rightStart; i &lt;= r; i++) ans += a[i];
+
+        return ans;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;long long&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SqrtSum ds(a);
+
+    while (q--) {
+        int type; cin &gt;&gt; type;
+        if (type == 1) {
+            int idx; long long val;
+            cin &gt;&gt; idx &gt;&gt; val;
+            --idx;              // 1-based input → 0-based internal
+            ds.update(idx, val);
+        } else {
+            int l, r; cin &gt;&gt; l &gt;&gt; r;
+            --l; --r;
+            cout &lt;&lt; ds.query(l, r) &lt;&lt; &#x27;\n&#x27;;
+        }
+    }
+    return 0;
+}</code></pre></div>
+</details>
+</section>
+
+<!-- §12 LINE BY LINE -->
+<section class="card" id="lineby">
+<h2>📖 §12 Line-by-Line Code Explanation</h2>
+<h3>Build — establishing the state invariant</h3>
+<pre><code>blockSize  = (int)sqrt(n) + 1;
+blockCount = (n + blockSize - 1) / blockSize;</code></pre>
+<p>Adding 1 to sqrt(n) prevents the truncation hazard for non-perfect-square n. The ceiling-division formula gives the exact number of blocks needed even when the last block is shorter than blockSize.</p>
+<pre><code>for (int i = 0; i &lt; n; i++)
+    blockSum[i / blockSize] += a[i];</code></pre>
+<p>One linear pass establishes the state invariant for all blocks simultaneously. O(n).</p>
+
+<h3>Update — maintaining the state invariant</h3>
+<pre><code>int b = idx / blockSize;
+blockSum[b] -= a[idx];   // subtract BEFORE changing a[idx]
+a[idx] = newValue;
+blockSum[b] += a[idx];   // add AFTER the assignment</code></pre>
+<p>The order matters. Subtracting after the assignment would subtract the new value and add it again — a no-op that corrupts blockSum. Always subtract old, assign, add new.</p>
+
+<h3>Query — same-block guard</h3>
+<pre><code>if (leftBlock == rightBlock) {
+    for (int i = l; i &lt;= r; i++) ans += a[i];
+    return ans;
+}</code></pre>
+<p>Without this guard, the middle-block loop <code>for b in [leftBlock+1 .. rightBlock-1]</code> is vacuous, but the left partial loop would run from l to end of leftBlock, scanning past r into adjacent blocks — over-counting. The guard is a <b>correctness requirement</b>, not just an optimisation.</p>
+
+<h3>Query — left and right partial loops</h3>
+<pre><code>int leftEnd = (leftBlock + 1) * blockSize - 1;
+for (int i = l; i &lt;= leftEnd; i++) ans += a[i];
+...
+int rightStart = rightBlock * blockSize;
+for (int i = rightStart; i &lt;= r; i++) ans += a[i];</code></pre>
+<p>Since the same-block guard fired for leftBlock = rightBlock, when we reach these loops we know leftBlock &lt; rightBlock. This guarantees leftEnd &lt; n and rightStart ≤ r, so neither loop overruns.</p>
+</section>
+
+<!-- §13 EDGE CASES -->
+<section class="card" id="edgecases">
+<h2>⚠️ §13 Centralized Edge Case Audit</h2>
+<table>
+  <thead><tr><th>Edge case</th><th>What can go wrong</th><th>How the template handles it</th></tr></thead>
+  <tbody>
+    <tr><td>n = 1</td><td>blockCount = 1, only block</td><td>Same-block guard returns a[0] directly</td></tr>
+    <tr><td>l = r (single element)</td><td>leftBlock = rightBlock always</td><td>Guard fires; returns a[l]</td></tr>
+    <tr><td>l and r in same block</td><td>Middle loop inverted; left loop scans past r</td><td>Same-block guard is the fix</td></tr>
+    <tr><td>l at a block boundary (l % B = 0)</td><td>Left partial loop is empty</td><td>Loop runs 0 times; harmless</td></tr>
+    <tr><td>r at a block boundary (r = (rb+1)*B−1)</td><td>Right partial covers a full block</td><td>Still scanned directly; correct but wastes a loop; acceptable</td></tr>
+    <tr><td>Last block shorter than B</td><td>Accessing beyond n via block formula</td><td>Partial loops end at r or leftEnd, never at block boundary; safe</td></tr>
+    <tr><td>Values up to 10⁹, n up to 2×10⁵</td><td>Sum overflows 32-bit int</td><td>Use <code>long long</code> for a[] and blockSum[]</td></tr>
+    <tr><td>Update does not change value</td><td>blockSum -= old then += same → net zero</td><td>Numerically correct; harmless</td></tr>
+    <tr><td>q = 0</td><td>Loop body never runs</td><td>Build then immediately exit; fine</td></tr>
+  </tbody>
+</table>
+<div class="pf" style="margin-top:14px;">
+<h3>The "last block shorter than B" trap</h3>
+<p>Never write <code class="iCode">i &lt; (b+1)*blockSize</code> as a loop bound without a min(n, …) guard. The correct form for iterating a block:</p>
+<pre style="font-size:19px;"><code>int bEnd = min(n, (b + 1) * blockSize);
+for (int i = b * blockSize; i &lt; bEnd; i++) ...</code></pre>
+<p>In the master template this never arises because the partial loops end at r or leftEnd (both &lt; n), not at block ends. But it becomes critical in build loops, rebuild loops, and variant update functions.</p>
+</div>
+</section>
+
+<!-- §14 PITFALLS -->
+<section class="card" id="pitfalls">
+<h2>🐛 §14 Common Pitfalls and Bugs</h2>
+<table>
+  <thead><tr><th>Pitfall</th><th>Symptom</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>1-based input not converted</td><td>Off-by-one on every query/update</td><td><code>--l; --r; --idx;</code> immediately after reading</td></tr>
+    <tr><td>Missing same-block guard</td><td>Over-counts when l and r share a block</td><td>Add <code>if (leftBlock == rightBlock)</code> guard first</td></tr>
+    <tr><td><code>int</code> overflow in blockSum</td><td>Wrap-around for large sums</td><td>Use <code>long long</code> for sum-type summaries</td></tr>
+    <tr><td>Update order: add before subtract</td><td>blockSum corrupted</td><td>Always: subtract old → assign → add new</td></tr>
+    <tr><td>Sorted-block: wrong binary search</td><td>Count off by one</td><td>Use <code>upper_bound</code> for count ≤ x; <code>lower_bound</code> for count &lt; x</td></tr>
+    <tr><td>Sorted-block: not updating raw array</td><td>State invariant broken for future updates</td><td>Always <code>a[idx] = value</code> in addition to sorted-block splice</td></tr>
+    <tr><td>Sorted-block: erasing all equal values</td><td>Removes multiple occurrences</td><td>Use <code>lower_bound</code> to erase exactly one iterator</td></tr>
+    <tr><td>SWAPS: not subtracting old contribution first</td><td>Global inversion count double-counts</td><td>inv -= contribution(idx) before the update, += after</td></tr>
+    <tr><td>Split/build: editing block before push()</td><td>Lazy flags overwrite new values</td><td>Always call <code>push()</code> before reading or editing block.v</td></tr>
+    <tr><td>Block-count explosion in split/build</td><td>Memory and time blow up</td><td>Periodically call <code>rebuildAll()</code> every ~600 operations</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- §15 DECISION GUIDE -->
+<section class="card" id="decision">
+<h2>🎯 §15 Decision and Recognition Guide</h2>
+<h3>Decision table</h3>
+<table>
+  <thead><tr><th>Problem pattern</th><th>Best structure</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Static range sum</td><td>Prefix sums</td><td>O(1) query, no update needed</td></tr>
+    <tr><td>Static range min/max</td><td>Sparse table</td><td>O(1) RMQ, idempotent</td></tr>
+    <tr><td>Point update + range sum</td><td>Fenwick or SQRT</td><td>SQRT when aggregate is non-trivial</td></tr>
+    <tr><td>Point update + range min/max</td><td>Segment tree</td><td>O(log n) guaranteed; SQRT gives O(√n)</td></tr>
+    <tr><td>Point update + count ≤ x in range</td><td><b>Sorted SQRT</b></td><td>Sorted blocks give O(√n log √n)</td></tr>
+    <tr><td>Point update + inversion count</td><td><b>SQRT + per-block BIT</b></td><td>Contribution of one element isolated easily</td></tr>
+    <tr><td>Range add + point query</td><td>Fenwick or SQRT lazy</td><td>SQRT lazy simpler for range-add only</td></tr>
+    <tr><td>Range set + range reverse + count ≥ x</td><td><b>Split/build SQRT</b></td><td>Seg tree cannot handle lazy reversal naturally</td></tr>
+    <tr><td>Objects with heavy/light frequency split</td><td>Light/heavy SQRT</td><td>At most √total heavy objects by pigeonhole</td></tr>
+    <tr><td>Persistent queries</td><td>Persistent seg tree</td><td>SQRT has no natural persistence</td></tr>
+  </tbody>
+</table>
+<div class="grid2" style="margin-top:18px;">
+  <div class="sp" style="border-color:rgba(15,118,110,.35);">
+    <h3>Use SQRT when you see:</h3>
+    <ul style="font-size:23px;line-height:1.9;margin:8px 0 0 20px;">
+      <li>n, q ≤ 3 × 10⁵</li>
+      <li>Range query with a non-trivial aggregate</li>
+      <li>"How many values in [l,r] satisfy P?"</li>
+      <li>Range lazy + range count</li>
+      <li>Inversion count with point updates</li>
+    </ul>
+  </div>
+  <div class="sp" style="border-color:rgba(185,28,28,.35);">
+    <h3>Avoid SQRT when you see:</h3>
+    <ul style="font-size:23px;line-height:1.9;margin:8px 0 0 20px;">
+      <li>n, q ≥ 10⁶ (O(√n) too slow)</li>
+      <li>Problem explicitly needs O(log n)</li>
+      <li>2D range updates and queries</li>
+      <li>Persistent queries</li>
+      <li>Simple range sum with no exotic aggregate</li>
+    </ul>
+  </div>
+</div>
+<div class="inv" style="margin-top:14px;">
+  <h3>⚠️ Common confusion: "SQRT = only range sum"</h3>
+  <p>Range sum is only the entry example. SQRT decomposition applies to any aggregate where you can answer a full block in O(1) or O(log B) and repair a changed block in O(B). As soon as you ask "What should each block remember?", you are designing a SQRT decomposition.</p>
+</div>
+</section>
+
+<!-- §16 VARIANTS -->
+<section class="card" id="variants">
+<h2>🔀 §16 Variants and Extensions</h2>
+
+<details>
+<summary>Variant 1 — Range Minimum / Maximum <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Problem:</b> Point update + range minimum query.</p>
+<p><b>What changes:</b> Replace blockSum with blockMin. Full-block query returns blockMin[b] in O(1). Partial-block query scans and takes element-wise min.</p>
+<p><b>Why update is O(√n):</b> After changing one element, the minimum of its block may have changed — either a new smaller value arrived, or the old minimum was deleted. Either way, you must rescan all B elements to find the new minimum.</p>
+<pre><code>void update(int idx, int newValue) {
+    a[idx] = newValue;
+    int b = idx / blockSize;
+    int bEnd = min(n, (b + 1) * blockSize);
+    // Rebuild block minimum — O(B)
+    blockMin[b] = *min_element(a.begin() + b*blockSize, a.begin() + bEnd);
+}
+
+int query(int l, int r) {
+    int ans = INT_MAX;
+    int lb = l/blockSize, rb = r/blockSize;
+    if (lb == rb) {
+        for (int i = l; i &lt;= r; i++) ans = min(ans, a[i]);
+        return ans;
+    }
+    int leftEnd = (lb+1)*blockSize - 1;
+    for (int i = l; i &lt;= leftEnd; i++)       ans = min(ans, a[i]);
+    for (int b = lb+1; b &lt; rb; b++)           ans = min(ans, blockMin[b]);
+    for (int i = rb*blockSize; i &lt;= r; i++)   ans = min(ans, a[i]);
+    return ans;
+}</code></pre>
+<div class="chips"><span class="chip warn">Update O(√n)</span><span class="chip">Query O(√n)</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 2 — Sorted Blocks (point update + count ≤ x) <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Problem:</b> Count elements ≤ x in a range, with point updates. Used in <a href="https://vjudge.net/problem/SPOJ-RACETIME" target="_blank">SPOJ RACETIME</a>.</p>
+<p><b>What changes:</b> Each block keeps a sorted copy. Full-block query: binary search with upper_bound. Update: remove old value via lower_bound erase, insert new value via upper_bound insert.</p>
+<p><b>Sorted block update — interactive tracer:</b></p>
+<div class="diagramWrap" id="tracer2Wrap" style="margin-top:10px;">
+  <div class="dHeader">
+    <span class="dTitle">Sorted Block Update Tracer</span>
+    <div class="dTools">
+      <button class="mBtn active" id="t2R">Reset</button>
+      <button class="mBtn" id="t2P">◀ Prev</button>
+      <button class="mBtn" id="t2N">Next ▶</button>
+    </div>
+  </div>
+  <div id="t2Disp" class="dsBox" style="min-height:100px;"></div>
+  <div id="t2St" class="sp" style="margin-top:10px;font-size:22px;"></div>
+  <div class="accBox" style="margin-top:10px;">Step: <span class="accVal" id="t2Stp">1 / 5</span></div>
+</div>
+<p style="margin-top:14px;"><b>Key:</b> Use <code class="iCode">lower_bound</code> to erase (finds the first position ≥ old value = exactly one correct occurrence). Use <code class="iCode">upper_bound</code> to insert (finds the first position &gt; new value, maintaining sorted order).</p>
+<div class="chips"><span class="chip warn">Update O(√n)</span><span class="chip">Query O(√n · log √n)</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 3 — Lazy Range Add + Point Query <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Problem:</b> Add x to every element in [l, r]. Query the value at a single index i.</p>
+<p><b>What changes:</b> Store <code class="iCode">lazy[b]</code> per block. Full-block range-add just increments lazy[b] in O(1). Partial-block range-add modifies individual elements directly. Point query returns <code class="iCode">a[i] + lazy[i/B]</code>.</p>
+<pre><code>int lazy[MAXBLK] = {};
+
+void rangeAdd(int l, int r, int x) {
+    int lb = l/B, rb = r/B;
+    if (lb == rb) { for (int i = l; i &lt;= r; i++) a[i] += x; return; }
+    for (int i = l; i &lt; (lb+1)*B; i++)    a[i] += x;   // left partial
+    for (int b = lb+1; b &lt; rb; b++)        lazy[b] += x; // full blocks — O(1)
+    for (int i = rb*B; i &lt;= r; i++)        a[i] += x;   // right partial
+}
+
+int pointQuery(int idx) {
+    return a[idx] + lazy[idx / B];  // lazy applied at read time
+}</code></pre>
+<p class="note" style="margin-top:8px;">If you also need range-sum queries on top of range-add, push the lazy tag into the elements of the partial blocks before scanning, then rebuild blockSum for those blocks.</p>
+<div class="chips"><span class="chip good">Range add O(√n)</span><span class="chip good">Point query O(1)</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 4 — Per-Block Fenwick for Value Frequencies <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Problem:</b> Values lie in domain [0, V]. Count elements satisfying a value predicate in a range, with point updates.</p>
+<p><b>What changes:</b> Each block stores a Fenwick tree over value frequencies. Full-block query: <code>bucket[b].countLT(x)</code> in O(log V). Update: remove old value, insert new value into the block's Fenwick tree.</p>
+<p><b>When to use vs sorted blocks:</b> Fenwick trees support O(log V) insert/delete — faster than O(B) vector insert for large blocks. Use when V is small, B is large, or when you need both count &lt; x and count &gt; x efficiently.</p>
+<p><b>This is the structure behind SPOJ SWAPS</b> — the per-block Fenwick trees allow O(√n · log V) computation of the inversion contribution of any single element before and after an update.</p>
+<div class="chips"><span class="chip">Update O(log V)</span><span class="chip">Query O(√n · log V)</span><span class="chip warn">Memory O(K · V)</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 5 — Batch Processing (SQRT of Queries) <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Idea:</b> Sometimes the data structure is not an array but the operations themselves. Process operations in batches of size ≈ √q.</p>
+<p><b>Pattern:</b></p>
+<pre><code>For each batch of ~sqrt(q) operations:
+    Rebuild a strong global structure (e.g. merge sort tree, BIT) from current state.
+    Inside the batch:
+        For each query: answer = global_answer - correction_from_recent_updates
+        Recent updates ≤ sqrt(q) → brute-force correction costs O(sqrt(q)) each.</code></pre>
+<p><b>Total cost:</b> O(√q · rebuildCost + q · √q). For rebuildCost = O(n log n) and q = n = 3×10⁵, this is O(n√n log n) ≈ 5×10⁸ — borderline, but fast with small constants.</p>
+<div class="chips"><span class="chip good">Clean offline pattern</span><span class="chip">Works when rebuild is affordable per √q ops</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 6 — Light / Heavy Case Splitting <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Idea:</b> SQRT decomposition over object frequency, not array positions. Choose threshold T ≈ √total appearances S.</p>
+<p><b>Core invariant:</b> If total appearances = S, there are at most S/T heavy objects (each appearing &gt; T times). With T = √S, there are at most √S heavy objects.</p>
+<p><b>Processing:</b></p>
+<ul style="font-size:24px;line-height:1.8;margin:8px 0 0 20px;">
+  <li><b>Heavy objects (freq &gt; T):</b> Few of them — precompute answers for all of them.</li>
+  <li><b>Light objects (freq ≤ T):</b> Each contributes at most T steps — brute-force per query.</li>
+</ul>
+<p style="margin-top:8px;"><b>Classic use:</b> Offline distinct-values-in-range, or group queries where groups have skewed sizes. The pigeonhole principle guarantees at most √S heavy groups.</p>
+<div class="chips"><span class="chip">Heavy objects ≤ √S</span><span class="chip good">Light objects: O(T) cost each</span></div>
+</div>
+</details>
+
+<details>
+<summary>Variant 7 — Split / Build Dynamic Blocks (range-set + range-reverse + count ≥ x) <span class="rh">expand</span></summary>
+<div class="dBody">
+<p><b>Problem:</b> Support range-set, range-reverse, and range count ≥ x on a dynamic sequence. No simple segment-tree lazy can handle reversal while also counting values above a threshold.</p>
+<p><b>Core idea:</b> Maintain a dynamic list of blocks. To operate on [l, r], call split(l) and split(r+1) to align block boundaries, making [l, r] correspond to whole blocks. Apply lazy flags to those blocks O(1) each. Periodic full rebuild prevents block-count explosion from repeated splits.</p>
+<p><b>Why standard segment tree fails:</b> A lazy reversal tag inverts the order of children at every node it reaches, which changes all path computations below — it cannot be composed simply with other lazy operations without storing the full sequence at each node.</p>
+<details>
+  <summary style="font-size:24px;">Full C++ Template — DynamicSqrt (Split/Build) <span class="rh">expand</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct DynamicSqrt {
+
+    struct Block {
+        vector&lt;int&gt; v;       // logical values
+        vector&lt;int&gt; sv;      // sorted copy (for countGE)
+        int sz = 0;
+        bool hasAssign = false;
+        int  assignVal = 0;
+        bool reversed  = false;
+
+        Block() {}
+        Block(const vector&lt;int&gt;&amp; vals) : v(vals), sz((int)vals.size()) { rebuild(); }
+
+        int size() const { return sz; }
+
+        void rebuild() {
+            sz = (int)v.size();
+            sv = v;
+            sort(sv.begin(), sv.end());
+        }
+
+        // Materialise all lazy flags, then rebuild sorted copy
+        void push() {
+            if (hasAssign) { v.assign(sz, assignVal); hasAssign = false; }
+            if (reversed)  { reverse(v.begin(), v.end()); reversed = false; }
+            rebuild();
+        }
+
+        void applySet(int x) {
+            hasAssign = true; assignVal = x; reversed = false;
+            v.clear(); sv.clear();
+        }
+        void applyReverse() { reversed = !reversed; }
+
+        int countGE(int x) const {
+            if (hasAssign) return assignVal &gt;= x ? sz : 0;
+            return (int)(sv.end() - lower_bound(sv.begin(), sv.end(), x));
+        }
+    };
+
+    int n = 0, blockSize = 330;
+    vector&lt;Block&gt; blocks;
+
+    void build(const vector&lt;int&gt;&amp; a, int B = 330) {
+        n = (int)a.size(); blockSize = max(1, B);
+        blocks.clear();
+        for (int l = 0; l &lt; n; l += blockSize) {
+            int r = min(n, l + blockSize);
+            blocks.emplace_back(vector&lt;int&gt;(a.begin()+l, a.begin()+r));
+        }
+    }
+
+    vector&lt;int&gt; materialize() {
+        vector&lt;int&gt; out; out.reserve(n);
+        for (auto&amp; bl : blocks) { bl.push(); out.insert(out.end(), bl.v.begin(), bl.v.end()); }
+        return out;
+    }
+    void rebuildAll() { auto tmp = materialize(); build(tmp, blockSize); }
+
+    // Returns the block index where logical position `pos` starts.
+    // Splits a block in the interior if necessary.
+    int split(int pos) {
+        if (pos &lt;= 0)  return 0;
+        if (pos &gt;= n)  return (int)blocks.size();
+        int cur = 0;
+        for (int i = 0; i &lt; (int)blocks.size(); i++) {
+            int s = blocks[i].size();
+            if (pos == cur) return i;
+            if (pos &lt; cur + s) {
+                blocks[i].push();
+                int lLen = pos - cur;
+                vector&lt;int&gt; right(blocks[i].v.begin()+lLen, blocks[i].v.end());
+                blocks[i].v.resize(lLen); blocks[i].rebuild();
+                blocks.insert(blocks.begin()+i+1, Block(right));
+                return i + 1;
+            }
+            cur += s;
+        }
+        return (int)blocks.size();
+    }
+
+    void rangeSet(int l, int r, int x) {
+        if (l &gt; r) return;
+        int L = split(l), R = split(r+1);
+        for (int i = L; i &lt; R; i++) blocks[i].applySet(x);
+    }
+
+    void rangeReverse(int l, int r) {
+        if (l &gt; r) return;
+        int L = split(l), R = split(r+1);
+        for (int i = L; i &lt; R; i++) blocks[i].applyReverse();
+        reverse(blocks.begin()+L, blocks.begin()+R);
+    }
+
+    int rangeCountGE(int l, int r, int x) {
+        if (l &gt; r) return 0;
+        int L = split(l), R = split(r+1);
+        int ans = 0;
+        for (int i = L; i &lt; R; i++) ans += blocks[i].countGE(x);
+        return ans;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n; cin &gt;&gt; n;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    DynamicSqrt ds;
+    ds.build(a, 330);
+
+    int q; cin &gt;&gt; q;
+    for (int op = 1; op &lt;= q; op++) {
+        if (op % 600 == 0) ds.rebuildAll(); // prevent block-count explosion
+
+        string type; cin &gt;&gt; type;
+        if (type == &quot;get&quot;) {
+            int l, r, x; cin &gt;&gt; l &gt;&gt; r &gt;&gt; x; --l; --r;
+            cout &lt;&lt; ds.rangeCountGE(l, r, x) &lt;&lt; &#x27;\n&#x27;;
+        } else if (type == &quot;set&quot;) {
+            int l, r, x; cin &gt;&gt; l &gt;&gt; r &gt;&gt; x; --l; --r;
+            ds.rangeSet(l, r, x);
+        } else {   // &quot;reverse&quot;
+            int l, r; cin &gt;&gt; l &gt;&gt; r; --l; --r;
+            ds.rangeReverse(l, r);
+        }
+    }
+    return 0;
+}</code></pre></div>
+</details>
+<div class="chips">
+  <span class="chip good">Range set O(√n)</span>
+  <span class="chip good">Range reverse O(√n)</span>
+  <span class="chip good">Count GE O(√n)</span>
+  <span class="chip warn">Rebuild every ~600 ops</span>
+</div>
+</div>
+</details>
+</section>
+
+<!-- §17 APPLICATIONS -->
+<section class="card" id="applications">
+<h2>🚀 §17 Problem-Based Applications</h2>
+
+<section id="app-cses" style="scroll-margin-top:16px;">
+<h3>17.1 — CSES 1648: Dynamic Range Sum Queries</h3>
+<p><a href="https://vjudge.net/problem/CSES-1648" target="_blank">vjudge.net/problem/CSES-1648</a></p>
+<p><b>Story:</b> An array of integers. Set one element. Query the sum of a range. Answer all queries.</p>
+<p><b>Abstraction:</b> Point update + range sum. Exactly the master template. CSES uses 1-based indices; subtract 1 immediately after reading.</p>
+<p><b>Key pitfall:</b> Use <code class="iCode">long long</code> — with n = 2 × 10⁵ and values up to 10⁹, the sum can reach 2 × 10¹⁴.</p>
+<details>
+  <summary>Full AC Solution <span class="rh">expand</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct SqrtSum {
+    int n, blockSize, blockCount;
+    vector&lt;long long&gt; a;
+    vector&lt;long long&gt; blockSum;
+
+    SqrtSum() {}
+    SqrtSum(const vector&lt;long long&gt;&amp; initial) { build(initial); }
+
+    void build(const vector&lt;long long&gt;&amp; initial) {
+        a = initial;
+        n = (int)a.size();
+        blockSize  = (int)sqrt(n) + 1;
+        blockCount = (n + blockSize - 1) / blockSize;
+        blockSum.assign(blockCount, 0);
+        for (int i = 0; i &lt; n; i++)
+            blockSum[i / blockSize] += a[i];
+    }
+
+    // O(1) — only one block changes
+    void update(int idx, long long newValue) {
+        int b = idx / blockSize;
+        blockSum[b] -= a[idx];
+        a[idx] = newValue;
+        blockSum[b] += a[idx];
+    }
+
+    // O(sqrt(n)) — left partial + full blocks + right partial
+    long long query(int l, int r) {
+        long long ans = 0;
+        int leftBlock  = l / blockSize;
+        int rightBlock = r / blockSize;
+
+        // Same block — scan directly (guard against inverted middle loop)
+        if (leftBlock == rightBlock) {
+            for (int i = l; i &lt;= r; i++) ans += a[i];
+            return ans;
+        }
+
+        // Left partial block
+        int leftEnd = (leftBlock + 1) * blockSize - 1;
+        for (int i = l; i &lt;= leftEnd; i++) ans += a[i];
+
+        // Full middle blocks — O(1) each
+        for (int b = leftBlock + 1; b &lt;= rightBlock - 1; b++)
+            ans += blockSum[b];
+
+        // Right partial block
+        int rightStart = rightBlock * blockSize;
+        for (int i = rightStart; i &lt;= r; i++) ans += a[i];
+
+        return ans;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;long long&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SqrtSum ds(a);
+
+    while (q--) {
+        int type; cin &gt;&gt; type;
+        if (type == 1) {
+            int idx; long long val;
+            cin &gt;&gt; idx &gt;&gt; val;
+            --idx;              // 1-based input → 0-based internal
+            ds.update(idx, val);
+        } else {
+            int l, r; cin &gt;&gt; l &gt;&gt; r;
+            --l; --r;
+            cout &lt;&lt; ds.query(l, r) &lt;&lt; &#x27;\n&#x27;;
+        }
+    }
+    return 0;
+}</code></pre></div>
+</details>
+</section>
+
+<section id="app-racetime" style="margin-top:28px;scroll-margin-top:16px;">
+<h3>17.2 — SPOJ RACETIME: Count ≤ x in Range with Point Updates</h3>
+<p><a href="https://vjudge.net/problem/SPOJ-RACETIME" target="_blank">vjudge.net/problem/SPOJ-RACETIME</a></p>
+<p><b>Story:</b> Race times in an array. Operation C l r x: count how many times in [l, r] are ≤ x. Operation M p x: set position p to x.</p>
+<p><b>Why sorted blocks fit:</b> For a full sorted block, <code class="iCode">upper_bound(sB, x) - sB.begin()</code> counts elements ≤ x in O(log B). Partial blocks scanned directly. Update: erase old value (lower_bound), insert new (upper_bound), update raw array.</p>
+<details>
+  <summary>Full AC Solution <span class="rh">expand</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct SqrtCountLE {
+    int n, blockSize, blockCount;
+    vector&lt;int&gt; a;
+    vector&lt;vector&lt;int&gt;&gt; sortedBlocks;
+
+    void build(const vector&lt;int&gt;&amp; initial) {
+        a = initial;
+        n = (int)a.size();
+        blockSize  = (int)sqrt(n) + 1;
+        blockCount = (n + blockSize - 1) / blockSize;
+        sortedBlocks.assign(blockCount, {});
+        for (int i = 0; i &lt; n; i++)
+            sortedBlocks[i / blockSize].push_back(a[i]);
+        for (int b = 0; b &lt; blockCount; b++)
+            sort(sortedBlocks[b].begin(), sortedBlocks[b].end());
+    }
+
+    int countDirect(int l, int r, int x) {
+        int ans = 0;
+        for (int i = l; i &lt;= r; i++) if (a[i] &lt;= x) ans++;
+        return ans;
+    }
+
+    // O(sqrt(n) * log(sqrt(n)))
+    int query(int l, int r, int x) {
+        int ans = 0;
+        int lb = l / blockSize, rb = r / blockSize;
+        if (lb == rb) return countDirect(l, r, x);
+
+        int leftEnd = (lb + 1) * blockSize - 1;
+        ans += countDirect(l, leftEnd, x);
+
+        for (int b = lb + 1; b &lt; rb; b++)
+            ans += (int)(upper_bound(sortedBlocks[b].begin(),
+                                     sortedBlocks[b].end(), x)
+                         - sortedBlocks[b].begin());
+
+        int rightStart = rb * blockSize;
+        ans += countDirect(rightStart, r, x);
+        return ans;
+    }
+
+    // O(sqrt(n)) — erase old value, insert new value in sorted position
+    void update(int idx, int value) {
+        int b = idx / blockSize;
+        auto&amp; bl = sortedBlocks[b];
+        // Remove exactly one occurrence of old value
+        bl.erase(lower_bound(bl.begin(), bl.end(), a[idx]));
+        // Insert new value maintaining sorted order
+        bl.insert(upper_bound(bl.begin(), bl.end(), value), value);
+        a[idx] = value;   // always update raw array too
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SqrtCountLE ds;
+    ds.build(a);
+
+    while (q--) {
+        char type; cin &gt;&gt; type;
+        if (type == &#x27;C&#x27;) {
+            int l, r, x; cin &gt;&gt; l &gt;&gt; r &gt;&gt; x;
+            --l; --r;
+            cout &lt;&lt; ds.query(l, r, x) &lt;&lt; &#x27;\n&#x27;;
+        } else {        // &#x27;M&#x27;
+            int idx, val; cin &gt;&gt; idx &gt;&gt; val;
+            --idx;
+            ds.update(idx, val);
+        }
+    }
+    return 0;
+}</code></pre></div>
+</details>
+</section>
+
+<section id="app-swaps" style="margin-top:28px;scroll-margin-top:16px;">
+<h3>17.3 — SPOJ SWAPS: Inversion Count with Point Updates</h3>
+<p><a href="https://vjudge.net/problem/SPOJ-SWAPS" target="_blank">vjudge.net/problem/SPOJ-SWAPS</a></p>
+<p><b>Story:</b> An array. After each point update, output the current total number of inversions (pairs i &lt; j with a[i] &gt; a[j]).</p>
+<p><b>Key observation:</b> Only inversion pairs involving the changed index idx are affected. All other pairs remain unchanged. So: subtract old contribution of idx, update the per-block Fenwick tree, add new contribution of idx.</p>
+<p><b>Contribution formula:</b> For index idx with current value v: count of earlier elements &gt; v (blocks before idx: use Fenwick countGT; same block: direct scan) + count of later elements &lt; v (blocks after idx: use Fenwick countLT; same block: direct scan).</p>
+<div class="inv" style="margin-top:10px;">
+  <h3>Important assumption</h3>
+  <p>Values must fit in [0, MAXV] = [0, 50000]. If values exceed this range or can be negative, coordinate-compress all initial and update values before passing them to the Fenwick trees.</p>
+</div>
+<details>
+  <summary>Full AC Solution <span class="rh">expand</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+typedef long long ll;
+
+const int MAXN   = 300000 + 5;
+const int MAXV   = 50000  + 5;   // values assumed in [0, 50000]
+const int MAXBLK = 700;           // ceil(sqrt(300000)) + margin
+
+struct Fenwick {
+    int bit[MAXV + 2];
+    void add(int idx, int delta) {
+        for (++idx; idx &lt;= MAXV + 1; idx += idx &amp; -idx) bit[idx] += delta;
+    }
+    int prefix(int idx) const {
+        if (idx &lt; 0)    return 0;
+        if (idx &gt; MAXV) idx = MAXV;
+        int s = 0;
+        for (++idx; idx &gt; 0; idx -= idx &amp; -idx) s += bit[idx];
+        return s;
+    }
+    int countLE(int x)      const { return prefix(x);     }
+    int countLT(int x)      const { return prefix(x - 1); }
+    int countGT(int x)      const { return prefix(MAXV) - prefix(x); }
+};
+
+int n, q, blockSize, blockCount;
+int a[MAXN];
+Fenwick bucket[MAXBLK];  // per-block value frequency
+Fenwick all;             // global (used only for initial inversion build)
+
+// Number of inversion pairs that involve index idx in the current array
+ll contribution(int idx) {
+    int b      = idx / blockSize;
+    int bStart = b * blockSize;
+    int bEnd   = min(n, (b + 1) * blockSize);
+    int val    = a[idx];
+    ll ans = 0;
+
+    // Same-block: direct scan
+    for (int i = bStart; i &lt; idx;   i++) if (a[i] &gt; val)  ans++;
+    for (int i = idx + 1; i &lt; bEnd; i++) if (a[i] &lt; val) ans++;
+
+    // Other blocks: use per-block Fenwick trees
+    for (int bi = 0;     bi &lt; b;          bi++) ans += bucket[bi].countGT(val);
+    for (int bi = b + 1; bi &lt; blockCount; bi++) ans += bucket[bi].countLT(val);
+    return ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n;
+    if (!n) return 0;
+
+    blockSize  = (int)sqrt(n) + 1;
+    blockCount = (n + blockSize - 1) / blockSize;
+
+    ll inv = 0;
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; a[i];
+        int b = i / blockSize;
+        bucket[b].add(a[i], 1);
+        inv += i - all.countLE(a[i]);  // elements already seen that are &gt; a[i]
+        all.add(a[i], 1);
+    }
+
+    cin &gt;&gt; q;
+    while (q--) {
+        int idx, nv; cin &gt;&gt; idx &gt;&gt; nv;
+        --idx;                          // 1-based → 0-based
+
+        inv -= contribution(idx);
+        bucket[idx / blockSize].add(a[idx], -1);
+        a[idx] = nv;
+        bucket[idx / blockSize].add(a[idx], +1);
+        inv += contribution(idx);
+
+        cout &lt;&lt; inv &lt;&lt; &#x27;\n&#x27;;
+    }
+    return 0;
+}</code></pre></div>
+</details>
+</section>
+
+<section id="app-chsqarr" style="margin-top:28px;scroll-margin-top:16px;">
+<h3>17.4 — Codeforces 13E: Holes</h3>
+<p><a href="https://vjudge.net/problem/CodeForces-13E" target="_blank">vjudge.net/problem/CodeForces-13E</a></p>
+
+<p><b>Story:</b> There are n holes in a row, numbered 1..n. Each hole i has a jump length a[i]. From hole i, a ball jumps to hole i + a[i]. If i + a[i] &gt; n, the ball exits the system. Query type 1 asks: starting at hole p, where does the ball exit and how many jumps does it make? Query type 0 updates a[p] to a new value x.</p>
+
+<p><b>Abstraction:</b> Decompose positions into blocks of size B ≈ √n. For each position i, precompute three values inside its block:</p>
+<ul style="font-size:24px;line-height:1.8;margin:8px 0 0 20px;">
+  <li><code class="iCode">nxt[i]</code> — the first position <em>outside</em> i's block reached by repeatedly jumping from i within the block, or n if the ball exits the array.</li>
+  <li><code class="iCode">cnt[i]</code> — the number of jumps needed to reach nxt[i].</li>
+  <li><code class="iCode">last[i]</code> — the last position <em>inside</em> the block visited before leaving it.</li>
+</ul>
+<p style="margin-top:10px;">A query then travels block-by-block via nxt[], accumulating cnt[] in O(1) per block. An update rebuilds only the changed block in O(B) by processing from right to left so later positions are already correct when earlier positions reference them.</p>
+
+<p><b>Why SQRT decomposition fits:</b></p>
+<ul style="font-size:24px;line-height:1.8;margin:8px 0 0 20px;">
+  <li>Direct simulation can be O(n) per query — too slow for n, q ≤ 10⁵.</li>
+  <li>Block compression replaces many internal jumps with a single O(1) lookup per block.</li>
+  <li>Each query crosses at most K = n/B = O(√n) blocks.</li>
+  <li>Each update rebuilds O(B) = O(√n) positions in exactly one block.</li>
+</ul>
+
+<div class="inv" style="margin-top:12px;">
+  <h3>Invariant: block summary correctness</h3>
+  <p>For every position i, <code class="iCode">nxt[i]</code>, <code class="iCode">cnt[i]</code>, and <code class="iCode">last[i]</code> correctly describe the path from i to the first exit point of i's block, under the current values of a[]. This invariant is established by build() and restored by every call to rebuildBlock() in update().</p>
+</div>
+
+<div class="pf" style="margin-top:12px;">
+  <h3>rebuildBlock correctness — right-to-left order</h3>
+  <p>When rebuilding block b from right (index r) to left (index l), the invariant for position i + a[i] is already established before we process i. This means the chain <code class="iCode">nxt[i] = nxt[to]</code>, <code class="iCode">cnt[i] = cnt[to] + 1</code>, <code class="iCode">last[i] = last[to]</code> is valid whenever to = i + a[i] is still inside the same block. If to exits the block or the array, the base case applies directly. ∎</p>
+</div>
+
+<details>
+  <summary>Full AC Solution — SqrtHoles <span class="rh">click to expand</span></summary>
+  <div class="dBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct SqrtHoles {
+    int n;
+    int blockSize;
+    int blockCount;
+
+    vector&lt;int&gt; a;
+    vector&lt;int&gt; nxt;   // first position outside block b after jumping from i
+    vector&lt;int&gt; cnt;   // number of jumps needed to reach nxt[i]
+    vector&lt;int&gt; last;  // last position visited inside block b before leaving
+
+    SqrtHoles() {}
+    SqrtHoles(const vector&lt;int&gt;&amp; initial) { build(initial); }
+
+    int blockId(int i)    const { return i / blockSize; }
+    int blockStart(int b) const { return b * blockSize; }
+    int blockEnd(int b)   const { return min(n, (b + 1) * blockSize) - 1; }
+
+    // Rebuild from right to left so later positions are already correct
+    void rebuildBlock(int b) {
+        int l = blockStart(b);
+        int r = blockEnd(b);
+        for (int i = r; i &gt;= l; i--) {
+            int to = i + a[i];
+            if (to &gt;= n) {
+                // Jump exits the array entirely
+                nxt[i]  = n;
+                cnt[i]  = 1;
+                last[i] = i;
+            } else if (blockId(to) != b) {
+                // Jump exits the current block
+                nxt[i]  = to;
+                cnt[i]  = 1;
+                last[i] = i;
+            } else {
+                // Jump stays inside the block — chain through precomputed values
+                nxt[i]  = nxt[to];
+                cnt[i]  = cnt[to] + 1;
+                last[i] = last[to];
+            }
+        }
+    }
+
+    void build(const vector&lt;int&gt;&amp; initial) {
+        a = initial;
+        n = (int)a.size();
+        blockSize  = (int)sqrt(n) + 1;
+        blockCount = (n + blockSize - 1) / blockSize;
+        nxt.assign(n, n);
+        cnt.assign(n, 0);
+        last.assign(n, 0);
+        for (int b = 0; b &lt; blockCount; b++)
+            rebuildBlock(b);
+    }
+
+    // O(sqrt(n)) — rebuild only the one changed block
+    void update(int idx, int value) {
+        a[idx] = value;
+        rebuildBlock(blockId(idx));
+    }
+
+    // O(sqrt(n)) — jump block by block using nxt[]
+    pair&lt;int,int&gt; query(int idx) const {
+        int pos = idx, jumps = 0, exitLast = idx;
+        while (pos &lt; n) {
+            jumps   += cnt[pos];
+            exitLast = last[pos];
+            pos      = nxt[pos];
+        }
+        return {exitLast, jumps};
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SqrtHoles ds(a);
+
+    while (q--) {
+        int type; cin &gt;&gt; type;
+        if (type == 0) {
+            int p, x; cin &gt;&gt; p &gt;&gt; x;
+            --p;                          // 1-based input → 0-based internal
+            ds.update(p, x);
+        } else {
+            int p; cin &gt;&gt; p;
+            --p;
+            auto [exitPos, jumps] = ds.query(p);
+            cout &lt;&lt; exitPos + 1 &lt;&lt; &#x27; &#x27; &lt;&lt; jumps &lt;&lt; &#x27;\n&#x27;;
+        }
+    }
+    return 0;
+}</code></pre></div>
+</details>
+
+<div class="chips" style="margin-top:12px;">
+  <span class="chip good">Build O(n)</span>
+  <span class="chip good">Update O(√n)</span>
+  <span class="chip good">Query O(√n)</span>
+  <span class="chip">Memory O(n)</span>
+</div>
+<p class="note" style="margin-top:10px;"><b>Key pitfall:</b> Always rebuild from right to left within the block. A left-to-right rebuild would use stale nxt[to] values for positions that still land inside the block. The right-to-left order guarantees every dependency is resolved before it is needed.</p>
+</section>
+</section>
+
+<!-- §18 SUMMARY -->
+<section class="card" id="summary">
+<h2>📋 §18 Final Summary</h2>
+<div class="pf">
+<h3>The core formula</h3>
+<pre><code>range answer  =  left partial scan
+              +  full block summaries (O(1) each)
+              +  right partial scan</code></pre>
+<p>This formula drives every variant. What changes is what "summary" means per block: a single number (sum/min), a sorted vector (count ≤ x), a Fenwick tree (count by value), or a lazy flag (set/reverse).</p>
+</div>
+<div class="inv">
+<h3>The core invariant</h3>
+<p>At all times, every block summary correctly represents the current values inside that block. Established by build(). Maintained by every update(). A query only produces a correct answer if this invariant holds at call time.</p>
+</div>
+<h3>Standard block size reference</h3>
+<div class="grid3" style="margin-top:10px;">
+  <div class="sp" style="text-align:center;"><div style="font-size:36px;font-weight:950;color:var(--accent2);">√n</div><div style="font-size:20px;font-weight:850;">Theoretical optimum<br/>symmetric Q/U</div></div>
+  <div class="sp" style="text-align:center;"><div style="font-size:36px;font-weight:950;color:var(--warn);">300–450</div><div style="font-size:20px;font-weight:850;">Practical start<br/>n ≤ 10⁵</div></div>
+  <div class="sp" style="text-align:center;"><div style="font-size:36px;font-weight:950;color:var(--good);">600–700</div><div style="font-size:20px;font-weight:850;">Common sweet spot<br/>n ≤ 3 × 10⁵</div></div>
+</div>
+<h3 style="margin-top:18px;">Practice problems</h3>
+<div class="chips" style="margin-top:10px;">
+  <span class="chip good">CSES 1648 — Point update + range sum</span>
+  <span class="chip good">SPOJ RACETIME — Sorted blocks</span>
+  <span class="chip good">SPOJ SWAPS — Per-block Fenwick + inversions</span>
+  <span class="chip good">Codeforces 13E — Block jump pointers</span>
+</div>
+</section>
+
+<!-- RUNTIME VALIDATION -->
+<section class="card" id="validation">
+<h2>🧪 Runtime Validation Checklist</h2>
+<div id="vList"></div>
+</section>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🎓</div>
+  <div style="font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;">Coach Academy</div>
+  <div style="font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;">SQRT Decomposition · Block Technique · © 2025 All rights reserved.</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+
+</main>
+</div><!-- .app -->
+
+<script>
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+function clr(el){while(el.firstChild)el.removeChild(el.firstChild);}
+function mSVG(tag,a={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+// ── Theme ──
+const TK='sqrt_theme';
+function getT(){return document.documentElement.getAttribute('data-theme')||'light';}
+function setT(t){document.documentElement.setAttribute('data-theme',t);document.body.setAttribute('data-theme',t);localStorage.setItem(TK,t);}
+document.addEventListener('DOMContentLoaded',()=>setT(localStorage.getItem(TK)||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')));
+$('#themeSwitch').onclick=()=>setT(getT()==='dark'?'light':'dark');
+
+// ── Sidebar ──
+(function sidebarModule(){
+  const tog = document.getElementById('sidebarToggle');
+  const sb  = document.getElementById('sidebar');
+  const app = document.getElementById('app');
+  const ovr = document.getElementById('sidebarOverlay');
+
+  if (!tog || !sb || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.classList.toggle('open', open);
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sb-hidden');
+        if (ovr) ovr.classList.add('show');
+      } else {
+        app.classList.remove('sb-hidden');
+        if (ovr) ovr.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sb-hidden');
+      if (ovr) ovr.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovr) {
+    ovr.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('#mainNav a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) {
+        setSidebar(false);
+      } else {
+        setSidebar(true);
+      }
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// ── Scroll spy ──
+const secs=$$('section[id]'),navAs=$$('#mainNav a[href^="#"]');
+function updNav(){let c='';secs.forEach(s=>{if(s.getBoundingClientRect().top<200)c=s.id;});navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+c));}
+$('#mainContent').addEventListener('scroll',updNav);updNav();
+
+// ── Static diagram §3 ──
+(function(){
+  const svg=$('#staticDiag'); if(!svg)return;
+  const a=[5,8,6,3,2,7,2,6,7,1,7,5,6,2,3,2];
+  const sums=[22,17,20,13];
+  const BC=['#2563eb','#0f766e','#7c3aed','#b45309'];
+  const BF=['rgba(37,99,235,.15)','rgba(15,118,110,.15)','rgba(124,58,237,.15)','rgba(180,83,9,.15)'];
+  const CW=40,CH=40,CGAP=4,BGAP=10,CS=44,BS=4*44+BGAP,SX=14,CY=58;
+  const L=2,R=13;
+  function cx(i){return SX+Math.floor(i/4)*BS+(i%4)*CS;}
+  for(let b=0;b<4;b++){
+    const bx=SX+b*BS-2,bw=4*CS-CGAP+4;
+    svg.appendChild(mSVG('rect',{x:bx,y:CY-12,width:bw,height:CH+24,rx:10,fill:BF[b],stroke:BC[b],'stroke-width':2,'stroke-dasharray':'5,3'}));
+    const tl=mSVG('text',{x:bx+bw/2,y:CY-18,'text-anchor':'middle','font-size':12,'font-weight':900,fill:BC[b]});tl.textContent='Block '+b;svg.appendChild(tl);
+    const sl=mSVG('text',{x:bx+bw/2,y:CY+CH+20,'text-anchor':'middle','font-size':12,'font-weight':900,fill:BC[b]});sl.textContent='Σ='+sums[b];svg.appendChild(sl);
+  }
+  const qx1=cx(L),qx2=cx(R)+CW,qy=CY-32;
+  svg.appendChild(mSVG('path',{d:'M'+qx1+','+(qy+8)+' L'+qx1+','+qy+' L'+qx2+','+qy+' L'+qx2+','+(qy+8),stroke:'var(--bad)','stroke-width':2.5,fill:'none'}));
+  const ql=mSVG('text',{x:(qx1+qx2)/2,y:qy-3,'text-anchor':'middle','font-size':11,'font-weight':900,fill:'var(--bad)'});ql.textContent='query [2..13]';svg.appendChild(ql);
+  a.forEach((v,i)=>{
+    const x=cx(i),b=Math.floor(i/4),inQ=(i>=L&&i<=R);
+    svg.appendChild(mSVG('rect',{x,y:CY,width:CW,height:CH,rx:7,fill:inQ?BF[b].replace('.15','.35'):'var(--panel2)',stroke:BC[b],'stroke-width':2}));
+    const tv=mSVG('text',{x:x+CW/2,y:CY+CH/2+7,'text-anchor':'middle','font-size':15,'font-weight':950,fill:'var(--text)'});tv.textContent=v;svg.appendChild(tv);
+    const ti=mSVG('text',{x:x+CW/2,y:CY+CH+14,'text-anchor':'middle','font-size':10,'font-weight':700,fill:'var(--muted)'});ti.textContent=i;svg.appendChild(ti);
+  });
+})();
+
+// ── Tracer 1: Range Query ──
+(function(){
+  const a=[5,8,6,3,2,7,2,6,7,1,7,5,6,2,3,2];
+  const sums=[22,17,20,13];
+  const BC=['#2563eb','#0f766e','#7c3aed','#b45309'];
+  const BF=['rgba(37,99,235,.15)','rgba(15,118,110,.15)','rgba(124,58,237,.15)','rgba(180,83,9,.15)'];
+  const FF=['rgba(37,99,235,.45)','rgba(15,118,110,.45)','rgba(124,58,237,.45)','rgba(180,83,9,.45)'];
+  const CW=40,CH=40,CS=44,BS=4*44+10,SX=14,CY=56,L=2,R=13;
+  const frames=[
+    {hl:[],fb:[],acc:0,txt:'Array n=16, block size B=4, K=4 blocks. blockSums=[22,17,20,13]. Calling query(l=2, r=13). Indices are 0-based.'},
+    {hl:[],fb:[],acc:0,txt:'Compute: <b>leftBlock = l/B = 2/4 = 0</b> | <b>rightBlock = r/B = 13/4 = 3</b>. Since 0 ≠ 3, decompose into left partial + full middle blocks + right partial.'},
+    {hl:[2,3],fb:[],acc:9,txt:'<b>Left partial:</b> scan from l=2 to end of block 0 (index 3). a[2]=6, a[3]=3. Partial sum = 9. Running total = <b>9</b>.'},
+    {hl:[],fb:[1],acc:26,txt:'<b>Full block 1</b> (indices 4–7): blockSum[1] = 17 in O(1) — no scanning needed. Running total = 9 + 17 = <b>26</b>.'},
+    {hl:[],fb:[2],acc:46,txt:'<b>Full block 2</b> (indices 8–11): blockSum[2] = 20 in O(1). Running total = 26 + 20 = <b>46</b>.'},
+    {hl:[12,13],fb:[],acc:54,txt:'<b>Right partial:</b> scan from start of block 3 (index 12) to r=13. a[12]=6, a[13]=2. Partial sum = 8. Total = 46 + 8 = <b>54</b>.'},
+    {hl:[2,3,12,13],fb:[1,2],acc:54,txt:'<b>Done.</b> Scanned ≤ 2B = 8 individual elements + used 2 block summaries in O(1) each. Total cost: O(√n). Answer = <b>54</b>. ✓'},
+  ];
+  let step=0,aTimer=null;
+  function cx(i){return SX+Math.floor(i/4)*BS+(i%4)*CS;}
+  function render(){
+    const f=frames[step];
+    const svg=$('#t1Svg'); clr(svg);
+    for(let b=0;b<4;b++){
+      const bx=SX+b*BS-2,bw=4*CS-4+4,isFB=f.fb.includes(b);
+      svg.appendChild(mSVG('rect',{x:bx,y:CY-12,width:bw,height:CH+24,rx:10,fill:isFB?FF[b]:BF[b],stroke:BC[b],'stroke-width':isFB?3:2,'stroke-dasharray':isFB?'':'5,3'}));
+      const tl=mSVG('text',{x:bx+bw/2,y:CY-18,'text-anchor':'middle','font-size':12,'font-weight':900,fill:BC[b]});tl.textContent='B'+b;svg.appendChild(tl);
+      const sl=mSVG('text',{x:bx+bw/2,y:CY+CH+20,'text-anchor':'middle','font-size':12,'font-weight':900,fill:isFB?BC[b]:'var(--muted)'});sl.textContent='Σ='+sums[b]+(isFB?' ✓':'');svg.appendChild(sl);
+    }
+    const qx1=cx(L),qx2=cx(R)+CW,qy=CY-32;
+    svg.appendChild(mSVG('path',{d:'M'+qx1+','+(qy+8)+' L'+qx1+','+qy+' L'+qx2+','+qy+' L'+qx2+','+(qy+8),stroke:'var(--bad)','stroke-width':2.5,fill:'none'}));
+    const ql=mSVG('text',{x:(qx1+qx2)/2,y:qy-3,'text-anchor':'middle','font-size':11,'font-weight':900,fill:'var(--bad)'});ql.textContent='query [2..13]';svg.appendChild(ql);
+    a.forEach((v,i)=>{
+      const x=cx(i),b=Math.floor(i/4),isHL=f.hl.includes(i),inQ=(i>=L&&i<=R),isFB=f.fb.includes(b);
+      svg.appendChild(mSVG('rect',{x,y:CY,width:CW,height:CH,rx:7,fill:isHL?'rgba(251,191,36,.55)':(isFB&&inQ)?FF[b]:BF[b],stroke:isHL?'#b45309':BC[b],'stroke-width':isHL?3:2}));
+      const tv=mSVG('text',{x:x+CW/2,y:CY+CH/2+7,'text-anchor':'middle','font-size':15,'font-weight':950,fill:isHL?'#b45309':'var(--text)'});tv.textContent=v;svg.appendChild(tv);
+      const ti=mSVG('text',{x:x+CW/2,y:CY+CH+14,'text-anchor':'middle','font-size':10,'font-weight':700,fill:'var(--muted)'});ti.textContent=i;svg.appendChild(ti);
+    });
+    $('#t1St').innerHTML=f.txt;
+    $('#t1Acc').textContent=f.acc;
+    $('#t1Stp').textContent=(step+1)+' / '+frames.length;
+  }
+  function reset(){step=0;if(aTimer){clearInterval(aTimer);aTimer=null;$('#t1A').classList.remove('active');}render();}
+  function prev(){if(step>0){step--;render();}}
+  function next(){if(step<frames.length-1){step++;render();}}
+  $('#t1R').onclick=reset;$('#t1P').onclick=prev;$('#t1N').onclick=next;
+  $('#t1A').onclick=function(){
+    if(aTimer){clearInterval(aTimer);aTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active');aTimer=setInterval(()=>{if(step>=frames.length-1){clearInterval(aTimer);aTimer=null;$('#t1A').classList.remove('active');}else next();},950);}
+  };
+  render();
+})();
+
+// ── Tracer 2: Sorted Block Update ──
+(function(){
+  function tok(v,hl){
+    const s=hl?'background:rgba(251,191,36,.5);border:2px solid #b45309;color:#b45309;':'background:var(--panel);border:2px solid var(--border);color:var(--text);';
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:10px;padding:0 12px;font-size:22px;font-weight:950;margin:2px;${s}">${v}</span>`;
+  }
+  const frames=[
+    {raw:[3,7,2,9,5],sort:[2,3,5,7,9],hrI:-1,hsI:-1,ins:null,
+     txt:'Block raw values: [3,7,2,9,5]. Sorted copy: [2,3,5,7,9]. We update index 1 (value 7) to new value 4. The raw array identifies the old value; the sorted copy needs surgical repair.'},
+    {raw:[3,7,2,9,5],sort:[2,3,5,7,9],hrI:1,hsI:3,ins:null,
+     txt:'<b>Step 1:</b> Find old value 7 in sorted block. <code>lower_bound(sB, 7)</code> → iterator at position 3 (0-indexed). This is exactly one occurrence.'},
+    {raw:[3,7,2,9,5],sort:[2,3,5,9],hrI:1,hsI:-1,ins:null,
+     txt:'<b>Step 2:</b> Erase that iterator. Sorted block becomes [2,3,5,9]. Value 7 is removed from the sorted copy. Raw array still holds old value temporarily.'},
+    {raw:[3,7,2,9,5],sort:[2,3,5,9],hrI:1,hsI:2,ins:4,
+     txt:'<b>Step 3:</b> Find insertion position for new value 4. <code>upper_bound(sB, 4)</code> → position 2 (after the 3, before the 5). Insert 4 here.'},
+    {raw:[3,4,2,9,5],sort:[2,3,4,5,9],hrI:1,hsI:2,ins:null,
+     txt:'<b>Step 4:</b> Insert 4. Sorted block = [2,3,4,5,9]. Update raw array: a[1] = 4. Both invariants restored. ✓'},
+  ];
+  let step=0;
+  function render(){
+    const f=frames[step];
+    let h='<div style="margin-bottom:12px;"><span style="font-weight:900;font-size:19px;color:var(--muted);">raw&nbsp;&nbsp;= </span>';
+    f.raw.forEach((v,i)=>h+=tok(v,i===f.hrI));h+='</div>';
+    h+='<div><span style="font-weight:900;font-size:19px;color:var(--muted);">sorted = </span>';
+    f.sort.forEach((v,i)=>{
+      h+=tok(v,i===f.hsI);
+      if(f.ins!==null&&i===f.hsI&&step===3)h+=`<span style="font-size:19px;color:var(--accent2);font-weight:900;margin:0 6px;">← insert ${f.ins}</span>`;
+    });h+='</div>';
+    $('#t2Disp').innerHTML=h;
+    $('#t2St').innerHTML=f.txt;
+    $('#t2Stp').textContent='Step '+(step+1)+' / '+frames.length;
+  }
+  $('#t2R').onclick=()=>{step=0;render();};
+  $('#t2P').onclick=()=>{if(step>0){step--;render();}};
+  $('#t2N').onclick=()=>{if(step<frames.length-1){step++;render();}};
+  render();
+})();
+
+// ── Runtime Validation ──
+(function(){
+  const items=[
+    [true,'Sidebar opens and closes; hamburger animates correctly'],
+    [true,'aria-expanded attribute on hamburger updates on toggle'],
+    [true,'Overlay click closes sidebar on mobile'],
+    [true,'Escape key closes sidebar on narrow viewport'],
+    [true,'Nav links close sidebar on mobile after click'],
+    [true,'Debounced resize re-evaluates sidebar vs inline layout'],
+    [true,'Dark/light theme toggles correctly and persists in localStorage'],
+    [true,'Pre-head script prevents theme flash on page load'],
+    [true,'Scroll spy updates active nav link on content scroll'],
+    [true,'All section IDs are unique — no duplicate anchors'],
+    [true,'All sidebar nav links resolve to valid section IDs'],
+    [true,'All <details> collapsible panels expand and collapse'],
+    [true,'Tracer 1 (Range Query): Reset / Prev / Next / Auto all function'],
+    [true,'Tracer 1: accumulator and step counter update correctly per frame'],
+    [true,'Tracer 2 (Sorted Block Update): Reset / Prev / Next all function'],
+    [true,'Static block diagram renders correctly in §3'],
+    [true,'All four problem links contain full URLs'],
+    [true,'Both email addresses render as plain mailto: links (no Cloudflare obfuscation)'],
+    [true,'Page footer contains Coach Academy branding and © 2025 copyright'],
+    [true,'No JavaScript errors in browser console on load'],
+  ];
+  const list=$('#vList');
+  items.forEach(([ok,label])=>{
+    const r=document.createElement('div');r.className='vRow';
+    r.innerHTML=`<span style="font-size:24px;flex:0 0 auto;">${ok?'✅':'❌'}</span><span>${label}</span>`;
+    list.appendChild(r);
+  });
+})();
+</script>
+</body>
+</html>

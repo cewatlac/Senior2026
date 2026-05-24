@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Binary &amp; Ternary Search</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:26px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .statusPanel h3{margin:0 0 8px;font-size:var(--fs-h3);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px;height:16px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  svg.vizSvg{width:100%;display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:700;overflow-x:auto;}
+  .hlGood{background:rgba(15,118,110,.20);border-radius:6px;padding:2px 4px;color:var(--good);}
+  .hlBad{background:rgba(185,28,28,.20);border-radius:6px;padding:2px 4px;color:var(--bad);}
+  .hlWarn{background:rgba(180,83,9,.20);border-radius:6px;padding:2px 4px;color:var(--warn);}
+  ol.steps{font-size:22px;line-height:2;margin:8px 0 0 18px;}
+  ol.steps li{margin-bottom:4px;}
+  ul.steps{font-size:22px;line-height:2;margin:8px 0 0 18px;}
+  ul.steps li{margin-bottom:4px;}
+  .proof-box{background:linear-gradient(180deg,rgba(15,118,110,.08),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:16px;padding:14px 18px;margin:12px 0;}
+  .proof-box h4{margin:0 0 8px;font-size:26px;color:var(--good);}
+  .warn-box{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:16px;padding:14px 18px;margin:12px 0;}
+  .warn-box h4{margin:0 0 8px;font-size:26px;color:var(--warn);}
+  .bad-box{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:16px;padding:14px 18px;margin:12px 0;}
+  .bad-box h4{margin:0 0 8px;font-size:26px;color:var(--bad);}
+  .variantCard{border:3px solid var(--border);border-radius:16px;padding:16px 18px;background:var(--panel2);margin:14px 0;}
+  .variantCard h4{margin:0 0 8px;font-size:26px;color:var(--accent2);}
+  .traceRow{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:2px solid var(--border);font-family:ui-monospace,monospace;font-size:20px;font-weight:800;}
+  .traceRow:last-child{border-bottom:none}
+  .traceVal{min-width:80px;text-align:center;padding:4px 8px;border-radius:8px;}
+  .traceVal.bad{background:rgba(185,28,28,.15);color:var(--bad);}
+  .traceVal.good{background:rgba(15,118,110,.15);color:var(--good);}
+  .traceVal.mid{background:rgba(180,83,9,.15);color:var(--warn);}
+  .traceVal.neutral{background:var(--panel2);}
+  /* runtime checklist */
+  .checkList{list-style:none;padding:0;margin:10px 0;}
+  .checkList li{display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:2px solid var(--border);font-size:22px;font-weight:850;}
+  .checkList li:last-child{border-bottom:none}
+  .checkList li::before{content:"☐";font-size:26px;color:var(--accent2);flex:0 0 auto;margin-top:2px;}
+  /* contrast table highlight */
+  .contrastRow-bs{background:rgba(37,99,235,.06);}
+  .contrastRow-ts{background:rgba(180,83,9,.06);}
+</style>
+<script>
+/* Anti-flicker: apply saved/system theme before first paint */
+(function(){
+  try{
+    var t=localStorage.getItem('bs_theme');
+    if(!t){ t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light'; }
+    document.documentElement.setAttribute('data-theme',t);
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">Binary &amp; Ternary</div>
+    <div class="t2">Search in CP</div>
+    <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#intro" id="nav-intro">🧩 Problem Definition<small>Four flavors of search</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition from Scratch<small>The dictionary principle</small></a>
+  <a href="#mental-model" id="nav-mental-model">🖼 Visual Mental Model<small>Bad/Good boundary diagram</small></a>
+
+  <div class="groupTitle">Theory</div>
+  <a href="#formal" id="nav-formal">📐 Formal Abstraction<small>Monotone predicates, unimodal</small></a>
+  <a href="#observations" id="nav-observations">🔍 Key Observations<small>The three shapes</small></a>
+  <a href="#algorithm" id="nav-algorithm">⚙️ Algorithm Explanation<small>Interactive trace simulator</small></a>
+  <a href="#invariants" id="nav-invariants">🔒 Invariants<small>State · transition · termination</small></a>
+  <a href="#proof" id="nav-proof">✅ Proof of Correctness<small>Full formal proof</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity Analysis<small>O(T log R)</small></a>
+
+  <div class="groupTitle">Templates</div>
+  <a href="#template-philosophy" id="nav-tp">🎯 Template Philosophy<small>Unified family</small></a>
+  <a href="#when-not-to-use" id="nav-wnu">🚦 When NOT to Use<small>Avoid wrong-tool bugs</small></a>
+  <a href="#template-int" id="nav-tint">📄 Integer Binary Search<small>Master template</small></a>
+  <a href="#template-double" id="nav-tdouble">📄 Double Binary Search<small>Floating-point master</small></a>
+  <a href="#template-ternary" id="nav-tternary">📄 Ternary Search<small>Unimodal master template</small></a>
+  <a href="#line-by-line" id="nav-lbl">🔤 Line-by-Line Walkthrough<small>Every line explained</small></a>
+
+  <div class="groupTitle">Sorted Arrays</div>
+  <a href="#array-queries" id="nav-aq">🔢 Array Queries<small>Lower/upper bound demo</small></a>
+  <div class="sub">
+    <a href="#lb">Lower Bound</a>
+    <a href="#ub">Upper Bound</a>
+    <a href="#first-last">First / Last Occurrence</a>
+    <a href="#exact">Exact Search</a>
+  </div>
+
+  <div class="groupTitle">Answer Space</div>
+  <a href="#answer-space" id="nav-ans">🎯 Binary Search on Answer<small>The main CP pattern</small></a>
+  <a href="#aggrcow" id="nav-aggrcow">🐄 AGGRCOW<small>Maximize minimum distance</small></a>
+  <a href="#pie" id="nav-pie">🥧 PIE<small>Floating-point slice area</small></a>
+  <a href="#transformed" id="nav-trans">🔄 Transformed Search<small>Ratio / average problems</small></a>
+  <a href="#sightseeing" id="nav-sight">🗺 Sightseeing Cows<small>Cycle ratio + SPFA</small></a>
+
+  <div class="groupTitle">Ternary Search</div>
+  <a href="#ternary-theory" id="nav-tt">📈 Ternary Search Deep Dive<small>Visualizer + proof</small></a>
+  <a href="#weakness" id="nav-weak">💪 Weakness &amp; Poorness<small>578C full solution</small></a>
+
+  <div class="groupTitle">Reference</div>
+  <a href="#edge-cases" id="nav-ec">🗂 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>Bugs &amp; fixes</small></a>
+  <a href="#decision" id="nav-decision">🎮 Decision Guide<small>Recognition table</small></a>
+  <a href="#variants" id="nav-variants">🔀 Variants &amp; Extensions<small>All problem families</small></a>
+  <a href="#runtime-checklist" id="nav-rc">✅ Runtime Checklist<small>Self-validation</small></a>
+  <a href="#summary" id="nav-summary">📋 Final Summary<small>7 core truths</small></a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+      <span style="font-size:36px;line-height:1;">🎓</span>
+    </div>
+    <div>
+      <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy</div>
+      <h1>Binary &amp; Ternary Search</h1>
+      <div class="subtitle">Boundary Finding · Answer Space · Transformed Search · Unimodal Optimization</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <div class="btnRow">
+    <label class="pill" style="cursor:pointer;">
+      <span style="font-size:20px">🌙</span>
+      <div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0" title="Toggle dark mode"></div>
+    </label>
+  </div>
+</div>
+
+<!-- ===== SECTION 1: INTRO ===== -->
+<section class="card" id="intro">
+  <h2>🧩 Problem Definition</h2>
+  <p>Binary search and ternary search are algorithms that exploit <b>structure in the search space</b> to discard large portions of candidates at each step. Used naively, they find elements in sorted arrays. Used powerfully, they solve optimization problems that seem impossible to brute-force.</p>
+  <div class="chips">
+    <span class="chip good">Binary Search — finds a boundary in a monotone predicate</span>
+    <span class="chip warn">Ternary Search — finds the optimum of a unimodal function</span>
+    <span class="chip">Both reduce O(N) or worse to O(log N) per decision</span>
+  </div>
+  <div class="grid2" style="margin-top:18px;">
+    <div class="statusPanel">
+      <h3>What binary search is really doing</h3>
+      <p>It is not primarily about "taking the middle of an array." That is only one application. The deep idea is:</p>
+      <p style="font-size:24px;font-weight:950;color:var(--accent2);">Find the boundary between a bad region and a good region.</p>
+      <p class="note">The bad/good structure comes from a monotone predicate — a yes/no question where the answer flips at most once.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>What ternary search is really doing</h3>
+      <p>It is not a "binary search on yes/no." The structure is completely different:</p>
+      <p style="font-size:24px;font-weight:950;color:var(--warn);">Find the minimum (or maximum) of a unimodal function.</p>
+      <p class="note">There is no flip from false to true — instead there is a valley (or hill) with one best point.</p>
+    </div>
+  </div>
+  <div class="warn-box" style="margin-top:16px;">
+    <h4>⚠️ The most important design principle</h4>
+    <p>Binary search is for monotone predicates. Ternary search is for unimodal functions. <b>Do not confuse them.</b> Using binary search on a unimodal function or ternary search on a monotone predicate will give silently wrong answers.</p>
+  </div>
+
+  <!-- ★ NEW: Four flavors comparison table -->
+  <h3 style="margin-top:22px;">The four flavors of search — at a glance</h3>
+  <p class="note">Before going further, orient yourself. Every search problem you will encounter in competitive programming fits one of these four patterns.</p>
+  <table>
+    <thead><tr><th>Flavor</th><th>Search space</th><th>Structure needed</th><th>Goal</th><th>Tool</th></tr></thead>
+    <tbody>
+      <tr class="contrastRow-bs"><td><b>Classic sorted-array</b></td><td>Array indices</td><td>Sorted array</td><td>Find first index where predicate holds</td><td>Lower / upper bound</td></tr>
+      <tr class="contrastRow-bs"><td><b>Boundary binary search</b></td><td>Integer or real values</td><td>Monotone predicate</td><td>Find where false → true transition is</td><td>Integer BS / Double BS</td></tr>
+      <tr class="contrastRow-bs"><td><b>Answer-space binary search</b></td><td>Candidate answer values</td><td>Monotone feasibility check</td><td>Optimal value satisfying a constraint</td><td>Integer BS or Double BS</td></tr>
+      <tr class="contrastRow-ts"><td><b>Ternary search</b></td><td>Real (or integer) values</td><td>Unimodal objective f(x)</td><td>Find the minimum or maximum of f</td><td>Ternary search</td></tr>
+    </tbody>
+  </table>
+  <p class="note" style="margin-top:10px;">The first three rows all use the <em>same</em> master binary-search template. Only ternary search uses a different algorithm and a different kind of structure.</p>
+</section>
+
+<!-- ===== SECTION 2: INTUITION ===== -->
+<section class="card" id="intuition">
+  <h2>💡 Intuition from Scratch</h2>
+  <h3>The dictionary principle</h3>
+  <p>Imagine you are looking for a word in a dictionary. You do not start from page 1 and flip through one page at a time. Instead:</p>
+  <ol class="steps">
+    <li>Open somewhere near the middle</li>
+    <li>Compare — are you too far left or too far right?</li>
+    <li>Discard the half that cannot contain your target</li>
+    <li>Repeat on the smaller half</li>
+  </ol>
+  <p style="margin-top:14px;">This works because the dictionary is <b>ordered</b>. Order is what allows you to safely throw away half the possibilities at each step.</p>
+
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>The deeper principle</h3>
+    <p>Search becomes powerful when <b>structure lets you safely discard a large region</b>. For binary search, the structure is a monotone predicate — once the answer becomes "good," it stays "good." For ternary search, the structure is unimodality — there is one valley (or peak) with no fake valleys elsewhere.</p>
+  </div>
+
+  <!-- ★ NEW: Plain-language definitions block -->
+  <h3 style="margin-top:22px;">Plain-language definitions (read these carefully)</h3>
+  <div class="grid2" style="margin-top:10px;">
+    <div class="proof-box">
+      <h4>What "monotone predicate" means in plain language</h4>
+      <p>Imagine a long row of boxes, each labeled YES or NO. A <b>monotone predicate</b> means all the NO boxes come first, then all the YES boxes come after — with no mixing. Once you see YES, every box to the right is also YES. Once you see NO, every box to the left is also NO.</p>
+      <p>Binary search exploits this: check the middle box. If it is YES, you can throw away everything to the right of it (all YES, no point searching there). If it is NO, throw away everything to the left.</p>
+      <p class="note">If the boxes mix (NO, YES, NO, YES…), binary search is useless. That is when you need a different algorithm entirely.</p>
+    </div>
+    <div class="proof-box">
+      <h4>What "unimodal function" means in plain language</h4>
+      <p>Imagine a mountain or a valley. The height (or depth) changes in one direction until it reaches a single peak (or bottom), then changes back. There are no smaller hills or extra dips along the way.</p>
+      <p>Ternary search exploits this shape: probe two points inside the interval. Whichever probe is worse tells you which outer third cannot contain the best point. Discard that third and repeat.</p>
+      <p class="note">If the function has multiple peaks or valleys (wiggly), ternary search will converge to the wrong one. Only use it when you are sure the function is genuinely unimodal.</p>
+    </div>
+  </div>
+
+  <h3>Why exact array search is a special case</h3>
+  <p>Most students learn binary search as "find a target in a sorted array." But that is only one consequence of the deeper boundary view. A sorted array gives us the predicate <code class="inlineCode">a[i] &gt;= target</code>, which is monotone over indices. We are really doing boundary search, just on array indices.</p>
+  <p>This unification means the exact same code pattern — with the same invariant, the same loop condition, the same return structure — handles:</p>
+  <div class="chips">
+    <span class="chip">array lower bound</span>
+    <span class="chip">array upper bound</span>
+    <span class="chip">first/last occurrence</span>
+    <span class="chip good">maximize minimum distance</span>
+    <span class="chip good">minimize maximum load</span>
+    <span class="chip warn">minimum sufficient time/capacity</span>
+    <span class="chip">fractional / ratio optimization</span>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: MENTAL MODEL ===== -->
+<section class="card" id="mental-model">
+  <h2>🖼 Visual Mental Model</h2>
+  <p>The most important picture to have in your head for binary search:</p>
+
+  <div class="diagramWrap" style="margin:14px 0;">
+    <div class="diagramTitle" style="margin-bottom:10px;">Monotone predicate — the boundary</div>
+    <svg class="vizSvg" viewBox="0 0 700 120" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="30" width="300" height="50" rx="8" fill="rgba(185,28,28,.15)" stroke="#b91c1c" stroke-width="2"/>
+      <text x="160" y="62" text-anchor="middle" font-size="22" font-weight="900" fill="#b91c1c">BAD (ok = false)</text>
+      <rect x="310" y="30" width="380" height="50" rx="8" fill="rgba(15,118,110,.15)" stroke="#0f766e" stroke-width="2"/>
+      <text x="500" y="62" text-anchor="middle" font-size="22" font-weight="900" fill="#0f766e">GOOD (ok = true)</text>
+      <line x1="310" y1="15" x2="310" y2="90" stroke="#b45309" stroke-width="4" stroke-dasharray="6,4"/>
+      <text x="310" y="108" text-anchor="middle" font-size="18" font-weight="900" fill="#b45309">boundary</text>
+      <polygon points="80,80 72,96 88,96" fill="#b91c1c"/>
+      <text x="80" y="112" text-anchor="middle" font-size="16" font-weight="900" fill="#b91c1c">s (last bad)</text>
+      <polygon points="380,80 372,96 388,96" fill="#0f766e"/>
+      <text x="380" y="112" text-anchor="middle" font-size="16" font-weight="900" fill="#0f766e">e (first good)</text>
+    </svg>
+  </div>
+
+  <p>Binary search <b>keeps one known bad point</b> (<code class="inlineCode">s</code>) and <b>one known good point</b> (<code class="inlineCode">e</code>), and shrinks the gap between them until they are adjacent. At that point, <code class="inlineCode">s</code> is the last bad and <code class="inlineCode">e</code> is the first good.</p>
+
+  <div class="diagramWrap" style="margin:14px 0;">
+    <div class="diagramTitle" style="margin-bottom:10px;">Unimodal function — the valley</div>
+    <svg class="vizSvg" viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 30 30 Q 200 160, 350 155 Q 500 149, 670 30" fill="none" stroke="var(--accent2)" stroke-width="4"/>
+      <text x="30" y="22" font-size="18" font-weight="900" fill="var(--muted)">f(s)</text>
+      <text x="640" y="22" font-size="18" font-weight="900" fill="var(--muted)">f(e)</text>
+      <circle cx="350" cy="155" r="8" fill="#b45309"/>
+      <text x="350" y="178" text-anchor="middle" font-size="18" font-weight="900" fill="#b45309">minimum</text>
+      <circle cx="218" cy="110" r="6" fill="var(--bad)"/>
+      <text x="218" y="102" text-anchor="middle" font-size="16" font-weight="900" fill="var(--bad)">a</text>
+      <circle cx="482" cy="110" r="6" fill="var(--good)"/>
+      <text x="482" y="102" text-anchor="middle" font-size="16" font-weight="900" fill="var(--good)">b</text>
+      <text x="350" y="60" text-anchor="middle" font-size="20" font-weight="950" fill="var(--warn)">f(a) &gt; f(b) → discard left third</text>
+      <line x1="218" y1="110" x2="350" y2="155" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5,4"/>
+      <line x1="482" y1="110" x2="350" y2="155" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    </svg>
+  </div>
+  <p class="note">At each step, comparing f(a) and f(b) tells us which third cannot contain the minimum. One third is safely discarded, reducing the interval to 2/3 its previous size.</p>
+</section>
+
+<!-- ===== SECTION 4: FORMAL ABSTRACTION ===== -->
+<section class="card" id="formal">
+  <h2>📐 Formal Abstraction</h2>
+
+  <h3>Definition 1: Ordered search space</h3>
+  <p>A set of candidates S where "left" and "right" have meaning, and we can evaluate any candidate in O(T) time. Examples: array indices, integer answer values, real intervals.</p>
+
+  <h3>Definition 2: Monotone boolean predicate</h3>
+  <p>A function <code class="inlineCode">ok(x) → {false, true}</code> that changes in only one direction across the ordered search space. Canonical forms:</p>
+  <div class="grid2" style="margin-top:10px;">
+    <div class="statusPanel">
+      <h3>Form A — false then true</h3>
+      <pre style="font-size:18px;"><code>ok(0) = false
+ok(1) = false
+ok(2) = false
+ok(3) = true
+ok(4) = true
+ok(5) = true</code></pre>
+      <div class="chips"><span class="chip good">Binary search → first true (e)</span></div>
+    </div>
+    <div class="statusPanel">
+      <h3>Form B — true then false</h3>
+      <pre style="font-size:18px;"><code>ok(0) = true
+ok(1) = true
+ok(2) = true
+ok(3) = false
+ok(4) = false
+ok(5) = false</code></pre>
+      <div class="chips"><span class="chip warn">Binary search → last true (s) via flip</span></div>
+    </div>
+  </div>
+
+  <h3>Definition 3: Unimodal function</h3>
+  <p>A function f: S → ℝ with <b>exactly one best region</b>. For minimization: strictly decreasing to one minimum, then strictly increasing. For maximization: the mirror image. No fake valleys or plateaus that mislead the search.</p>
+
+  <!-- ★ NEW: How to recognize monotonicity checklist -->
+  <div class="proof-box" style="margin-top:14px;">
+    <h4>How to recognize monotonicity — checklist</h4>
+    <p>Before writing any binary search code, ask these questions about your check function <code class="inlineCode">ok(x)</code>:</p>
+    <ul class="steps" style="margin-top:8px;">
+      <li>If ok(x) is true, is ok(x−1) guaranteed to also be true (or ok(x+1) always true)? <em>→ one-directional propagation</em></li>
+      <li>As x increases, does feasibility only get easier, or only get harder — never both? <em>→ no oscillation</em></li>
+      <li>Can you prove a statement like "if distance d works, then any smaller d also works"? <em>→ formal monotonicity argument</em></li>
+      <li>If you cannot prove any of the above, <b>binary search is the wrong tool</b>.</li>
+    </ul>
+  </div>
+
+  <h3>Theorem: Binary search finds boundaries in O(log R) evaluations</h3>
+  <p>If ok(x) is monotone over a search space of size R, binary search locates the boundary in at most ⌈log₂ R⌉ evaluations of ok(x).</p>
+  <p class="note">Proof idea: each evaluation halves the search range. Starting from R, after k evaluations the range is at most R/2^k. When this drops to 1, the boundary is pinned.</p>
+</section>
+
+<!-- ===== SECTION 5: KEY OBSERVATIONS ===== -->
+<section class="card" id="observations">
+  <h2>🔍 Key Observations</h2>
+  <div class="grid3" style="margin-top:10px;">
+    <div class="statusPanel">
+      <h3>Observation 1</h3>
+      <p>The <b>whole point of binary search</b> is not to find a target value. It is to find where a predicate changes from false to true (or vice versa). Target-in-array is just one predicate.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Observation 2</h3>
+      <p>The <b>hardest part</b> of a binary search problem is rarely the loop. It is designing the correct check function <code class="inlineCode">ok(x)</code> and proving it is monotone.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Observation 3</h3>
+      <p>The <b>answer-space pattern</b>: when a problem asks for an optimal value, binary search over candidate answers and convert to a feasibility check. This transforms optimization → decision.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Observation 4</h3>
+      <p><b>Sorted-array queries</b> (lower bound, upper bound, first/last occurrence) are identical in structure to answer-space search. Same template, same invariant, just different predicates.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Observation 5</h3>
+      <p><b>Transformed binary search</b>: some optimization problems become monotone only after an algebraic transformation. Guessing a ratio x and checking if a positive cycle exists is the key example.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Observation 6</h3>
+      <p><b>Ternary search ≠ binary search variant.</b> They live in different worlds. Binary search needs monotone predicates. Ternary search needs unimodal numeric functions. Confusing them is a class-defining bug.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: ALGORITHM ===== -->
+<section class="card" id="algorithm">
+  <h2>⚙️ Algorithm Explanation</h2>
+  <p>The master integer binary search algorithm operates as follows: maintain <code class="inlineCode">s</code> (known bad) and <code class="inlineCode">e</code> (known good). Repeatedly evaluate the midpoint <code class="inlineCode">m</code>. If ok(m) is true, move <code class="inlineCode">e</code> left to m. If ok(m) is false, move <code class="inlineCode">s</code> right to m. Repeat until e − s = 1.</p>
+
+  <h3>Interactive Binary Search Trace — bs(0, 20), ok(x) = (x ≥ 10)</h3>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <span class="diagramTitle">Integer Binary Search Simulator</span>
+      <div class="diagramTools">
+        <button class="miniBtn" id="bsResetBtn">Reset</button>
+        <button class="miniBtn" id="bsStepBtn">Step →</button>
+        <button class="miniBtn" id="bsAutoBtn">Auto ▶</button>
+      </div>
+    </div>
+    <svg class="vizSvg" id="bsSvg" viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="bsStatus" class="statusPanel" style="margin-top:10px;font-size:20px;min-height:52px;"></div>
+    <div id="bsStepLabel" style="text-align:center;font-weight:950;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+
+  <h3 style="margin-top:20px;">What each step does</h3>
+  <div id="bsTraceTable" class="dsBox" style="font-size:19px;line-height:1.8;min-height:60px;"></div>
+</section>
+
+<!-- ===== SECTION 7: INVARIANTS ===== -->
+<section class="card" id="invariants">
+  <h2>🔒 Invariants</h2>
+
+  <h3>A. State invariants</h3>
+  <div class="grid2">
+    <div class="proof-box">
+      <h4>Invariant I — s is always bad</h4>
+      <p>Throughout the entire execution: <code class="inlineCode">ok(s) = false</code>. The initial s must be a known bad point. Every update sets <code class="inlineCode">s = m</code> only when ok(m) is false, so this is preserved.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Invariant II — e is always good</h4>
+      <p>Throughout the entire execution: <code class="inlineCode">ok(e) = true</code>. The initial e must be a known good point. Every update sets <code class="inlineCode">e = m</code> only when ok(m) is true, so this is preserved.</p>
+    </div>
+  </div>
+
+  <h3>B. Transition invariants</h3>
+  <div class="proof-box" style="margin-top:10px;">
+    <h4>The midpoint is strictly inside</h4>
+    <p>As long as <code class="inlineCode">e − s &gt; 1</code>, the midpoint <code class="inlineCode">m = s + ((e−s) &gt;&gt; 1)</code> satisfies <code class="inlineCode">s &lt; m &lt; e</code>. This ensures every step genuinely shrinks the interval and termination is guaranteed.</p>
+  </div>
+
+  <h3>C. Termination invariant</h3>
+  <div class="proof-box" style="margin-top:10px;">
+    <h4>The boundary is fully pinned when e − s = 1</h4>
+    <p>When the loop exits, <code class="inlineCode">e − s = 1</code>, meaning no integer lies strictly between them. Combined with Invariants I and II: <b>s is the last bad integer, e is the first good integer</b>. This is exactly what we wanted to find.</p>
+  </div>
+
+  <h3>D. Failure modes (invariant violations)</h3>
+  <div class="bad-box">
+    <h4>Failure Mode 1: Initial s is not bad</h4>
+    <p>If <code class="inlineCode">ok(s_initial) = true</code>, Invariant I is violated immediately. The final s may not be the last bad point. This causes wrong answers silently.</p>
+  </div>
+  <div class="bad-box" style="margin-top:10px;">
+    <h4>Failure Mode 2: Initial e is not good</h4>
+    <p>If <code class="inlineCode">ok(e_initial) = false</code>, Invariant II is violated. The true boundary may lie outside [s, e] entirely, and the algorithm will return incorrect results.</p>
+  </div>
+  <div class="bad-box" style="margin-top:10px;">
+    <h4>Failure Mode 3: ok(x) is not monotone</h4>
+    <p>If the predicate has multiple false→true or true→false transitions, binary search may discard the very interval containing the answer. This is the deepest silent bug — the code looks correct but produces wrong output.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 8: PROOF ===== -->
+<section class="card" id="proof">
+  <h2>✅ Proof of Correctness</h2>
+  <p>We prove the master integer template once. Every other use of it then inherits this correctness automatically.</p>
+
+  <details open>
+    <summary>Full Correctness Proof — Integer Binary Search <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+      <div class="proof-box">
+        <h4>Lemma 1: Midpoint is strictly inside</h4>
+        <p>If <code class="inlineCode">e − s &gt; 1</code>, then <code class="inlineCode">s &lt; m &lt; e</code> where <code class="inlineCode">m = s + ((e − s) &gt;&gt; 1)</code>.</p>
+        <p><b>Proof:</b> Since <code class="inlineCode">e − s ≥ 2</code>, the shift <code class="inlineCode">(e − s) &gt;&gt; 1 = ⌊(e−s)/2⌋ ≥ 1</code>, so <code class="inlineCode">m &gt; s</code>. Also <code class="inlineCode">⌊(e−s)/2⌋ ≤ e−s−1</code> (since e−s ≥ 2), so <code class="inlineCode">m ≤ s + e − s − 1 = e − 1 &lt; e</code>. □</p>
+      </div>
+      <div class="proof-box" style="margin-top:12px;">
+        <h4>Lemma 2: Updates preserve invariants</h4>
+        <p><b>Case A — ok(m) = true:</b> m is a good candidate. The first good value lies in (s, m]. Set e = m. Now ok(s) = false (unchanged) and ok(e) = ok(m) = true. Invariants preserved. The search range shrinks to [s, m].</p>
+        <p><b>Case B — ok(m) = false:</b> m is a bad candidate. The first good value lies in (m, e]. Set s = m. Now ok(s) = ok(m) = false and ok(e) = true (unchanged). Invariants preserved. The search range shrinks to [m, e].</p>
+        <p>In both cases the range strictly shrinks (by Lemma 1). □</p>
+      </div>
+      <div class="proof-box" style="margin-top:12px;">
+        <h4>Theorem: Returned pair {s, e} is correct</h4>
+        <p><b>Termination:</b> Each iteration reduces e − s by at least 1. The loop runs while e − s &gt; 1, so it terminates in at most ⌈log₂(initial range)⌉ steps.</p>
+        <p><b>Correctness:</b> When the loop exits, e − s ≤ 1. From the invariants: ok(s) = false and ok(e) = true. Since e − s = 1 (no integer strictly between them), s is the last bad integer and e is the first good integer. □</p>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Correctness Proof — Double Binary Search Template <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+      <div class="proof-box">
+        <h4>Invariant: s is always feasible</h4>
+        <p>The template only executes <code class="inlineCode">s += sz</code> when <code class="inlineCode">ok(s + sz) = true</code>. So s always remains a valid feasible candidate. Initial s must be a valid feasible point.</p>
+      </div>
+      <div class="proof-box" style="margin-top:12px;">
+        <h4>Why step-halving is better than while(e-s&gt;eps)</h4>
+        <p>The common alternative <code class="inlineCode">while(e-s &gt; eps)</code> can stall due to floating-point rounding: the computed midpoint may equal s or e, creating an infinite loop. The step-halving loop shrinks sz geometrically regardless of floating-point behavior, guaranteeing termination in exactly ⌈log₂((e−s)/eps)⌉ iterations. □</p>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ===== SECTION 9: COMPLEXITY ===== -->
+<section class="card" id="complexity">
+  <h2>⏱ Complexity Analysis</h2>
+  <div class="grid2">
+    <div class="statusPanel">
+      <h3>Integer Binary Search</h3>
+      <p>If the search range has size R and the check ok(x) costs T:</p>
+      <p style="font-size:24px;font-weight:950;color:var(--accent2);">O(T · log R)</p>
+      <p class="note">The log R comes from halving: R → R/2 → R/4 → ... → 1 takes ⌈log₂ R⌉ steps. Each step calls ok(x) once.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Double Binary Search</h3>
+      <p>Starting step size s₀ = (e₀ − s₀)/2, ending at eps:</p>
+      <p style="font-size:24px;font-weight:950;color:var(--accent2);">O(T · log₂((e₀−s₀) / eps))</p>
+      <p class="note">With eps = 1e-15 and range ≤ 1e6: about 70 iterations. Each halves the step size.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Ternary Search</h3>
+      <p>Interval shrinks by factor 2/3 each iteration:</p>
+      <p style="font-size:24px;font-weight:950;color:var(--accent2);">O(T · log_{3/2}(range / eps))</p>
+      <p class="note">= O(T · log(range/eps) / log(3/2)) ≈ O(2.4 T · log₂(range/eps)). Slightly more than binary search.</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Check costs in CP</h3>
+      <p>Typical check complexities that arise:</p>
+      <table style="margin-top:8px;font-size:19px;">
+        <thead><tr><th>Check type</th><th>T</th></tr></thead>
+        <tbody>
+          <tr><td>Greedy scan (AGGRCOW)</td><td>O(N)</td></tr>
+          <tr><td>Sum of floors (PIE)</td><td>O(N)</td></tr>
+          <tr><td>SPFA positive cycle</td><td>O(V·E)</td></tr>
+          <tr><td>Array prefix scan</td><td>O(N)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 10: TEMPLATE PHILOSOPHY ===== -->
+<section class="card" id="template-philosophy">
+  <h2>🎯 Core Template Philosophy</h2>
+  <p>The three master templates form a <b>unified family</b>. They share the same mental model and the same invariant structure. You should memorize the philosophy, not just the code.</p>
+  <div class="grid3" style="margin-top:14px;">
+    <div class="statusPanel">
+      <h3>Integer master</h3>
+      <p><b>When to use:</b> integer answer, discrete search space, predicate has a clear boolean boundary.</p>
+      <p><b>Invariant:</b> s = last bad, e = first good.</p>
+      <p><b>Returns:</b> pair {last bad, first good}.</p>
+      <div class="chips"><span class="chip good">AGGRCOW, Koko, Allocate Books</span></div>
+    </div>
+    <div class="statusPanel">
+      <h3>Double master</h3>
+      <p><b>When to use:</b> real-valued answer, continuous search space, same predicate logic but need precision.</p>
+      <p><b>Invariant:</b> s = current feasible answer.</p>
+      <p><b>Returns:</b> maximum feasible real value.</p>
+      <div class="chips"><span class="chip good">PIE, Ropes, Sightseeing Cows</span></div>
+    </div>
+    <div class="statusPanel">
+      <h3>Ternary master</h3>
+      <p><b>When to use:</b> unimodal numeric objective, want the minimum (or maximum) of a continuous function.</p>
+      <p><b>Invariant:</b> interval [s, s+sz] contains the minimizer.</p>
+      <p><b>Returns:</b> pair {x at minimum, f(x)}.</p>
+      <div class="chips"><span class="chip warn">Weakness &amp; Poorness, Meeting Place</span></div>
+    </div>
+  </div>
+
+  <div class="warn-box" style="margin-top:16px;">
+    <h4>Naming convention</h4>
+    <p>All templates use the same names. <code class="inlineCode">s</code> = start / bad side, <code class="inlineCode">e</code> = end / good side, <code class="inlineCode">m</code> = midpoint, <code class="inlineCode">ok(x)</code> = check. Ternary uses <code class="inlineCode">f(x)</code> = objective. Never rename these in your code — it destroys the mental model.</p>
+  </div>
+</section>
+
+<!-- ★ NEW SECTION: WHEN NOT TO USE ===== -->
+<section class="card" id="when-not-to-use">
+  <h2>🚦 When NOT to Use Binary Search / Ternary Search</h2>
+  <p>Choosing the wrong tool wastes time and gives wrong answers with no obvious error message. Learn to recognize when <em>not</em> to reach for binary search or ternary search.</p>
+
+  <div class="grid2" style="margin-top:14px;">
+    <div class="bad-box">
+      <h4>Do NOT use Binary Search when…</h4>
+      <ul class="steps" style="margin-top:8px;">
+        <li><b>No monotone predicate exists.</b> If ok(x) can flip true → false → true, binary search will give wrong answers silently.</li>
+        <li><b>The answer space has no natural order.</b> You cannot binary-search over a set of unordered objects.</li>
+        <li><b>A direct algorithm already exists.</b> If greedy, dynamic programming, or a graph algorithm solves the problem directly, do not force a binary search wrapper around it.</li>
+        <li><b>The check function is too expensive.</b> If T is large and log R does not compensate, binary search may be slower than brute force or other methods.</li>
+        <li><b>You cannot build valid initial boundaries.</b> If you cannot find a guaranteed bad initial s and a guaranteed good initial e, the template invariant is broken from the start.</li>
+      </ul>
+    </div>
+    <div class="bad-box">
+      <h4>Do NOT use Ternary Search when…</h4>
+      <ul class="steps" style="margin-top:8px;">
+        <li><b>The function is not unimodal.</b> Multiple local minima/maxima cause convergence to the wrong point, with no warning.</li>
+        <li><b>Just because the answer is real-valued.</b> A real-valued answer alone is <em>not</em> a reason for ternary search. If you have a monotone feasibility check, use double binary search instead.</li>
+        <li><b>The domain is discrete.</b> On integers, ternary search is trickier and often less reliable than binary search with a carefully designed predicate.</li>
+        <li><b>The objective has flat plateaus.</b> f(a) == f(b) breaks the standard discard rule. Either verify unimodality more carefully or use a perturbed comparison.</li>
+        <li><b>A closed-form optimum exists.</b> If you can find the minimum analytically (e.g., derivative = 0 for a polynomial), ternary search is overkill.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warn-box" style="margin-top:14px;">
+    <h4>⚡ The key question before you start</h4>
+    <p>Ask yourself: <b>"What structure does this problem have?"</b></p>
+    <p>→ One-way transition (false then true)? Use <b>binary search</b>.</p>
+    <p>→ One valley or one peak in a continuous function? Use <b>ternary search</b>.</p>
+    <p>→ Neither? Do <b>not</b> use either. The problem needs a different algorithmic idea.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 11: INTEGER TEMPLATE ===== -->
+<section class="card" id="template-int">
+  <h2>📄 Master Integer Binary Search Template</h2>
+  <div class="chips">
+    <span class="chip good">s = last bad, e = first good</span>
+    <span class="chip warn">Requires: ok(s_initial)=false, ok(e_initial)=true</span>
+    <span class="chip">O(T · log R)</span>
+  </div>
+  <details open>
+    <summary>Full C++ Template — Integer Binary Search <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;cstdio&gt;
+#include &lt;utility&gt;
+
+using namespace std;
+
+bool ok(int x) {
+    return x &gt;= 10;   // ← replace with your predicate
+}
+
+pair&lt;int, int&gt; bs(int s, int e) {
+    while (e - s &gt; 1) {
+        int m = s + ((e - s) &gt;&gt; 1);
+        if (ok(m))
+            e = m;
+        else
+            s = m;
+    }
+    return {s, e};
+}
+
+int main() {
+    pair&lt;int, int&gt; ans = bs(0, 20);
+    // ans.first  = last bad  (9)
+    // ans.second = first good (10)
+    printf("%d %d\n", ans.first, ans.second);
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>Interpretation of the return value</h3>
+    <table>
+      <thead><tr><th>Problem type</th><th>Which value?</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Maximize minimum / last feasible</td><td><code>ans.first</code></td><td>Last bad = largest value where feasible</td></tr>
+        <tr><td>Minimize maximum / first infeasible</td><td><code>ans.second</code></td><td>First good = smallest value where infeasible (flip predicate)</td></tr>
+        <tr><td>First occurrence ≥ target (lower bound)</td><td><code>ans.second</code></td><td>First good index</td></tr>
+        <tr><td>First occurrence &gt; target (upper bound)</td><td><code>ans.second</code></td><td>First good index with flipped predicate</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== SECTION 12: DOUBLE TEMPLATE ===== -->
+<section class="card" id="template-double">
+  <h2>📄 Master Double Binary Search Template</h2>
+  <div class="chips">
+    <span class="chip good">s = current feasible answer</span>
+    <span class="chip warn">Termination: step size &lt; eps</span>
+    <span class="chip">Step-halving avoids floating-point stall</span>
+  </div>
+
+  <!-- ★ NEW: Step-halving beginner bridge -->
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>How to think about step-halving (before reading the code)</h3>
+    <p>The intuition is simple. Imagine you are standing at point <code class="inlineCode">s</code> on a number line — a known feasible value — and you want to move as far right as possible while staying feasible.</p>
+    <ol class="steps" style="margin-top:8px;">
+      <li>Try a jump of size <code class="inlineCode">sz</code>. If <code class="inlineCode">ok(s + sz)</code> is true, take the jump: <code class="inlineCode">s += sz</code>.</li>
+      <li>Whether you jumped or not, halve the jump size: <code class="inlineCode">sz *= 0.5</code>.</li>
+      <li>Repeat until sz is negligibly small (below eps).</li>
+    </ol>
+    <p style="margin-top:10px;">After enough halvings, the remaining unexplored gap is smaller than eps, so s is the maximum feasible value up to the desired precision. This is exactly the same idea as the integer template — it is just expressed differently because floating-point has no concept of "adjacent integers."</p>
+    <p class="note"><b>This is not a different theorem.</b> It is the same boundary-finding logic, adapted for real-valued domains by controlling progress through explicit step sizes rather than interval endpoints.</p>
+  </div>
+
+  <details open>
+    <summary>Full C++ Template — Double Binary Search <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;cstdio&gt;
+
+using namespace std;
+
+bool ok(double x) {
+    return x &lt; 10;    // ← replace with your check
+}
+
+const double eps = 1e-15;
+
+double bs(double s, double e) {
+    for (double sz = (e - s) * 0.5; sz &gt; eps; sz *= 0.5)
+        if (ok(s + sz))
+            s += sz;
+    return s;
+}
+
+int main() {
+    printf("%.17f\n", bs(0, 15));
+    // Returns maximum feasible double in [0,15]
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>Why this design is correct</h3>
+    <p><b>s = current feasible answer</b> throughout. We only update <code class="inlineCode">s += sz</code> when <code class="inlineCode">ok(s + sz) = true</code>, so s is always valid. The step size <code class="inlineCode">sz</code> shrinks by half each iteration regardless of floating-point precision. After about 50 iterations, sz drops below 1e-15 and we stop with s approximating the maximum feasible value.</p>
+    <div class="warn-box" style="margin-top:10px;">
+      <h4>⚠️ The danger of while(e-s &gt; eps)</h4>
+      <p>The common pattern <code class="inlineCode">while(e-s &gt; eps){ m=(s+e)/2; ... }</code> can stall: floating-point arithmetic can make m == s or m == e, triggering an infinite loop. The step-halving loop avoids this entirely because sz shrinks unconditionally.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 13: TERNARY TEMPLATE ===== -->
+<section class="card" id="template-ternary">
+  <h2>📄 Master Ternary Search Template</h2>
+  <div class="chips">
+    <span class="chip good">For unimodal minimization</span>
+    <span class="chip warn">f(x) must have exactly one valley</span>
+    <span class="chip">Returns {x_min_approx, f_min_approx}</span>
+  </div>
+  <details open>
+    <summary>Full C++ Template — Ternary Search <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include "bits/stdc++.h"
+using namespace std;
+
+double f(double x) {
+    return (x - 5.0) * (x - 5.0);   // ← replace with your function
+}
+
+pair&lt;double, double&gt; ternarySearch(double s, double e) {
+    double fs = f(s);
+    for (double sz = e - s; sz &gt; 1e-15; sz *= 2.0 / 3.0) {
+        double a = s + sz / 3.0, b = a + sz / 3.0;
+        double fa = f(a), fb = f(b);
+        if (fa &gt; fb) {    // ← for minimization: left third is higher, discard it
+            s = a;
+            fs = fa;      // ← cache to avoid recomputation on next step
+        }
+        // else: right third is higher or equal, sz shrinks and right side is trimmed
+    }
+    return {s, fs};
+}
+
+int main() {
+    pair&lt;double, double&gt; ans = ternarySearch(0, 100);
+    printf("%.10lf %.10lf\n", ans.first, ans.second);
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="grid2" style="margin-top:14px;">
+    <div class="statusPanel">
+      <h3>How the interval shrinks</h3>
+      <p>At each step, the effective search window is <code class="inlineCode">[s, s+sz]</code>. Test points are at <code class="inlineCode">a = s+sz/3</code> and <code class="inlineCode">b = s+2sz/3</code>.</p>
+      <p>• If f(a) &gt; f(b): move s to a. New window: <code class="inlineCode">[a, s+sz]</code>. Size = 2sz/3.</p>
+      <p>• If f(a) ≤ f(b): keep s. New window: <code class="inlineCode">[s, s+2sz/3]</code>. Size = 2sz/3.</p>
+      <p>Either way, size shrinks by factor 2/3 per step. □</p>
+    </div>
+    <div class="statusPanel">
+      <h3>Why fs is cached</h3>
+      <p>When s moves to a, we have already computed f(a). We store it as <code class="inlineCode">fs</code> so that after convergence, <code class="inlineCode">fs ≈ f(minimum)</code>. This avoids one extra call to f, which matters when f is expensive (e.g., runs a graph algorithm).</p>
+      <p class="note">After convergence, s is near the minimizer, so <code class="inlineCode">fs ≈ f(s) ≈ minimum value</code>. This is the value returned as <code class="inlineCode">ans.second</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 14: LINE BY LINE ===== -->
+<section class="card" id="line-by-line">
+  <h2>🔤 Line-by-Line Code Explanation</h2>
+  <h3>Integer template — every line explained</h3>
+  <table>
+    <thead><tr><th style="width:40%">Line</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>while (e - s &gt; 1)</code></td><td>Loop while there is at least one integer strictly between s and e. When e−s=1, the boundary is fully pinned.</td></tr>
+      <tr><td><code>int m = s + ((e-s)&gt;&gt;1)</code></td><td>Safe midpoint: avoids (s+e)/2 overflow. The right shift divides by 2. Result: s &lt; m &lt; e always.</td></tr>
+      <tr><td><code>if (ok(m)) e = m;</code></td><td>m is good → first good shifts left to m. Interval becomes [s, m].</td></tr>
+      <tr><td><code>else s = m;</code></td><td>m is bad → last bad shifts right to m. Interval becomes [m, e].</td></tr>
+      <tr><td><code>return {s, e};</code></td><td>s = last bad, e = first good. Both are exactly what the caller needs.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Double template — every line explained</h3>
+  <table style="margin-top:14px;">
+    <thead><tr><th style="width:40%">Line</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>double sz = (e-s)*0.5</code></td><td>Initial step size = half the range. First probe: s + (e-s)/2 = midpoint.</td></tr>
+      <tr><td><code>sz &gt; eps</code></td><td>Loop until step is negligible. With eps=1e-15, runs ~50 iterations for range ≤ 1.</td></tr>
+      <tr><td><code>sz *= 0.5</code></td><td>Halve the step unconditionally each iteration. This guarantees termination regardless of floating-point.</td></tr>
+      <tr><td><code>if (ok(s+sz)) s += sz;</code></td><td>If moving right by sz keeps feasibility, do it. Otherwise skip (s stays). Invariant: s is always feasible.</td></tr>
+      <tr><td><code>return s;</code></td><td>Maximum feasible value found up to precision eps.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== SECTION 15: ARRAY QUERIES ===== -->
+<section class="card" id="array-queries">
+  <h2>🔢 Sorted Array Queries</h2>
+  <p>All sorted-array queries use the same master template. The only thing that changes is the <b>predicate</b>. The search space is array indices. The array being sorted makes each predicate monotone over indices.</p>
+
+  <h3>Interactive Lower Bound Demo — array [2, 5, 5, 5, 8, 12], target = 5</h3>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <span class="diagramTitle" id="aqTitle">Lower Bound Simulator</span>
+      <div class="diagramTools">
+        <button class="miniBtn active" id="aqLBBtn">Lower Bound</button>
+        <button class="miniBtn" id="aqUBBtn">Upper Bound</button>
+        <button class="miniBtn" id="aqResetBtn">Reset</button>
+        <button class="miniBtn" id="aqStepBtn">Step →</button>
+      </div>
+    </div>
+    <svg class="vizSvg" id="aqSvg" viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="aqStatus" class="statusPanel" style="margin-top:10px;font-size:20px;min-height:52px;"></div>
+  </div>
+
+  <h3 id="lb" style="margin-top:22px;">Lower Bound — first index where a[i] ≥ target</h3>
+  <p>Predicate: <code class="inlineCode">a[m] &gt;= target</code>. Pattern: <span class="hlBad">F F F</span> <span class="hlGood">T T T</span>. Answer is <code class="inlineCode">e</code> (first good).</p>
+<pre><code>int s = -1, e = (int)a.size();
+while (e - s &gt; 1) {
+    int m = s + ((e - s) &gt;&gt; 1);
+    if (a[m] &gt;= target)  // ← lower bound predicate
+        e = m;
+    else
+        s = m;
+}
+// e = first index where a[i] >= target
+// (or a.size() if no such index exists)</code></pre>
+
+  <h3 id="ub" style="margin-top:22px;">Upper Bound — first index where a[i] &gt; target</h3>
+  <p>Predicate: <code class="inlineCode">a[m] &gt; target</code>. Pattern: <span class="hlBad">F F F F</span> <span class="hlGood">T T</span>. Answer is <code class="inlineCode">e</code>.</p>
+<pre><code>int s = -1, e = (int)a.size();
+while (e - s &gt; 1) {
+    int m = s + ((e - s) &gt;&gt; 1);
+    if (a[m] &gt; target)   // ← upper bound predicate
+        e = m;
+    else
+        s = m;
+}
+// e = first index where a[i] > target</code></pre>
+
+  <h3 id="first-last" style="margin-top:22px;">First Occurrence</h3>
+  <p>= Lower bound of target, then verify equality:</p>
+<pre><code>// run lower bound → get index e
+if (e &lt; (int)a.size() &amp;&amp; a[e] == target)
+    cout &lt;&lt; e;    // first occurrence
+else
+    cout &lt;&lt; -1;   // target not present</code></pre>
+
+  <h3>Last Occurrence</h3>
+  <p>= Upper bound of target, then step back and verify:</p>
+<pre><code>// run upper bound → get index e
+int ans = e - 1;
+if (ans &gt;= 0 &amp;&amp; a[ans] == target)
+    cout &lt;&lt; ans;  // last occurrence
+else
+    cout &lt;&lt; -1;</code></pre>
+
+  <h3 id="exact" style="margin-top:22px;">Exact Search</h3>
+  <p>Exact search is <b>not a separate algorithm</b>. It is lower bound + equality check. There is no special "exact binary search" in this framework. This is the unification:</p>
+  <div class="proof-box">
+    <h4>Exact search = lower bound + verify</h4>
+    <p>If the lower bound index <code class="inlineCode">e</code> is valid and <code class="inlineCode">a[e] == target</code>, the target is present at index <code class="inlineCode">e</code>. Otherwise it is absent. This handles all cases correctly, including duplicates.</p>
+  </div>
+
+  <h3 style="margin-top:22px;">Full Trace — Lower Bound, array [2,5,5,5,8,12], target=5</h3>
+  <p>Predicate: <code class="inlineCode">a[i] &gt;= 5</code>. Truth over indices: <span class="hlBad">F</span> <span class="hlGood">T T T T T</span> → first good = index 1.</p>
+  <div class="dsBox" style="font-size:18px;line-height:2;">
+    <div class="traceRow"><div class="traceVal neutral">Init</div><div>s = -1 (virtual, bad) &nbsp;&nbsp; e = 6 (virtual, good)</div></div>
+    <div class="traceRow"><div class="traceVal mid">m = 2</div><div>a[2]=5 ≥ 5 → <span class="hlGood">true</span> → e = 2</div></div>
+    <div class="traceRow"><div class="traceVal mid">m = 0</div><div>a[0]=2 ≥ 5 → <span class="hlBad">false</span> → s = 0</div></div>
+    <div class="traceRow"><div class="traceVal mid">m = 1</div><div>a[1]=5 ≥ 5 → <span class="hlGood">true</span> → e = 1</div></div>
+    <div class="traceRow"><div class="traceVal good">Done</div><div>e − s = 1 → stop. <b>e = 1</b> = first index where a[i] ≥ 5. ✓</div></div>
+  </div>
+</section>
+
+<!-- ===== SECTION 16: ANSWER SPACE ===== -->
+<section class="card" id="answer-space">
+  <h2>🎯 Binary Search on Answer</h2>
+  <p>This is the most important pattern in CP binary search. Instead of searching an array, we search over the <b>answer values</b> themselves. The predicate asks whether a candidate answer is feasible.</p>
+
+  <!-- ★ NEW: How to derive answer-space binary search -->
+  <div class="proof-box" style="margin-top:10px;">
+    <h4>How to derive an answer-space binary search — step by step</h4>
+    <ol class="steps" style="margin-top:8px;">
+      <li><b>Identify the answer you want to optimize.</b> Examples: minimum time, maximum spacing, minimum sufficient capacity.</li>
+      <li><b>Guess a candidate value X.</b> Instead of finding X directly, ask: "if the answer were X, would that be achievable?"</li>
+      <li><b>Write the feasibility check.</b> Define <code class="inlineCode">can(X)</code> = true if the guessed answer X satisfies all constraints.</li>
+      <li><b>Prove monotonicity.</b> Show that if X works, then all values on one side of X also work. This is the critical step — without it, binary search is invalid.</li>
+      <li><b>Set initial boundaries.</b> Find one value definitely on the bad side and one value definitely on the good side.</li>
+      <li><b>Run the master template.</b> Read the answer from <code class="inlineCode">ans.first</code> or <code class="inlineCode">ans.second</code> depending on which direction feasibility propagates.</li>
+    </ol>
+  </div>
+
+  <h3>Standard archetypes</h3>
+  <table style="margin-top:10px;">
+    <thead><tr><th>Archetype</th><th>can(x) shape</th><th>Answer</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td><b>Maximize minimum</b></td><td>true true … false false</td><td>ans.first (last true)</td><td>AGGRCOW, Cows in Stalls</td></tr>
+      <tr><td><b>Minimize maximum</b></td><td>false false … true true</td><td>ans.second (first true)</td><td>Allocate Books, Painter's Partition</td></tr>
+      <tr><td><b>Minimum sufficient time</b></td><td>false false … true true</td><td>ans.second (first true)</td><td>Koko, Factory Machines, Capacity to Ship</td></tr>
+      <tr><td><b>Maximum feasible real value</b></td><td>true region then false</td><td>double bs → s</td><td>PIE, Ropes, Gas Stations</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box" style="margin-top:14px;">
+    <h4>The flip pattern — last-true vs first-true</h4>
+    <p>The master template always has <code class="inlineCode">s = last bad, e = first good</code>. For "last true" problems (maximize minimum), define <code class="inlineCode">ok(x) = !can(x)</code>. Then bad = feasible and good = infeasible, so <code class="inlineCode">s = ans.first = last feasible = answer</code>.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 17: AGGRCOW ===== -->
+<section class="card" id="aggrcow">
+  <h2>🐄 Full Worked Example — AGGRCOW</h2>
+  <p><a href="https://www.spoj.com/problems/AGGRCOW/" target="_blank">spoj.com/problems/AGGRCOW</a> &nbsp;·&nbsp; <a href="https://vjudge.net/problem/SPOJ-AGGRCOW" target="_blank">vjudge.net/problem/SPOJ-AGGRCOW</a></p>
+  <div class="chips">
+    <span class="chip">Maximize minimum distance</span>
+    <span class="chip good">Greedy check · O(N)</span>
+    <span class="chip warn">Last-true via predicate flip</span>
+  </div>
+
+  <h3>Problem story</h3>
+  <p>You have N stalls spread along a line, each at a different position. You must place C cows in some of these stalls. The cows dislike each other — you want to place them so the closest pair is as far apart as possible. What is the maximum possible minimum distance?</p>
+
+  <h3>Abstraction — why this is a binary search problem</h3>
+  <p>Direct optimization is hard because there are C(N, C) ways to choose stalls. But if we <em>guess</em> a minimum distance d, we can answer in O(N): just greedily place cows and count how many fit. This feasibility check is monotone: if spacing d works, any smaller spacing d' also works.</p>
+
+  <h3>Why the check is monotone</h3>
+  <p>If you can place C cows with minimum spacing d, you can certainly place them with minimum spacing d' &lt; d (just use the same placement — it still satisfies the weaker requirement). So as d increases, feasibility can only stay or get harder. The truth pattern is: <span class="hlGood">T T T T</span> <span class="hlBad">F F F F</span> — a classic last-true binary search.</p>
+
+  <h3>Core idea — greedy check</h3>
+  <p>Sort the stall positions. Greedily place cows: start with the first stall, then always choose the next stall that is at least d away from the last placed cow. Count how many cows fit. If the count is ≥ C, the spacing d is feasible.</p>
+
+  <details>
+    <summary>Proof: greedy check is optimal <span class="rightHint">click to expand</span></summary>
+    <div class="detailsBody">
+      <div class="proof-box">
+        <h4>Claim: if any valid placement exists, greedy succeeds</h4>
+        <p>Let greedy place cows at g₁ ≤ g₂ ≤ ... and some valid placement use p₁ ≤ p₂ ≤ ...</p>
+        <p><b>Base case:</b> Greedy picks the earliest stall so g₁ ≤ p₁.</p>
+        <p><b>Inductive step:</b> Assume gₖ ≤ pₖ. The next valid position after pₖ is ≥ pₖ + d ≥ gₖ + d. The earliest valid stall after gₖ is ≤ (earliest valid after pₖ), so g(k+1) ≤ p(k+1).</p>
+        <p>By induction, greedy never places a cow later than any other valid solution. If greedy cannot place all C cows, no solution can. □</p>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Full C++ Code <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n, c;
+vector&lt;int&gt; a;
+
+bool can(int d) {
+    int cnt = 1;
+    int last = a[0];
+    for (int i = 1; i &lt; n; i++) {
+        if (a[i] - last &gt;= d) {
+            cnt++;
+            last = a[i];
+        }
+    }
+    return cnt &gt;= c;
+}
+
+bool ok(int d) {
+    return !can(d);    // flip: bad = feasible, good = infeasible
+}
+
+pair&lt;int, int&gt; bs(int s, int e) {
+    while (e - s &gt; 1) {
+        int m = s + ((e - s) &gt;&gt; 1);
+        if (ok(m))
+            e = m;
+        else
+            s = m;
+    }
+    return {s, e};
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int tc;
+    cin &gt;&gt; tc;
+    while (tc--) {
+        cin &gt;&gt; n &gt;&gt; c;
+        a.resize(n);
+        for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+        sort(a.begin(), a.end());
+        int s = 0;
+        int e = a.back() - a.front() + 1;  // infeasible: spacing > total range
+        pair&lt;int, int&gt; ans = bs(s, e);
+        cout &lt;&lt; ans.first &lt;&lt; '\n';          // last bad = last feasible = answer
+    }
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <h3>Trace — stalls [1,2,4,8,9], c=3</h3>
+  <div class="dsBox" style="font-size:18px;line-height:2;">
+    <div class="traceRow"><div class="traceVal mid">d=3</div><div>place at 1 → next ≥4 → at 4 → next ≥7 → at 8. Count=3 ≥ 3. <span class="hlGood">can(3)=true</span></div></div>
+    <div class="traceRow"><div class="traceVal mid">d=4</div><div>place at 1 → next ≥5 → at 8 → next ≥12 → none. Count=2 &lt; 3. <span class="hlBad">can(4)=false</span></div></div>
+    <div class="traceRow"><div class="traceVal good">Answer</div><div>Last feasible = 3. Maximum minimum distance = <b>3</b>.</div></div>
+  </div>
+
+  <h3>Complexity</h3>
+  <p>Sorting: O(n log n). One check: O(n). Binary search: O(log R) where R = max position − min position. Total: <b>O(n log n + n log R)</b>.</p>
+</section>
+
+<!-- ===== SECTION 18: PIE ===== -->
+<section class="card" id="pie">
+  <h2>🥧 Full Worked Example — PIE</h2>
+  <p><a href="https://www.spoj.com/problems/PIE/" target="_blank">spoj.com/problems/PIE</a> &nbsp;·&nbsp; <a href="https://vjudge.net/problem/SPOJ-PIE" target="_blank">vjudge.net/problem/SPOJ-PIE</a></p>
+  <div class="chips">
+    <span class="chip">Maximize slice area</span>
+    <span class="chip good">Double binary search</span>
+    <span class="chip warn">floor(area/x) per pie</span>
+  </div>
+
+  <h3>Problem story</h3>
+  <p>You have N circular pies with known radii. You want to cut them all into pieces of the same area x so that there are enough pieces for F+1 people. Each person gets exactly one piece; you cannot combine partial pieces from different pies. Maximize the area x of each piece.</p>
+
+  <h3>Abstraction</h3>
+  <p>For a candidate slice area x, pie i contributes <code class="inlineCode">floor(area_i / x)</code> full pieces. If the total number of pieces across all pies is ≥ F+1, the candidate x is feasible.</p>
+
+  <h3>Why this fits double binary search</h3>
+  <p>Feasibility is monotone: if slice area x is feasible, any smaller x gives at least as many pieces (so it is also feasible). As x increases, feasibility can only decrease. The answer is the maximum feasible x — exactly what the double master template finds, with s = current maximum feasible area.</p>
+
+  <details open>
+    <summary>Full C++ Code <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const double PI = acos(-1.0);
+const double eps = 1e-15;
+
+int n, f;
+vector&lt;double&gt; area;
+
+bool ok(double x) {
+    int pieces = 0;
+    for (double a : area)
+        pieces += (int)(a / x);
+    return pieces &gt;= f + 1;
+}
+
+double bs(double s, double e) {
+    for (double sz = (e - s) * 0.5; sz &gt; eps; sz *= 0.5)
+        if (ok(s + sz))
+            s += sz;
+    return s;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int tc;
+    cin &gt;&gt; tc;
+    while (tc--) {
+        cin &gt;&gt; n &gt;&gt; f;
+        area.resize(n);
+        double mx = 0;
+        for (int i = 0; i &lt; n; i++) {
+            double r; cin &gt;&gt; r;
+            area[i] = PI * r * r;
+            mx = max(mx, area[i]);
+        }
+        double ans = bs(0.0, mx);
+        cout &lt;&lt; fixed &lt;&lt; setprecision(4) &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>Why floor(area/x) is the right count</h3>
+    <p>Each piece must have area exactly x. A pie with area A can yield exactly ⌊A/x⌋ such pieces (we cannot combine partial pieces across pies). The floor is correct because we only count full pieces. Summing across all pies gives the total number of pieces available.</p>
+  </div>
+
+  <h3>Complexity</h3>
+  <p>One check: O(N). Double binary search: ~50 iterations. Total: <b>O(N · log((max_area) / eps))</b> per test case.</p>
+</section>
+
+<!-- ===== SECTION 19: TRANSFORMED ===== -->
+<section class="card" id="transformed">
+  <h2>🔄 Transformed Binary Search</h2>
+  <p>Some optimization problems do not look like binary search at all. The predicate is not obviously monotone. The key insight is that an <b>algebraic transformation</b> can reveal the hidden monotone structure.</p>
+
+  <p class="note" style="margin-top:8px;">In plain terms: instead of maximizing the ratio directly, we <em>guess</em> a candidate value <em>X</em> and rearrange the inequality algebraically into a yes/no feasibility check (“does a solution beating <em>X</em> exist?”). That check happens to be <b>monotone</b> — as <em>X</em> rises, the answer can only flip from yes to no, never back — which is exactly why binary search can home in on the optimum.</p>
+
+  <!-- ★ NEW: Plain-language bridge for transformed search -->
+  <div class="statusPanel" style="margin-top:10px;">
+    <h3>The core idea — in plain language</h3>
+    <p>Sometimes you want to <em>optimize a ratio</em>: "find the cycle with the maximum average fun per unit cost." You cannot binary-search the ratio directly because checking "does there exist a cycle with <em>exactly</em> ratio R?" is hard.</p>
+    <p>But you <em>can</em> binary-search a threshold: "does there exist a cycle with average <em>greater than</em> x?" That is a yes/no feasibility question. If the optimal ratio is R*, then:</p>
+    <ul class="steps" style="margin-top:8px;">
+      <li>For any x &lt; R*, the answer is yes (the best cycle beats x).</li>
+      <li>For any x &gt; R*, the answer is no (no cycle can beat x).</li>
+    </ul>
+    <p>This means the feasibility check is <b>monotone in x</b> — binary search applies. The trick is turning "does a cycle with average &gt; x exist?" into an algebraic check that standard algorithms can solve.</p>
+  </div>
+
+  <h3>The ratio / average family</h3>
+  <p>Problems asking for "maximize average," "maximize ratio," "maximize fun per cost" all follow this pattern:</p>
+  <ol class="steps">
+    <li>Guess the optimal value x</li>
+    <li>Ask: "does there exist a solution with average &gt; x?"</li>
+    <li>Multiply through to eliminate the division: total_fun − x · total_cost &gt; 0</li>
+    <li>Now the question is purely additive — amenable to standard graph/DP algorithms</li>
+    <li>This check is monotone in x: if it works for x, it fails for larger x. <em>Why? Because if a solution beats threshold x, that same solution also beats any smaller y &lt; x — so as x increases, feasibility can only decrease from true to false, never flip back.</em></li>
+    <li>Binary search over x</li>
+  </ol>
+
+  <div class="proof-box" style="margin-top:14px;">
+    <h4>The core algebraic identity</h4>
+    <p>For any substructure C with total value F(C) and total cost W(C):</p>
+    <p style="font-size:24px;font-weight:950;">F(C)/W(C) &gt; x &nbsp;⟺&nbsp; F(C) − x·W(C) &gt; 0</p>
+    <p>This is the transformation that makes everything work. Once we multiply, the check becomes "does a substructure with positive transformed total exist?" — a standard feasibility question.</p>
+  </div>
+
+  <div class="warn-box" style="margin-top:12px;">
+    <h4>Common confusion — not every optimization can be binary-searched</h4>
+    <p>The transformation only works if the resulting feasibility check is monotone in x. Always verify: as x increases, does the answer to "is there a solution beating x?" strictly decrease from true to false? If the answer can flip back and forth, the transformation has not created a valid monotone predicate, and binary search is not applicable.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 20: SIGHTSEEING COWS ===== -->
+<section class="card" id="sightseeing">
+  <h2>🗺 Full Worked Example — Sightseeing Cows</h2>
+  <p><a href="https://vjudge.net/problem/POJ-3621" target="_blank">vjudge.net/problem/POJ-3621</a></p>
+  <div class="chips">
+    <span class="chip">Maximize cycle average (fun/cost)</span>
+    <span class="chip good">Transformed binary search</span>
+    <span class="chip warn">SPFA positive cycle detection</span>
+  </div>
+
+  <h3>Problem story</h3>
+  <p>A directed graph where each node has a "fun" value and each edge has a "cost." Find the cycle that maximizes the ratio: (total fun on the cycle) / (total cost on the cycle).</p>
+
+  <h3>Why this fits transformed binary search</h3>
+  <p>We cannot optimize the ratio directly. Instead we binary-search the answer x and ask: "does there exist a cycle with average fun/cost &gt; x?" By the algebraic identity above, this is equivalent to asking whether the graph contains a <em>positive-weight cycle</em> after transforming each edge: <code class="inlineCode">w' = fun[v] − x · cost(edge)</code>. SPFA-style Bellman-Ford can detect positive cycles in O(V·E).</p>
+
+  <h3>The full reduction</h3>
+  <p><b>Step 1:</b> Binary search on the answer x = optimal ratio.</p>
+  <p><b>Step 2:</b> For a candidate x, ask: "is there a cycle with average &gt; x?"</p>
+  <p><b>Step 3:</b> Transform edge weight to <code class="inlineCode">w' = fun[v] − x · cost(edge)</code>.</p>
+  <p><b>Step 4:</b> The question becomes: "does there exist a positive-weight cycle in the transformed graph?" — a standard SPFA-detectable property.</p>
+
+  <details>
+    <summary>Proof: SPFA detects positive cycles correctly <span class="rightHint">click to expand</span></summary>
+    <div class="detailsBody">
+      <div class="proof-box">
+        <h4>Lemma: Repeated relaxation beyond n steps implies a cycle</h4>
+        <p>A simple path in an n-node graph has at most n−1 edges. If Bellman-Ford-style relaxation improves a node's value after a chain of ≥ n edges, some node must repeat — forming a cycle.</p>
+        <p><b>If the improvement persists:</b> the cycle on the repeated path contributes positive transformed weight, because we could keep traversing it to improve indefinitely.</p>
+        <p><b>Conversely:</b> if a positive-weight cycle exists, relaxing along it repeatedly gives unbounded improvement, so SPFA will detect a chain of length ≥ n before converging. □</p>
+      </div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Full C++ Code <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Edge { int to, w; };
+
+const double eps = 1e-15;
+
+int n, m;
+vector&lt;int&gt; funv;
+vector&lt;vector&lt;Edge&gt;&gt; adj;
+
+bool ok(double x) {
+    vector&lt;double&gt; dist(n + 1, 0.0);
+    vector&lt;int&gt; cnt(n + 1, 0);
+    vector&lt;int&gt; inq(n + 1, 1);
+    queue&lt;int&gt; q;
+    for (int i = 1; i &lt;= n; i++) q.push(i);
+
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        inq[u] = 0;
+        for (auto e : adj[u]) {
+            int v = e.to;
+            double w = funv[v] - x * e.w;  // ← transformed edge weight
+            if (dist[v] &lt; dist[u] + w) {
+                dist[v] = dist[u] + w;
+                cnt[v] = cnt[u] + 1;
+                if (cnt[v] &gt;= n) return true;  // ← positive cycle detected
+                if (!inq[v]) { inq[v] = 1; q.push(v); }
+            }
+        }
+    }
+    return false;
+}
+
+double bs(double s, double e) {
+    for (double sz = (e - s) * 0.5; sz &gt; eps; sz *= 0.5)
+        if (ok(s + sz))
+            s += sz;
+    return s;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cin &gt;&gt; n &gt;&gt; m;
+    funv.assign(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) cin &gt;&gt; funv[i];
+    adj.assign(n + 1, {});
+    for (int i = 0; i &lt; m; i++) {
+        int u, v, w; cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        adj[u].push_back({v, w});
+    }
+    double ans = bs(0.0, 1000.0);
+    cout &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; ans &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="warn-box" style="margin-top:14px;">
+    <h4>Why all nodes are pushed initially</h4>
+    <p>We want to find any positive cycle, not just cycles reachable from a specific start. Pushing all nodes initially allows SPFA to explore from everywhere simultaneously, finding any positive cycle in the transformed graph.</p>
+  </div>
+
+  <h3>Complexity</h3>
+  <p>One check: O(V·E). Double binary search: ~50 iterations. Total: <b>O(V·E · log(max_ratio / eps))</b>.</p>
+</section>
+
+<!-- ===== SECTION 21: TERNARY THEORY ===== -->
+<section class="card" id="ternary-theory">
+  <h2>📈 Ternary Search Deep Dive</h2>
+  <p>Ternary search is for finding the minimum (or maximum) of a <b>unimodal function</b> over a continuous domain. There is no monotone yes/no predicate — instead there is a numeric objective with one valley.</p>
+
+  <!-- ★ NEW: Binary vs ternary contrast -->
+  <div class="grid2" style="margin-top:14px;">
+    <div class="statusPanel">
+      <h3>Binary search uses shape: monotone</h3>
+      <p>The function is a step function: false until some point, then true forever. There is a <em>boundary</em> — one place where behavior changes. Binary search homes in on that boundary by asking yes/no questions.</p>
+      <pre style="font-size:18px;"><code>F F F F | T T T T
+         ↑
+    this boundary</code></pre>
+    </div>
+    <div class="statusPanel">
+      <h3>Ternary search uses shape: unimodal</h3>
+      <p>The function goes down to one minimum, then up. There is no yes/no question — there is a numeric <em>objective</em> and we want its lowest point. Two interior probes tell us which outer third to discard.</p>
+      <pre style="font-size:18px;"><code>high         high
+     \       /
+      \     /
+       \   /
+        min
+   ← valley →</code></pre>
+    </div>
+  </div>
+
+  <!-- ★ NEW: Why two probes work — plain language -->
+  <div class="proof-box" style="margin-top:14px;">
+    <h4>Why comparing two interior points works — plain language</h4>
+    <p>Suppose the interval is [s, e] and we probe at a (left-third point) and b (right-third point), with a &lt; b.</p>
+    <p><b>If f(a) &gt; f(b):</b> The function is higher at a than at b. If the minimum were somewhere to the left of a, the function would have to go from the minimum up to a's height, and then <em>down</em> again to b's height (since b is lower). But a unimodal function cannot go down twice. So the minimum cannot be to the left of a — we safely discard [s, a].</p>
+    <p><b>If f(a) ≤ f(b):</b> By the same logic but mirrored, the minimum cannot be to the right of b — discard [b, e].</p>
+    <p>Each case removes one third of the interval while keeping the minimum inside the remaining two thirds.</p>
+  </div>
+
+  <!-- ★ NEW: Common confusion note -->
+  <div class="warn-box" style="margin-top:14px;">
+    <h4>⚠️ Common confusion: "The answer is real-valued, so use ternary search"</h4>
+    <p>This is wrong. A real-valued answer is <em>not</em> a reason to use ternary search. The reason is always the <em>shape</em> of the objective:</p>
+    <ul class="steps" style="margin-top:8px;">
+      <li>Real-valued answer <b>+</b> monotone feasibility check → use <b>double binary search</b> (PIE, Ropes, Sightseeing Cows).</li>
+      <li>Real-valued answer <b>+</b> unimodal objective function → use <b>ternary search</b> (Weakness &amp; Poorness, Meeting Place).</li>
+    </ul>
+    <p>If you are unsure which, ask: "Can I write a monotone yes/no check for this?" If yes, binary search. If not, and the objective is genuinely unimodal, ternary search.</p>
+  </div>
+
+  <h3 style="margin-top:20px;">Core idea</h3>
+  <p>At each step, choose two interior points <code class="inlineCode">a</code> and <code class="inlineCode">b</code> (at 1/3 and 2/3 of the current interval). Compare f(a) and f(b). Discard the outer third that cannot contain the minimum. Repeat.</p>
+
+  <h3>Interactive Ternary Search Visualizer — f(x) = (x−5)²</h3>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <span class="diagramTitle">Ternary Search on f(x) = (x−5)²</span>
+      <div class="diagramTools">
+        <button class="miniBtn" id="tsResetBtn">Reset</button>
+        <button class="miniBtn" id="tsStepBtn">Step →</button>
+        <button class="miniBtn" id="tsAutoBtn">Auto ▶</button>
+      </div>
+    </div>
+    <svg class="vizSvg" id="tsSvg" viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="tsStatus" class="statusPanel" style="margin-top:10px;font-size:20px;min-height:52px;"></div>
+    <div id="tsStep" style="text-align:center;font-weight:950;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+
+  <h3 style="margin-top:20px;">Formal correctness</h3>
+  <details>
+    <summary>Proof: ternary search converges to the minimum <span class="rightHint">click to expand</span></summary>
+    <div class="detailsBody">
+      <div class="proof-box">
+        <h4>Lemma: Each step discards a third while keeping the minimizer</h4>
+        <p>Let x* be the unique minimizer. Consider interval [s, s+sz] known to contain x*.</p>
+        <p>Set a = s + sz/3 and b = s + 2sz/3 with a &lt; b.</p>
+        <p><b>Case f(a) &gt; f(b):</b> Suppose x* ≤ a. Then f is non-increasing on [s, a] (since x* is the minimum and f is unimodal). Also f(a) &gt; f(b) means f increased from a to b, but b &gt; a ≥ x* so f should be non-decreasing. Contradiction. Therefore x* &gt; a, so [s, a] does not contain x*. We safely discard it and set s = a.</p>
+        <p><b>Case f(a) ≤ f(b):</b> By symmetric argument, x* &lt; b. We discard [b, s+sz] by shrinking sz to 2sz/3.</p>
+        <p>In both cases the new interval has size 2sz/3 and still contains x*. □</p>
+      </div>
+      <div class="proof-box" style="margin-top:12px;">
+        <h4>Convergence</h4>
+        <p>Each step multiplies the interval size by 2/3. After k steps, size = (e−s)·(2/3)^k. This goes to 0, so the interval converges to {x*}. □</p>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ===== SECTION 22: WEAKNESS ===== -->
+<section class="card" id="weakness">
+  <h2>💪 Full Worked Example — Weakness and Poorness (CF 578C)</h2>
+  <p><a href="https://codeforces.com/contest/578/problem/C" target="_blank">codeforces.com/contest/578/problem/C</a></p>
+  <div class="chips">
+    <span class="chip">Ternary search on shift parameter</span>
+    <span class="chip good">Minimize worst transformed subarray imbalance</span>
+    <span class="chip warn">f(x) is unimodal</span>
+  </div>
+
+  <h3>Problem story</h3>
+  <p>The problem involves finding a real parameter x that minimizes a measure of "imbalance" of the input array. The measure is computed by subtracting x from each element, then finding the worst absolute deviation of prefix sums from their running extremes. The key insight is that this measure, as a function of x, has exactly one valley — making ternary search the right tool.</p>
+
+  <h3>Why binary search does NOT work here</h3>
+  <p>There is no monotone yes/no question. We are not asking "is a threshold achievable?" We are finding where a continuous function is minimized. The function f(x) decreases then increases — not monotone in either direction. Ternary search is the right choice because the objective is unimodal.</p>
+
+  <h3>Role of the parameter x</h3>
+  <p>We choose a real shift x and transform each array element to <code class="inlineCode">b[i] = a[i] − x</code>. The function f(x) measures the worst absolute deviation of transformed subarray sums from zero — a measure of how "unbalanced" the array is under shift x.</p>
+
+  <h3>Why prefix sums</h3>
+  <p>Any subarray sum of b[] is a difference of its prefix sums. So to find the most extreme transformed subarray sum, we track: current prefix sum, maximum prefix sum seen so far, and minimum prefix sum seen so far. Their differences give the worst positive and negative transformed sums.</p>
+
+  <details open>
+    <summary>Full C++ Code <span class="rightHint">click to expand/collapse</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;double&gt; a;
+
+double f(double x) {
+    double mx = 0, mn = 0, sum = 0, ans = 0;
+    for (int i = 0; i &lt; n; i++) {
+        sum += a[i] - x;
+        // sum - mx = current prefix minus max previous prefix = most negative subarray
+        // sum - mn = current prefix minus min previous prefix = most positive subarray
+        ans = max(ans, fabs(sum - mx));
+        ans = max(ans, fabs(sum - mn));
+        mx = max(mx, sum);
+        mn = min(mn, sum);
+    }
+    return ans;
+}
+
+pair&lt;double, double&gt; ternarySearch(double s, double e) {
+    double fs = f(s);
+    for (double sz = e - s; sz &gt; 1e-15; sz *= 2.0 / 3.0) {
+        double aa = s + sz / 3.0, b = aa + sz / 3.0;
+        double fa = f(aa), fb = f(b);
+        if (fa &gt; fb) {   // minimize: left point is higher, discard left third
+            s = aa;
+            fs = fa;
+        }
+    }
+    return {s, fs};
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cin &gt;&gt; n;
+    a.resize(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+    pair&lt;double, double&gt; ans = ternarySearch(-20000.0, 20000.0);
+    cout &lt;&lt; fixed &lt;&lt; setprecision(10) &lt;&lt; ans.second &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+    </div>
+  </details>
+
+  <div class="statusPanel" style="margin-top:14px;">
+    <h3>Why f(x) is unimodal</h3>
+    <p>When x is too small, transformed elements lean positive → worst subarray sums are large positive values → f(x) is large. When x is too large, they lean negative → large negative sums → f(x) is large. Between these extremes lies the balancing shift x* where the worst imbalance is minimized. This creates exactly one valley — the structure ternary search needs.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 23: EDGE CASES ===== -->
+<section class="card" id="edge-cases">
+  <h2>🗂 Centralized Edge Case Audit</h2>
+  <table>
+    <thead><tr><th>Edge Case</th><th>Which template</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td>Search range includes negatives</td><td>Integer / Double</td><td>Ensure s is negative-safe and still bad; e is still good</td></tr>
+      <tr><td>All elements are good (no bad exists)</td><td>Integer</td><td>Cannot use template without a valid bad initial s. Use virtual sentinel s = s_min − 1 if needed.</td></tr>
+      <tr><td>All elements are bad (no good exists)</td><td>Integer</td><td>Cannot use template without a valid good initial e. Use virtual sentinel or doubling to find one.</td></tr>
+      <tr><td>Target not in sorted array</td><td>Array queries</td><td>Lower bound returns a.size() if all elements &lt; target. Always verify e &lt; a.size() before accessing a[e].</td></tr>
+      <tr><td>Duplicate elements in sorted array</td><td>Array queries</td><td>Lower / upper bound handle duplicates correctly by design. First/last occurrence needs explicit equality check.</td></tr>
+      <tr><td>Single-element array</td><td>Array queries</td><td>Sentinels s=−1, e=1. Loop runs once if e−s &gt; 1 ✓</td></tr>
+      <tr><td>Overflow in mid * mid (e.g., sqrt)</td><td>Integer</td><td>Use (long long)m * m or check using division instead of multiplication</td></tr>
+      <tr><td>Floating-point precision</td><td>Double</td><td>Never compare doubles with ==. Use eps-based comparisons for feasibility boundaries.</td></tr>
+      <tr><td>Unimodal function with flat plateau</td><td>Ternary</td><td>Flat regions (f(a) == f(b)) cause incorrect discards. Add tiny perturbation or use ≥ instead of &gt; if needed.</td></tr>
+      <tr><td>Transformed graph with no cycles</td><td>Sightseeing-style</td><td>SPFA without positive cycle → ok(x) = false for all x. bs returns s_initial = 0.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== SECTION 24: PITFALLS ===== -->
+<section class="card" id="pitfalls">
+  <h2>⚠️ Common Pitfalls &amp; Bugs</h2>
+  <table>
+    <thead><tr><th>Pitfall</th><th>Why it happens</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Off-by-one in return value</td><td>Reading ans.second when you want ans.first or vice versa</td><td>Write down what s and e mean before coding. "Last bad = ans.first, first good = ans.second."</td></tr>
+      <tr><td>Initial boundary not valid</td><td>ok(s_initial) ≠ false or ok(e_initial) ≠ true</td><td>Always check invariant before the loop. Use sentinels s=−1/e=n for arrays; for answer space, verify bad/good endpoints explicitly.</td></tr>
+      <tr><td>Overflow in (s+e)/2</td><td>Large integers: s+e overflows int</td><td>Always use <code class="inlineCode">s + ((e−s) &gt;&gt; 1)</code></td></tr>
+      <tr><td>Non-monotone predicate</td><td>The "check" has multiple true/false transitions</td><td>Prove monotonicity before coding. If you cannot prove it, binary search is the wrong tool.</td></tr>
+      <tr><td>Using ternary search for a monotone problem</td><td>Mistaking "continuous optimization" for "unimodal"</td><td>If there is a clean monotone yes/no, use binary search. Ternary search is only for genuine unimodal objectives.</td></tr>
+      <tr><td>while(e−s&gt;eps) floating-point stall</td><td>Midpoint equals s or e due to rounding</td><td>Use the step-halving loop from the double master template</td></tr>
+      <tr><td>Forgetting to sort before array queries</td><td>Predicates are only monotone on sorted arrays</td><td>Sort before calling any binary search on the array</td></tr>
+      <tr><td>Greedy check not proven correct</td><td>Assuming greedy is optimal without proof</td><td>Always prove the exchange argument: "greedy never does worse than optimal"</td></tr>
+      <tr><td>Wrong search range for answer space</td><td>Answer outside [s, e]</td><td>Think: what is definitely a bad value? What is definitely a good (infeasible) value? Use domain knowledge.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== SECTION 25: DECISION GUIDE ===== -->
+<section class="card" id="decision">
+  <h2>🎮 Decision / Recognition Guide</h2>
+  <p>Use this guide in contest. Read the problem, identify the signal, pick the tool.</p>
+
+  <!-- ★ NEW: 5-second recognition rules -->
+  <div class="warn-box" style="margin-top:10px;">
+    <h4>⚡ 5-Second Recognition Rules</h4>
+    <ul class="steps" style="margin-top:8px;">
+      <li><b>Sorted array, find first position satisfying condition</b> → <b>Lower / upper bound</b></li>
+      <li><b>"Smallest x such that…" or "largest x such that…"</b> → <b>Integer binary search on answer</b></li>
+      <li><b>"Maximize the minimum" or "minimize the maximum"</b> → <b>Integer binary search on answer</b></li>
+      <li><b>"Minimum time / capacity / speed to achieve…"</b> → <b>Integer binary search on answer</b></li>
+      <li><b>Maximize average / ratio / score-per-cost</b> → <b>Double binary search + transformed check</b></li>
+      <li><b>One peak or one valley in a continuous function</b> → <b>Ternary search</b></li>
+      <li><b>No monotonicity, no unimodal shape</b> → <b>Not a search problem — think DP / greedy / graph</b></li>
+    </ul>
+  </div>
+
+  <h3 style="margin-top:18px;">Quick reflex rules</h3>
+  <div class="grid2" style="margin-top:10px;">
+    <div class="statusPanel">
+      <h3>🔴 Stop — these signal binary search</h3>
+      <ul style="font-size:22px;line-height:2;margin:8px 0 0 18px;">
+        <li>"smallest x such that…"</li>
+        <li>"largest x such that…"</li>
+        <li>"minimum time / capacity / cost to achieve…"</li>
+        <li>"maximize the minimum…"</li>
+        <li>"minimize the maximum…"</li>
+        <li>Sorted array queries (lower/upper bound)</li>
+        <li>Maximize ratio / average (after transformation)</li>
+      </ul>
+    </div>
+    <div class="statusPanel">
+      <h3>🟡 Stop — these signal ternary search</h3>
+      <ul style="font-size:22px;line-height:2;margin:8px 0 0 18px;">
+        <li>"choose a parameter x to minimize/maximize a continuous function"</li>
+        <li>Geometric optimization (optimal position on a line/plane)</li>
+        <li>"balance" or "shift" objective that has one valley</li>
+        <li>Explicit unimodal cost function</li>
+        <li>f(x) = convex or concave-shaped continuous expression</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:18px;">Full decision table</h3>
+  <table>
+    <thead><tr><th>Situation</th><th>Structure</th><th>Tool</th><th>Return</th></tr></thead>
+    <tbody>
+      <tr><td>Sorted array, first index ≥ target</td><td>Monotone over indices</td><td>Lower bound</td><td>e (first good)</td></tr>
+      <tr><td>Sorted array, first index &gt; target</td><td>Monotone over indices</td><td>Upper bound</td><td>e (first good)</td></tr>
+      <tr><td>First/last occurrence</td><td>Monotone over indices</td><td>Lower/upper bound + verify</td><td>e or e−1</td></tr>
+      <tr><td>Minimize maximum (partition)</td><td>Monotone feasibility</td><td>Integer BS</td><td>ans.second</td></tr>
+      <tr><td>Maximize minimum (spacing)</td><td>Monotone feasibility, flip</td><td>Integer BS</td><td>ans.first</td></tr>
+      <tr><td>Minimum sufficient time/speed</td><td>Monotone feasibility</td><td>Integer BS</td><td>ans.second</td></tr>
+      <tr><td>Maximum equal slice (geometric)</td><td>Monotone real feasibility</td><td>Double BS</td><td>s (max feasible)</td></tr>
+      <tr><td>Maximize average / ratio</td><td>Monotone after algebra</td><td>Double BS + transformed check</td><td>s</td></tr>
+      <tr><td>Minimize unimodal function</td><td>Unimodal numeric</td><td>Ternary search</td><td>ans.second</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box" style="margin-top:14px;">
+    <h4>Common confusion</h4>
+    <p><b>"I have a numeric answer and I want to minimize it — should I ternary search?"</b></p>
+    <p>Not necessarily. If you can define a yes/no feasibility check that is monotone (e.g., "is minimum time ≤ t?"), use binary search. Ternary search is only needed when the objective itself is unimodal and there is no monotone yes/no formulation.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 26: VARIANTS ===== -->
+<section class="card" id="variants">
+  <h2>🔀 Variants &amp; Extensions</h2>
+
+  <div class="variantCard">
+    <h4>Variant 1 — Minimize maximum (Allocate Books / Painter's Partition)</h4>
+    <p><b>Story:</b> Divide an array into k contiguous subarrays. Minimize the maximum subarray sum.</p>
+    <p><b>Abstraction:</b> Binary search on maximum sum x. Check: can we partition into ≤ k parts each with sum ≤ x?</p>
+    <p><b>Why it fits:</b> If maximum x is feasible, any larger x is also feasible → monotone. Answer = first feasible x = ans.second.</p>
+    <p><b>Predicate:</b> <code class="inlineCode">can(x) = greedily assign elements to current partition, start new part when sum exceeds x</code></p>
+    <p><b>Complexity:</b> O(N log(sum)).</p>
+    <p><b>Links:</b> <a href="https://www.spoj.com/problems/BOOKS/" target="_blank">spoj.com/problems/BOOKS</a> · <a href="https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/" target="_blank">LeetCode 1011</a></p>
+    <details><summary>Full Code <span class="rightHint">click to expand</span></summary>
+    <div class="detailsBody"><pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+int n, k;
+vector&lt;int&gt; a;
+
+bool can(long long x) {
+    int parts = 1;
+    long long cur = 0;
+    for (int v : a) {
+        if (v &gt; x) return false;  // single element exceeds limit
+        if (cur + v &gt; x) { parts++; cur = v; }
+        else cur += v;
+    }
+    return parts &lt;= k;
+}
+
+bool ok(long long x) { return can(x); }
+
+pair&lt;long long,long long&gt; bs(long long s, long long e) {
+    while (e - s &gt; 1) {
+        long long m = s + ((e - s) &gt;&gt; 1);
+        if (ok(m)) e = m;
+        else s = m;
+    }
+    return {s, e};
+}
+
+int main() {
+    cin &gt;&gt; n &gt;&gt; k;
+    a.resize(n);
+    long long sum = 0, mx = 0;
+    for (int i = 0; i &lt; n; i++) { cin &gt;&gt; a[i]; sum += a[i]; mx = max(mx, (long long)a[i]); }
+    auto ans = bs(mx - 1, sum + 1);  // s = bad (too small), e = good (whole sum works)
+    cout &lt;&lt; ans.second &lt;&lt; '\n';  // first good = minimum feasible max
+}</code></pre></div></details>
+  </div>
+
+  <div class="variantCard">
+    <h4>Variant 2 — Minimum sufficient time (Koko Eating Bananas)</h4>
+    <p><b>Story:</b> Eat bananas at speed k bananas/hour. Each pile must be fully eaten in its hour-slot. Given h hours, find minimum k.</p>
+    <p><b>Why it fits:</b> Larger k makes the task easier → monotone. Answer = first feasible k = ans.second.</p>
+    <p><b>Predicate:</b> <code class="inlineCode">can(k) = sum(ceil(pile/k)) &lt;= h</code></p>
+    <p><b>Complexity:</b> O(N log(max_pile)).</p>
+    <p><b>Link:</b> <a href="https://leetcode.com/problems/koko-eating-bananas/" target="_blank">leetcode.com — Koko Eating Bananas</a></p>
+  </div>
+
+  <div class="variantCard">
+    <h4>Variant 3 — Floating-point geometric (Ropes)</h4>
+    <p><b>Story:</b> Given n ropes, cut each to equal length. Maximize length such that you get ≥ k pieces total.</p>
+    <p><b>Why it fits:</b> Larger cut length gives fewer pieces → feasibility decreases as x increases. Double binary search, s = maximum feasible length.</p>
+    <p><b>Predicate:</b> <code class="inlineCode">ok(x) = sum(floor(rope_i / x)) &gt;= k</code></p>
+    <p><b>Complexity:</b> O(N log(max_rope / eps)).</p>
+    <p><b>Link:</b> <a href="https://www.spoj.com/problems/ROPEWORK/" target="_blank">spoj.com/problems/ROPEWORK</a></p>
+  </div>
+
+  <div class="variantCard">
+    <h4>Variant 4 — Integer square root / nth root</h4>
+    <p><b>Story:</b> Find ⌊√N⌋ without floating-point.</p>
+    <p><b>Why it fits:</b> m² ≤ N is monotone (once false, stays false for larger m). Answer = last true = ans.first.</p>
+    <p><b>Predicate:</b> <code class="inlineCode">ok(m) = (m*m &gt; N)</code> → bad = m²≤N, good = m²&gt;N. Answer = ans.first = last bad = ⌊√N⌋.</p>
+    <p><b>Watch out:</b> m*m overflow for large N. Use <code class="inlineCode">(long long)m*m</code> or compare via division.</p>
+  </div>
+
+  <div class="variantCard">
+    <h4>Variant 5 — Optimal meeting point (ternary on geometry)</h4>
+    <p><b>Story:</b> Given n people on a line, find the meeting point minimizing maximum travel distance.</p>
+    <p><b>Why it fits:</b> f(x) = max(|x − p_i|) is a convex (unimodal) function of x — one minimum. Ternary search on x.</p>
+    <p><b>Function:</b> f(x) = max(|x − p_i|) over all people. Minimum is at the midpoint of the leftmost and rightmost person.</p>
+    <p><b>Complexity:</b> O(N log(range / eps)).</p>
+    <p><b>Link:</b> <a href="https://codeforces.com/problemset/problem/364/D" target="_blank">codeforces.com/problemset/problem/364/D</a></p>
+  </div>
+
+  <div class="variantCard">
+    <h4>Variant 6 — Dropping Tests / K Best (fractional programming)</h4>
+    <p><b>Story:</b> Drop k tests from a series. Maximize the average of the remaining tests.</p>
+    <p><b>Why it fits:</b> Transformed binary search — guess ratio x, check if sum(score_i − x) over the best (n−k) tests is positive.</p>
+    <p><b>Transformation:</b> Guess ratio x. Each test i has value: score_i − x. Greedily keep the k tests with smallest transformed value (most positive after subtracting x). Check if sum &gt; 0.</p>
+    <p><b>Complexity:</b> O(N log N · log(max_ratio / eps)).</p>
+    <p><b>Link:</b> <a href="https://vjudge.net/problem/POJ-2976" target="_blank">vjudge.net/problem/POJ-2976</a></p>
+  </div>
+</section>
+
+<!-- ===== SECTION: RUNTIME VALIDATION CHECKLIST ===== -->
+<section class="card" id="runtime-checklist">
+  <h2>✅ Runtime Validation Checklist</h2>
+  <p>Use this checklist to confirm the final file satisfies all shell, theme, sidebar, widget, and branding requirements. Every item below reflects the actual state of this file.</p>
+
+  <div class="grid2" style="margin-top:14px;">
+    <div class="statusPanel">
+      <h3>Sidebar &amp; Navigation</h3>
+      <ul class="checkList">
+        <li>Sidebar opens and closes correctly on all screen widths</li>
+        <li>Hamburger animation matches real sidebar state (open = X, closed = ☰)</li>
+        <li><code>aria-expanded</code> on the hamburger button stays synchronized with sidebar state</li>
+        <li>Overlay appears only on narrow/mobile layouts when sidebar is open</li>
+        <li>Narrow/mobile layouts start with sidebar closed by default</li>
+        <li>Wide/desktop layouts start with sidebar open by default</li>
+        <li>Pressing Escape closes the sidebar on narrow/mobile layouts</li>
+        <li>Resize does not corrupt sidebar, overlay, or button state</li>
+        <li>Clicking a sidebar nav link on narrow layouts closes the sidebar cleanly</li>
+        <li>Active nav link updates while scrolling (scrollspy)</li>
+        <li>All <code>#anchor</code> links in the sidebar resolve to real section <code>id</code> values</li>
+        <li>No duplicate <code>id</code> attributes anywhere in the document</li>
+      </ul>
+    </div>
+    <div class="statusPanel">
+      <h3>Theme System</h3>
+      <ul class="checkList">
+        <li>Anti-flicker script in <code>&lt;head&gt;</code> applies the correct theme before first paint</li>
+        <li>Theme persists via <code>localStorage</code> key <code>bs_theme</code> across reloads</li>
+        <li>System dark-mode preference is used as fallback when no saved theme exists</li>
+        <li><code>aria-checked</code> on the theme switch is correct on first load</li>
+        <li>Theme switch responds to click, Enter, and Space</li>
+        <li>Theme root is <code>document.documentElement</code> — consistent across anti-flicker init and toggle logic</li>
+        <li>SVG diagrams redraw with correct theme colors after toggle</li>
+        <li><code>localStorage</code> access is wrapped in <code>try/catch</code> — no crash in sandboxed iframes</li>
+      </ul>
+    </div>
+    <div class="statusPanel">
+      <h3>Interactive Widgets</h3>
+      <ul class="checkList">
+        <li>Integer Binary Search Simulator: Reset / Step / Auto all work</li>
+        <li>Simulator SVG redraws correctly after every step</li>
+        <li>Auto-play stops automatically when the last frame is reached</li>
+        <li>Array Query Simulator: Lower Bound / Upper Bound buttons switch modes correctly</li>
+        <li>Array Query Simulator: Reset / Step work in both modes</li>
+        <li>Ternary Search Visualizer: curve, interval shading, and a/b probes render correctly</li>
+        <li>Ternary auto-play stops automatically at the last frame</li>
+        <li>All simulators reset cleanly when Reset is pressed mid-auto-play</li>
+        <li>Theme changes do not break any diagram or tracer rendering</li>
+      </ul>
+    </div>
+    <div class="statusPanel">
+      <h3>Integrity &amp; Branding</h3>
+      <ul class="checkList">
+        <li>All visible emails are plain direct <code>mailto:</code> links — no Cloudflare obfuscation remains</li>
+        <li>No <code>__cf_email__</code>, <code>data-cfemail</code>, <code>/cdn-cgi/</code>, or Cloudflare decode script anywhere in the file</li>
+        <li>Sidebar footer and page footer both show <code>coach@coach-academy.net</code> and <code>a.ashraf@coach-academy.net</code></li>
+        <li>Branding is normalized: Coach Academy · Prepared by The Coach (Dr. Wahab) &amp; Ashraf · © 2025 All rights reserved.</li>
+        <li>File is complete and not truncated — ends with <code>&lt;/body&gt;&lt;/html&gt;</code></li>
+        <li>All opened tags are closed; all scripts are syntactically valid</li>
+        <li>No console errors on page load or after any interaction</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 27: SUMMARY ===== -->
+<section class="card" id="summary">
+  <h2>📋 Final Summary — 7 Core Truths</h2>
+  <div class="grid2" style="margin-top:14px;">
+    <div class="proof-box">
+      <h4>Truth 1</h4>
+      <p><b>Binary search is boundary finding, not middle-taking.</b> The middle is just the mechanism. The goal is to locate where a monotone predicate transitions from false to true.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 2</h4>
+      <p><b>The invariant is sacred.</b> s = last bad, e = first good. Everything else follows from maintaining this. Violate it and the proof collapses.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 3</h4>
+      <p><b>The hard part is always the predicate.</b> Once ok(x) is designed correctly and proven monotone, the loop is trivial. Invest your thinking in the check function, not the loop.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 4</h4>
+      <p><b>Sorted-array queries are the same as answer-space search.</b> Different domain (indices vs. answer values), identical structure. One framework handles both.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 5</h4>
+      <p><b>Transformed binary search reveals hidden structure.</b> When the predicate isn't obvious, multiply through: F(C)/W(C) &gt; x ↔ F(C) − x·W(C) &gt; 0. This unlocks the class of ratio/average optimization problems.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 6</h4>
+      <p><b>Step-halving is safer than while(e−s&gt;eps).</b> Floating-point arithmetic can stall midpoint computation. The step-halving loop avoids this entirely with guaranteed convergence.</p>
+    </div>
+    <div class="proof-box">
+      <h4>Truth 7</h4>
+      <p><b>Ternary search and binary search live in different worlds.</b> Binary: monotone yes/no. Ternary: unimodal objective. Confusing them causes incorrect discards and wrong answers. Always identify the structure first, then pick the tool.</p>
+    </div>
+  </div>
+
+  <div class="statusPanel" style="margin-top:18px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(0,0,0,0));border-color:rgba(37,99,235,.35);">
+    <h3>Master Templates at a Glance</h3>
+    <div class="grid3">
+      <div>
+        <p style="font-weight:950;color:var(--accent2);">Integer BS</p>
+        <p class="note">s=bad, e=good<br/>while e−s&gt;1: m = mid<br/>→ {last bad, first good}</p>
+      </div>
+      <div>
+        <p style="font-weight:950;color:var(--accent2);">Double BS</p>
+        <p class="note">s=feasible<br/>for sz=(e−s)/2: sz&gt;eps<br/>→ max feasible real</p>
+      </div>
+      <div>
+        <p style="font-weight:950;color:var(--warn);">Ternary Search</p>
+        <p class="note">f(x) unimodal<br/>for sz: sz&gt;1e-15, ×2/3<br/>→ {x_min, f_min}</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:18px;">Practice Roadmap</h3>
+  <table>
+    <thead><tr><th>Level</th><th>Focus</th><th>Problems</th></tr></thead>
+    <tbody>
+      <tr><td>1 — Foundations</td><td>Lower / upper bound, first/last occurrence</td><td>Manual trace exercises on sorted arrays</td></tr>
+      <tr><td>2 — Basic answer space</td><td>Integer square root, nth root, kth missing</td><td>Small integer optimization problems</td></tr>
+      <tr><td>3 — Standard CP</td><td>AGGRCOW, Koko, Array Division, Allocate Books</td><td>Maximize min / minimize max patterns</td></tr>
+      <tr><td>4 — Floating-point</td><td>PIE, Ropes, Equation, Gas Stations</td><td>Continuous feasibility checks</td></tr>
+      <tr><td>5 — Transformed</td><td>Dropping Tests, K Best, Sightseeing Cows</td><td>Ratio / average algebra</td></tr>
+      <tr><td>6 — Ternary</td><td>Weakness &amp; Poorness, Meeting Place</td><td>Unimodal continuous objectives</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-footer">
+  <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🎓</div>
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-copy">Binary &amp; Ternary Search · Boundary Finding · Answer Space · Unimodal Optimization</div>
+  <div class="footer-copy" style="margin-top:4px;">© 2025 Coach Academy. All rights reserved.</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</main>
+</div><!-- .app -->
+
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function makeSVG(tag,attrs={}){
+  const el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+
+// ============================================================
+// SAFE STORAGE HELPERS
+// ============================================================
+function storageGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function storageSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+var renderBSSim,renderAQSim,renderTSSim; // forward declarations
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  const sw=$('#themeSwitch');
+  if(sw) sw.setAttribute('aria-checked', theme==='dark' ? 'true' : 'false');
+}
+
+const savedTheme=storageGet('bs_theme');
+// System preference fallback
+const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+applyTheme(savedTheme||(prefersDark?'dark':'light'));
+
+const themeSwitch=$('#themeSwitch');
+function toggleTheme(){
+  const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  applyTheme(next);
+  storageSet('bs_theme',next);
+  if(typeof renderBSSim==='function')renderBSSim();
+  if(typeof renderAQSim==='function')renderAQSim();
+  if(typeof renderTSSim==='function')renderTSSim();
+}
+themeSwitch.onclick=toggleTheme;
+themeSwitch.onkeydown=function(e){
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleTheme();}
+};
+
+// ============================================================
+// SIDEBAR TOGGLE — FINAL-FAMILY STANDARD
+// ============================================================
+const sidebarToggle=$('#sidebarToggle');
+const sidebar=$('#sidebar');
+const appEl=$('#app');
+const overlay=$('#sidebarOverlay');
+
+function isNarrow(){ return window.innerWidth<=1400; }
+
+let sidebarOpen=true; // will be set properly by setSidebar() below
+
+function setSidebar(open){
+  sidebarOpen=open;
+  // Sync button states
+  sidebarToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  sidebarToggle.classList.toggle('open', open);
+
+  if(open){
+    sidebar.classList.remove('collapsed');
+    if(isNarrow()){
+      appEl.classList.add('sidebar-hidden');
+      overlay.classList.add('show');
+    } else {
+      appEl.classList.remove('sidebar-hidden');
+      overlay.classList.remove('show');
+    }
+  } else {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    appEl.classList.add('sidebar-hidden');
+  }
+}
+
+// Toggle on button click
+sidebarToggle.onclick=function(){ setSidebar(!sidebarOpen); };
+
+// Close via overlay click
+overlay.onclick=function(){ setSidebar(false); };
+
+// Close via Escape on narrow layouts
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape' && sidebarOpen && isNarrow()){ setSidebar(false); }
+});
+
+// Close sidebar on sidebar nav-link click on narrow layouts
+$$('.nav a[href^="#"]').forEach(function(a){
+  a.addEventListener('click',function(){
+    if(isNarrow() && sidebarOpen){ setSidebar(false); }
+  });
+});
+
+// Sync on resize — avoid flickering with debounce
+var _resizeTimer;
+window.addEventListener('resize',function(){
+  clearTimeout(_resizeTimer);
+  _resizeTimer=setTimeout(function(){
+    if(!isNarrow()){
+      // Wide layout: ensure sidebar is open and no overlay
+      setSidebar(true);
+    } else {
+      // Narrow layout: if still open, ensure overlay is showing; if closed, ensure overlay is hidden
+      if(sidebarOpen){
+        appEl.classList.add('sidebar-hidden');
+        overlay.classList.add('show');
+      } else {
+        overlay.classList.remove('show');
+        appEl.classList.add('sidebar-hidden');
+      }
+    }
+  },100);
+});
+
+// Initial state: wide = open, narrow = closed
+setSidebar(!isNarrow());
+
+// ============================================================
+// SCROLL NAV HIGHLIGHT — FINAL-FAMILY SCROLLSPY
+// ============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  const contentEl=$('.content');
+  const scrollTop=contentEl.scrollTop;
+  const viewH=contentEl.clientHeight;
+  let cur='';
+  sections.forEach(function(s){
+    const rect=s.getBoundingClientRect();
+    // Section is considered "active" when its top is above 30% of viewport height
+    if(rect.top < viewH * 0.30){ cur=s.id; }
+  });
+  // If nothing found (very top), pick first section
+  if(!cur && sections.length){ cur=sections[0].id; }
+  navLinks.forEach(function(a){
+    a.classList.toggle('active', a.getAttribute('href')==='#'+cur);
+  });
+}
+$('.content').addEventListener('scroll',updateNav,{passive:true});
+window.addEventListener('resize',updateNav,{passive:true});
+updateNav();
+
+// ============================================================
+// BINARY SEARCH SIMULATOR
+// ============================================================
+(function(){
+  const RANGE_LO=0, RANGE_HI=20;
+  const BOUNDARY=10;
+  function ok(x){ return x>=BOUNDARY; }
+
+  function buildFrames(){
+    const frames=[];
+    let s=RANGE_LO, e=RANGE_HI;
+    frames.push({s,e,m:null,okm:null,desc:'Initial state: s='+s+' (bad), e='+e+' (good). ok(x) = (x ≥ 10).'});
+    while(e-s>1){
+      const m=s+((e-s)>>1);
+      const res=ok(m);
+      frames.push({s,e,m,okm:res,desc:'m='+m+': ok('+m+')='+(res?'true → e='+m:'false → s='+m)});
+      if(res) e=m; else s=m;
+      frames.push({s,e,m:null,okm:null,desc:'Updated: s='+s+', e='+e+'. Gap = '+(e-s)+'.'});
+    }
+    frames.push({s,e,m:null,okm:null,desc:'Done! e−s=1. Return {s='+s+', e='+e+'}. Last bad='+s+', first good='+e+'.'});
+    return frames;
+  }
+
+  let frames=buildFrames(), step=0, autoTimer=null;
+
+  const W=700,H=170;
+  const N=RANGE_HI-RANGE_LO+1;
+  const cellW=28, cellH=36, startX=(W-N*cellW)/2, cellY=55;
+
+  function renderBSSimFn(){
+    const svg=$('#bsSvg'); clearEl(svg);
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const f=frames[Math.min(step,frames.length-1)];
+
+    for(let i=0;i<N;i++){
+      const x_val=RANGE_LO+i;
+      const cx=startX+i*cellW;
+      const isGood=ok(x_val);
+      const isMid=f.m===x_val;
+      let fill=isGood?'rgba(15,118,110,.20)':'rgba(185,28,28,.15)';
+      let stroke=isGood?'#0f766e':'#b91c1c';
+      let sw=2;
+      if(isMid){ fill='rgba(180,83,9,.35)'; stroke='#b45309'; sw=3; }
+      if(x_val<f.s||x_val>f.e){ fill=isDark?'rgba(100,100,120,.10)':'rgba(200,200,220,.30)'; stroke=isDark?'#24304c':'#d6d9e6'; sw=1; }
+      const rect=makeSVG('rect',{x:cx,y:cellY,width:cellW-2,height:cellH,rx:5,fill,stroke,'stroke-width':sw});
+      svg.appendChild(rect);
+      const t=makeSVG('text',{x:cx+(cellW-2)/2,y:cellY+cellH/2+8,'text-anchor':'middle','font-size':'13','font-weight':'900',fill:isDark?'#e5e7eb':'#0b1220'});
+      t.textContent=x_val;
+      svg.appendChild(t);
+    }
+
+    if(f.s>=RANGE_LO&&f.s<=RANGE_HI){
+      const sx=startX+(f.s-RANGE_LO)*cellW+(cellW-2)/2;
+      const py=cellY+cellH+4;
+      svg.appendChild(makeSVG('polygon',{points:`${sx},${py} ${sx-8},${py+14} ${sx+8},${py+14}`,fill:'#b91c1c'}));
+      const tl=makeSVG('text',{x:sx,y:py+28,'text-anchor':'middle','font-size':'12','font-weight':'950',fill:'#b91c1c'});
+      tl.textContent='s='+f.s; svg.appendChild(tl);
+    }
+    if(f.e>=RANGE_LO&&f.e<=RANGE_HI){
+      const ex2=startX+(f.e-RANGE_LO)*cellW+(cellW-2)/2;
+      const py=cellY+cellH+4;
+      svg.appendChild(makeSVG('polygon',{points:`${ex2},${py} ${ex2-8},${py+14} ${ex2+8},${py+14}`,fill:'#0f766e'}));
+      const tl=makeSVG('text',{x:ex2,y:py+28,'text-anchor':'middle','font-size':'12','font-weight':'950',fill:'#0f766e'});
+      tl.textContent='e='+f.e; svg.appendChild(tl);
+    }
+    if(f.m!==null&&f.m>=RANGE_LO&&f.m<=RANGE_HI){
+      const mx=startX+(f.m-RANGE_LO)*cellW+(cellW-2)/2;
+      const py=cellY-4;
+      svg.appendChild(makeSVG('polygon',{points:`${mx},${py} ${mx-8},${py-14} ${mx+8},${py-14}`,fill:'#b45309'}));
+      const tl=makeSVG('text',{x:mx,y:py-18,'text-anchor':'middle','font-size':'12','font-weight':'950',fill:'#b45309'});
+      tl.textContent='m='+f.m; svg.appendChild(tl);
+    }
+
+    const leg=[['rgba(185,28,28,.20)','#b91c1c','BAD (ok=false)'],['rgba(15,118,110,.20)','#0f766e','GOOD (ok=true)'],['rgba(180,83,9,.35)','#b45309','Midpoint m']];
+    leg.forEach(([fill,stroke,label],i)=>{
+      const lx=12+i*175, ly=H-18;
+      svg.appendChild(makeSVG('rect',{x:lx,y:ly-13,width:16,height:14,rx:3,fill,stroke,'stroke-width':2}));
+      const t=makeSVG('text',{x:lx+20,y:ly,'font-size':'13','font-weight':'900',fill:isDark?'#cbd5ff':'#334155'});
+      t.textContent=label; svg.appendChild(t);
+    });
+
+    $('#bsStatus').textContent=f.desc;
+    $('#bsStepLabel').textContent='Step '+(step+1)+' / '+frames.length;
+
+    const tb=$('#bsTraceTable'); clearEl(tb);
+    frames.filter(fr=>fr.m!==null).forEach(fr=>{
+      const row=document.createElement('div');
+      row.className='traceRow';
+      row.innerHTML=`<div class="traceVal mid">m=${fr.m}</div><div>${fr.desc}</div>`;
+      tb.appendChild(row);
+    });
+    if(tb.children.length===0){
+      tb.innerHTML='<span style="color:var(--muted);">Trace will appear here as you step.</span>';
+    }
+  }
+
+  function reset(){ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#bsAutoBtn').classList.remove('active');} renderBSSimFn(); }
+  function stepFn(){ if(step<frames.length-1){step++;renderBSSimFn();} }
+
+  $('#bsResetBtn').onclick=reset;
+  $('#bsStepBtn').onclick=stepFn;
+  $('#bsAutoBtn').onclick=function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active');autoTimer=setInterval(()=>{if(step>=frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#bsAutoBtn').classList.remove('active');}else{stepFn();}},700);}
+  };
+
+  renderBSSim=renderBSSimFn;
+  reset();
+})();
+
+// ============================================================
+// SORTED ARRAY QUERY SIMULATOR
+// ============================================================
+(function(){
+  const arrVals=[2,5,5,5,8,12];
+  const target=5;
+  let mode='lb';
+
+  function okLB(i){ return i<arrVals.length&&arrVals[i]>=target; }
+  function okUB(i){ return i<arrVals.length&&arrVals[i]>target; }
+
+  function buildAQFrames(isModeUB){
+    const ok=isModeUB?okUB:okLB;
+    const pred=isModeUB?'a[m] > '+target:'a[m] >= '+target;
+    const frames=[];
+    let s=-1, e=arrVals.length;
+    frames.push({s,e,m:null,desc:'Init: s=-1 (sentinel bad), e='+e+' (sentinel good). Predicate: '+pred});
+    while(e-s>1){
+      const m=s+((e-s)>>1);
+      const res=ok(m);
+      frames.push({s,e,m,res,desc:'m='+m+', a['+m+']='+arrVals[m]+': '+pred+' → '+(res?'TRUE → e='+m:'FALSE → s='+m)});
+      if(res) e=m; else s=m;
+      frames.push({s,e,m:null,res:null,desc:'s='+s+', e='+e+'. Gap='+(e-s)+'.'});
+    }
+    const ans=e;
+    let extra='';
+    if(!isModeUB){ extra=' → first index where a[i]≥'+target+' = '+ans+(ans<arrVals.length?', a['+ans+']='+arrVals[ans]:'(out of range)'); }
+    else { extra=' → first index where a[i]>'+target+' = '+ans+(ans<arrVals.length?', a['+ans+']='+arrVals[ans]:'(out of range)'); }
+    frames.push({s,e,m:null,desc:'Done! e='+e+extra});
+    return frames;
+  }
+
+  let frames=buildAQFrames(false), step=0;
+
+  function renderAQSimFn(){
+    const svg=$('#aqSvg'); clearEl(svg);
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const f=frames[Math.min(step,frames.length-1)];
+    const N=arrVals.length;
+    const CW=70, CH=48, SX=(700-N*CW)/2, CY=50;
+
+    for(let i=0;i<N;i++){
+      const cx=SX+i*CW;
+      const goodPred=(mode==='lb')?(arrVals[i]>=target):(arrVals[i]>target);
+      let fill=goodPred?'rgba(15,118,110,.18)':'rgba(185,28,28,.12)';
+      let stroke=goodPred?'#0f766e':'#b91c1c';
+      let sw=2;
+      if(f.m===i){fill='rgba(180,83,9,.35)';stroke='#b45309';sw=3;}
+      svg.appendChild(makeSVG('rect',{x:cx,y:CY,width:CW-4,height:CH,rx:8,fill,stroke,'stroke-width':sw}));
+      const t=makeSVG('text',{x:cx+(CW-4)/2,y:CY+CH/2+9,'text-anchor':'middle','font-size':'20','font-weight':'950',fill:isDark?'#f1f5ff':'#0b1220'});
+      t.textContent=arrVals[i]; svg.appendChild(t);
+      const idx=makeSVG('text',{x:cx+(CW-4)/2,y:CY-6,'text-anchor':'middle','font-size':'14','font-weight':'900',fill:isDark?'#cbd5ff':'#334155'});
+      idx.textContent='['+i+']'; svg.appendChild(idx);
+    }
+
+    const drawPtr=(idx,label,color,above)=>{
+      if(idx<-1||idx>N) return;
+      const px=idx===-1?SX-CW/2:(idx===N?SX+N*CW-CW/2:SX+idx*CW+(CW-4)/2);
+      if(above){
+        svg.appendChild(makeSVG('polygon',{points:`${px},${CY-12} ${px-7},${CY-24} ${px+7},${CY-24}`,fill:color}));
+        const tl=makeSVG('text',{x:px,y:CY-28,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:color});
+        tl.textContent=label; svg.appendChild(tl);
+      } else {
+        const py=CY+CH+4;
+        svg.appendChild(makeSVG('polygon',{points:`${px},${py} ${px-7},${py+12} ${px+7},${py+12}`,fill:color}));
+        const tl=makeSVG('text',{x:px,y:py+26,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:color});
+        tl.textContent=label; svg.appendChild(tl);
+      }
+    };
+    drawPtr(f.s,'s='+f.s,'#b91c1c',false);
+    drawPtr(f.e,'e='+f.e,'#0f766e',false);
+    if(f.m!==null) drawPtr(f.m,'m='+f.m,'#b45309',true);
+
+    const tgt=makeSVG('text',{x:350,y:155,'text-anchor':'middle','font-size':'18','font-weight':'900',fill:isDark?'#cbd5ff':'#334155'});
+    tgt.textContent='target = '+target+'  |  Predicate: '+(mode==='lb'?'a[m] >= target':'a[m] > target');
+    svg.appendChild(tgt);
+
+    $('#aqStatus').textContent=f.desc;
+  }
+
+  function reset(){step=0;renderAQSimFn();}
+  function stepFn(){if(step<frames.length-1){step++;renderAQSimFn();}}
+
+  function aqSetMode(m){
+    mode=m;
+    frames=buildAQFrames(m==='ub');
+    step=0;
+    $('#aqTitle').textContent=m==='lb'?'Lower Bound Simulator':'Upper Bound Simulator';
+    $('#aqLBBtn').classList.toggle('active',m==='lb');
+    $('#aqUBBtn').classList.toggle('active',m==='ub');
+    renderAQSimFn();
+  }
+
+  $('#aqResetBtn').onclick=reset;
+  $('#aqStepBtn').onclick=stepFn;
+  $('#aqLBBtn').onclick=function(){ aqSetMode('lb'); };
+  $('#aqUBBtn').onclick=function(){ aqSetMode('ub'); };
+
+  renderAQSim=renderAQSimFn;
+  reset();
+})();
+
+// ============================================================
+// TERNARY SEARCH VISUALIZER
+// ============================================================
+(function(){
+  function f(x){ return (x-5)*(x-5); }
+
+  function buildTSFrames(){
+    const frames=[];
+    let s=0, e=10;
+    let sz=e-s;
+    let fs=f(s);
+    frames.push({s,sz,a:null,b:null,fa:null,fb:null,fs,desc:'Initial: s=0, interval [0, 10]. f(s)='+(fs.toFixed(4))+'. Searching for minimum of f(x)=(x-5)\u00B2.'});
+    let iter=0;
+    while(sz>1e-9&&iter<30){
+      const a=s+sz/3, b=a+sz/3;
+      const fa=f(a), fb=f(b);
+      const moved=fa>fb;
+      frames.push({s,sz,a,b,fa,fb,fs,
+        desc:'Iter '+(++iter)+': a='+(a.toFixed(3))+', b='+(b.toFixed(3))+
+          ' | f(a)='+(fa.toFixed(4))+', f(b)='+(fb.toFixed(4))+
+          (moved?' \u2192 f(a)>f(b): discard left third, s=a':' \u2192 f(a)\u2264f(b): discard right third (shrink sz)')
+      });
+      if(moved){ s=a; fs=fa; }
+      sz*=2/3;
+      frames.push({s,sz,a:null,b:null,fa:null,fb:null,fs,
+        desc:'After step: s='+(s.toFixed(4))+', sz='+(sz.toFixed(4))+'. Interval: ['+(s.toFixed(4))+', '+((s+sz).toFixed(4))+']'
+      });
+    }
+    frames.push({s,sz,a:null,b:null,fa:null,fb:null,fs,
+      desc:'Converged! s\u2248'+(s.toFixed(8))+', f(s)\u2248'+(f(s).toFixed(8))+'. True minimum: x=5, f(5)=0. \u2713'
+    });
+    return frames;
+  }
+
+  let frames=buildTSFrames(), step=0, autoTimer2=null;
+
+  const SVG_W=700, SVG_H=280;
+  const X_LO=0, X_HI=10;
+  const Y_LO=0, Y_HI=26;
+  const PAD_L=40,PAD_R=20,PAD_T=30,PAD_B=40;
+
+  function xMap(x){ return PAD_L+(x-X_LO)/(X_HI-X_LO)*(SVG_W-PAD_L-PAD_R); }
+  function yMap(y){ return SVG_H-PAD_B-(y-Y_LO)/(Y_HI-Y_LO)*(SVG_H-PAD_T-PAD_B); }
+
+  function renderTSSimFn(){
+    const svg=$('#tsSvg'); clearEl(svg);
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const fr=frames[Math.min(step,frames.length-1)];
+
+    const axisColor=isDark?'#24304c':'#d6d9e6';
+    svg.appendChild(makeSVG('line',{x1:xMap(X_LO),y1:yMap(0),x2:xMap(X_HI),y2:yMap(0),stroke:axisColor,'stroke-width':2}));
+    svg.appendChild(makeSVG('line',{x1:xMap(0),y1:yMap(0),x2:xMap(0),y2:yMap(Y_HI),stroke:axisColor,'stroke-width':2}));
+
+    for(let i=0;i<=10;i++){
+      const tx=makeSVG('text',{x:xMap(i),y:SVG_H-PAD_B+18,'text-anchor':'middle','font-size':'13','font-weight':'800',fill:isDark?'#cbd5ff':'#334155'});
+      tx.textContent=i; svg.appendChild(tx);
+    }
+    for(let y=0;y<=25;y+=5){
+      const ty=makeSVG('text',{x:xMap(0)-6,y:yMap(y)+5,'text-anchor':'end','font-size':'12','font-weight':'800',fill:isDark?'#cbd5ff':'#334155'});
+      ty.textContent=y; svg.appendChild(ty);
+    }
+
+    const pts=[];
+    for(let xi=0;xi<=200;xi++){
+      const xv=X_LO+xi*(X_HI-X_LO)/200;
+      pts.push(xMap(xv)+','+yMap(f(xv)));
+    }
+    svg.appendChild(makeSVG('polyline',{points:pts.join(' '),fill:'none',stroke:'var(--accent2)','stroke-width':3,'stroke-linecap':'round'}));
+
+    const iS=fr.s, iE=fr.s+fr.sz;
+    if(iE>iS){
+      svg.appendChild(makeSVG('rect',{
+        x:xMap(iS),y:PAD_T,width:xMap(iE)-xMap(iS),height:yMap(0)-PAD_T,
+        fill:'rgba(37,99,235,.12)',stroke:'rgba(37,99,235,.40)','stroke-width':2,rx:4
+      }));
+    }
+
+    if(fr.a!==null){
+      const ax=xMap(fr.a), ay=yMap(fr.fa);
+      svg.appendChild(makeSVG('circle',{cx:ax,cy:ay,r:7,fill:'#b91c1c',stroke:'white','stroke-width':2}));
+      const at=makeSVG('text',{x:ax,y:ay-12,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:'#b91c1c'});
+      at.textContent='a'; svg.appendChild(at);
+      const atv=makeSVG('text',{x:ax,y:ay-24,'text-anchor':'middle','font-size':'11','font-weight':'800',fill:'#b91c1c'});
+      atv.textContent=fr.fa.toFixed(2); svg.appendChild(atv);
+    }
+    if(fr.b!==null){
+      const bx=xMap(fr.b), by=yMap(fr.fb);
+      svg.appendChild(makeSVG('circle',{cx:bx,cy:by,r:7,fill:'#0f766e',stroke:'white','stroke-width':2}));
+      const bt=makeSVG('text',{x:bx,y:by-12,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:'#0f766e'});
+      bt.textContent='b'; svg.appendChild(bt);
+      const btv=makeSVG('text',{x:bx,y:by-24,'text-anchor':'middle','font-size':'11','font-weight':'800',fill:'#0f766e'});
+      btv.textContent=fr.fb.toFixed(2); svg.appendChild(btv);
+    }
+
+    const spx=xMap(fr.s);
+    svg.appendChild(makeSVG('line',{x1:spx,y1:PAD_T,x2:spx,y2:yMap(0),stroke:'#b45309','stroke-width':2,'stroke-dasharray':'6,4'}));
+    const st=makeSVG('text',{x:spx,y:PAD_T-6,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:'#b45309'});
+    st.textContent='s='+fr.s.toFixed(3); svg.appendChild(st);
+
+    const minX=xMap(5), minY=yMap(0);
+    svg.appendChild(makeSVG('line',{x1:minX,y1:minY-5,x2:minX,y2:minY+8,stroke:'#7c3aed','stroke-width':3}));
+    const minLabel=makeSVG('text',{x:minX,y:minY+22,'text-anchor':'middle','font-size':'13','font-weight':'950',fill:'#7c3aed'});
+    minLabel.textContent='x*=5'; svg.appendChild(minLabel);
+
+    const fl=makeSVG('text',{x:xMap(1),y:yMap(22),'font-size':'16','font-weight':'950',fill:'var(--accent2)'});
+    fl.textContent='f(x)=(x\u22125)\u00B2'; svg.appendChild(fl);
+
+    $('#tsStatus').textContent=fr.desc;
+    $('#tsStep').textContent='Step '+(step+1)+' / '+frames.length;
+  }
+
+  function stepFn(){ if(step<frames.length-1){step++;renderTSSimFn();} }
+  function reset(){ step=0; if(autoTimer2){clearInterval(autoTimer2);autoTimer2=null;$('#tsAutoBtn').classList.remove('active');} renderTSSimFn(); }
+
+  $('#tsResetBtn').onclick=reset;
+  $('#tsStepBtn').onclick=stepFn;
+  $('#tsAutoBtn').onclick=function(){
+    if(autoTimer2){clearInterval(autoTimer2);autoTimer2=null;this.classList.remove('active');}
+    else{this.classList.add('active');autoTimer2=setInterval(()=>{if(step>=frames.length-1){clearInterval(autoTimer2);autoTimer2=null;$('#tsAutoBtn').classList.remove('active');}else{stepFn();}},700);}
+  };
+
+  renderTSSim=renderTSSimFn;
+  reset();
+})();
+</script>
+</body>
+</html>

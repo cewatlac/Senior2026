@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Fenwick Tree / BIT · Complete CP Tutorial</title>
+<style>
+:root{
+  --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+  --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+  --accent:#1e40af; --accent2:#2563eb;
+  --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+  --codebg:#0b1220; --codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff; --link:#1d4ed8;
+  --focus:0 0 0 6px rgba(37,99,235,.22);
+  --fs-base:26px; --fs-sm:22px;
+  --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+  --radius:18px;
+}
+[data-theme="dark"]{
+  --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+  --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+  --accent:#7aa2ff; --accent2:#4f8cff;
+  --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+  --codebg:#050812; --codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347; --link:#93c5fd;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+.app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+.sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;z-index:150;}
+.content{overflow:auto;padding:26px 30px 90px;}
+.brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+.logoBox{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#0B2D72,#1e40af);box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:36px;flex:0 0 auto;user-select:none;}
+.brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+.by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+.nav{padding:14px 6px 0;}
+.nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+.nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+.nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+.subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+.btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+.switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+[data-theme="dark"] .switch::after{left:36px;}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+.card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+.card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+@media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+.note{color:var(--muted);font-weight:750;font-size:22px;}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+.chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+.chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+.chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+summary::-webkit-details-marker{display:none}
+summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+.detailsBody{padding:16px 18px 18px;}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.diagramTitle{font-weight:950;font-size:26px;}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+.miniBtn:hover{background:var(--panel2);}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+th{background:rgba(37,99,235,.10);font-weight:950;}
+tr:last-child td{border-bottom:none}
+section{scroll-margin-top:16px}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto;}
+.app.sidebar-hidden{grid-template-columns:1fr !important;}
+.app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:420px;border-right:3px solid var(--border);}
+.app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+.app.sidebar-hidden .content{padding-top:80px;}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+.page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+.footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+.footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+.variantTag{display:inline-block;background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-radius:10px;padding:4px 12px;font-size:18px;font-weight:950;margin-right:10px;}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+.sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+.contactSection{background:linear-gradient(135deg,rgba(37,99,235,.10),rgba(37,99,235,.03));border:3px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin:30px 0;text-align:center;}
+.contactSection h2{margin:0 0 14px;font-size:34px;}
+.contactSection .contactInfo{font-size:22px;font-weight:800;line-height:1.8;color:var(--text);}
+.contactSection .contactInfo a{color:var(--accent2);font-weight:950;}
+/* BIT Tracer specific */
+.bit-cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:70px;height:70px;border-radius:14px;border:3px solid var(--border);background:var(--panel2);font-weight:950;margin:4px;transition:all .3s ease;position:relative;}
+.bit-cell .cidx{font-size:15px;color:var(--muted);margin-bottom:2px;}
+.bit-cell .cval{font-size:22px;color:var(--text);}
+.bit-cell.hl-read{border-color:var(--good);background:rgba(15,118,110,.18);box-shadow:0 0 18px rgba(15,118,110,.35);}
+.bit-cell.hl-read .cval{color:var(--good);}
+.bit-cell.hl-write{border-color:var(--warn);background:rgba(180,83,9,.18);box-shadow:0 0 18px rgba(180,83,9,.35);}
+.bit-cell.hl-write .cval{color:var(--warn);}
+.bit-cell.hl-done{border-color:var(--accent2);background:rgba(37,99,235,.12);}
+.tracer-row{display:flex;flex-wrap:wrap;gap:2px;margin:14px 0;}
+.tracer-action{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;font-size:22px;min-height:70px;margin:10px 0;}
+.tracer-controls{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0;}
+.step-counter{font-weight:950;font-size:20px;color:var(--muted);display:flex;align-items:center;padding:10px 14px;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+.bit-range-label{font-size:15px;font-weight:800;color:var(--muted);text-align:center;width:70px;margin:0 4px;}
+.range-labels{display:flex;flex-wrap:nowrap;gap:2px;margin-bottom:2px;}
+.ans-display{display:inline-flex;align-items:center;gap:10px;background:var(--chip);border:2px solid rgba(37,99,235,.25);border-radius:12px;padding:10px 16px;font-weight:950;font-size:24px;margin:10px 0;}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:14px;border:2px solid var(--border);background:var(--panel2);margin:8px 0;font-size:22px;}
+.check-item .ci-icon{font-size:26px;flex:0 0 auto;}
+</style>
+</head>
+<script>
+(function(){
+  var t = localStorage.getItem('ca-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<body>
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="false" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+<div class="logoBox">🌲</div>
+<div class="brandTitle">
+<div class="t1">Coach Academy</div>
+<div class="t2">Fenwick Tree / BIT</div>
+<div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+</div>
+</div>
+<nav class="nav" id="nav">
+<div class="groupTitle">Part I — Core Concepts</div>
+<a class="navlink" href="#prob-def">Problem Definition<small>What BIT solves &amp; why</small></a>
+<a class="navlink" href="#intuition">Intuition from Scratch<small>lowbit, blocks, binary magic</small></a>
+<a class="navlink" href="#visual-model">Visual Mental Model<small>Block responsibility diagram</small></a>
+<a class="navlink" href="#abstraction">Formal Abstraction<small>Prefix decomposition</small></a>
+<a class="navlink" href="#observations">Key Observations<small>Four invariant observations</small></a>
+<a class="navlink" href="#invariants">Invariants<small>Storage, query, update</small></a>
+<a class="navlink" href="#proof">Proof of Correctness<small>Rigorous argument</small></a>
+<a class="navlink" href="#complexity">Complexity Analysis<small>O(log n) per op</small></a>
+<div class="groupTitle">Part II — Master Template</div>
+<a class="navlink" href="#template-philosophy">Template Philosophy<small>One family, pure prefix power</small></a>
+<a class="navlink" href="#master-template">Master Template<small>Full AC-ready C++ code</small></a>
+<a class="navlink" href="#line-by-line">Line-by-Line Explanation<small>Every line decoded</small></a>
+<div class="groupTitle">Part III — Interactive Tracer</div>
+<a class="navlink" href="#tracer-query">Query Tracer — sumPrefix<small>Step through index descent</small></a>
+<a class="navlink" href="#tracer-update">Update Tracer — add()<small>Step through index ascent</small></a>
+<div class="groupTitle">Part IV — Variants</div>
+<a class="navlink" href="#v1">V1: Point Add + Range Sum<small>The classic variant</small></a>
+<a class="navlink" href="#v2">V2: Range Add + Point Query<small>Difference array trick</small></a>
+<a class="navlink" href="#v3">V3: Range Add + Range Sum<small>Two BITs together</small></a>
+<a class="navlink" href="#v4">V4: 2D Fenwick<small>Rectangle sum queries</small></a>
+<a class="navlink" href="#v5">V5: Prefix Lower Bound / kth<small>Order statistics</small></a>
+<a class="navlink" href="#v6">V6: Order Statistic Multiset<small>BIT vs PBDS</small></a>
+<a class="navlink" href="#v7">V7: Inversion Counting<small>Sweep right-to-left</small></a>
+<a class="navlink" href="#v8">V8: Euler Tour + BIT<small>Subtree &amp; path queries</small></a>
+<a class="navlink" href="#v9">V9: Offline BIT Sweeps<small>KQUERY &amp; DQUERY patterns</small></a>
+<a class="navlink" href="#v10">V10: DP with BIT<small>LIS-count &amp; rank-DP</small></a>
+<a class="navlink" href="#v11">V11: Min BIT<small>Limitations &amp; prefix-min only</small></a>
+<div class="groupTitle">Part V — Problem Applications</div>
+<a class="navlink" href="#problems-a">P1–P5: Standard Problems<small>Dynamic sum, range, HORRIBLE...</small></a>
+<a class="navlink" href="#problems-b">P6–P10: Advanced Problems<small>Inversion, KQUERY, DQUERY...</small></a>
+<div class="groupTitle">Part VI — Reference</div>
+<a class="navlink" href="#decision-guide">Decision Guide<small>BIT vs SegTree vs others</small></a>
+<a class="navlink" href="#edge-cases">Edge Case Audit<small>Indexing, overflow, sentinel</small></a>
+<a class="navlink" href="#pitfalls">Common Pitfalls<small>Bugs that cost WA</small></a>
+<a class="navlink" href="#recognition">Recognition Rules<small>When to reach for BIT</small></a>
+<a class="navlink" href="#runtime-validation">Runtime Validation<small>Checklist before submit</small></a>
+<a class="navlink" href="#final-summary">Final Summary<small>Everything in one place</small></a>
+<a class="navlink" href="#contact">Contact<small>Get in touch</small></a>
+</nav>
+<div class="sidebar-footer">
+<div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/>© 2025 All rights reserved.</div>
+</div>
+</aside>
+<main class="content" id="content">
+
+<div class="topbar">
+<div>
+<h1>Fenwick Tree / Binary Indexed Tree</h1>
+<div class="subtitle">Complete ICPC handbook — visual block diagrams, step-by-step interactive tracers, correctness proofs, the full master template, and 11 variants with 10 fully solved contest problems.</div>
+</div>
+<div class="btnRow">
+<div class="pill">Theme <div aria-checked="false" class="switch" id="themeSwitch" role="switch" tabindex="0"></div></div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §0 PROBLEM DEFINITION                                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="prob-def">
+<h2>§0 — Problem Definition</h2>
+<p class="note">Given an array <code>a[1..n]</code>, support two operations simultaneously and efficiently: modify one element, and query the sum of a contiguous prefix or range. A plain prefix-sum array handles queries in O(1) but each update costs O(n). A Fenwick Tree gives O(log n) for both — without any pointers, heap allocation, or complex structure. It is just a cleverly indexed plain array.</p>
+
+<div class="grid2" style="margin-top:14px">
+<div class="statusPanel">
+<h3>The tension</h3>
+<p style="font-size:21px;line-height:1.7">A static prefix array <code>pref[i] = a[1]+…+a[i]</code> answers <code>sum(l,r)</code> in O(1) via <code>pref[r]−pref[l−1]</code>. But updating <code>a[i]</code> forces rebuilding every <code>pref[j]</code> for <code>j ≥ i</code> — O(n) per update. We cannot have both. Or can we?</p>
+</div>
+<div class="statusPanel">
+<h3>BIT's answer</h3>
+<p style="font-size:21px;line-height:1.7">Instead of storing every prefix, store <em>O(log n) carefully chosen canonical blocks</em> that together cover any prefix. Updating one position touches only O(log n) blocks. Querying any prefix reads only O(log n) blocks. Both in O(log n) with tiny constants.</p>
+</div>
+</div>
+
+<table>
+<tr><th>Operation</th><th>Meaning</th><th>Complexity</th></tr>
+<tr><td><code>add(i, x)</code></td><td>Add x to position i</td><td>O(log n)</td></tr>
+<tr><td><code>sumPrefix(i)</code></td><td>Sum a[1..i]</td><td>O(log n)</td></tr>
+<tr><td><code>sumRange(l, r)</code></td><td>Sum a[l..r]</td><td>O(log n)</td></tr>
+<tr><td><code>build(a)</code></td><td>Build from array</td><td>O(n)</td></tr>
+<tr><td><code>lowerBound(k)</code></td><td>First index with prefix ≥ k</td><td>O(log n)</td></tr>
+</table>
+
+<div class="chips" style="margin-top:16px">
+<div class="chip good">Simpler and faster than segment tree for prefix sums</div>
+<div class="chip good">Memory: exactly n+1 cells</div>
+<div class="chip warn">No arbitrary range minimum with point updates</div>
+<div class="chip warn">lowerBound requires all values ≥ 0</div>
+<div class="chip bad">Cannot do range assignment or non-invertible range queries</div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §1 INTUITION                                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="intuition">
+<h2>§1 — Intuition from Scratch</h2>
+
+<h3>The lowbit operation</h3>
+<p style="font-size:22px;line-height:1.7">Everything in a Fenwick Tree flows from one tiny operation: <code>lowbit(i) = i &amp; (-i)</code>. This isolates the least significant set bit of i. For example, i=6 is <code>0110₂</code>, so <code>lowbit(6) = 2</code> (the <code>0010₂</code> bit). For i=4 (<code>0100₂</code>), <code>lowbit(4) = 4</code>. For i=7 (<code>0111₂</code>), <code>lowbit(7) = 1</code>.</p>
+
+<p style="font-size:22px;line-height:1.7">Why does <code>i &amp; (-i)</code> work? Two's complement negation flips all bits and adds 1. The lowest set bit survives because all lower bits become 0 and the negation carry propagates exactly to that bit. This is a beautiful trick that costs one instruction.</p>
+
+<h3>What each cell stores</h3>
+<p style="font-size:22px;line-height:1.7">Each index i in the BIT "owns" a block of size <code>lowbit(i)</code> ending at i:</p>
+<pre><code>bit[i] = a[i - lowbit(i) + 1] + a[i - lowbit(i) + 2] + ... + a[i]</code></pre>
+
+<table>
+<tr><th>i</th><th>binary</th><th>lowbit(i)</th><th>bit[i] covers</th><th>stores sum of</th></tr>
+<tr><td>1</td><td>0001</td><td>1</td><td>[1,1]</td><td>a[1]</td></tr>
+<tr><td>2</td><td>0010</td><td>2</td><td>[1,2]</td><td>a[1]+a[2]</td></tr>
+<tr><td>3</td><td>0011</td><td>1</td><td>[3,3]</td><td>a[3]</td></tr>
+<tr><td>4</td><td>0100</td><td>4</td><td>[1,4]</td><td>a[1]+a[2]+a[3]+a[4]</td></tr>
+<tr><td>5</td><td>0101</td><td>1</td><td>[5,5]</td><td>a[5]</td></tr>
+<tr><td>6</td><td>0110</td><td>2</td><td>[5,6]</td><td>a[5]+a[6]</td></tr>
+<tr><td>7</td><td>0111</td><td>1</td><td>[7,7]</td><td>a[7]</td></tr>
+<tr><td>8</td><td>1000</td><td>8</td><td>[1,8]</td><td>a[1]+…+a[8]</td></tr>
+</table>
+
+<h3>How prefix queries work</h3>
+<p style="font-size:22px;line-height:1.7">To compute <code>sumPrefix(13)</code>, note that 13 = <code>1101₂</code>. The query loop strips one bit per iteration:</p>
+<pre><code>i = 13   → add bit[13] (covers [13,13]), then i -= lowbit(13) = 1  → i = 12
+i = 12   → add bit[12] (covers [9,12]),  then i -= lowbit(12) = 4  → i = 8
+i = 8    → add bit[8]  (covers [1,8]),   then i -= lowbit(8)  = 8  → i = 0
+i = 0    → stop</code></pre>
+<p style="font-size:22px;line-height:1.7">The three blocks [1,8], [9,12], [13,13] partition [1,13] exactly — no overlap, no gap.</p>
+
+<h3>How updates work</h3>
+<p style="font-size:22px;line-height:1.7">When we update <code>a[6]</code>, which <code>bit[i]</code> cells need to change? Only those whose stored range contains position 6. The update loop <em>climbs upward</em> by adding the lowbit:</p>
+<pre><code>i = 6   → bit[6] covers [5,6]: includes 6 ✓. Update, then i += lowbit(6) = 2  → i = 8
+i = 8   → bit[8] covers [1,8]: includes 6 ✓. Update, then i += lowbit(8) = 8  → i = 16
+i = 16  → if n &lt; 16, stop. Otherwise continue.</code></pre>
+<p style="font-size:22px;line-height:1.7">Each step adds one bit, climbing to the next "ancestor" block. The ascent terminates in O(log n) steps because each step sets a strictly higher bit.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §2 VISUAL MODEL                                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="visual-model">
+<h2>§2 — Visual Mental Model</h2>
+<p class="note">The diagram below shows each bit[i] as a horizontal bar covering exactly its block. Wider bars = higher lowbit = larger responsibility. The structure is not a pointer tree — it is this visual staircase encoded in a flat array.</p>
+
+<div class="diagramWrap">
+<div class="diagramHeader"><div class="diagramTitle">BIT Block Responsibility (n=8)</div></div>
+<svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:380px;border-radius:14px;">
+  <defs>
+    <linearGradient id="barGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgba(37,99,235,0.7)"/>
+      <stop offset="100%" stop-color="rgba(37,99,235,0.3)"/>
+    </linearGradient>
+  </defs>
+  <!-- Grid lines -->
+  <line x1="50" y1="10" x2="50" y2="310" stroke="var(--border)" stroke-width="1"/>
+  <line x1="150" y1="10" x2="150" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="250" y1="10" x2="250" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="350" y1="10" x2="350" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="450" y1="10" x2="450" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="550" y1="10" x2="550" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="650" y1="10" x2="650" y2="310" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="750" y1="10" x2="750" y2="310" stroke="var(--border)" stroke-width="1"/>
+  <!-- Column labels a[1]..a[8] -->
+  <text x="100" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[1]</text>
+  <text x="200" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[2]</text>
+  <text x="300" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[3]</text>
+  <text x="400" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[4]</text>
+  <text x="500" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[5]</text>
+  <text x="600" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[6]</text>
+  <text x="700" y="325" text-anchor="middle" fill="var(--muted)" font-size="16" font-weight="700">a[7]</text>
+  <!-- Row bars: bit[1] to bit[8] from top to bottom -->
+  <!-- bit[1]: [1,1] x=50..150, y=15..45 -->
+  <rect x="55" y="15" width="90" height="28" rx="7" fill="url(#barGrad)" opacity=".85"/>
+  <text x="100" y="34" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[1]=[1,1]</text>
+  <!-- bit[2]: [1,2] x=50..250, y=50..80 -->
+  <rect x="55" y="50" width="190" height="28" rx="7" fill="url(#barGrad)" opacity=".85"/>
+  <text x="150" y="69" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[2]=[1,2]</text>
+  <!-- bit[3]: [3,3] x=250..350, y=85..115 -->
+  <rect x="255" y="85" width="90" height="28" rx="7" fill="rgba(15,118,110,0.75)"/>
+  <text x="300" y="104" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[3]=[3,3]</text>
+  <!-- bit[4]: [1,4] x=50..450, y=120..150 -->
+  <rect x="55" y="120" width="390" height="28" rx="7" fill="url(#barGrad)" opacity=".85"/>
+  <text x="250" y="139" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[4]=[1,4]</text>
+  <!-- bit[5]: [5,5] x=450..550, y=155..185 -->
+  <rect x="455" y="155" width="90" height="28" rx="7" fill="rgba(180,83,9,0.75)"/>
+  <text x="500" y="174" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[5]=[5,5]</text>
+  <!-- bit[6]: [5,6] x=450..650, y=190..220 -->
+  <rect x="455" y="190" width="190" height="28" rx="7" fill="rgba(180,83,9,0.75)"/>
+  <text x="550" y="209" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[6]=[5,6]</text>
+  <!-- bit[7]: [7,7] x=650..750, y=225..255 -->
+  <rect x="655" y="225" width="90" height="28" rx="7" fill="rgba(139,92,246,0.75)"/>
+  <text x="700" y="244" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[7]=[7,7]</text>
+  <!-- bit[8]: [1,8] x=50..750, y=260..290 -->
+  <rect x="55" y="260" width="690" height="28" rx="7" fill="url(#barGrad)" opacity=".95"/>
+  <text x="400" y="279" text-anchor="middle" fill="white" font-size="16" font-weight="900">bit[8]=[1,8]</text>
+  <!-- Row labels on left -->
+  <text x="45" y="34" text-anchor="end" fill="var(--accent2)" font-size="15" font-weight="900">i=1</text>
+  <text x="45" y="69" text-anchor="end" fill="var(--accent2)" font-size="15" font-weight="900">i=2</text>
+  <text x="45" y="104" text-anchor="end" fill="var(--good)" font-size="15" font-weight="900">i=3</text>
+  <text x="45" y="139" text-anchor="end" fill="var(--accent2)" font-size="15" font-weight="900">i=4</text>
+  <text x="45" y="174" text-anchor="end" fill="var(--warn)" font-size="15" font-weight="900">i=5</text>
+  <text x="45" y="209" text-anchor="end" fill="var(--warn)" font-size="15" font-weight="900">i=6</text>
+  <text x="45" y="244" text-anchor="end" fill="#7c3aed" font-size="15" font-weight="900">i=7</text>
+  <text x="45" y="279" text-anchor="end" fill="var(--accent2)" font-size="15" font-weight="900">i=8</text>
+</svg>
+</div>
+
+<div class="grid2" style="margin-top:16px">
+<div class="statusPanel">
+<h3>Query decomposition: sumPrefix(7)</h3>
+<p style="font-size:21px;line-height:1.7">7 = <code>0111₂</code>. Strip one bit per step:<br/>
+→ i=7: read <b>bit[7]=[7,7]</b>, jump to 6<br/>
+→ i=6: read <b>bit[6]=[5,6]</b>, jump to 4<br/>
+→ i=4: read <b>bit[4]=[1,4]</b>, jump to 0<br/>
+Blocks [7,7]+[5,6]+[1,4] = [1,7] ✓</p>
+</div>
+<div class="statusPanel">
+<h3>Update propagation: add(3, delta)</h3>
+<p style="font-size:21px;line-height:1.7">Which cells contain position 3?<br/>
+→ i=3: <b>bit[3]=[3,3]</b> ✓, jump to 4<br/>
+→ i=4: <b>bit[4]=[1,4]</b> ✓, jump to 8<br/>
+→ i=8: <b>bit[8]=[1,8]</b> ✓, jump to 16<br/>
+All 3 "ancestor" blocks updated. O(log n).</p>
+</div>
+</div>
+
+<div style="border-radius:14px;border:3px solid rgba(37,99,235,.25);background:rgba(37,99,235,.05);padding:14px 18px;margin:14px 0;font-size:22px">
+<b>Mental model:</b> Each <code>bit[i]</code> is a "manager" responsible for a block ending at i of size <code>lowbit(i)</code>. Querying decomposes a prefix into non-overlapping manager blocks (strip bits downward). Updating notifies every manager whose block covers the changed position (add bits upward). The binary representation does the decomposition automatically.
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §3 ABSTRACTION                                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="abstraction">
+<h2>§3 — Formal Abstraction</h2>
+<p style="font-size:22px;line-height:1.7">A Fenwick Tree is a <em>dynamic prefix-decomposition structure</em> over a group with an invertible binary operation. The standard version uses addition over integers (or long long), but the idea extends to any group where the operation has an inverse — this is precisely why sums work and minimum does not (minimum has no inverse).</p>
+
+<h3>The canonical-block property</h3>
+<p style="font-size:22px;line-height:1.7">For every integer r in [1, n], the sequence obtained by repeatedly stripping the least significant bit:</p>
+<pre><code>r → r - lowbit(r) → r - lowbit(r) - lowbit(r - lowbit(r)) → ... → 0</code></pre>
+<p style="font-size:22px;line-height:1.7">produces a set of disjoint intervals that partition [1, r] exactly. This is a theorem about binary representations: the set bits of r encode exactly the block sizes needed. The partition has at most ⌊log₂ r⌋ + 1 ≤ log₂ n + 1 blocks.</p>
+
+<h3>The ancestor property</h3>
+<p style="font-size:22px;line-height:1.7">For any position pos, the sequence obtained by repeatedly adding the least significant bit:</p>
+<pre><code>pos → pos + lowbit(pos) → pos + lowbit(pos) + lowbit(pos + lowbit(pos)) → ... → (first power of 2 &gt; n)</code></pre>
+<p style="font-size:22px;line-height:1.7">visits exactly the indices i such that <code>bit[i]</code>'s block contains pos. Each step sets a strictly higher bit, so the sequence terminates in O(log n) steps and visits O(log n) indices.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §4 OBSERVATIONS                                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="observations">
+<h2>§4 — Key Observations</h2>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:14px 0">
+<div style="background:rgba(15,118,110,.08);border:2px solid rgba(15,118,110,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--good);margin-bottom:8px">① Block Ownership</div>
+<div style="font-size:20px;line-height:1.6"><code>bit[i]</code> stores the sum of exactly the <b>lowbit(i)</b> elements ending at i. No more, no less. The block <code>[i-lowbit(i)+1 .. i]</code> is its sole responsibility.</div>
+</div>
+<div style="background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--accent);margin-bottom:8px">② Query strips bits</div>
+<div style="font-size:20px;line-height:1.6"><code>i -= i &amp; -i</code> removes the last set bit, jumping from the end of a block to the end of the remaining prefix. This is the query descent — at each step we read one block and remove it.</div>
+</div>
+<div style="background:rgba(180,83,9,.08);border:2px solid rgba(180,83,9,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--warn);margin-bottom:8px">③ Update adds bits</div>
+<div style="font-size:20px;line-height:1.6"><code>i += i &amp; -i</code> sets the next higher bit, climbing to the next ancestor block that also covers the updated position. All ancestors are visited exactly once.</div>
+</div>
+<div style="background:rgba(139,92,246,.08);border:2px solid rgba(139,92,246,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:#7c3aed;margin-bottom:8px">④ Logarithmic depth</div>
+<div style="font-size:20px;line-height:1.6">Both loops touch at most one index per bit of n. Since n has at most ⌊log₂ n⌋+1 bits, each operation is O(log n). For n=10⁶ that is at most 20 iterations.</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §5 INVARIANTS                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="invariants">
+<h2>§5 — Invariants</h2>
+
+<h3>Storage Invariant (the master invariant)</h3>
+<div style="border-radius:14px;border:3px solid rgba(37,99,235,.35);background:rgba(37,99,235,.07);padding:16px 18px;font-size:22px;margin:10px 0">
+For every index i in [1, n]:<br/><code>bit[i] = a[i - lowbit(i) + 1] + a[i - lowbit(i) + 2] + … + a[i]</code><br/>This invariant must hold at all times. Every BIT operation is designed to maintain it.
+</div>
+
+<h3>Query Invariant</h3>
+<p style="font-size:22px;line-height:1.7">During <code>sumPrefix(r)</code>, maintain the predicate: <em>ans + sum(a[1..i]) = sum(a[1..r])</em>, where i is the current loop variable. Initially i=r and ans=0. Each iteration adds <code>bit[i]</code> (which equals <code>sum(a[i-lowbit(i)+1..i])</code>) to ans and subtracts that block from i, keeping the invariant. When i=0 the uncovered prefix is empty, so ans equals the full prefix sum.</p>
+
+<h3>Update Invariant</h3>
+<p style="font-size:22px;line-height:1.7">During <code>add(pos, delta)</code>, the loop visits exactly the set of indices i such that <code>bit[i]</code>'s block contains pos. Adding delta to each visited <code>bit[i]</code> restores the storage invariant because the sum stored in each such cell increases by exactly delta. Cells whose blocks do not contain pos are not visited and their invariant is unaffected.</p>
+
+<h3>Termination</h3>
+<p style="font-size:22px;line-height:1.7">Both loops terminate because: in the query loop, <code>i -= lowbit(i)</code> strictly decreases i (it clears a set bit), so i reaches 0 in finitely many steps. In the update loop, <code>i += lowbit(i)</code> strictly increases i (it sets a higher bit), so i exceeds n in finitely many steps.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §6 PROOF                                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="proof">
+<h2>§6 — Proof of Correctness</h2>
+
+<details open>
+<summary>Theorem: BIT correctly answers prefix sum queries after any sequence of point additions. <span class="rightHint">Click to expand/collapse</span></summary>
+<div class="detailsBody">
+
+<p style="font-size:22px;line-height:1.7"><b>Base case:</b> After initializing all cells to zero, the storage invariant holds trivially since all a[i] = 0.</p>
+
+<p style="font-size:22px;line-height:1.7"><b>Preservation under add(pos, delta):</b> The set of indices i satisfying "the block of bit[i] contains pos" is exactly the set visited by <code>i += lowbit(i)</code> starting from pos. This is because <code>bit[i]</code>'s block is <code>[i-lowbit(i)+1, i]</code>; it contains pos iff <code>i-lowbit(i) &lt; pos ≤ i</code>, which characterizes exactly the ancestor chain in binary. Adding delta to each such <code>bit[i]</code> increases by delta the sum of each block containing pos, which is exactly what happens to a[pos]. All other cells are untouched. Therefore the storage invariant is restored.</p>
+
+<p style="font-size:22px;line-height:1.7"><b>Correctness of sumPrefix(r):</b> At each loop step with current index i, the algorithm reads <code>bit[i]</code> which equals the sum of block <code>[i-lowbit(i)+1, i]</code>. Then i is moved to <code>i-lowbit(i)</code>, the index just before this block. The blocks read are non-overlapping (each new i is strictly before the start of the previous block) and they cover [1, r] in reverse order. Therefore their sum equals <code>a[1]+a[2]+…+a[r]</code>. ∎</p>
+
+</div>
+</details>
+
+<details>
+<summary>Corollary: sumRange(l, r) is correct. <span class="rightHint">Click to expand</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7"><code>sumRange(l, r) = sumPrefix(r) − sumPrefix(l−1)</code>. This works because addition is a group operation with subtraction as inverse. The identity <code>a[l]+…+a[r] = (a[1]+…+a[r]) − (a[1]+…+a[l−1])</code> is elementary. This is also exactly why Fenwick Trees work naturally for sums but not minimum — min has no inverse. ∎</p>
+</div>
+</details>
+
+<details>
+<summary>Theorem: O(n) build is correct. <span class="rightHint">Click to expand</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">The O(n) build avoids calling <code>add</code> n times (which would be O(n log n)). Instead, for each i, it adds <code>a[i]</code> directly to <code>bit[i]</code> and then propagates to the parent <code>i + lowbit(i)</code>. This is a bottom-up aggregation: each block's value is accumulated from smaller blocks that partition it. By induction on the block sizes, when index i is processed, all smaller blocks whose ranges are subsets of <code>[i-lowbit(i)+1, i]</code> have already been processed and their sums propagated to i. Therefore the final <code>bit[i]</code> correctly equals the sum of its block. ∎</p>
+</div>
+</details>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §7 COMPLEXITY                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="complexity">
+<h2>§7 — Complexity Analysis</h2>
+<table>
+<tr><th>Operation</th><th>Time</th><th>Space</th><th>Notes</th></tr>
+<tr><td>Point add</td><td>O(log n)</td><td>O(1)</td><td>At most log₂(n)+1 loop iterations</td></tr>
+<tr><td>Prefix sum</td><td>O(log n)</td><td>O(1)</td><td>At most log₂(n)+1 iterations</td></tr>
+<tr><td>Range sum</td><td>O(log n)</td><td>O(1)</td><td>Two prefix queries</td></tr>
+<tr><td>Linear build</td><td>O(n)</td><td>O(1)</td><td>O(n) vs O(n log n) for naive build</td></tr>
+<tr><td>Lower bound</td><td>O(log n)</td><td>O(1)</td><td>Binary lifting — only valid if all values ≥ 0</td></tr>
+<tr><td>Memory</td><td>—</td><td>O(n)</td><td>Exactly n+1 cells of type T</td></tr>
+</table>
+
+<h3>Constant factor analysis</h3>
+<p style="font-size:22px;line-height:1.7">In practice BIT is roughly 2–4× faster than a segment tree for point-update range-sum problems. The reasons are: no pointer chasing, perfect cache locality (a short stride along a flat array), minimal branches, and only one or two loop variables. Each "iteration" is literally: read/write one cell, one bitwise AND, one addition or subtraction. This fits in a handful of CPU instructions.</p>
+
+<h3>2D extension</h3>
+<p style="font-size:22px;line-height:1.7">The 2D BIT (variant §V4) runs two nested loops — O(log n · log m) per operation — using O(n·m) memory. For n=m=5000, that is 25M entries of 8 bytes = 200 MB. Dense 2D BIT requires care about memory limits; use compression when coordinates are large but the number of updates is small.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §8 TEMPLATE PHILOSOPHY                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="template-philosophy">
+<h2>§8 — Template Philosophy</h2>
+<p style="font-size:22px;line-height:1.7">All Fenwick Tree variants in this document derive from a single parameterized struct <code>Fenwick&lt;T&gt;</code>. The template type T controls the value domain (int, long long, double, modular int). Higher-level structures like <code>RangeAddRangeSum</code> or <code>Fenwick2D</code> wrap or compose the base struct. This keeps naming, loop logic, and indexing identical across every variant — reducing bugs and mental load under contest pressure.</p>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:14px 0">
+<div style="background:rgba(15,118,110,.08);border:2px solid rgba(15,118,110,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--good);margin-bottom:8px">What never changes</div>
+<div style="font-size:20px;line-height:1.6">• <code>i += i &amp; -i</code> in add<br/>• <code>i -= i &amp; -i</code> in sumPrefix<br/>• 1-indexed externally<br/>• bit[0] unused<br/>• T{} as zero value</div>
+</div>
+<div style="background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--accent);margin-bottom:8px">What changes per variant</div>
+<div style="font-size:20px;line-height:1.6">• Number of BIT instances (1, 2, or nested)<br/>• The outer wrapper logic<br/>• How indices map to semantic positions<br/>• Whether we call add directly or wrap it</div>
+</div>
+<div style="background:rgba(180,83,9,.08);border:2px solid rgba(180,83,9,.25);border-radius:14px;padding:14px 16px">
+<div style="font-weight:950;font-size:22px;color:var(--warn);margin-bottom:8px">1-based vs 0-based</div>
+<div style="font-size:20px;line-height:1.6">This tutorial uses <b>1-based</b> externally throughout. Inputs in [0, n-1] need <code>idx++</code>. Half-open intervals [l, r) use <code>sumRange(l+1, r)</code>. Never mix conventions in the same file.</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §9 MASTER TEMPLATE                                    -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="master-template">
+<h2>§9 — Master Template (AC-Ready)</h2>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T&gt;
+struct Fenwick {
+    int n;
+    vector&lt;T&gt; bit;
+
+    Fenwick() : n(0) {}
+
+    Fenwick(int n_) {
+        init(n_);
+    }
+
+    void init(int n_) {
+        n = n_;
+        bit.assign(n + 1, T{});
+    }
+
+    // Add delta to a[idx].  idx is 1-indexed.
+    void add(int idx, T delta) {
+        for (int i = idx; i &lt;= n; i += i &amp; -i)
+            bit[i] += delta;
+    }
+
+    // Return a[1] + a[2] + ... + a[idx].  idx is 1-indexed.
+    T sumPrefix(int idx) const {
+        T ans{};
+        for (int i = idx; i &gt; 0; i -= i &amp; -i)
+            ans += bit[i];
+        return ans;
+    }
+
+    // Return a[l] + ... + a[r].  l and r are 1-indexed, inclusive.
+    T sumRange(int l, int r) const {
+        if (l &gt; r) return T{};
+        return sumPrefix(r) - sumPrefix(l - 1);
+    }
+
+    // Build from a 1-indexed array: a[0] ignored, a[1..n] used.
+    void build(const vector&lt;T&gt;&amp; a) {
+        init((int)a.size() - 1);
+        for (int i = 1; i &lt;= n; ++i) {
+            bit[i] += a[i];
+            int parent = i + (i &amp; -i);
+            if (parent &lt;= n) bit[parent] += bit[i];
+        }
+    }
+
+    // First index pos where sumPrefix(pos) &gt;= target.
+    // REQUIRES: all values in the BIT are nonnegative.
+    // Returns n+1 if no such pos exists.
+    int lowerBound(T target) const {
+        if (target &lt;= T{}) return 1;
+        int idx = 0;
+        T current{};
+        int step = 1;
+        while ((step &lt;&lt; 1) &lt;= n) step &lt;&lt;= 1;
+        for (; step &gt; 0; step &gt;&gt;= 1) {
+            int next = idx + step;
+            if (next &lt;= n &amp;&amp; current + bit[next] &lt; target) {
+                idx = next;
+                current += bit[next];
+            }
+        }
+        return idx + 1;
+    }
+
+    // First index pos where sumPrefix(pos) &gt; target.
+    // REQUIRES: all values in the BIT are nonnegative.
+    int upperBound(T target) const {
+        int idx = 0;
+        T current{};
+        int step = 1;
+        while ((step &lt;&lt; 1) &lt;= n) step &lt;&lt;= 1;
+        for (; step &gt; 0; step &gt;&gt;= 1) {
+            int next = idx + step;
+            if (next &lt;= n &amp;&amp; current + bit[next] &lt;= target) {
+                idx = next;
+                current += bit[next];
+            }
+        }
+        return idx + 1;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    // Demo — 1-indexed array of size 5: a=[5,1,3,7,2]
+    vector&lt;long long&gt; a = {0, 5, 1, 3, 7, 2};
+    Fenwick&lt;long long&gt; fw;
+    fw.build(a);
+
+    cout &lt;&lt; fw.sumRange(2, 4) &lt;&lt; '\n'; // 1+3+7 = 11
+    fw.add(3, 10);                       // a[3] += 10
+    cout &lt;&lt; fw.sumRange(2, 4) &lt;&lt; '\n'; // 1+13+7 = 21
+    cout &lt;&lt; fw.lowerBound(12) &lt;&lt; '\n'; // first pos with prefix &gt;= 12
+
+    return 0;
+}</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §10 LINE BY LINE                                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="line-by-line">
+<h2>§10 — Line-by-Line Explanation</h2>
+
+<details open>
+<summary><code>template &lt;class T&gt; struct Fenwick</code> <span class="rightHint">Type flexibility</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">The template parameter T allows <code>Fenwick&lt;int&gt;</code>, <code>Fenwick&lt;long long&gt;</code>, <code>Fenwick&lt;double&gt;</code>, or <code>Fenwick&lt;ModInt&gt;</code>. In contest code, always use <code>long long</code> unless values are guaranteed small — sums of n=10⁵ elements each up to 10⁹ can reach 10¹⁴, overflowing int.</p>
+</div>
+</details>
+
+<details>
+<summary><code>bit.assign(n + 1, T{})</code> <span class="rightHint">Why n+1?</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">The BIT is 1-indexed: valid positions are 1..n. We allocate n+1 cells so that <code>bit[n]</code> is valid. <code>bit[0]</code> is allocated but never read or written. The expression <code>T{}</code> value-initializes T to its zero — 0 for int/long long, 0.0 for double, the identity element for any custom type.</p>
+</div>
+</details>
+
+<details>
+<summary><code>for (int i = idx; i &lt;= n; i += i &amp; -i)</code> in add <span class="rightHint">The ascent</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7"><code>i &amp; -i</code> extracts the lowest set bit of i. Adding it to i clears that bit and sets the next higher bit (or creates a new one). This is the "climb to ancestor" operation. Each iteration visits one ancestor block. The loop terminates when i exceeds n.</p>
+</div>
+</details>
+
+<details>
+<summary><code>for (int i = idx; i &gt; 0; i -= i &amp; -i)</code> in sumPrefix <span class="rightHint">The descent</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">Subtracting the lowest set bit clears it, moving i to the position just before the last covered block. This decomposes the prefix into non-overlapping canonical blocks. The loop terminates when all bits are cleared (i = 0).</p>
+</div>
+</details>
+
+<details>
+<summary><code>sumRange(l, r) = sumPrefix(r) - sumPrefix(l-1)</code> <span class="rightHint">The range trick</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">This works because addition is invertible: <code>a[l]+…+a[r] = (a[1]+…+a[r]) - (a[1]+…+a[l-1])</code>. The subtraction undoes the prefix up to l-1. This is the deepest reason why BIT works for sums and not minimum — minimum has no inverse operation.</p>
+</div>
+</details>
+
+<details>
+<summary><code>build</code> — why O(n) instead of O(n log n)? <span class="rightHint">The parent push</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">Calling <code>add(i, a[i])</code> for each i would be O(n log n). Instead, the O(n) build directly deposits <code>a[i]</code> into <code>bit[i]</code> and then pushes the partial sum to the parent <code>i + lowbit(i)</code>. Because we process i in increasing order and each parent index is strictly greater than i, every block receives contributions from all its sub-blocks exactly once — a one-pass bottom-up sweep.</p>
+</div>
+</details>
+
+<details>
+<summary><code>lowerBound</code> — binary lifting on the BIT <span class="rightHint">O(log n) kth element</span></summary>
+<div class="detailsBody">
+<p style="font-size:22px;line-height:1.7">This replaces a binary search over <code>sumPrefix(mid)</code> (which would be O(log²n)) with a direct O(log n) descent that walks the BIT tree from the highest power of 2 downward. At each step we speculatively add a block: if the running sum plus <code>bit[idx+step]</code> is still below the target, we commit that jump; otherwise we skip it. After all powers of 2 are tried, <code>idx+1</code> is the answer. <b>Critical:</b> this is only valid when all BIT values are nonnegative, because prefix sums must be monotone for binary search to be valid.</p>
+</div>
+</details>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §11 QUERY TRACER                                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="tracer-query">
+<h2>§11 — Interactive Tracer: sumPrefix(7)</h2>
+<p class="note">Starting BIT with n=8, array a=[3,1,4,1,5,9,2,6] (1-indexed). Trace sumPrefix(7) step by step. Green cells are being read.</p>
+
+<div style="margin:14px 0">
+<div style="font-weight:900;font-size:20px;color:var(--muted);margin-bottom:6px">bit[1..8] values:</div>
+<div id="qTracerCells" class="tracer-row"></div>
+<div id="qTracerRanges" class="range-labels"></div>
+</div>
+
+<div id="qTracerAns" class="ans-display" style="display:none"></div>
+
+<div id="qTracerAction" class="tracer-action">Press <b>Next</b> to begin tracing sumPrefix(7).</div>
+
+<div class="tracer-controls">
+<button class="miniBtn" id="qPrevBtn">◀ Prev</button>
+<button class="miniBtn primary" id="qNextBtn">Next ▶</button>
+<button class="miniBtn" id="qResetBtn">↺ Reset</button>
+<div class="step-counter" id="qStepCounter">Step 0 / 4</div>
+</div>
+
+<pre id="qCodeHint" style="margin-top:10px"><code>// Code will appear here at each step</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- §12 UPDATE TRACER                                     -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="tracer-update">
+<h2>§12 — Interactive Tracer: add(3, 10)</h2>
+<p class="note">Continuing from the same BIT. Trace add(3, 10). Orange cells are being written.</p>
+
+<div style="margin:14px 0">
+<div style="font-weight:900;font-size:20px;color:var(--muted);margin-bottom:6px">bit[1..8] values (live — changes persist):</div>
+<div id="uTracerCells" class="tracer-row"></div>
+<div id="uTracerRanges" class="range-labels"></div>
+</div>
+
+<div id="uTracerAction" class="tracer-action">Press <b>Next</b> to begin tracing add(3, 10).</div>
+
+<div class="tracer-controls">
+<button class="miniBtn" id="uPrevBtn">◀ Prev</button>
+<button class="miniBtn primary" id="uNextBtn">Next ▶</button>
+<button class="miniBtn" id="uResetBtn">↺ Reset</button>
+<div class="step-counter" id="uStepCounter">Step 0 / 4</div>
+</div>
+
+<pre id="uCodeHint" style="margin-top:10px"><code>// Code will appear here at each step</code></pre>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART IV — VARIANTS                                    -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<section class="card" id="v1">
+<h2><span class="variantTag">V1</span> Point Add + Range Sum</h2>
+<p class="note">The baseline. Use the master template directly.</p>
+<div class="grid2">
+<div class="statusPanel"><h3>When to use</h3>
+<p style="font-size:20px;line-height:1.6">Point updates, range sum queries, dynamic arrays where values change one position at a time. Classic example: AtCoder Library Practice Problem B.</p>
+</div>
+<div class="statusPanel"><h3>When NOT to use</h3>
+<p style="font-size:20px;line-height:1.6">Static arrays (use prefix sum). Range minimum with arbitrary updates (use segment tree). Range assignment (use lazy segment tree).</p>
+</div>
+</div>
+<pre><code>// V1: Point add + range sum — use Fenwick&lt;long long&gt; directly.
+Fenwick&lt;long long&gt; fw(n);
+fw.add(i, x);           // point update
+fw.sumRange(l, r);      // range sum
+fw.sumPrefix(r);        // prefix sum</code></pre>
+<div class="chips"><div class="chip good">O(log n) update and query</div><div class="chip">Memory O(n)</div></div>
+</section>
+
+<section class="card" id="v2">
+<h2><span class="variantTag">V2</span> Range Add + Point Query</h2>
+<p class="note">Store the difference array in a BIT. Range add becomes two point updates; point query becomes a prefix sum.</p>
+
+<h3>Key idea</h3>
+<p style="font-size:22px;line-height:1.7">Let <code>diff[i] = a[i] - a[i-1]</code>. Then <code>a[i] = diff[1]+diff[2]+…+diff[i]</code>. Adding x to [l, r] means <code>diff[l] += x</code>, <code>diff[r+1] -= x</code>. Point query at i is a prefix sum of diff up to i.</p>
+
+<pre><code>template &lt;class T&gt;
+struct RangeAddPointQuery {
+    int n;
+    Fenwick&lt;T&gt; fw;
+
+    RangeAddPointQuery(int n_ = 0) { init(n_); }
+
+    void init(int n_) { n = n_; fw.init(n); }
+
+    void rangeAdd(int l, int r, T delta) {
+        if (l &gt; r) return;
+        fw.add(l, delta);
+        if (r + 1 &lt;= n) fw.add(r + 1, -delta);
+    }
+
+    T pointQuery(int idx) const {
+        return fw.sumPrefix(idx);
+    }
+};
+
+// Usage:
+RangeAddPointQuery&lt;long long&gt; ds(n);
+ds.rangeAdd(l, r, x);    // add x to a[l..r]
+ds.pointQuery(k);         // retrieve a[k]</code></pre>
+<div class="chips"><div class="chip good">O(log n) both operations</div><div class="chip warn">Don't forget the r+1 sentinel</div></div>
+</section>
+
+<section class="card" id="v3">
+<h2><span class="variantTag">V3</span> Range Add + Range Sum</h2>
+<p class="note">Two BITs. One stores coefficients of p; the other stores constants. This derivation is the deepest trick in BIT theory.</p>
+
+<h3>Derivation</h3>
+<p style="font-size:22px;line-height:1.7">Adding x to [l, r] contributes to sumPrefix(p):</p>
+<pre><code>0                 if p &lt; l
+x*(p - l + 1)     if l &lt;= p &lt;= r
+x*(r - l + 1)     if p &gt; r</code></pre>
+<p style="font-size:22px;line-height:1.7">This factors as <code>p * B1.prefix(p) - B2.prefix(p)</code> where:</p>
+<pre><code>B1[l]     += x;    B1[r+1] -= x;
+B2[l]     += x*(l-1);  B2[r+1] -= x*r;
+prefix(p) = p * B1.prefix(p) - B2.prefix(p)</code></pre>
+
+<pre><code>template &lt;class T&gt;
+struct RangeAddRangeSum {
+    int n;
+    Fenwick&lt;T&gt; b1, b2;
+
+    RangeAddRangeSum(int n_ = 0) { init(n_); }
+
+    void init(int n_) { n = n_; b1.init(n); b2.init(n); }
+
+    void rangeAdd(int l, int r, T x) {
+        if (l &gt; r) return;
+        b1.add(l, x);       b2.add(l, x * (l - 1));
+        if (r+1 &lt;= n) { b1.add(r+1, -x); b2.add(r+1, -x * r); }
+    }
+
+    T sumPrefix(int p) const {
+        return b1.sumPrefix(p) * p - b2.sumPrefix(p);
+    }
+
+    T sumRange(int l, int r) const {
+        if (l &gt; r) return T{};
+        return sumPrefix(r) - sumPrefix(l - 1);
+    }
+};</code></pre>
+<div class="chips"><div class="chip good">O(log n) all operations</div><div class="chip warn">Use long long — multiplications overflow int easily</div></div>
+</section>
+
+<section class="card" id="v4">
+<h2><span class="variantTag">V4</span> 2D Fenwick Tree</h2>
+<p class="note">Nest two BIT loops: outer over x-axis, inner over y-axis. Point update and rectangle sum both in O(log n · log m).</p>
+<pre><code>template &lt;class T&gt;
+struct Fenwick2D {
+    int n, m;
+    vector&lt;vector&lt;T&gt;&gt; bit;
+
+    Fenwick2D(int n_ = 0, int m_ = 0) { init(n_, m_); }
+
+    void init(int n_, int m_) {
+        n = n_; m = m_;
+        bit.assign(n+1, vector&lt;T&gt;(m+1, T{}));
+    }
+
+    void add(int x, int y, T delta) {
+        for (int i = x; i &lt;= n; i += i &amp; -i)
+            for (int j = y; j &lt;= m; j += j &amp; -j)
+                bit[i][j] += delta;
+    }
+
+    T sumPrefix(int x, int y) const {
+        T ans{};
+        for (int i = x; i &gt; 0; i -= i &amp; -i)
+            for (int j = y; j &gt; 0; j -= j &amp; -j)
+                ans += bit[i][j];
+        return ans;
+    }
+
+    T sumRectangle(int x1, int y1, int x2, int y2) const {
+        if (x1 &gt; x2 || y1 &gt; y2) return T{};
+        return sumPrefix(x2,y2) - sumPrefix(x1-1,y2)
+             - sumPrefix(x2,y1-1) + sumPrefix(x1-1,y1-1);
+    }
+};</code></pre>
+<div class="chips"><div class="chip good">O(log n log m) per op</div><div class="chip warn">Memory O(nm) — check limits carefully</div><div class="chip bad">5000×5000 BIT of long long ≈ 200 MB — too large without care</div></div>
+</section>
+
+<section class="card" id="v5">
+<h2><span class="variantTag">V5</span> Prefix Lower Bound / kth Element</h2>
+<p class="note">Maintain a frequency table and find the kth smallest value in O(log n) using binary lifting on the BIT — no binary search needed.</p>
+<pre><code>// Stored in the master Fenwick template:
+// fw.add(rank, 1)         to insert a value
+// fw.add(rank, -1)        to remove a value
+// fw.lowerBound(k)        to find kth smallest rank
+// fw.sumPrefix(rank)      to count values &lt;= rank</code></pre>
+<div class="chips"><div class="chip bad">ALL values in the BIT must be nonneg — prefix sums must be monotone</div><div class="chip warn">Coordinate-compress values before inserting</div><div class="chip good">O(log n) kth — better than O(log²n) binary search</div></div>
+</section>
+
+<section class="card" id="v6">
+<h2><span class="variantTag">V6</span> Order Statistic Multiset</h2>
+<div class="grid2">
+<div class="statusPanel"><h3>BIT + compression</h3><p style="font-size:20px;line-height:1.6">If all possible values are known in advance, compress them to [1..m] and use a BIT. Insert = add(rank, +1); erase = add(rank, -1); count ≤ x = sumPrefix(rank[x]); kth = lowerBound(k). Handles duplicates naturally.</p></div>
+<div class="statusPanel"><h3>PBDS instead when</h3><p style="font-size:20px;line-height:1.6">Values are online and unknown in advance; you cannot compress. Or when you need direct ordered iteration. <code>__gnu_pbds::tree</code> gives O(log n) rank and kth without compression but with a larger constant factor.</p></div>
+</div>
+</section>
+
+<section class="card" id="v7">
+<h2><span class="variantTag">V7</span> Inversion Counting</h2>
+<p class="note">Scan right to left. For each element, query how many already-inserted elements are strictly smaller. That count is exactly the inversions contributed by the current element. Then insert the current element.</p>
+<pre><code>long long countInversions(vector&lt;long long&gt; a) {
+    // Coordinate compress
+    vector&lt;long long&gt; vals = a;
+    sort(vals.begin(), vals.end());
+    vals.erase(unique(vals.begin(), vals.end()), vals.end());
+
+    Fenwick&lt;long long&gt; fw((int)vals.size());
+    long long ans = 0;
+
+    for (int i = (int)a.size() - 1; i &gt;= 0; --i) {
+        int rank = (int)(lower_bound(vals.begin(), vals.end(), a[i]) - vals.begin()) + 1;
+        ans += fw.sumPrefix(rank - 1);  // count elements &lt; a[i] already inserted
+        fw.add(rank, 1);
+    }
+    return ans;
+}</code></pre>
+<div class="chips"><div class="chip good">O(n log n)</div><div class="chip warn">Use rank-1 for strict inversions (a[i] > a[j])</div><div class="chip warn">Use long long for answer — up to n²/2 ≈ 5×10¹⁰</div></div>
+</section>
+
+<section class="card" id="v8">
+<h2><span class="variantTag">V8</span> Euler Tour + BIT on Trees</h2>
+<p class="note">The Euler tour flattens tree structure to a contiguous array interval. BIT then handles subtree and root-path queries via standard point-update / range-add patterns.</p>
+<div class="grid2">
+<div class="statusPanel">
+<h3>Subtree sum</h3>
+<p style="font-size:20px;line-height:1.6">DFS to compute tin[u] and tout[u]. Subtree of u = interval [tin[u], tout[u]]. Update node u = point add at tin[u]. Sum of subtree = sumRange(tin[u], tout[u]). Uses V1 (point add + range sum).</p>
+</div>
+<div class="statusPanel">
+<h3>Root-to-node path sum</h3>
+<p style="font-size:20px;line-height:1.6">Value at node v contributes to every descendant's root-path sum. So update v = rangeAdd(tin[v], tout[v], delta). Query path to u = pointQuery(tin[u]). Uses V2 (range add + point query).</p>
+</div>
+</div>
+</section>
+
+<section class="card" id="v9">
+<h2><span class="variantTag">V9</span> Offline BIT Sweeps</h2>
+<p class="note">Read all queries upfront, reorder processing for efficiency, then output answers in original order. Two canonical patterns:</p>
+<div class="grid2">
+<div class="statusPanel">
+<h3>KQUERY pattern</h3>
+<p style="font-size:20px;line-height:1.6">Count elements &gt; k in a[l..r]. Sort array values descending. Sort queries by k descending. For each query, insert positions of values &gt; k that haven't been inserted yet. Query BIT sum over [l, r].</p>
+</div>
+<div class="statusPanel">
+<h3>DQUERY pattern</h3>
+<p style="font-size:20px;line-height:1.6">Count distinct values in a[l..r]. Process positions left to right. For each position i, remove previous occurrence of a[i] from BIT, add current occurrence. Answer queries grouped by right endpoint r = sumRange(l, i).</p>
+</div>
+</div>
+</section>
+
+<section class="card" id="v10">
+<h2><span class="variantTag">V10</span> DP with BIT</h2>
+<p class="note">When a DP transition is "sum of all dp[j] where value[j] &lt; value[i]", this is a prefix query over compressed value ranks — exactly what a BIT answers in O(log n).</p>
+<pre><code>// Counting increasing subsequences of length K
+// For each element x with rank r:
+//   for len from K down to 2:
+//     ways[len] = dp[len-1].sumPrefix(r - 1)
+//     dp[len].add(r, ways[len])
+//   dp[1].add(r, 1)
+//
+// Final answer: dp[K].sumPrefix(m)
+// where m = number of distinct values</code></pre>
+<p style="font-size:22px;line-height:1.7">The inner loop goes <em>downward from K to 2</em> to prevent using the same element twice in one subsequence — the same logic as 0/1 knapsack. This pattern appears in LIS counting, rank-based DP, and offline subsequence problems.</p>
+</section>
+
+<section class="card" id="v11">
+<h2><span class="variantTag">V11</span> Min BIT — Limitations</h2>
+<p class="note">A BIT can support prefix minimum queries, but ONLY when all updates are monotone decreasing (i.e., you only take min, never increase values). There is no general range minimum BIT.</p>
+<pre><code>struct FenwickMin {
+    int n;
+    const long long INF = 1LL &lt;&lt; 60;
+    vector&lt;long long&gt; bit;
+
+    FenwickMin(int n_ = 0) { init(n_); }
+
+    void init(int n_) { n = n_; bit.assign(n+1, INF); }
+
+    // Update: take min. Values can only decrease.
+    void updateMin(int idx, long long value) {
+        for (int i = idx; i &lt;= n; i += i &amp; -i)
+            bit[i] = min(bit[i], value);
+    }
+
+    // Prefix min: minimum of a[1..idx].
+    long long prefixMin(int idx) const {
+        long long ans = INF;
+        for (int i = idx; i &gt; 0; i -= i &amp; -i)
+            ans = min(ans, bit[i]);
+        return ans;
+    }
+};</code></pre>
+<div class="chips"><div class="chip bad">Cannot do range min with arbitrary updates — use segment tree</div><div class="chip warn">prefixMin only, NOT rangeMin(l,r) — min has no inverse</div><div class="chip good">Useful for offline DP where values only decrease</div></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART V — PROBLEMS                                     -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="problems-a">
+<h2>§ Problems 1–5</h2>
+
+<details open>
+<summary>P1 — Dynamic Range Sum (AtCoder ABC Practice2 B) <span class="rightHint">V1 direct</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><b>Problem:</b> Maintain an array. Operations: <code>0 p x</code> (add x to a[p]), <code>1 l r</code> (sum a[l..r-1]). Input is 0-based. <a href="https://vjudge.net/problem/AtCoder-Practice2_b" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T&gt;
+struct Fenwick {
+    int n; vector&lt;T&gt; bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+    T sum(int l,int r){return l&gt;r?T{}:sum(r)-sum(l-1);}
+};
+
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n,q; cin&gt;&gt;n&gt;&gt;q;
+    Fenwick&lt;long long&gt; fw(n);
+    for(int i=0;i&lt;n;i++){long long x;cin&gt;&gt;x;fw.add(i+1,x);}
+    while(q--){
+        int t; cin&gt;&gt;t;
+        if(t==0){int p;long long x;cin&gt;&gt;p&gt;&gt;x;fw.add(p+1,x);}
+        else{int l,r;cin&gt;&gt;l&gt;&gt;r;cout&lt;&lt;fw.sum(l+1,r)&lt;&lt;'\n';}
+    }
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">Pitfall: input is 0-indexed; query is half-open [l, r). Use p+1 for update and sum(l+1, r) for query.</p>
+</div>
+</details>
+
+<details>
+<summary>P2 — Range Update Queries (CSES 1651) <span class="rightHint">V2 difference array</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><b>Problem:</b> Operations: <code>1 l r x</code> (add x to a[l..r]), <code>2 k</code> (print a[k]). <a href="https://cses.fi/problemset/task/1651" target="_blank">CSES link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n,q;cin&gt;&gt;n&gt;&gt;q;
+    Fenwick&lt;long long&gt; fw(n);
+    for(int i=1;i&lt;=n;i++){long long x;cin&gt;&gt;x;fw.add(i,x);if(i+1&lt;=n)fw.add(i+1,-x);}
+    while(q--){
+        int t;cin&gt;&gt;t;
+        if(t==1){int l,r;long long x;cin&gt;&gt;l&gt;&gt;r&gt;&gt;x;fw.add(l,x);if(r+1&lt;=n)fw.add(r+1,-x);}
+        else{int k;cin&gt;&gt;k;cout&lt;&lt;fw.sum(k)&lt;&lt;'\n';}
+    }
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">Pitfall: initial array must also be loaded as difference array. Don't forget <code>if(r+1&lt;=n)</code> sentinel check.</p>
+</div>
+</details>
+
+<details>
+<summary>P3 — HORRIBLE Queries (SPOJ HORRIBLE) <span class="rightHint">V3 two BITs</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><b>Problem:</b> Multi-test. Operations: <code>0 l r x</code> (add x to a[l..r]), <code>1 l r</code> (sum a[l..r]). <a href="https://vjudge.net/problem/SPOJ-HORRIBLE" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+};
+struct RARS{
+    int n;Fenwick&lt;long long&gt;b1,b2;
+    RARS(int n_=0){init(n_);}
+    void init(int n_){n=n_;b1.init(n);b2.init(n);}
+    void rangeAdd(int l,int r,long long x){
+        b1.add(l,x);b2.add(l,x*(l-1));
+        if(r+1&lt;=n){b1.add(r+1,-x);b2.add(r+1,-x*r);}
+    }
+    long long pfx(int p){return b1.sum(p)*p-b2.sum(p);}
+    long long query(int l,int r){return pfx(r)-pfx(l-1);}
+};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int tc;cin&gt;&gt;tc;
+    while(tc--){
+        int n,q;cin&gt;&gt;n&gt;&gt;q;
+        RARS ds(n);
+        while(q--){
+            int t;cin&gt;&gt;t;
+            if(t==0){int l,r;long long x;cin&gt;&gt;l&gt;&gt;r&gt;&gt;x;ds.rangeAdd(l,r,x);}
+            else{int l,r;cin&gt;&gt;l&gt;&gt;r;cout&lt;&lt;ds.query(l,r)&lt;&lt;'\n';}
+        }
+    }
+}</code></pre>
+</div>
+</details>
+
+<details>
+<summary>P4 — MATSUM (SPOJ MATSUM) <span class="rightHint">V4 2D BIT with point-set</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><b>Problem:</b> Multiple test cases. N×N matrix, 0-indexed. <code>SET x y val</code> sets a cell; <code>SUM x1 y1 x2 y2</code> sums a rectangle; <code>END</code> ends the test case. <a href="https://vjudge.net/problem/SPOJ-MATSUM" target="_blank">VJudge link</a></p>
+<p style="font-size:21px">Key insight: BIT supports <code>add</code>, not direct set. Store current matrix values to compute delta. All 0-based input coordinates are incremented to 1-based before BIT calls.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T&gt;
+struct Fenwick2D {
+    int n, m;
+    vector&lt;vector&lt;T&gt;&gt; bit;
+    Fenwick2D(int n_=0,int m_=0){init(n_,m_);}
+    void init(int n_,int m_){
+        n=n_;m=m_;
+        bit.assign(n+1,vector&lt;T&gt;(m+1,T{}));
+    }
+    void add(int x,int y,T d){
+        for(int i=x;i&lt;=n;i+=i&amp;-i)
+            for(int j=y;j&lt;=m;j+=j&amp;-j)
+                bit[i][j]+=d;
+    }
+    T sum(int x,int y) const {
+        T a{};
+        for(int i=x;i&gt;0;i-=i&amp;-i)
+            for(int j=y;j&gt;0;j-=j&amp;-j)
+                a+=bit[i][j];
+        return a;
+    }
+    T rect(int x1,int y1,int x2,int y2) const {
+        return sum(x2,y2)-sum(x1-1,y2)-sum(x2,y1-1)+sum(x1-1,y1-1);
+    }
+};
+
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int tc;cin&gt;&gt;tc;
+    while(tc--){
+        int n;cin&gt;&gt;n;
+        Fenwick2D&lt;long long&gt; fw(n,n);
+        vector&lt;vector&lt;long long&gt;&gt; a(n+1,vector&lt;long long&gt;(n+1,0));
+        string cmd;
+        while(cin&gt;&gt;cmd){
+            if(cmd=="END") break;
+            if(cmd=="SET"){
+                int x,y;long long val;cin&gt;&gt;x&gt;&gt;y&gt;&gt;val;
+                ++x;++y;                     // 0-based → 1-based
+                long long delta=val-a[x][y];
+                a[x][y]=val;
+                fw.add(x,y,delta);
+            } else { // SUM
+                int x1,y1,x2,y2;cin&gt;&gt;x1&gt;&gt;y1&gt;&gt;x2&gt;&gt;y2;
+                ++x1;++y1;++x2;++y2;         // 0-based → 1-based
+                cout&lt;&lt;fw.rect(x1,y1,x2,y2)&lt;&lt;'\n';
+            }
+        }
+        if(tc) cout&lt;&lt;'\n';
+    }
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">Every input coordinate from the problem is 0-based; each is incremented by 1 before being passed to the 1-based Fenwick2D. The current matrix <code>a[][]</code> tracks values so SET can compute a delta instead of assigning directly.</p>
+</div>
+</details>
+
+<details>
+<summary>P5 — Multiset kth Deletion (CF 1354D) <span class="rightHint">V5 lowerBound</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><b>Problem:</b> Given n initial values and q queries. Positive query x inserts x into the multiset. Negative query −k deletes the kth smallest element. At the end, print the smallest remaining element or 0 if empty. Values are in [1..n]. <a href="https://vjudge.net/problem/CodeForces-1354D" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T&gt;
+struct Fenwick {
+    int n; vector&lt;T&gt; bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+    // First pos where prefix sum &gt;= target. All values must be nonneg.
+    int lowerBound(T target) const {
+        if(target&lt;=T{})return 1;
+        int idx=0; T cur{};
+        int step=1;
+        while((step&lt;&lt;1)&lt;=n)step&lt;&lt;=1;
+        for(;step&gt;0;step&gt;&gt;=1){
+            int nxt=idx+step;
+            if(nxt&lt;=n &amp;&amp; cur+bit[nxt]&lt;target){idx=nxt;cur+=bit[nxt];}
+        }
+        return idx+1;
+    }
+};
+
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n,q;cin&gt;&gt;n&gt;&gt;q;
+    Fenwick&lt;int&gt; fw(n);
+    // Load initial multiset
+    for(int i=0;i&lt;n;i++){int x;cin&gt;&gt;x;fw.add(x,1);}
+    // Process queries
+    while(q--){
+        int x;cin&gt;&gt;x;
+        if(x&gt;0){
+            fw.add(x,1);           // insert x
+        } else {
+            int k=-x;
+            int pos=fw.lowerBound(k); // find kth smallest
+            fw.add(pos,-1);        // remove it
+        }
+    }
+    // Output answer
+    if(fw.sum(n)==0) cout&lt;&lt;0&lt;&lt;'\n';
+    else             cout&lt;&lt;fw.lowerBound(1)&lt;&lt;'\n';
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">Values fit in [1..n] so no coordinate compression is needed. lowerBound is valid because all frequencies are nonnegative (we only delete existing elements).</p>
+</div>
+</details>
+</section>
+
+<section class="card" id="problems-b">
+<h2>§ Problems 6–10</h2>
+
+<details open>
+<summary>P6 — Inversion Count (SPOJ INVCNT) <span class="rightHint">V7</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7"><a href="https://vjudge.net/problem/SPOJ-INVCNT" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int tc;cin&gt;&gt;tc;
+    while(tc--){
+        int n;cin&gt;&gt;n;
+        vector&lt;long long&gt;a(n);
+        for(auto&amp;x:a)cin&gt;&gt;x;
+        vector&lt;long long&gt;vals=a;
+        sort(vals.begin(),vals.end());
+        vals.erase(unique(vals.begin(),vals.end()),vals.end());
+        Fenwick&lt;long long&gt;fw((int)vals.size());
+        long long inv=0;
+        for(int i=n-1;i&gt;=0;i--){
+            int r=(int)(lower_bound(vals.begin(),vals.end(),a[i])-vals.begin())+1;
+            inv+=fw.sum(r-1);
+            fw.add(r,1);
+        }
+        cout&lt;&lt;inv&lt;&lt;'\n';
+    }
+}</code></pre>
+</div>
+</details>
+
+<details>
+<summary>P7 — KQUERY (SPOJ KQUERY) <span class="rightHint">V9 offline sweep</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7">Count elements &gt; k in a[l..r]. Sort both array and queries by value descending; sweep inserting positions, answer range count queries. <a href="https://vjudge.net/problem/SPOJ-KQUERY" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int l,int r){T a{};for(int i=r;i&gt;0;i-=i&amp;-i)a+=bit[i];T b{};for(int i=l-1;i&gt;0;i-=i&amp;-i)b+=bit[i];return a-b;}
+};
+struct Q{int l,r,k,id;};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n;cin&gt;&gt;n;
+    vector&lt;pair&lt;int,int&gt;&gt;a(n);
+    for(int i=0;i&lt;n;i++){cin&gt;&gt;a[i].first;a[i].second=i+1;}
+    int q;cin&gt;&gt;q;
+    vector&lt;Q&gt;qs(q);
+    for(int i=0;i&lt;q;i++){cin&gt;&gt;qs[i].l&gt;&gt;qs[i].r&gt;&gt;qs[i].k;qs[i].id=i;}
+    sort(a.begin(),a.end(),[](auto&amp;x,auto&amp;y){return x.first&gt;y.first;});
+    sort(qs.begin(),qs.end(),[](auto&amp;x,auto&amp;y){return x.k&gt;y.k;});
+    Fenwick&lt;int&gt;fw(n);
+    vector&lt;int&gt;ans(q);
+    int ptr=0;
+    for(auto&amp;query:qs){
+        while(ptr&lt;n&amp;&amp;a[ptr].first&gt;query.k){fw.add(a[ptr].second,1);ptr++;}
+        ans[query.id]=fw.sum(query.l,query.r);
+    }
+    for(int x:ans)cout&lt;&lt;x&lt;&lt;'\n';
+}</code></pre>
+</div>
+</details>
+
+<details>
+<summary>P8 — DQUERY (SPOJ DQUERY) <span class="rightHint">V9 last-occurrence sweep</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7">Count distinct values in a[l..r]. Group queries by right endpoint; sweep left to right maintaining latest occurrence. <a href="https://vjudge.net/problem/SPOJ-DQUERY" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int l,int r){T a{};for(int i=r;i&gt;0;i-=i&amp;-i)a+=bit[i];T b{};for(int i=l-1;i&gt;0;i-=i&amp;-i)b+=bit[i];return a-b;}
+};
+struct Q{int l,id;};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n;cin&gt;&gt;n;
+    vector&lt;int&gt;a(n+1);
+    for(int i=1;i&lt;=n;i++)cin&gt;&gt;a[i];
+    int q;cin&gt;&gt;q;
+    vector&lt;vector&lt;Q&gt;&gt;byR(n+1);
+    for(int i=0;i&lt;q;i++){int l,r;cin&gt;&gt;l&gt;&gt;r;byR[r].push_back({l,i});}
+    Fenwick&lt;int&gt;fw(n);
+    unordered_map&lt;int,int&gt;last;
+    vector&lt;int&gt;ans(q);
+    for(int i=1;i&lt;=n;i++){
+        if(last.count(a[i]))fw.add(last[a[i]],-1);
+        fw.add(i,1);last[a[i]]=i;
+        for(auto&amp;query:byR[i])ans[query.id]=fw.sum(query.l,i);
+    }
+    for(int x:ans)cout&lt;&lt;x&lt;&lt;'\n';
+}</code></pre>
+</div>
+</details>
+
+<details>
+<summary>P9 — Path Queries (CSES 1138) <span class="rightHint">V8 Euler Tour + V2</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7">Sum of node values on path from root (node 1) to node s. Update a single node's value. The key insight: a node v's value contributes to every descendant's root-path sum. So updating v by delta is a range add over its subtree interval [tin[v], tout[v]], and querying node s is a point query at tin[s]. <a href="https://cses.fi/problemset/task/1138" target="_blank">CSES link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// Difference-array BIT: range add + point query
+template&lt;class T&gt;struct Fenwick{
+    int n;vector&lt;T&gt;bit;
+    Fenwick(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,T{});}
+    void add(int i,T d){for(;i&lt;=n;i+=i&amp;-i)bit[i]+=d;}
+    T sum(int i){T a{};for(;i&gt;0;i-=i&amp;-i)a+=bit[i];return a;}
+    // range add [l,r] by delta
+    void rangeAdd(int l,int r,T d){
+        add(l,d);
+        if(r+1&lt;=n)add(r+1,-d);
+    }
+    // point query at idx
+    T pointQuery(int idx){return sum(idx);}
+};
+
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+
+    int n,q;cin&gt;&gt;n&gt;&gt;q;
+    vector&lt;long long&gt;val(n+1);
+    for(int i=1;i&lt;=n;i++)cin&gt;&gt;val[i];
+
+    vector&lt;vector&lt;int&gt;&gt;adj(n+1);
+    for(int i=0;i&lt;n-1;i++){
+        int u,v;cin&gt;&gt;u&gt;&gt;v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    // Euler tour using iterative DFS to avoid recursion depth issues.
+    vector&lt;int&gt;tin(n+1),tout(n+1);
+    int timer=0;
+
+    struct Frame{int u,p,ci;};
+    stack&lt;Frame&gt;st;
+    st.push({1,0,0});
+    tin[1]=++timer;
+
+    while(!st.empty()){
+        Frame&amp;f=st.top();
+        if(f.ci&lt;(int)adj[f.u].size()){
+            int v=adj[f.u][f.ci++];
+            if(v==f.p)continue;
+            tin[v]=++timer;
+            st.push({v,f.u,0});
+        } else {
+            tout[f.u]=timer;
+            st.pop();
+        }
+    }
+
+    Fenwick&lt;long long&gt;fw(n);
+
+    // Each node's value contributes to all its descendants' root-path sums
+    for(int u=1;u&lt;=n;u++)
+        fw.rangeAdd(tin[u],tout[u],val[u]);
+
+    while(q--){
+        int t;cin&gt;&gt;t;
+        if(t==1){
+            int s;long long x;cin&gt;&gt;s&gt;&gt;x;
+            long long delta=x-val[s];
+            val[s]=x;
+            fw.rangeAdd(tin[s],tout[s],delta);
+        } else {
+            int s;cin&gt;&gt;s;
+            cout&lt;&lt;fw.pointQuery(tin[s])&lt;&lt;'\n';
+        }
+    }
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">The iterative DFS uses a struct-stack with a child-index counter to correctly compute tin/tout without recursion, avoiding stack overflow for n up to 2×10⁵. rangeAdd over [tin[u], tout[u]] encodes that u's value affects every descendant's path sum.</p>
+</div>
+</details>
+
+<details>
+<summary>P10 — INCSEQ (SPOJ INCSEQ) <span class="rightHint">V10 DP with BIT</span></summary>
+<div class="detailsBody">
+<p style="font-size:21px;line-height:1.7">Count increasing subsequences of exactly length K, modulo 5,000,000. <a href="https://vjudge.net/problem/SPOJ-INCSEQ" target="_blank">VJudge link</a></p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int MOD=5000000;
+struct FenwickMod{
+    int n;vector&lt;int&gt;bit;
+    FenwickMod(int n_=0){init(n_);}
+    void init(int n_){n=n_;bit.assign(n+1,0);}
+    void add(int i,int d){for(;i&lt;=n;i+=i&amp;-i){bit[i]+=d;if(bit[i]&gt;=MOD)bit[i]-=MOD;}}
+    int sum(int i){int a=0;for(;i&gt;0;i-=i&amp;-i){a+=bit[i];if(a&gt;=MOD)a-=MOD;}return a;}
+};
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int n,K;cin&gt;&gt;n&gt;&gt;K;
+    vector&lt;int&gt;a(n);vector&lt;int&gt;vals;
+    for(auto&amp;x:a){cin&gt;&gt;x;vals.push_back(x);}
+    sort(vals.begin(),vals.end());vals.erase(unique(vals.begin(),vals.end()),vals.end());
+    int m=(int)vals.size();
+    vector&lt;FenwickMod&gt;dp(K+1);
+    for(int len=1;len&lt;=K;len++)dp[len].init(m);
+    for(int x:a){
+        int r=(int)(lower_bound(vals.begin(),vals.end(),x)-vals.begin())+1;
+        for(int len=K;len&gt;=2;len--){int w=dp[len-1].sum(r-1);dp[len].add(r,w);}
+        dp[1].add(r,1);
+    }
+    cout&lt;&lt;dp[K].sum(m)&lt;&lt;'\n';
+}</code></pre>
+<p style="font-size:20px;color:var(--warn)">Loop len downward to avoid using same element twice. Compress values before processing.</p>
+</div>
+</details>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PART VI — REFERENCE                                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="decision-guide">
+<h2>§ Decision Guide</h2>
+
+<h3>Which variant?</h3>
+<table>
+<tr><th>You need</th><th>Use</th></tr>
+<tr><td>Point add + range sum</td><td>Master template (V1)</td></tr>
+<tr><td>Range add + point query</td><td>Difference BIT (V2)</td></tr>
+<tr><td>Range add + range sum</td><td>Two BITs (V3)</td></tr>
+<tr><td>Point add + rectangle sum</td><td>2D BIT (V4)</td></tr>
+<tr><td>kth smallest in freq table</td><td>lowerBound (V5)</td></tr>
+<tr><td>Dynamic ordered multiset</td><td>Compress + BIT (V6)</td></tr>
+<tr><td>Inversion count</td><td>Right-to-left sweep (V7)</td></tr>
+<tr><td>Subtree sum, tree updates</td><td>Euler Tour + V1 (V8)</td></tr>
+<tr><td>Root-path sum, node updates</td><td>Euler Tour + V2 (V8)</td></tr>
+<tr><td>Count > k in range offline</td><td>Sorted sweep + BIT (V9)</td></tr>
+<tr><td>Count distinct in range offline</td><td>Last-occurrence + BIT (V9)</td></tr>
+<tr><td>DP over increasing subsequences</td><td>Layered BIT (V10)</td></tr>
+<tr><td>Prefix minimum (monotone updates)</td><td>Min BIT (V11)</td></tr>
+<tr><td>Arbitrary range min/max with updates</td><td>Segment tree, not BIT</td></tr>
+</table>
+
+<h3>BIT vs Segment Tree</h3>
+<table>
+<tr><th>Feature</th><th>BIT</th><th>Seg Tree</th></tr>
+<tr><td>Code size</td><td>~20 lines</td><td>~50–80 lines</td></tr>
+<tr><td>Constant factor</td><td>Faster (2–4×)</td><td>Slower</td></tr>
+<tr><td>Point add + range sum</td><td>Excellent</td><td>Good</td></tr>
+<tr><td>Range add + range sum</td><td>Possible (V3)</td><td>Easy (lazy)</td></tr>
+<tr><td>Range min/max with updates</td><td>Not supported</td><td>Excellent</td></tr>
+<tr><td>Range assignment</td><td>Not supported</td><td>Easy (lazy)</td></tr>
+<tr><td>kth by prefix count</td><td>Excellent</td><td>Possible</td></tr>
+<tr><td>2D dense sums</td><td>Simple</td><td>Heavier</td></tr>
+</table>
+
+<h3>Quick reflexes</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:14px 0">
+<div style="background:rgba(15,118,110,.08);border:2px solid rgba(15,118,110,.25);border-radius:14px;padding:14px">
+<div style="font-weight:950;font-size:20px;color:var(--good)">Reach for BIT when:</div>
+<div style="font-size:19px;line-height:1.6;margin-top:8px">You see: prefix, sum, frequency, count ≤ x, kth, inversion, dynamic, offline, Euler tour, rank, compression</div>
+</div>
+<div style="background:rgba(185,28,28,.08);border:2px solid rgba(185,28,28,.25);border-radius:14px;padding:14px">
+<div style="font-weight:950;font-size:20px;color:var(--bad)">Don't use BIT for:</div>
+<div style="font-size:19px;line-height:1.6;margin-top:8px">Arbitrary range min/max with arbitrary updates, assignment, custom merge state, range GCD with updates, range product with modular inverse, and general non-invertible aggregates</div>
+</div>
+</div>
+</section>
+
+<section class="card" id="edge-cases">
+<h2>§ Edge Case Audit</h2>
+
+<div class="check-item"><div class="ci-icon">📌</div><div><b>1-indexed vs 0-indexed:</b> BIT uses 1-indexed positions internally. If input is 0-indexed, add 1 to every index before calling BIT. If query is half-open [l, r), use sumRange(l+1, r).</div></div>
+
+<div class="check-item"><div class="ci-icon">⚠️</div><div><b>Overflow:</b> Always use <code>long long</code> for sums. Values up to 10⁹ summed over n=10⁵ elements reach 10¹⁴, overflowing 32-bit int. In V3 (range add range sum), the intermediate product <code>x * (l-1)</code> can also overflow if x and l are both large — use long long consistently.</div></div>
+
+<div class="check-item"><div class="ci-icon">🚫</div><div><b>lowerBound validity:</b> Only call lowerBound when all values added to the BIT are nonnegative. This ensures prefix sums are monotone. Calling lowerBound on a BIT with negative values produces wrong answers silently.</div></div>
+
+<div class="check-item"><div class="ci-icon">📌</div><div><b>Range add sentinel:</b> In V2 and V3, always write <code>if (r+1 &lt;= n) fw.add(r+1, -delta)</code>. Forgetting this causes the subtraction to never happen, making every subsequent point query wrong for positions after r.</div></div>
+
+<div class="check-item"><div class="ci-icon">⚠️</div><div><b>Coordinate compression:</b> When values are in [0, 10⁹], the BIT size must be the number of distinct values, not the max value. Compress with sort + unique + lower_bound. Always get ranks in [1, m] not [0, m-1].</div></div>
+
+<div class="check-item"><div class="ci-icon">📌</div><div><b>Duplicate handling in inversion count:</b> For strict inversions (a[i] &gt; a[j]), query sumPrefix(rank-1), not sumPrefix(rank). Using rank would count equal elements as inversions.</div></div>
+
+<div class="check-item"><div class="ci-icon">⚠️</div><div><b>2D memory:</b> A dense Fenwick2D&lt;long long&gt; of size 5000×5000 uses 25M entries × 8 bytes = 200 MB. Check the problem memory limit. For large coordinate spaces with few updates, use coordinate compression or a map-based BIT.</div></div>
+
+<div class="check-item"><div class="ci-icon">📌</div><div><b>Euler Tour tout:</b> Confirm whether tout[u] is inclusive or exclusive in your DFS implementation and be consistent when calling sumRange or rangeAdd on the interval [tin[u], tout[u]].</div></div>
+
+<div class="check-item"><div class="ci-icon">🚫</div><div><b>Min BIT validity:</b> The prefix-min BIT only works when all updateMin calls are monotone decreasing. If you mix increasing and decreasing updates, the storage invariant breaks and results are wrong.</div></div>
+</section>
+
+<section class="card" id="pitfalls">
+<h2>§ Common Pitfalls</h2>
+
+<details><summary>Calling sumRange with l &gt; r <span class="rightHint">Returns wrong value if unguarded</span></summary>
+<div class="detailsBody"><p style="font-size:22px;line-height:1.7">If l &gt; r, <code>sumPrefix(r) - sumPrefix(l-1)</code> returns a negative or meaningless value. Always guard with <code>if (l &gt; r) return T{}</code> at the start of sumRange — the master template does this, but custom code may forget it.</p></div>
+</details>
+
+<details><summary>Forgetting to reinitialize between test cases <span class="rightHint">Classic SPOJ multi-test bug</span></summary>
+<div class="detailsBody"><p style="font-size:22px;line-height:1.7">SPOJ problems often have multiple test cases. Always call <code>fw.init(n)</code> at the start of each test case, or declare the Fenwick object inside the test-case loop. Reusing a BIT from the previous test case gives WA silently.</p></div>
+</details>
+
+<details><summary>Using int when long long is needed <span class="rightHint">Silent overflow</span></summary>
+<div class="detailsBody"><p style="font-size:22px;line-height:1.7">The BIT compiles fine with int; the overflow is silent. Always check: (max value) × n. If this exceeds 2³¹ ≈ 2×10⁹, use long long. In V3, intermediate products like <code>x*(l-1)</code> need long long even if individual values are small.</p></div>
+</details>
+
+<details><summary>Wrong answer from offline sort order <span class="rightHint">KQUERY / DQUERY</span></summary>
+<div class="detailsBody"><p style="font-size:22px;line-height:1.7">In KQUERY, sort array values descending AND queries by k descending. Both must be descending — sorting one ascending and one descending is a common bug. Always insert elements with value &gt; query.k, not &gt;= query.k, since the problem asks "strictly greater than k".</p></div>
+</details>
+
+<details><summary>lowerBound returning n+1 when target is reachable <span class="rightHint">Off-by-one in step initialization</span></summary>
+<div class="detailsBody"><p style="font-size:22px;line-height:1.7">The step initialization loop <code>while ((step &lt;&lt; 1) &lt;= n) step &lt;&lt;= 1</code> must produce the highest power of 2 that is ≤ n. Starting with step=0 causes an infinite loop. Starting with step=n causes wrong results if n is not a power of 2. The correct starting value is 1 with the while loop.</p></div>
+</details>
+</section>
+
+<section class="card" id="recognition">
+<h2>§ Recognition Rules</h2>
+<p style="font-size:22px;line-height:1.7">Train yourself to recognize BIT opportunities instantly:</p>
+
+<div class="chips" style="margin:14px 0">
+<div class="chip good">prefix</div>
+<div class="chip good">sum</div>
+<div class="chip good">frequency</div>
+<div class="chip good">count ≤ x</div>
+<div class="chip good">kth element</div>
+<div class="chip good">dynamic inversion count</div>
+<div class="chip good">point update</div>
+<div class="chip good">range sum</div>
+<div class="chip good">range add</div>
+<div class="chip good">offline queries</div>
+<div class="chip good">Euler tour subtree</div>
+<div class="chip good">coordinate compression</div>
+<div class="chip good">rank-based DP</div>
+</div>
+
+<div class="chips" style="margin:10px 0">
+<div class="chip bad">arbitrary range min/max with updates</div>
+<div class="chip bad">general range min/max queries</div>
+<div class="chip bad">assignment update</div>
+<div class="chip bad">custom merge state</div>
+<div class="chip bad">range GCD with updates</div>
+<div class="chip bad">non-invertible aggregate</div>
+</div>
+
+<p style="font-size:22px;line-height:1.7">The deepest recognition insight: BIT works when the aggregate is a <em>group operation with an inverse</em> (sum, XOR, etc.) AND the problem decomposes into prefix queries. When the aggregate is a monoid without inverse or the queries are not prefix-decomposable, use a segment tree instead. The one exception taught in V11 is the <em>prefix-min BIT</em>, which supports monotone decreasing updates and prefix minimum — but only under that strict monotonicity condition, and it does not support arbitrary range minimum or updates that increase values.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RUNTIME VALIDATION CHECKLIST                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="runtime-validation">
+<h2>§ Runtime Validation Checklist</h2>
+<p class="note">Verify all of the following before submitting Fenwick Tree code.</p>
+
+<div class="check-item"><div class="ci-icon">☐</div><div>1-based or 0-based indexing is chosen and applied consistently throughout all add/query calls.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>All input indices are converted to the chosen internal base before calling BIT functions.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Query ranges are inclusive on both ends where expected; half-open ranges are adjusted.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Template type T is long long for all sum-based BITs unless values are provably small.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Range add operations include the r+1 sentinel cancellation with a bounds check.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>lowerBound is only called when all BIT values are guaranteed nonnegative.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Inversion count uses rank-1 in the query (not rank) for strict inversions.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Coordinate compression produces ranks in [1, m] and handles duplicates correctly.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>2D BIT memory is within problem limits (n×m × 8 bytes ≤ allowed memory).</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Euler Tour: tin/tout are computed correctly and intervals are used consistently.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Multi-test problems reinitialize the BIT at the start of each test case.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>Offline sweeps restore answers in original query order using id arrays.</div></div>
+<div class="check-item"><div class="ci-icon">☐</div><div>In the O(n) build, the input vector is 1-indexed (a[0] unused, a[1..n] used).</div></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- FINAL SUMMARY                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="card" id="final-summary">
+<h2>§ Final Summary</h2>
+<p style="font-size:22px;line-height:1.7">A Fenwick Tree is a compact structure for dynamic prefix information. Its core idea is binary decomposition: every prefix decomposes into O(log n) canonical blocks, each block is owned by exactly one BIT cell, and every point update touches exactly the blocks that contain it. The master invariant is <code>bit[i] = sum(a[i-lowbit(i)+1 .. i])</code>. Everything else follows.</p>
+
+<p style="font-size:22px;line-height:1.7">The two micro-operations <code>i += i &amp; -i</code> (climb ancestors for update) and <code>i -= i &amp; -i</code> (strip bits for query) are the heartbeat of the entire structure. Once you see them clearly — as binary representations being built up and torn down — every BIT variant becomes a natural extension.</p>
+
+<p style="font-size:22px;line-height:1.7">For range queries built from prefix subtraction, BIT works when the aggregate has an inverse (sum, XOR). Without an inverse, a standard BIT cannot answer arbitrary range queries — reach for a segment tree instead. The restricted exception taught in V11 is the prefix-min BIT: it works only for monotone decreasing updates and prefix-minimum queries, not arbitrary range minimum. Outside that narrow case, the inverse requirement is absolute. Everything else is a template adaptation.</p>
+
+<h3>The 11 variants to master</h3>
+<div class="chips">
+<div class="chip good">V1: Point add + range sum</div>
+<div class="chip good">V2: Range add + point query</div>
+<div class="chip good">V3: Range add + range sum</div>
+<div class="chip good">V4: 2D BIT</div>
+<div class="chip good">V5: kth / lower_bound</div>
+<div class="chip good">V6: Order statistic multiset</div>
+<div class="chip good">V7: Inversion counting</div>
+<div class="chip good">V8: Euler-tour tree BIT</div>
+<div class="chip good">V9: Offline BIT sweeps</div>
+<div class="chip good">V10: BIT-optimized DP</div>
+<div class="chip good">V11: Min BIT limitations</div>
+</div>
+</section>
+
+<section class="contactSection" id="contact">
+<h2>Contact &amp; Resources</h2>
+<div class="contactInfo">
+Coach Academy<br/>
+Prepared by <strong>The Coach (Dr. Wahab) &amp; Ashraf</strong><br/>
+<a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br/>
+<a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a>
+</div>
+</section>
+
+<div class="page-footer">
+<div class="footer-brand">Coach Academy</div>
+<div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+<div style="font-size:15px;color:var(--muted)">© 2025 All rights reserved.</div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ─── Utilities ─── */
+const $ = id => document.getElementById(id);
+const qS = (sel, ctx=document) => ctx.querySelector(sel);
+
+/* ─── Sidebar ─── */
+function narrow(){return window.innerWidth < 1400;}
+
+function openSidebar(){
+  const sb = $('sidebar'), tog = $('sidebarToggle'), ov = $('sidebarOverlay'), app = $('app');
+  sb.classList.remove('collapsed');
+  tog.classList.add('open');
+  tog.setAttribute('aria-expanded','true');
+  if(narrow()){ov.classList.add('show');}
+}
+function closeSidebar(){
+  const sb = $('sidebar'), tog = $('sidebarToggle'), ov = $('sidebarOverlay');
+  sb.classList.add('collapsed');
+  tog.classList.remove('open');
+  tog.setAttribute('aria-expanded','false');
+  ov.classList.remove('show');
+}
+
+function applyLayout(){
+  const app = $('app');
+  if(narrow()){
+    app.classList.add('sidebar-hidden');
+    closeSidebar();
+  } else {
+    app.classList.remove('sidebar-hidden');
+    openSidebar();
+    $('sidebarOverlay').classList.remove('show');
+  }
+}
+
+$('sidebarToggle').addEventListener('click',()=>{
+  if($('sidebar').classList.contains('collapsed')) openSidebar(); else closeSidebar();
+});
+$('sidebarOverlay').addEventListener('click', closeSidebar);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+
+// Close sidebar on mobile nav link click
+document.querySelectorAll('.navlink').forEach(a=>{
+  a.addEventListener('click',()=>{ if(narrow()) closeSidebar(); });
+});
+
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(applyLayout, 120);
+});
+applyLayout();
+
+/* ─── Theme ─── */
+const themeSwitch = $('themeSwitch');
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('ca-theme', t);
+  themeSwitch.setAttribute('aria-checked', t==='dark' ? 'true' : 'false');
+}
+themeSwitch.addEventListener('click',()=>{
+  setTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+});
+themeSwitch.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();themeSwitch.click();}
+});
+// Sync aria-checked on load
+setTheme(document.documentElement.getAttribute('data-theme') || 'light');
+
+/* ─── Scrollspy ─── */
+const navLinks = document.querySelectorAll('.navlink');
+const sectionIds = [...navLinks].map(a => a.getAttribute('href').replace('#','')).filter(Boolean);
+const sectEls = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      navLinks.forEach(a=>a.classList.remove('active'));
+      const id = entry.target.id;
+      const active = document.querySelector(`.navlink[href="#${id}"]`);
+      if(active){
+        active.classList.add('active');
+        active.scrollIntoView({block:'nearest',behavior:'smooth'});
+      }
+    }
+  });
+},{rootMargin:'-10% 0px -85% 0px'});
+
+sectEls.forEach(el=>observer.observe(el));
+
+/* ─── BIT TRACER DATA ─── */
+
+// Initial BIT state: n=8, a=[3,1,4,1,5,9,2,6] (1-indexed)
+// bit = [_, 3, 4, 4, 9, 5, 14, 2, 31]
+const INITIAL_BIT = [0, 3, 4, 4, 9, 5, 14, 2, 31]; // index 0 unused
+
+// Ranges covered by each bit[i] for n=8
+const BIT_RANGES = [null, '[1,1]', '[1,2]', '[3,3]', '[1,4]', '[5,5]', '[5,6]', '[7,7]', '[1,8]'];
+
+/* ─── Query Tracer: sumPrefix(7) ─── */
+const QUERY_FRAMES = [
+  {
+    highlighted: [],
+    ans: null,
+    action: 'Ready to trace <b>sumPrefix(7)</b> on the BIT. We want: a[1]+a[2]+…+a[7]. The BIT will decompose this into non-overlapping blocks automatically.',
+    code: 'T sumPrefix(int idx) const {\n    T ans{};\n    // idx = 7\n    for (int i = idx; i > 0; i -= i & -i)\n        ans += bit[i];\n    return ans;\n}',
+    bit: [...INITIAL_BIT]
+  },
+  {
+    highlighted: [7],
+    ans: 2,
+    action: 'i=7 = <b>0111₂</b>. lowbit(7) = 1. Read <b>bit[7]=2</b> (covers [7,7]). ans = 0+2 = <b>2</b>. Next: i = 7−1 = 6.',
+    code: 'i = 7; // 0111₂, lowbit = 1\nans += bit[7]; // ans = 2\ni -= 1;        // i = 6',
+    bit: [...INITIAL_BIT]
+  },
+  {
+    highlighted: [6],
+    ans: 16,
+    action: 'i=6 = <b>0110₂</b>. lowbit(6) = 2. Read <b>bit[6]=14</b> (covers [5,6]). ans = 2+14 = <b>16</b>. Next: i = 6−2 = 4.',
+    code: 'i = 6; // 0110₂, lowbit = 2\nans += bit[6]; // ans = 16\ni -= 2;        // i = 4',
+    bit: [...INITIAL_BIT]
+  },
+  {
+    highlighted: [4],
+    ans: 25,
+    action: 'i=4 = <b>0100₂</b>. lowbit(4) = 4. Read <b>bit[4]=9</b> (covers [1,4]). ans = 16+9 = <b>25</b>. Next: i = 4−4 = 0.',
+    code: 'i = 4; // 0100₂, lowbit = 4\nans += bit[4]; // ans = 25\ni -= 4;        // i = 0',
+    bit: [...INITIAL_BIT]
+  },
+  {
+    highlighted: [7, 6, 4],
+    ans: 25,
+    action: 'i=0. Loop ends. <b>sumPrefix(7) = 25</b>. The partition: bit[7]=[7,7] + bit[6]=[5,6] + bit[4]=[1,4] covers [1,7] exactly — no overlap, no gap. ✓',
+    code: 'i = 0; // loop ends\n// bit[7]=[7,7] + bit[6]=[5,6] + bit[4]=[1,4]\n// = 2 + 14 + 9 = 25  ✓',
+    bit: [...INITIAL_BIT]
+  }
+];
+
+let qStep = 0;
+
+function renderQueryTracer(){
+  const f = QUERY_FRAMES[qStep];
+  const cellsEl = $('qTracerCells');
+  const rangesEl = $('qTracerRanges');
+  cellsEl.innerHTML = '';
+  rangesEl.innerHTML = '';
+
+  for(let i=1; i<=8; i++){
+    const div = document.createElement('div');
+    div.className = 'bit-cell';
+    if(f.highlighted.includes(i)) div.classList.add('hl-read');
+    div.innerHTML = `<span class="cidx">bit[${i}]</span><span class="cval">${f.bit[i]}</span>`;
+    cellsEl.appendChild(div);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'bit-range-label';
+    lbl.textContent = BIT_RANGES[i];
+    lbl.style.fontSize = '13px';
+    if(f.highlighted.includes(i)) lbl.style.color = 'var(--good)';
+    rangesEl.appendChild(lbl);
+  }
+
+  $('qTracerAction').innerHTML = f.action;
+  $('qStepCounter').textContent = `Step ${qStep} / ${QUERY_FRAMES.length-1}`;
+  $('qCodeHint').querySelector('code').textContent = f.code;
+
+  const ansEl = $('qTracerAns');
+  if(f.ans !== null){
+    ansEl.style.display = 'inline-flex';
+    ansEl.innerHTML = `Running sum: <b style="color:var(--good)">${f.ans}</b>`;
+  } else {
+    ansEl.style.display = 'none';
+  }
+}
+
+$('qNextBtn').addEventListener('click',()=>{ if(qStep < QUERY_FRAMES.length-1){ qStep++; renderQueryTracer(); }});
+$('qPrevBtn').addEventListener('click',()=>{ if(qStep > 0){ qStep--; renderQueryTracer(); }});
+$('qResetBtn').addEventListener('click',()=>{ qStep=0; renderQueryTracer(); });
+
+renderQueryTracer();
+
+/* ─── Update Tracer: add(3, 10) ─── */
+const UPDATE_FRAMES = [
+  {
+    highlighted: [],
+    bit: [...INITIAL_BIT],
+    action: 'Ready to trace <b>add(3, 10)</b>. We add 10 to a[3]. The BIT must update every cell bit[i] whose block contains position 3. Watch the ascent.',
+    code: 'void add(int idx, T delta) {\n    // idx=3, delta=10\n    for (int i=idx; i<=n; i += i & -i)\n        bit[i] += delta;\n}'
+  },
+  {
+    highlighted: [3],
+    bit: [0,3,4,14,9,5,14,2,31],
+    action: 'i=3 = <b>0011₂</b>. lowbit(3)=1. <b>bit[3] += 10 → 14</b>. bit[3] covers [3,3]: contains position 3 ✓. Next: i = 3+1 = 4.',
+    code: 'i = 3; // 0011₂, lowbit = 1\nbit[3] += 10; // 4 → 14\ni += 1;       // i = 4'
+  },
+  {
+    highlighted: [4],
+    bit: [0,3,4,14,19,5,14,2,31],
+    action: 'i=4 = <b>0100₂</b>. lowbit(4)=4. <b>bit[4] += 10 → 19</b>. bit[4] covers [1,4]: contains position 3 ✓. Next: i = 4+4 = 8.',
+    code: 'i = 4; // 0100₂, lowbit = 4\nbit[4] += 10; // 9 → 19\ni += 4;       // i = 8'
+  },
+  {
+    highlighted: [8],
+    bit: [0,3,4,14,19,5,14,2,41],
+    action: 'i=8 = <b>1000₂</b>. lowbit(8)=8. <b>bit[8] += 10 → 41</b>. bit[8] covers [1,8]: contains position 3 ✓. Next: i = 8+8 = 16 > n=8. Stop.',
+    code: 'i = 8; // 1000₂, lowbit = 8\nbit[8] += 10; // 31 → 41\ni += 8;       // i = 16 > 8: stop'
+  },
+  {
+    highlighted: [3, 4, 8],
+    bit: [0,3,4,14,19,5,14,2,41],
+    action: '<b>Done!</b> 3 cells updated: bit[3], bit[4], bit[8]. These are exactly all blocks whose range contains position 3. sumPrefix(7) now returns 25+10=35. ✓',
+    code: '// Storage invariant restored:\n// bit[3] = a[3] = 14 (was 4)\n// bit[4] = a[1]+a[2]+a[3]+a[4] = 3+1+14+1 = 19\n// bit[8] = a[1]+...+a[8] = 41'
+  }
+];
+
+let uStep = 0;
+
+function renderUpdateTracer(){
+  const f = UPDATE_FRAMES[uStep];
+  const cellsEl = $('uTracerCells');
+  const rangesEl = $('uTracerRanges');
+  cellsEl.innerHTML = '';
+  rangesEl.innerHTML = '';
+
+  for(let i=1; i<=8; i++){
+    const div = document.createElement('div');
+    div.className = 'bit-cell';
+    // Check if this cell changed from previous frame
+    const prev = uStep > 0 ? UPDATE_FRAMES[uStep-1].bit[i] : INITIAL_BIT[i];
+    if(f.highlighted.includes(i)){
+      div.classList.add(uStep === UPDATE_FRAMES.length-1 ? 'hl-done' : 'hl-write');
+    }
+    div.innerHTML = `<span class="cidx">bit[${i}]</span><span class="cval">${f.bit[i]}</span>`;
+    // Show change indicator
+    if(f.bit[i] !== INITIAL_BIT[i] && uStep > 0){
+      div.style.position = 'relative';
+    }
+    cellsEl.appendChild(div);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'bit-range-label';
+    lbl.textContent = BIT_RANGES[i];
+    lbl.style.fontSize = '13px';
+    if(f.highlighted.includes(i)) lbl.style.color = 'var(--warn)';
+    rangesEl.appendChild(lbl);
+  }
+
+  $('uTracerAction').innerHTML = f.action;
+  $('uStepCounter').textContent = `Step ${uStep} / ${UPDATE_FRAMES.length-1}`;
+  $('uCodeHint').querySelector('code').textContent = f.code;
+}
+
+$('uNextBtn').addEventListener('click',()=>{ if(uStep < UPDATE_FRAMES.length-1){ uStep++; renderUpdateTracer(); }});
+$('uPrevBtn').addEventListener('click',()=>{ if(uStep > 0){ uStep--; renderUpdateTracer(); }});
+$('uResetBtn').addEventListener('click',()=>{ uStep=0; renderUpdateTracer(); });
+
+renderUpdateTracer();
+</script>
+</body>
+</html>

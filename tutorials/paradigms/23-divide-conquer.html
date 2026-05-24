@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Divide and Conquer</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;
+  justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2,.card h3{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);
+  box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+.miniBtn:disabled{opacity:.33;cursor:default;transform:none!important}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.checklist li{list-style:none;padding-left:0}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+.layer-badge{display:inline-block;font-size:12px;font-weight:900;padding:3px 9px;
+  border-radius:999px;margin-left:12px;vertical-align:middle;letter-spacing:.05em}
+.lb-base{background:rgba(37,99,235,.12);color:var(--accent2);border:1.5px solid rgba(37,99,235,.25)}
+.lb-sort{background:rgba(15,118,110,.12);color:var(--good);border:1.5px solid rgba(15,118,110,.25)}
+.lb-sel{background:rgba(124,58,237,.12);color:#7c3aed;border:1.5px solid rgba(124,58,237,.25)}
+.lb-geo{background:rgba(180,83,9,.10);color:var(--warn);border:1.5px solid rgba(180,83,9,.22)}
+.lb-adv{background:rgba(185,28,28,.10);color:var(--bad);border:1.5px solid rgba(185,28,28,.22)}
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);
+  text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+.formula.master{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.08));
+  border-color:var(--accent2);font-size:22px;font-family:system-ui,sans-serif}
+.hierarchy-chain{display:flex;flex-direction:column;gap:0;margin:18px 0}
+.hc-item{background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:16px 20px;position:relative}
+.hc-connector{text-align:center;font-size:22px;color:var(--muted);padding:4px 0;font-weight:900;line-height:1}
+.hc-label{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
+.hc-name{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:4px}
+.hc-desc{font-size:17px;font-weight:700;color:var(--text);line-height:1.55}
+.hc-inherits{font-size:14px;font-weight:800;color:var(--good);margin-top:6px;display:flex;align-items:center;gap:5px}
+.app-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);
+  padding:22px 20px 18px;margin:18px 0;position:relative}
+.app-block::before{content:"VARIANT";position:absolute;top:-14px;left:18px;
+  background:var(--accent2);color:#fff;font-size:13px;font-weight:900;
+  padding:3px 10px;border-radius:999px;letter-spacing:.07em}
+.app-block p{margin:8px 0;font-size:var(--fs-sm);line-height:1.55}
+.app-block pre{margin:8px 0;font-size:16px}
+.app-block h3{margin:14px 0 6px;font-size:21px}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.dec-card{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px}
+.dec-card .dc-head{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:6px}
+.dec-card .dc-cond{font-size:16px;font-weight:800;color:var(--muted);margin-bottom:8px;
+  padding:4px 8px;background:rgba(37,99,235,.06);border-radius:8px;display:inline-block}
+.dec-card p{font-size:17px;font-weight:700;margin:6px 0;line-height:1.5}
+.mental-model{background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(37,99,235,.06));
+  border:3px solid var(--good);border-radius:var(--radius);padding:20px 24px;margin:18px 0}
+.mm-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.mm-item{background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:14px 16px}
+.mm-item .mm-num{font-size:28px;font-weight:950;color:var(--good);line-height:1}
+.mm-item .mm-title{font-weight:950;font-size:18px;margin:4px 0}
+.mm-item .mm-desc{font-size:16px;font-weight:700;color:var(--muted);line-height:1.5}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.diff-grid pre{margin:0;font-size:16px}
+.diff-lbl{font-weight:950;font-size:16px;margin-bottom:6px;color:var(--muted)}
+.arr-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;align-items:center}
+.arr-cell{width:48px;height:48px;border-radius:10px;border:3px solid var(--border);
+  background:var(--panel2);display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:20px;transition:all .25s;position:relative}
+.arr-cell.active{border-color:var(--warn);background:rgba(180,83,9,.12);color:var(--warn)}
+.arr-cell.sorted{border-color:var(--good);background:rgba(15,118,110,.12);color:var(--good)}
+.arr-cell.pivot{border-color:#7c3aed;background:rgba(124,58,237,.12);color:#7c3aed}
+.arr-cell.comparing{border-color:var(--accent2);background:rgba(37,99,235,.12)}
+.arr-bracket{font-size:28px;font-weight:900;color:var(--muted);padding:0 4px}
+.tracer-log{max-height:150px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:8px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.tlog-line{color:#6b7280;padding:2px 5px;border-radius:4px;line-height:1.45}
+.tlog-line.ok{color:#34d399}.tlog-line.hi{color:#fbbf24}.tlog-line.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.recur-box{border:3px solid var(--border);border-radius:14px;padding:12px 16px;
+  margin:6px 0;background:var(--panel2);font-size:17px;font-weight:800}
+.recur-box.highlight{border-color:var(--accent2);background:rgba(37,99,235,.08)}
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.master-calc{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:20px;margin:18px 0}
+.master-calc label{font-weight:900;font-size:19px;display:block;margin-bottom:6px}
+.master-calc input{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  border-radius:10px;padding:10px 14px;font-size:20px;font-weight:900;width:80px;
+  font-family:ui-monospace,monospace;text-align:center}
+.master-calc .mc-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.master-calc .mc-result{border:3px solid var(--accent2);background:rgba(37,99,235,.08);
+  border-radius:14px;padding:14px 20px;font-size:20px;font-weight:900;margin-top:10px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;
+  font-size:18px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:7px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3)}
+@media(min-width:1301px){
+  .sidebar-overlay.show{opacity:0;pointer-events:none}
+}
+@media(max-width:1300px){
+  .grid2,.grid3,.ks-grid,.diff-grid{grid-template-columns:1fr}
+  .decision-grid,.mm-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}
+  .decision-grid,.mm-row{grid-template-columns:1fr}
+}
+</style>
+<script>
+/* No-flicker theme pre-load — runs before body paint */
+(function(){
+  try{
+    var t=localStorage.getItem('ca-theme');
+    if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches) t='dark';
+    if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar navigation" aria-controls="sidebar" aria-expanded="false" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Divide &amp; Conquer</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations (§1–5)</div>
+    <a href="#s0">Overview<small>The system you will master</small></a>
+    <a href="#s1">1. Problem Definition<small>What D&amp;C really means</small></a>
+    <a href="#s2">2. Intuition from Scratch<small>The three properties</small></a>
+    <a href="#s3">3. Visual Mental Model<small>The recursion tree picture</small></a>
+    <a href="#s4">4. Formal Abstraction<small>Universal skeleton</small></a>
+    <a href="#s5">5. Key Observations<small>D&amp;C vs recursion vs DP</small></a>
+    <div class="grpTitle">Complexity (§6)</div>
+    <a href="#s6">6. Complexity Analysis<small>Recurrence cookbook + Master Method</small></a>
+    <div class="grpTitle">Core Algorithms (§7–10)</div>
+    <a href="#s7">7. Merge Sort<small>Split by position, combine by merge</small></a>
+    <a href="#s8">8. Inversion Count<small>Canonical merge-sort application</small></a>
+    <a href="#s9">9. Quicksort<small>Split by pivot, trivial combine</small></a>
+    <a href="#s10">10. Quickselect<small>Expected O(n) selection</small></a>
+    <a href="#s11">11. Closest Pair<small>The deep combine-step problem</small></a>
+    <div class="grpTitle">Correctness (§12–13)</div>
+    <a href="#s12">12. Invariants<small>State · transition · termination</small></a>
+    <a href="#s13">13. Proof of Correctness<small>Proof template + examples</small></a>
+    <div class="grpTitle">Templates (§14–16)</div>
+    <a href="#s14">14. Template Philosophy<small>Unified family with naming rules</small></a>
+    <a href="#s15">15. Master Implementations<small>All templates in one place</small></a>
+    <a href="#s16">16. Code Walkthrough<small>Line-by-line for merge sort</small></a>
+    <div class="grpTitle">Pitfalls &amp; Guide (§17–19)</div>
+    <a href="#s17">17. Edge Cases<small>Centralized audit</small></a>
+    <a href="#s18">18. Common Pitfalls<small>Contest failure modes</small></a>
+    <a href="#s19">19. Decision / Recognition<small>When to use D&amp;C</small></a>
+    <div class="grpTitle">Applications (§20–21)</div>
+    <a href="#s20">20. Variants &amp; Extensions<small>Pattern, Masha, Merge Sort?</small></a>
+    <a href="#s21">21. Problem Applications<small>Annotated practice set</small></a>
+    <a href="#s22">22. Final Summary<small>The seven questions</small></a>
+    <a href="#s23">23. Runtime Checklist<small>Validate the page works correctly</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="mainContent">
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div>
+    <h1>Divide &amp; Conquer</h1>
+    <div class="subtitle">A complete treatment from first principles — what D&C is, why it works, how to derive recurrences from code, and how to implement every major algorithm. Beginner-friendly ramp, rigorous depth.</div>
+  </div>
+  <div class="btnRow">
+    <label class="pill" title="Toggle theme">
+      🌗
+      <div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0" aria-label="Toggle dark theme"></div>
+    </label>
+  </div>
+</div>
+
+<!-- ── SECTION 0: OVERVIEW ── -->
+<section class="card" id="s0">
+  <h2>Overview <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <p>Divide and conquer is one of the three fundamental algorithm design paradigms in competitive programming, alongside dynamic programming and greedy. It drives the most important sorting algorithms, the fastest selection algorithm, the optimal closest-pair algorithm, and a large family of recursive construction problems in contests.</p>
+  <div class="formula master">Every D&amp;C algorithm varies on exactly three axes:<br>
+  (1) How to split &nbsp;·&nbsp; (2) What each recursive call returns &nbsp;·&nbsp; (3) How to combine.<br>
+  The recursion tree is the same structure every time.</div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--accent2)">The learning arc</strong>
+      <ol style="margin:8px 0 0;padding-left:1.4rem">
+        <li style="font-size:17px;margin:.5rem 0">Paradigm — what D&amp;C really is (§1–5)</li>
+        <li style="font-size:17px;margin:.5rem 0">Recurrences — derive complexity from code (§6)</li>
+        <li style="font-size:17px;margin:.5rem 0">Merge sort — the canonical D&amp;C sort (§7)</li>
+        <li style="font-size:17px;margin:.5rem 0">Inversion count — cross-contribution pattern (§8)</li>
+        <li style="font-size:17px;margin:.5rem 0">Quicksort / Quickselect — pivot-based family (§9–10)</li>
+        <li style="font-size:17px;margin:.5rem 0">Closest pair — the deep combine-step problem (§11)</li>
+        <li style="font-size:17px;margin:.5rem 0">Templates, pitfalls, and contest applications (§14–21)</li>
+      </ol>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--good)">✓ What you can do after this</strong>
+      <ul style="margin:8px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.4rem 0">Derive recurrences from code, not from memory</li>
+        <li style="font-size:17px;margin:.4rem 0">Apply the Master Method correctly and know when it fails</li>
+        <li style="font-size:17px;margin:.4rem 0">Implement merge sort, quicksort, quickselect, closest pair</li>
+        <li style="font-size:17px;margin:.4rem 0">Prove correctness using the standard proof template</li>
+        <li style="font-size:17px;margin:.4rem 0">Recognize D&amp;C opportunities in contest problems</li>
+        <li style="font-size:17px;margin:.4rem 0">Understand pivot strategies and their complexity consequences</li>
+      </ul>
+      <strong style="font-size:19px;color:var(--muted);display:block;margin-top:12px">Prerequisites</strong>
+      <ul style="margin:6px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.3rem 0">Basic recursion and function calls</li>
+        <li style="font-size:17px;margin:.3rem 0">Big-O notation at the level of O(n), O(n²), O(n log n)</li>
+        <li style="font-size:17px;margin:.3rem 0">Basic array manipulation in C++</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 1: PROBLEM DEFINITION ── -->
+<section class="card" id="s1">
+  <h2>1. Problem Definition <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <div class="ib ib-blue"><i>💡</i>
+    <p><strong>In plain language — before anything else:</strong> Divide and conquer means three things in order: (1) <strong>Break</strong> the big problem into smaller <em>independent</em> copies of the same problem. (2) <strong>Solve</strong> each smaller copy recursively. (3) <strong>Combine</strong> the smaller answers into the answer for the big problem. That is all it is. Every algorithm in this tutorial is a specialization of exactly these three steps.</p>
+  </div>
+
+  <p>What does "independent" mean here? It means the two smaller copies do not share data and do not need each other's answers to run. Merge sort's left half and right half never interact during recursion — only during the combine step. This independence is what separates D&C from dynamic programming (where subproblems share work) and from backtracking (where the search explores state that depends on other choices).</p>
+
+  <p>What does "combine" really mean? It depends on the algorithm. In merge sort, combine means merging two sorted halves into one sorted array — this is O(n) work. In inversion count, combine means counting how many pairs have one index in each half — also O(n) during the merge. In closest pair, combine means scanning a narrow strip between the two halves to find cross-pairs — still O(n). The combine step is where the algorithm's real work happens. Splitting is almost always trivial.</p>
+
+  <h3>The four paradigms compared — know the difference before you code</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Paradigm</th><th>Subproblem structure</th><th>How it proceeds</th><th>Key requirement</th><th>Classic example</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--accent2)">Divide &amp; Conquer</strong></td><td>Independent smaller copies of same problem</td><td>Split → solve both → combine</td><td>Combine step must be cheap enough</td><td>Merge sort, closest pair</td></tr>
+      <tr><td><strong style="color:var(--good)">Dynamic Programming</strong></td><td>Overlapping subproblems — same subproblem reused many times</td><td>Solve once, store answer, reuse</td><td>Optimal substructure + overlapping subproblems</td><td>Fibonacci, knapsack, LCS</td></tr>
+      <tr><td><strong style="color:var(--warn)">Greedy</strong></td><td>No subproblems — one local choice per step</td><td>Pick the locally optimal choice, never revisit</td><td>Local optimum must equal global optimum</td><td>Interval scheduling, Huffman</td></tr>
+      <tr><td><strong style="color:#7c3aed">Backtracking</strong></td><td>State-space search — choices branch</td><td>Try a choice, recurse, undo if wrong</td><td>Must be able to detect dead ends early</td><td>N-Queens, Sudoku, permutations</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Why DP is not D&C:</strong> In D&C the subproblems are disjoint — the left half of your array appears in exactly one recursive call. In DP the same subproblem appears in many branches. Applying naive D&C to a DP problem gives exponential time (you solve the same subproblem repeatedly). Applying memoization to D&C does nothing useful (each subproblem already appears only once). If you see repeated subtrees in your recursion tree, switch to DP.</p>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Why greedy is not D&C:</strong> Greedy never recurses on a full subproblem — it commits to one local choice and moves on. D&C recurses on full subproblems and combines their complete answers. Quickselect recurses on one subproblem (not a local choice) — it is D&C, not greedy.</p>
+  </div>
+
+  <p>Divide and conquer is a structural paradigm for algorithm design. It means: <strong>divide</strong> the problem into smaller subproblems of the same type, <strong>conquer</strong> them recursively, and <strong>combine</strong> their answers into the answer for the original problem.</p>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>Common misconception:</strong> "Any recursive algorithm is divide and conquer." This is false. A recursive algorithm is D&amp;C only when (a) the recursive calls are smaller versions of the same problem, and (b) the whole answer comes from combining those sub-answers in a structured way. DFS on a tree is recursive but is not D&amp;C. Fibonacci with memoization is recursive DP, not D&amp;C.</p>
+  </div>
+  <p>The three structural properties a problem must have to fit D&amp;C:</p>
+  <div class="mental-model">
+    <strong style="font-size:22px;font-weight:950">Three Structural Requirements</strong>
+    <div class="mm-row">
+      <div class="mm-item">
+        <div class="mm-num">①</div>
+        <div class="mm-title">Decomposability</div>
+        <div class="mm-desc">The problem becomes easier as the input size shrinks. There exists a natural base case.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">②</div>
+        <div class="mm-title">Same-Kind Subproblems</div>
+        <div class="mm-desc">Recursive calls solve smaller instances of exactly the same kind of problem.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">③</div>
+        <div class="mm-title">Combinability</div>
+        <div class="mm-desc">The parent's answer can be assembled from the children's answers, often in sub-linear time.</div>
+      </div>
+    </div>
+  </div>
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>The combine step is the heart.</strong> Splitting is almost always easy — just take the midpoint. The real challenge in D&amp;C is almost always the combine step. In merge sort, combining is O(n) merge. In inversion count, combining counts cross-inversions. In closest pair, combining handles cross-strip pairs. The quality of a D&amp;C solution is determined by the quality of its combine step.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 2: INTUITION ── -->
+<section class="card" id="s2">
+  <h2>2. Intuition from Scratch <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <p>The simplest example: find the maximum element of an array of 8 elements by divide and conquer.</p>
+  <p>Observation: The maximum of the whole array is the maximum of the left half vs the maximum of the right half. This is a valid decomposition because "find the maximum" is the same problem at both halves.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Recursion tree for max([2,1,7,3,5,6,4,8])</div>
+    </div>
+    <svg id="maxTreeSvg" class="graphsvg" viewBox="0 0 820 380"></svg>
+  </div>
+  <p>Notice the tree structure: the root is the original problem, each node is a smaller problem, leaves are trivially solved (size 1), and answers flow upward. <strong>This tree is the same structure for every D&amp;C algorithm.</strong> Only the combine rule and the information flowing upward change.</p>
+  <div class="ib ib-green"><i>💡</i>
+    <p><strong>The key insight:</strong> In merge sort, the information flowing upward is "a sorted segment." In inversion count, it is "a sorted segment + an inversion count." In closest pair, it is "points sorted by y + a minimum distance." The recursion tree structure is identical every time. Only the payload changes.</p>
+  </div>
+  <p>Compare to linear scanning: linear scan is O(n) and D&amp;C max is also O(n) for this problem, so D&amp;C is not always faster than a simple approach. The paradigm shines when the combine step enables something impossible with a simple scan — like merge sort achieving stable O(n log n), or closest pair achieving O(n log n) instead of O(n²).</p>
+</section>
+
+<!-- ── SECTION 3: VISUAL MENTAL MODEL ── -->
+<section class="card" id="s3">
+  <h2>3. Visual Mental Model <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <p>Every D&amp;C algorithm lives inside a binary tree. Learn to see that tree clearly before writing any code.</p>
+  <div class="grid2">
+    <div>
+      <h3>The standard picture</h3>
+      <p>At each node, the algorithm:</p>
+      <ol style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem">
+        <li>Receives a subproblem (typically an interval <code>[l, r)</code>)</li>
+        <li>Splits it at <code>mid = (l+r)/2</code></li>
+        <li>Recursively calls left child on <code>[l, mid)</code></li>
+        <li>Recursively calls right child on <code>[mid, r)</code></li>
+        <li>Combines the two results and returns</li>
+      </ol>
+      <div class="ib ib-blue"><i>📌</i>
+        <p><strong>Half-open intervals [l, r).</strong> This tutorial uses half-open ranges consistently. Length = r−l. Empty = l==r. One element = r−l==1. Left half = [l,mid). Right half = [mid,r). This avoids off-by-one errors.</p>
+      </div>
+    </div>
+    <div>
+      <h3>What the tree tells you about complexity</h3>
+      <div class="recur-box highlight">Height of tree = O(log n) for balanced splits</div>
+      <div class="recur-box">Total nodes = O(n) for two-way split (sum: 1+2+4+…+n)</div>
+      <div class="recur-box">If combine costs O(1) → Total = O(n) [case 1 of Master Method]</div>
+      <div class="recur-box">If combine costs O(n) → Each level costs O(n) → Total = O(n log n) [case 2]</div>
+      <p>The tree makes complexity visible without algebra. Use it first, then verify with the Master Method.</p>
+    </div>
+  </div>
+  <div class="diagramWrap" style="margin-top:14px">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Complexity from the tree — two cases side by side</div>
+    </div>
+    <svg id="complexTreeSvg" class="graphsvg" viewBox="0 0 820 260"></svg>
+  </div>
+</section>
+
+<!-- ── SECTION 4: FORMAL ABSTRACTION ── -->
+<section class="card" id="s4">
+  <h2>4. Formal Abstraction <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <h3>The universal skeleton</h3>
+  <pre><code>answer solve(int l, int r) { // [l, r)
+    if (r - l &lt;= base_size) return direct_answer(l, r);
+
+    int mid = (l + r) &gt;&gt; 1;
+
+    answer left  = solve(l, mid);
+    answer right = solve(mid, r);
+
+    return combine(left, right, l, mid, r);
+}</code></pre>
+  <p>Every D&amp;C algorithm in this tutorial is a specialization of this skeleton. The variation points are:</p>
+  <div class="tw"><table>
+    <thead><tr><th>Variation point</th><th>Merge Sort</th><th>Inversion Count</th><th>Quicksort</th><th>Closest Pair</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Base case</strong></td><td>r−l ≤ 1</td><td>r−l ≤ 1</td><td>r−l ≤ 1</td><td>r−l ≤ 3</td></tr>
+      <tr><td><strong>Split</strong></td><td>By position (mid)</td><td>By position (mid)</td><td>By pivot value</td><td>By x-coordinate (mid)</td></tr>
+      <tr><td><strong>What each call returns</strong></td><td>Sorted segment</td><td>Sorted segment + count</td><td>Partitioned (void)</td><td>Min distance + y-sorted pts</td></tr>
+      <tr><td><strong>Combine</strong></td><td>Merge two sorted halves</td><td>Merge + count cross inversions</td><td>Trivial (partition already done)</td><td>Strip scan for cross pairs</td></tr>
+      <tr><td><strong>Combine cost</strong></td><td>O(n)</td><td>O(n)</td><td>O(n) partition before recurse</td><td>O(n)</td></tr>
+      <tr><td><strong>Recurrence</strong></td><td>2T(n/2)+O(n)</td><td>2T(n/2)+O(n)</td><td>2T(n/2)+O(n) balanced</td><td>2T(n/2)+O(n)</td></tr>
+      <tr><td><strong>Result</strong></td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n) avg</td><td>O(n log n)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Split point vs pivot:</strong> Merge sort always splits by position (the midpoint). Quicksort splits by value (elements smaller than pivot go left, larger go right). The merge sort split is cheap and always balanced. The quicksort split has non-trivial cost (partition) but is done before the recursive calls, not after.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 5: KEY OBSERVATIONS ── -->
+<section class="card" id="s5">
+  <h2>5. Key Observations <span class="layer-badge lb-base">PARADIGM</span></h2>
+
+  <div class="ib ib-blue"><i>💡</i>
+    <p><strong>What "independent subproblems" means in practice:</strong> When you sort the left half of an array in merge sort, the answer for the right half does not change and the right half does not need to know anything about the left half's internal process — only its final sorted result. The two halves do not communicate during their recursion. This is what "independent" means. The moment subproblems start sharing internal state or reusing each other's partial results, you have moved into DP territory.</p>
+  </div>
+
+  <h3>D&amp;C vs Dynamic Programming vs Greedy</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Paradigm</th><th>Subproblems</th><th>Dependency</th><th>Key condition</th><th>Classic examples</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Divide &amp; Conquer</strong></td><td>Smaller versions of same problem</td><td>Independent</td><td>Combine is cheap enough</td><td>Merge sort, closest pair, quickselect</td></tr>
+      <tr><td><strong>Dynamic Programming</strong></td><td>Overlapping subproblems</td><td>Shared — reuse saved answers</td><td>Optimal substructure</td><td>Knapsack, LCS, shortest paths</td></tr>
+      <tr><td><strong>Greedy</strong></td><td>No subproblems needed</td><td>One local choice at a time</td><td>Locally optimal is globally optimal</td><td>Interval scheduling, Huffman, Dijkstra</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>The critical distinction between D&amp;C and DP:</strong> In D&amp;C, subproblems are disjoint and solved independently. In DP, subproblems overlap and the same subproblem is referenced by multiple parents, so we save and reuse its answer. Applying D&amp;C to an overlapping-subproblem structure gives exponential time. Memoizing it gives DP. If your D&amp;C call tree has repeated subtrees, you need DP instead.</p>
+  </div>
+  <h3>The "three categories" pattern</h3>
+  <p>In most D&amp;C problems, the final answer (count, minimum, maximum, etc.) falls into one of three categories:</p>
+  <div class="grid3">
+    <div class="card" style="margin:0;border-color:var(--good)">
+      <strong style="color:var(--good)">Entirely in left half</strong>
+      <p style="font-size:17px;font-weight:700;margin:6px 0">Handled by left recursive call</p>
+    </div>
+    <div class="card" style="margin:0;border-color:var(--accent2)">
+      <strong style="color:var(--accent2)">Entirely in right half</strong>
+      <p style="font-size:17px;font-weight:700;margin:6px 0">Handled by right recursive call</p>
+    </div>
+    <div class="card" style="margin:0;border-color:var(--warn)">
+      <strong style="color:var(--warn)">One index in each half (cross)</strong>
+      <p style="font-size:17px;font-weight:700;margin:6px 0">Handled by the combine step</p>
+    </div>
+  </div>
+  <p style="margin-top:12px">This is the fundamental structure behind inversion count (pairs), closest pair (point pairs), and many other D&amp;C problems. When you see a problem that involves counting or optimizing over pairs, this three-way decomposition is your first tool.</p>
+</section>
+
+<!-- ── SECTION 6: COMPLEXITY ── -->
+<section class="card" id="s6">
+  <h2>6. Complexity Analysis <span class="layer-badge lb-base">PARADIGM</span></h2>
+  <h3>Recurrences are not magic — they come directly from your code</h3>
+  <p>Every recurrence is just a translation of what your code does, written as a formula. Nothing is invented. You read the code, you count the calls, you measure the non-recursive work, and you write it down. That is all.</p>
+
+  <div class="card" style="margin:14px 0;background:rgba(37,99,235,.06);border-color:var(--accent2)">
+    <h4 style="margin:0 0 10px;font-weight:950;font-size:20px">Example: derive T(n) directly from merge sort code</h4>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 10px">Look at the merge sort skeleton:</p>
+    <pre style="margin:0 0 10px"><code>void merge_sort(a, l, r) {
+    if (r - l &lt;= 1) return;          // base case: O(1)
+    int mid = (l + r) &gt;&gt; 1;
+    merge_sort(a, l, mid, ...);       // recursive call 1 — size n/2
+    merge_sort(a, mid, r, ...);       // recursive call 2 — size n/2
+    // merge two halves: O(n) work
+}</code></pre>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 6px"><strong>Reading T(n) = 2T(n/2) + O(n) in plain language:</strong></p>
+    <ul style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem;margin:0">
+      <li><strong>2</strong> = there are 2 recursive calls in the code</li>
+      <li><strong>T(n/2)</strong> = each call gets half the data (r−l halves each time)</li>
+      <li><strong>+ O(n)</strong> = the merge loop outside the recursion does O(n) work</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin:14px 0;background:rgba(15,118,110,.06);border-color:var(--good)">
+    <h4 style="margin:0 0 10px;font-weight:950;font-size:20px">✓ Recurrence derivation checklist — 3 questions, every time</h4>
+    <ol style="font-size:var(--fs-sm);font-weight:700;line-height:2;padding-left:1.4rem;margin:0">
+      <li><strong>How many recursive calls appear in the function body?</strong> → that number becomes the coefficient (a)</li>
+      <li><strong>What size is each recursive call?</strong> → if it is n/2, write T(n/2); if n−1, write T(n−1)</li>
+      <li><strong>How much work is done outside the recursive calls at this level?</strong> → that is f(n) in T(n) = a·T(n/b) + f(n)</li>
+    </ol>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:10px 0 0;color:var(--good)">If you can answer these three questions for your code, you have the recurrence. No guesswork needed.</p>
+  </div>
+
+  <h3>How to build a recurrence from code</h3>
+  <p>Look at the code and answer three questions: <strong>(1)</strong> How many recursive calls? <strong>(2)</strong> What size is each? <strong>(3)</strong> How much non-recursive work?</p>
+  <div class="formula">T(n) = (number of calls) × T(n / shrink factor) + (work per node)</div>
+
+  <h3>The recurrence cookbook — five families</h3>
+  <div class="hierarchy-chain">
+    <div class="hc-item">
+      <div class="hc-label">Family 1 — Binary search style</div>
+      <div class="hc-name">T(n) = T(n/2) + O(1)&nbsp;&nbsp;→&nbsp;&nbsp;O(log n)</div>
+      <div class="hc-desc">One child, half size, constant work. Height = log n levels, each O(1). Sum = O(log n).</div>
+    </div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item">
+      <div class="hc-label">Family 2 — Tree leaf dominance</div>
+      <div class="hc-name">T(n) = 2T(n/2) + O(1)&nbsp;&nbsp;→&nbsp;&nbsp;O(n)</div>
+      <div class="hc-desc">Two children, half size, constant combine. The leaf count (n) dominates. Sum = 1+2+4+…+n = O(n).</div>
+    </div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item" style="border-color:var(--accent2)">
+      <div class="hc-label">Family 3 — Merge sort (balanced levels)</div>
+      <div class="hc-name">T(n) = 2T(n/2) + O(n)&nbsp;&nbsp;→&nbsp;&nbsp;O(n log n)</div>
+      <div class="hc-desc">Two children, half size, linear combine. Each of the O(log n) levels costs O(n). Every level does exactly the same amount of total work. Sum = O(n) × O(log n) = O(n log n).</div>
+    </div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item">
+      <div class="hc-label">Family 4 — Balanced quickselect</div>
+      <div class="hc-name">T(n) = T(n/2) + O(n)&nbsp;&nbsp;→&nbsp;&nbsp;O(n)</div>
+      <div class="hc-desc">One child, half size, linear work. Work shrinks geometrically: n + n/2 + n/4 + … = O(2n) = O(n).</div>
+    </div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item" style="border-color:var(--bad)">
+      <div class="hc-label">Family 5 — Bad quicksort (degenerate)</div>
+      <div class="hc-name">T(n) = T(n−1) + O(n)&nbsp;&nbsp;→&nbsp;&nbsp;O(n²)</div>
+      <div class="hc-desc">One child of size n−1. Work is n + (n−1) + (n−2) + … + 1 = O(n²). This happens when the pivot is always the minimum or maximum.</div>
+    </div>
+  </div>
+
+  <h3>Master Method from zero</h3>
+  <p>The Master Method is just a shortcut for reading off the answer to T(n) = a·T(n/b) + f(n) without drawing the full recursion tree every time. You do not need to memorize it by rote — understand where it comes from and the cases become obvious.</p>
+
+  <div class="ib ib-blue"><i>💡</i>
+    <p><strong>The intuition behind the three cases, in plain language:</strong> There are two sources of work in any D&C algorithm: (1) the work done at the leaves of the recursion tree (the leaf count = n<sup>log<sub>b</sub>a</sup>), and (2) the work done outside the recursion at each node (f(n) per level, times O(log n) levels). The Master Method just asks: which of these two sources is bigger?<br><br>
+    <strong>Case 1 (leaves dominate):</strong> f(n) is small — the algorithm branches aggressively and the leaves pile up. Total work ≈ leaf count.<br>
+    <strong>Case 2 (balanced):</strong> f(n) ≈ leaf-count-per-level — every level contributes equally, so you get log n equal-cost levels, adding a log factor.<br>
+    <strong>Case 3 (root dominates):</strong> f(n) is large — most work happens at the top level, and the recursive calls are cheap by comparison.</p>
+  </div>
+
+  <p>The standard form: <strong>T(n) = a·T(n/b) + f(n)</strong> where a = number of children, b = shrink factor, f(n) = non-recursive work per node.</p>
+  <p>The comparison quantity is <strong>n<sup>log<sub>b</sub> a</sup></strong> — this is the size of the recursion tree if we ignore combine work. It equals the leaf count: a<sup>log<sub>b</sub> n</sup> = n<sup>log<sub>b</sub> a</sup>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Case</th><th>Condition</th><th>Intuition</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><strong class="cy">Case 1</strong></td><td>f(n) = O(n<sup>log<sub>b</sub>a − ε</sup>)</td><td>Recursion dominates. Leaf count wins.</td><td class="cy">T(n) = Θ(n<sup>log<sub>b</sub> a</sup>)</td></tr>
+      <tr><td><strong class="cb">Case 2</strong></td><td>f(n) = Θ(n<sup>log<sub>b</sub> a</sup>)</td><td>Balanced. Every level contributes equally.</td><td class="cb">T(n) = Θ(n<sup>log<sub>b</sub> a</sup> log n)</td></tr>
+      <tr><td><strong class="cr">Case 3</strong></td><td>f(n) = Ω(n<sup>log<sub>b</sub>a + ε</sup>)</td><td>Combine dominates. Root-level work wins.</td><td class="cr">T(n) = Θ(f(n))</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Master Method calculator</h3>
+  <div class="master-calc">
+    <div class="mc-row">
+      <div><label>a (subproblems)</label><input type="number" id="mcA" value="2" min="1"></div>
+      <div><label>b (shrink factor)</label><input type="number" id="mcB" value="2" min="2"></div>
+      <div><label>f(n) = n^p (exponent p)</label><input type="number" id="mcP" value="1" step="0.1"></div>
+    </div>
+    <button class="miniBtn" onclick="calcMaster()">Compute ▶</button>
+    <div class="mc-result" id="mcResult">Enter a, b, p above and click Compute.</div>
+  </div>
+
+  <h3>Worked examples</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Recurrence</th><th>a</th><th>b</th><th>f(n)</th><th>n<sup>log<sub>b</sub>a</sup></th><th>Case</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>T(n/2)+O(1)</td><td>1</td><td>2</td><td>O(1)</td><td>n⁰=1</td><td>Case 2</td><td>O(log n)</td></tr>
+      <tr><td>2T(n/2)+O(1)</td><td>2</td><td>2</td><td>O(1)</td><td>n¹=n</td><td>Case 1</td><td>O(n)</td></tr>
+      <tr><td>2T(n/2)+O(n)</td><td>2</td><td>2</td><td>O(n)</td><td>n¹=n</td><td>Case 2</td><td>O(n log n)</td></tr>
+      <tr><td>3T(n/2)+O(n)</td><td>3</td><td>2</td><td>O(n)</td><td>n<sup>log₂3</sup>≈n<sup>1.585</sup></td><td>Case 1</td><td>O(n<sup>log₂3</sup>)</td></tr>
+      <tr><td>2T(n/2)+O(n²)</td><td>2</td><td>2</td><td>O(n²)</td><td>n</td><td>Case 3</td><td>O(n²)</td></tr>
+    </tbody>
+  </table></div>
+  <details>
+    <summary>When Master Method does not apply <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>The Master Method requires all subproblems to have the same size. It does not apply to:</p>
+      <ul style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem">
+        <li><strong>T(n) = T(n/3) + T(2n/3) + O(n)</strong> — unequal split sizes. Use the recursion tree: each level still sums to O(n), height is O(log n), result is O(n log n).</li>
+        <li><strong>T(n) = T(n−1) + O(n)</strong> — subtraction, not division. Result is O(n²) by direct expansion.</li>
+        <li><strong>T(n) = T(√n) + O(1)</strong> — non-standard shrinkage. Substitution or other methods needed.</li>
+      </ul>
+      <p>In competitive programming, direct recursion-tree reasoning is usually sufficient for all of these.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ── SECTION 7: MERGE SORT ── -->
+<section class="card" id="s7">
+  <h2>7. Merge Sort <span class="layer-badge lb-sort">SORT</span></h2>
+  <p><strong>Problem story:</strong> Sort an array. Sorting the whole array directly is hard. But if we sort the left half and sort the right half, then merging two sorted halves into one sorted array is easy — just compare the two front elements repeatedly.</p>
+
+  <div class="card" style="margin:12px 0;background:rgba(185,28,28,.06);border-color:var(--bad)">
+    <h4 style="margin:0 0 8px;font-weight:950;font-size:19px;color:var(--bad)">✗ Why naive approaches fail for sorting</h4>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 6px"><strong>Selection sort / insertion sort:</strong> O(n²). For n = 10⁶ that is 10¹² operations — impossible in a contest.</p>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0"><strong>Can we do better?</strong> Yes. If we recursively sort both halves, each half costs T(n/2). Then merging costs O(n). Total: T(n) = 2T(n/2) + O(n) = O(n log n). For n = 10⁶ that is about 20 × 10⁶ operations — fast enough.</p>
+  </div>
+
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>Key invariant during merge:</strong> At every step, <code>temp[l..k)</code> already contains the smallest (k−l) elements from both halves, in sorted order. This invariant is why merge produces a sorted result.</p>
+  </div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Merge sort step-by-step tracer</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="msRst">↺ Reset</button>
+        <button class="miniBtn" id="msPrv" disabled>◀ Prev</button>
+        <button class="miniBtn" id="msPlay">▶ Play</button>
+        <button class="miniBtn" id="msNxt">Next ▶</button>
+        <span class="miniBtn" id="msCtr" style="cursor:default;background:var(--panel2);min-width:100px">Step 1/…</span>
+      </div>
+    </div>
+    <div id="msArrWrap" class="arr-wrap" style="justify-content:center;margin:14px 0"></div>
+    <div class="statusPanel" id="msStatus">Press Next or Play to trace merge sort on [5,2,8,1,3,7,6,4].</div>
+    <div class="tracer-log" id="msLog"></div>
+  </div>
+
+  <h3>Code — Merge Sort</h3>
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+void merge_sort(vector&lt;int&gt;&amp; a, int l, int r, vector&lt;int&gt;&amp; temp) { // [l, r)
+    if (r - l &lt;= 1) return;
+
+    int mid = (l + r) &gt;&gt; 1;
+    merge_sort(a, l, mid, temp);
+    merge_sort(a, mid, r, temp);
+
+    int i = l, j = mid, k = l;
+
+    while (i &lt; mid &amp;&amp; j &lt; r) {
+        if (a[i] &lt;= a[j]) temp[k++] = a[i++];  // &lt;= ensures stability
+        else               temp[k++] = a[j++];
+    }
+
+    while (i &lt; mid) temp[k++] = a[i++];
+    while (j &lt; r)   temp[k++] = a[j++];
+
+    for (int p = l; p &lt; r; ++p) a[p] = temp[p];
+}
+
+int main() {
+    vector&lt;int&gt; a = {5, 2, 8, 1, 3, 7, 6, 4};
+    vector&lt;int&gt; temp(a.size());
+    merge_sort(a, 0, (int)a.size(), temp);
+    for (int x : a) cout &lt;&lt; x &lt;&lt; ' ';
+}</code></pre>
+
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>Why &lt;= makes it stable:</strong> When <code>a[i] == a[j]</code>, we take from the left half first. Equal elements from the left half always precede equal elements from the right half. This preserves relative order → stable sort.</p>
+  </div>
+
+  <h3>Complexity</h3>
+  <div class="formula">T(n) = 2T(n/2) + O(n) → O(n log n) time, O(n) space</div>
+  <p>Best case = worst case = O(n log n). Unlike quicksort, merge sort has no bad input. Memory is O(n) for the temp array.</p>
+
+  <div class="grid2">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 8px;font-weight:950">When merge sort matters in CP</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">You need a stable sort</li>
+        <li style="font-size:17px;margin:.4rem 0">You are counting inversions</li>
+        <li style="font-size:17px;margin:.4rem 0">You need offline geometric merges</li>
+        <li style="font-size:17px;margin:.4rem 0">You need to process cross-pairs during combine</li>
+      </ul>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 8px;font-weight:950">Bottom-up iterative variant</h4>
+      <p style="font-size:17px;font-weight:700;margin:0">Merge sort can also run iteratively: start with segments of size 1, then 2, 4, 8, … until the whole array is merged. Same O(n log n) time. No recursion stack. Slightly lower constant factor. The recursive version is usually clearer for understanding D&amp;C structure.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 8: INVERSION COUNT ── -->
+<section class="card" id="s8">
+  <h2>8. Inversion Count <span class="layer-badge lb-sort">MERGE APPLICATION</span></h2>
+  <p><strong>Problem:</strong> Given an array, count pairs (i, j) where i &lt; j and a[i] &gt; a[j]. These are called inversions because a[i] and a[j] are in the "wrong" relative order compared to a sorted array. The inversion count measures how far from sorted the array is.</p>
+
+  <div class="card" style="margin:12px 0;background:rgba(185,28,28,.06);border-color:var(--bad)">
+    <h4 style="margin:0 0 8px;font-weight:950;font-size:19px;color:var(--bad)">✗ Brute force: O(n²)</h4>
+    <pre style="margin:0;font-size:16px"><code>long long inv = 0;
+for (int i = 0; i &lt; n; i++)
+    for (int j = i+1; j &lt; n; j++)
+        if (a[i] &gt; a[j]) inv++;
+// O(n²) — too slow for n = 10⁵</code></pre>
+  </div>
+
+  <p><strong>Why D&amp;C fits — the three-category argument:</strong> Every inversion is either both indices in the left half, both in the right half, or one in each. The first two are recursive. The third happens during the merge.</p>
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>Cross-inversion counting trick:</strong> During merge, suppose we take element a[j] from the right half. Because the left half is sorted and a[i] &gt; a[j], every remaining left element also exceeds a[j]. So we add <code>mid − i</code> at once. This is the single insight that makes the algorithm O(n log n).</p>
+  </div>
+
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Inversion count — merge phase cross-pair counting</div>
+    </div>
+    <svg id="invSvg" class="graphsvg" viewBox="0 0 780 160"></svg>
+    <div class="statusPanel" id="invStatus">The two halves [2, 3, 8] and [1, 6] are sorted. During merge, when we take 1 from the right half, all 3 remaining left elements exceed it → add 3 inversions at once.</div>
+  </div>
+
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long count_inversions(vector&lt;int&gt;&amp; a, int l, int r, vector&lt;int&gt;&amp; temp) { // [l, r)
+    if (r - l &lt;= 1) return 0;
+
+    int mid = (l + r) &gt;&gt; 1;
+    long long ans = 0;
+
+    ans += count_inversions(a, l, mid, temp);
+    ans += count_inversions(a, mid, r, temp);
+
+    int i = l, j = mid, k = l;
+
+    while (i &lt; mid &amp;&amp; j &lt; r) {
+        if (a[i] &lt;= a[j]) {
+            temp[k++] = a[i++];
+        } else {
+            temp[k++] = a[j++];
+            ans += (mid - i);  // a[i..mid) all &gt; a[j]
+        }
+    }
+
+    while (i &lt; mid) temp[k++] = a[i++];
+    while (j &lt; r)   temp[k++] = a[j++];
+
+    for (int p = l; p &lt; r; ++p) a[p] = temp[p];
+    return ans;
+}</code></pre>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Use long long:</strong> The answer can be up to n(n−1)/2 ≈ 5×10¹⁰ for n=10⁵. Always declare <code>ans</code> as <code>long long</code>.</p>
+  </div>
+  <h3>Complexity: same as merge sort</h3>
+  <div class="formula">T(n) = 2T(n/2) + O(n) → O(n log n)</div>
+  <p>The <code>ans += (mid - i)</code> line is O(1). The merge still costs O(n). The recurrence is unchanged from merge sort.</p>
+
+  <div class="ib ib-purple"><i>🎯</i>
+    <p><strong>Contest significance:</strong> Inversion count is the model for all "count cross-pairs" D&amp;C problems. Once you understand it, problems like "count pairs (i,j) where a[i] &gt; 2·a[j]" become natural: they use the same merge structure, with the comparison condition changed.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 9: QUICKSORT ── -->
+<section class="card" id="s9">
+  <h2>9. Quicksort <span class="layer-badge lb-sort">SORT</span></h2>
+  <p><strong>The big idea:</strong> Instead of splitting by position and fixing order later (merge sort), quicksort chooses a <em>pivot</em> — a reference value — and rearranges (partitions) the array so that smaller elements go left and larger elements go right. After this partitioning, the pivot is in its final sorted position. Recurse on both sides. The combine step is trivial: partition already guaranteed that every left element ≤ pivot ≤ every right element, so the two sorted sides just concatenate correctly. No merge needed.</p>
+
+  <div class="ib ib-blue"><i>💡</i>
+    <p><strong>Merge sort vs quicksort — the structural difference:</strong> Merge sort does its real work <em>after</em> the recursive calls (during the merge). Quicksort does its real work <em>before</em> the recursive calls (during the partition). In merge sort the split is always balanced (midpoint) but the combine is O(n). In quicksort the split depends on the pivot (potentially unbalanced) but the combine is O(1). The complexity consequences of this difference are significant — see the pivot strategy table below.</p>
+  </div>
+
+  <h3>Partition correctness invariant (Lomuto scheme)</h3>
+  <p>At all times during partition: <code>a[l..i)</code> contains elements &lt; pivot, <code>a[i..j)</code> contains elements ≥ pivot, <code>a[j..r−1)</code> is unprocessed.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Quicksort partition tracer — pivot = a[r−1]</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="qsRst">↺ Reset</button>
+        <button class="miniBtn" id="qsNxt">Next ▶</button>
+      </div>
+    </div>
+    <div id="qsArrWrap" class="arr-wrap" style="justify-content:center;margin:14px 0"></div>
+    <div class="statusPanel" id="qsStatus">Press Next to step through the Lomuto partition on [5,2,8,1,3,7,6,4].</div>
+  </div>
+
+  <h3>Pivot strategies — the most important decision</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Strategy</th><th>Worst-case trigger</th><th>Complexity risk</th><th>Practical verdict</th></tr></thead>
+    <tbody>
+      <tr><td><strong>First / Last element</strong></td><td>Sorted / reverse-sorted input</td><td>O(n²) on many contest inputs</td><td class="cr">Dangerous in contests</td></tr>
+      <tr><td><strong>Middle index</strong></td><td>Specific adversarial sequences</td><td>O(n²) possible</td><td class="cb">Slightly safer, still fragile</td></tr>
+      <tr><td><strong>Median-of-three</strong></td><td>Specific adversarial sequences</td><td>O(n²) possible but rare</td><td class="cb">Better heuristic</td></tr>
+      <tr><td><strong>Random pivot</strong></td><td>None (adversary cannot predict)</td><td>Expected O(n log n)</td><td class="cy">Standard contest choice</td></tr>
+      <tr><td><strong>Median-of-medians</strong></td><td>None</td><td>Worst-case O(n)</td><td class="cp">Heavy constant, use for theory</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>"Expected" ≠ "worst case":</strong> Randomized quicksort has expected O(n log n). This means averaging over the random choices of the algorithm, the running time is O(n log n). But any single run can still be O(n²) — just with exponentially low probability. Do not confuse expected time with worst-case time.</p>
+  </div>
+
+  <h3>3-way randomized quicksort — the recommended template</h3>
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+void quick_sort_3way(vector&lt;int&gt;&amp; a, int l, int r) { // [l, r)
+    if (r - l &lt;= 1) return;
+
+    int pivot = a[uniform_int_distribution&lt;int&gt;(l, r - 1)(rng)];
+
+    // Partition into: [&lt;pivot][==pivot][&gt;pivot]
+    int i = l, j = l, k = r;
+    while (i &lt; k) {
+        if      (a[i] &lt; pivot) { swap(a[i], a[j]); i++; j++; }
+        else if (a[i] &gt; pivot) { --k; swap(a[i], a[k]); }
+        else                   { i++; }
+    }
+    // a[l..j) &lt; pivot, a[j..k) == pivot, a[k..r) &gt; pivot
+
+    quick_sort_3way(a, l, j);
+    quick_sort_3way(a, k, r);
+}</code></pre>
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>Why 3-way is better for duplicates:</strong> If the array has many equal elements, 2-way partition degenerates: elements equal to the pivot are processed inefficiently. 3-way partition places all equal elements in the middle region and never recurses on them again. For arrays with many duplicates, 3-way quicksort is O(n log k) where k is the number of distinct values — it can be faster than O(n log n) merge sort.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 10: QUICKSELECT ── -->
+<section class="card" id="s10">
+  <h2>10. Quickselect <span class="layer-badge lb-sel">SELECTION</span></h2>
+  <p><strong>Problem:</strong> Given n unsorted numbers, find the k-th smallest. You do not need them all sorted — just the one at rank k.</p>
+
+  <div class="card" style="margin:14px 0;background:rgba(185,28,28,.06);border-color:var(--bad)">
+    <h4 style="margin:0 0 10px;font-weight:950;font-size:20px;color:var(--bad)">✗ Naive approach: sort first, then index</h4>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 8px">Sort the entire array (O(n log n)), then return a[k−1]. This works, but it does far too much work: sorting puts <em>every</em> element in its final position, but you only need the element at rank k.</p>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0"><strong>Every element</strong> participates in every level of the merge sort recursion. You cannot escape paying O(n log n) if you sort.</p>
+  </div>
+
+  <div class="card" style="margin:14px 0;background:rgba(15,118,110,.06);border-color:var(--good)">
+    <h4 style="margin:0 0 10px;font-weight:950;font-size:20px;color:var(--good)">✓ Quickselect: recurse into ONE side only</h4>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 8px">After partition around a pivot, you know exactly which side contains rank k. The pivot lands at some position p. If k &lt; p, the answer is in the left half. If k &gt; p, it is in the right half. If k == p, you found it.</p>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0"><strong>Key insight:</strong> you discard half the data at each step. This changes the recurrence from 2T(n/2)+O(n) (both halves, like quicksort) to T(n/2)+O(n) (one half only). That single change goes from O(n log n) to O(n).</p>
+  </div>
+
+  <p><strong>The key difference from quicksort:</strong> After partition, only one branch can contain the k-th element. Recurse into that branch only. This changes the recurrence from <code>2T(n/2)+O(n)</code> (merge sort) to <code>T(n/2)+O(n)</code> (balanced quickselect).</p>
+  <div class="formula">n + n/2 + n/4 + ··· = O(2n) = O(n)   ← geometric series, work shrinks each level</div>
+  <p style="font-size:var(--fs-sm);font-weight:700;color:var(--muted)">Contrast with sorting: in sorting you must recurse on <em>both</em> halves, so the work does not shrink — it stays O(n) per level for O(log n) levels = O(n log n). Quickselect escapes this because it throws away the irrelevant half.</p>
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>Why the recurrence gives linear time:</strong> The partition work shrinks geometrically because each level handles half as much data (on average). This geometric convergence is why quickselect is faster than sorting — sorting must process all elements at every recursion level, but quickselect discards half the data each time.</p>
+  </div>
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+int partition_rand(vector&lt;int&gt;&amp; a, int l, int r) { // [l, r)
+    int pivot_idx = uniform_int_distribution&lt;int&gt;(l, r - 1)(rng);
+    swap(a[pivot_idx], a[r - 1]);
+
+    int pivot = a[r - 1], i = l;
+    for (int j = l; j &lt; r - 1; ++j)
+        if (a[j] &lt; pivot) swap(a[i++], a[j]);
+    swap(a[i], a[r - 1]);
+    return i;
+}
+
+// Returns element with 0-based rank k in a[l..r)
+int quick_select(vector&lt;int&gt;&amp; a, int l, int r, int k) {
+    while (true) {
+        if (r - l == 1) return a[l];
+
+        int p = partition_rand(a, l, r);
+
+        if      (p == k) return a[p];
+        else if (k &lt; p)  r = p;
+        else             l = p + 1;
+    }
+}</code></pre>
+
+  <div class="tw"><table>
+    <thead><tr><th>Pivot choice</th><th>Expected time</th><th>Worst case</th></tr></thead>
+    <tbody>
+      <tr><td>First / last element</td><td>O(n) best case</td><td class="cr">O(n²)</td></tr>
+      <tr><td>Random pivot</td><td class="cy">O(n) expected</td><td class="cr">O(n²) with tiny probability</td></tr>
+      <tr><td>Median of medians</td><td>O(n)</td><td class="cy">O(n) worst case (guaranteed)</td></tr>
+    </tbody>
+  </table></div>
+
+  <details>
+    <summary>Median of medians — deterministic O(n) selection <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>The idea:</strong> To guarantee O(n) even in the worst case, we need a pivot that always splits the array into at least a 30/70 ratio.</p>
+      <ol style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem">
+        <li>Divide the array into groups of 5.</li>
+        <li>Find the median of each group by sorting (each group has constant size, so this is O(n) total).</li>
+        <li>Recursively find the median of those medians — this is T(n/5).</li>
+        <li>Use that median as the pivot.</li>
+        <li>The guarantee is that at least 3n/10 elements are &lt; pivot and at least 3n/10 are &gt; pivot.</li>
+      </ol>
+      <div class="formula">T(n) = T(n/5) + T(7n/10) + O(n) → O(n)</div>
+      <p>The constant factor is high (~30–40×), so random-pivot quickselect is faster in practice. Median of medians is important for theory and for problems requiring a deterministic guarantee.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ── SECTION 11: CLOSEST PAIR ── -->
+<section class="card" id="s11">
+  <h2>11. Closest Pair of Points <span class="layer-badge lb-geo">GEOMETRY</span></h2>
+  <p><strong>Problem:</strong> Given n points in the plane, find the pair of distinct points with the smallest Euclidean distance between them. Return that minimum distance.</p>
+
+  <div class="card" style="margin:14px 0;background:rgba(185,28,28,.06);border-color:var(--bad)">
+    <h4 style="margin:0 0 10px;font-weight:950;font-size:20px;color:var(--bad)">✗ Brute force: check every pair</h4>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0 0 8px">Try every pair (i, j) with i &lt; j. There are n(n−1)/2 ≈ n²/2 pairs. Each distance computation is O(1). Total cost: <strong>O(n²)</strong>.</p>
+    <p style="font-size:var(--fs-sm);font-weight:700;margin:0">For n = 10⁵, that is about 5 × 10⁹ operations — far too slow. We need a way to skip pairs that clearly cannot be the closest without checking them.</p>
+    <pre style="margin:8px 0 0;font-size:16px"><code>// Naive O(n²)
+long long ans = LLONG_MAX;
+for (int i = 0; i &lt; n; i++)
+    for (int j = i+1; j &lt; n; j++)
+        ans = min(ans, dist2(pts[i], pts[j]));</code></pre>
+  </div>
+
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>Why the combine step is the real difficulty:</strong> Splitting is trivial — sort by x, take the midpoint. Solving each half recursively is also trivial (trust the recursion). The hard part is the combine step: after you know the best distance in the left half (d_L) and the best in the right half (d_R), how do you efficiently find whether any cross pair (one point in each half) does better? Without geometric insight, checking all cross pairs is O(n²) again — which destroys the whole algorithm. The entire cleverness of this algorithm is in proving the combine step can be done in O(n) time.</p>
+  </div>
+
+  <div class="ib ib-green"><i>💡</i>
+    <p><strong>Simple intuition before the formal argument:</strong> Let d = min(d_L, d_R). A cross pair can only improve d if both points are very close to the dividing line — within distance d horizontally. Everything farther away is already worse than d and can be ignored. This narrows the search from n² pairs to a narrow strip. Within that strip, sorting by y and scanning nearby neighbors in y turns out to need at most a constant number of checks per point. That is the O(n) combine.</p>
+  </div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Common confusion:</strong> "The hard part of closest pair is splitting." It is not. Splitting is just sort-by-x and take-the-midpoint. The hard part is proving the combine step — specifically, proving why only O(1) y-neighbors need to be checked in the strip. Without that proof you cannot claim O(n log n). Do not skip the packing argument below.</p>
+  </div>
+
+  <p><strong>Why this is the deepest D&amp;C problem in this tutorial:</strong> The split is trivial (sort by x, split at midpoint). The recursion is standard (trust both halves). The difficulty is entirely in the combine step — specifically, in proving that checking cross-border pairs does not blow up to O(n²). Everything below exists to establish that one fact.</p>
+
+  <h3>The algorithm — five steps</h3>
+  <div class="hierarchy-chain">
+    <div class="hc-item"><div class="hc-label">Step 1</div><div class="hc-name">Sort points by x-coordinate</div><div class="hc-desc">O(n log n) one-time cost before recursion.</div></div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item"><div class="hc-label">Step 2 — Recurse</div><div class="hc-name">Solve left half and right half</div><div class="hc-desc">Get d_L = closest in left half, d_R = closest in right half. Set d = min(d_L, d_R).</div></div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item" style="border-color:var(--accent2)"><div class="hc-label">Step 3 — The strip observation</div><div class="hc-name">Any cross pair with distance &lt; d must lie within a strip of width 2d around the dividing line</div><div class="hc-desc">Points with |x − midx| ≥ d cannot improve d. So discard all other points — only strip points matter for the cross contribution.</div></div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item" style="border-color:var(--good)"><div class="hc-label">Step 4 — The packing argument</div><div class="hc-name">For each strip point, only check a constant number of y-neighbors</div><div class="hc-desc">Inside the relevant 2d × d rectangle, no two points from the same half are closer than d. By a packing argument, at most 8 points can fit. So checking the next 7 y-neighbors suffices.</div></div>
+    <div class="hc-connector">↓</div>
+    <div class="hc-item"><div class="hc-label">Step 5 — Merge-sort trick</div><div class="hc-name">Maintain y-sorted order through recursion</div><div class="hc-desc">If we re-sort by y at each level, combine costs O(n log n) → total O(n log² n). If we merge y-sorted lists from children (like merge sort), combine costs O(n) → total O(n log n).</div></div>
+  </div>
+
+  <p style="font-size:var(--fs-sm);font-weight:700;color:var(--muted);margin:14px 0 6px"><strong>What remains to prove:</strong> We must show that for each strip point, only a constant number of y-neighbors can possibly be closer than d. If that is true, the inner loop runs O(1) times per point, and the total combine cost is O(n). The packing argument below establishes exactly this.</p>
+
+  <div class="ib ib-purple"><i>🎯</i>
+    <p><strong>Why only a constant number of strip points need to be checked per point:</strong> After narrowing to the strip, sort the strip by y. For any strip point p, you only look at strip points with y-coordinate within d of p's y-coordinate. Inside this d-wide y-window, draw two d×d squares (one on each side of the dividing line). Each square has the property that all points inside it are from the same recursive half — and that half already found its minimum distance d. So no two points from the same half can be closer than d in that square. By a packing argument (pack circles of radius d/2 in a 2d×d rectangle), at most 8 points can fit in that window. This is why the inner loop breaks early and the total combine cost is O(n).</p>
+  </div>
+
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Squared distances:</strong> Always compare squared distances to avoid square root precision issues. <code>dx*dx + dy*dy</code> is an integer if coordinates are integers. Only convert to floating point at the very end if needed.</p>
+  </div>
+
+  <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Point { long long x, y; };
+
+long long dist2(const Point&amp; a, const Point&amp; b) {
+    long long dx = a.x - b.x, dy = a.y - b.y;
+    return dx*dx + dy*dy;
+}
+
+long long closest_dc(vector&lt;Point&gt;&amp; pts, int l, int r, vector&lt;Point&gt;&amp; tmp) {
+    int len = r - l;
+    if (len &lt;= 3) {
+        long long ans = (long long)4e18;
+        for (int i = l; i &lt; r; i++)
+            for (int j = i+1; j &lt; r; j++)
+                ans = min(ans, dist2(pts[i], pts[j]));
+        sort(pts.begin()+l, pts.begin()+r, [](const Point&amp; a, const Point&amp; b){
+            return a.y != b.y ? a.y &lt; b.y : a.x &lt; b.x; });
+        return ans;
+    }
+
+    int mid = (l + r) &gt;&gt; 1;
+    long long midx = pts[mid].x;
+
+    long long d = min(closest_dc(pts, l, mid, tmp),
+                      closest_dc(pts, mid, r, tmp));
+
+    // Merge by y (like merge sort, O(n) combine)
+    int i = l, j = mid, k = l;
+    while (i &lt; mid &amp;&amp; j &lt; r)
+        tmp[k++] = (pts[i].y &lt; pts[j].y) ? pts[i++] : pts[j++];
+    while (i &lt; mid) tmp[k++] = pts[i++];
+    while (j &lt; r)   tmp[k++] = pts[j++];
+    for (int p = l; p &lt; r; p++) pts[p] = tmp[p];
+
+    // Strip scan
+    vector&lt;Point&gt; strip;
+    for (int p = l; p &lt; r; p++) {
+        long long dx = pts[p].x - midx;
+        if (dx*dx &lt; d) strip.push_back(pts[p]);
+    }
+    int s = (int)strip.size();
+    for (int a = 0; a &lt; s; a++)
+        for (int b = a+1; b &lt; s; b++) {
+            long long dy = strip[b].y - strip[a].y;
+            if (dy*dy &gt;= d) break;  // y-sorted: safe to break
+            d = min(d, dist2(strip[a], strip[b]));
+        }
+    return d;
+}
+
+long long closest_pair_sq(vector&lt;Point&gt; pts) {
+    int n = pts.size();
+    sort(pts.begin(), pts.end(), [](const Point&amp; a, const Point&amp; b){
+        return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y; });
+    vector&lt;Point&gt; tmp(n);
+    return closest_dc(pts, 0, n, tmp);
+}</code></pre>
+  <div class="formula">T(n) = 2T(n/2) + O(n) → O(n log n)</div>
+</section>
+
+<!-- ── SECTION 12: INVARIANTS ── -->
+<section class="card" id="s12">
+  <h2>12. Invariants <span class="layer-badge lb-base">CORRECTNESS</span></h2>
+  <h3>A. State invariants — what each function guarantees when it returns</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Function</th><th>State invariant on return</th></tr></thead>
+    <tbody>
+      <tr><td><code>merge_sort(a, l, r)</code></td><td><code>a[l..r)</code> is sorted in non-decreasing order</td></tr>
+      <tr><td><code>count_inversions(a, l, r)</code></td><td><code>a[l..r)</code> is sorted; return value = number of inversions in original a[l..r)</td></tr>
+      <tr><td><code>quick_sort_3way(a, l, r)</code></td><td><code>a[l..r)</code> is sorted</td></tr>
+      <tr><td><code>quick_select(a, l, r, k)</code></td><td>Return value = the k-th smallest element (0-indexed) of a[l..r)</td></tr>
+      <tr><td><code>closest_dc(pts, l, r)</code></td><td>Return value = minimum squared distance among pts[l..r); pts[l..r) is sorted by y on return</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>B. Transition invariants — what holds during the combine step</h3>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Merge invariant:</strong> At every step of the merge loop, <code>temp[l..k)</code> contains the smallest (k−l) elements from the two halves, in sorted order. Pointers <code>i</code> and <code>j</code> point to the smallest unplaced element in each half.</p>
+  </div>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Partition invariant (Lomuto):</strong> At all times, <code>a[l..i)</code> ≤ pivot, <code>a[i..j)</code> &gt; pivot, <code>a[j..r−1)</code> = unprocessed. When the loop ends, swapping a[i] and a[r−1] places the pivot at its final position i.</p>
+  </div>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Closest pair strip invariant:</strong> When scanning the strip sorted by y, once <code>dy² ≥ d</code>, no remaining point can improve d. This justifies the <code>break</code> in the inner loop.</p>
+  </div>
+
+  <h3>C. Termination invariants</h3>
+  <p>Every D&amp;C algorithm here terminates because the input size strictly decreases at each recursive call (r−l decreases), and the base case handles size 1 (or size ≤ 3 for closest pair). The only potential issue is if <code>mid == l</code> or <code>mid == r</code>, which cannot happen when r−l ≥ 2 with the formula <code>mid = (l+r)>>1</code>.</p>
+
+  <h3>D. Failure modes — when the invariant is violated</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Failure</th><th>Root cause</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td>Merge sort wrong output</td><td>Using &lt; instead of &lt;= in merge compare</td><td>Sort is correct but unstable</td></tr>
+      <tr><td>Inversion count wrong</td><td>Adding (mid − i) when taking from left, not right</td><td>Overcounts inversions</td></tr>
+      <tr><td>Quicksort infinite loop</td><td>Empty partition (all equal elements, bad pivot)</td><td>Stack overflow</td></tr>
+      <tr><td>Quickselect out of bounds</td><td>k not in range [l, r)</td><td>Undefined behavior</td></tr>
+      <tr><td>Closest pair misses cross pair</td><td>Strip width condition uses d instead of sqrt(d)</td><td>Wrong answer</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ── SECTION 13: PROOF OF CORRECTNESS ── -->
+<section class="card" id="s13">
+  <h2>13. Proof of Correctness <span class="layer-badge lb-base">CORRECTNESS</span></h2>
+  <p>Every D&amp;C proof follows the same four-step template. Memorize the structure, not the specific proofs.</p>
+
+  <div class="card" style="background:rgba(37,99,235,.06);margin:14px 0;border-color:var(--accent2)">
+    <h3 style="margin-top:0">The universal D&amp;C proof template</h3>
+    <ol style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem">
+      <li><strong>State the contract:</strong> What does the recursive function return? What postcondition holds when it returns?</li>
+      <li><strong>Prove the base case:</strong> When size ≤ threshold, direct computation is clearly correct.</li>
+      <li><strong>Apply the induction hypothesis:</strong> Assume both recursive calls satisfy their postcondition. Do not re-prove them — trust the contract.</li>
+      <li><strong>Prove the combine step is correct:</strong> Show that the combine step correctly assembles the parent's answer from the children's guaranteed outputs. Enumerate all answer categories and show each is covered.</li>
+    </ol>
+  </div>
+
+  <details>
+    <summary>Proof: Merge Sort is correct <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Contract:</strong> <code>merge_sort(a, l, r)</code> sorts <code>a[l..r)</code> in non-decreasing order.</p>
+      <p><strong>Base case:</strong> r−l ≤ 1. A segment of 0 or 1 elements is trivially sorted. ✓</p>
+      <p><strong>Induction hypothesis:</strong> <code>merge_sort(a, l, mid)</code> correctly sorts <code>a[l..mid)</code>, and <code>merge_sort(a, mid, r)</code> correctly sorts <code>a[mid..r)</code>.</p>
+      <p><strong>Combine step:</strong> After recursive calls, both halves are sorted. The merge procedure maintains the invariant: temp[l..k) is the sorted sequence of the smallest (k−l) elements from both halves. By induction on k, this is maintained at every step. When the merge terminates, temp[l..r) contains all elements of a[l..r) in sorted order. Copying back to a completes the proof. ∎</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Proof: Inversion Count is correct <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Contract:</strong> <code>count_inversions(a, l, r)</code> returns the number of inversions in a[l..r) and sorts a[l..r).</p>
+      <p><strong>Base case:</strong> Size ≤ 1. No inversions, trivially sorted. ✓</p>
+      <p><strong>Induction hypothesis:</strong> Both recursive calls return correct inversion counts for their respective halves and sort those halves.</p>
+      <p><strong>Combine step:</strong> After recursive calls, both halves are sorted. We claim: every inversion in a[l..r) is either (a) within [l,mid), (b) within [mid,r), or (c) a cross inversion (i in left, j in right with a[i] &gt; a[j]). Types (a) and (b) are counted by the recursive calls. Type (c): during merge, when we take a[j] from the right and a[i] &gt; a[j] (so we're on the else branch), the sorted left half means a[i], a[i+1], …, a[mid−1] all exceed a[j]. We add exactly (mid−i) inversions. By the merge invariant, each such cross inversion is counted exactly once. ∎</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Proof: Closest Pair is correct <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Contract:</strong> <code>closest_dc(pts, l, r)</code> returns the minimum squared distance among pts[l..r) and leaves pts[l..r) sorted by y.</p>
+      <p><strong>Base case:</strong> r−l ≤ 3. Brute force checks all pairs. Manual y-sort. ✓</p>
+      <p><strong>Induction hypothesis:</strong> Both recursive calls return correct minimum distances and sort their halves by y.</p>
+      <p><strong>Combine step:</strong> Any closest pair is either both in the left half, both in the right half, or a cross pair. The first two are handled by the recursive calls giving d_L and d_R. Let d = min(d_L, d_R). For a cross pair to improve d, both points must lie within the strip |x − midx| &lt; sqrt(d). The strip is processed in y order. For each strip point p, we check subsequent strip points q. When (q.y − p.y)² ≥ d, the Euclidean distance already exceeds sqrt(d), and since strip is y-sorted, all later q's are even further in y. The packing argument: in the 2sqrt(d) × sqrt(d) rectangle relevant to p, at most 8 points fit (they all lie in two d × d squares, and within each square no two points from the same half are closer than d — the recursive calls guarantee that). So we check at most 7 subsequent points per strip point, giving O(n) combine cost. ∎</p>
+    </div>
+  </details>
+</section>
+
+<!-- ── SECTION 14: TEMPLATE PHILOSOPHY ── -->
+<section class="card" id="s14">
+  <h2>14. Template Philosophy <span class="layer-badge lb-base">TEMPLATES</span></h2>
+  <p>All D&amp;C templates in this tutorial form one unified family. The same naming conventions, the same invariants, and the same mental model apply everywhere.</p>
+  <div class="formula master">Universal naming: l = left bound, r = right bound (exclusive), mid = (l+r)>>1<br>
+  temp[] = auxiliary array, always allocated outside and passed in<br>
+  All ranges are half-open [l, r). Base case: r−l ≤ 1.</div>
+
+  <h3>The two template families</h3>
+  <div class="ks-grid">
+    <div class="ks-block" style="border-color:var(--good)">
+      <h4>🔀 Merge-sort family</h4>
+      <ul>
+        <li>Split by position (mid)</li>
+        <li>Recurse on both halves</li>
+        <li>Combine by merging</li>
+        <li>Returns: sorted segment + extra info</li>
+        <li>Used for: merge sort, inversion count, offline cross-pair queries</li>
+      </ul>
+    </div>
+    <div class="ks-block" style="border-color:var(--warn)">
+      <h4>🎯 Pivot family</h4>
+      <ul>
+        <li>Split by pivot value</li>
+        <li>Recurse on one or both halves</li>
+        <li>Combine is trivial or absent</li>
+        <li>Returns: void (sort) or value (select)</li>
+        <li>Used for: quicksort, quickselect, k-th element queries</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Naming discipline:</strong> In the merge-sort family, always pass the temp array as a parameter — do not allocate it inside the recursive function. In the pivot family, always use a random pivot. Mixing families or deviating from these rules is the single largest source of bugs in D&amp;C code.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 15: MASTER IMPLEMENTATIONS ── -->
+<section class="card" id="s15">
+  <h2>15. Master Implementations <span class="layer-badge lb-base">TEMPLATES</span></h2>
+  <p>Complete, contest-ready implementations with unified naming. Copy these as starting points.</p>
+
+  <h3>Merge Sort (base template)</h3>
+  <pre><code>void merge_sort(vector&lt;int&gt;&amp; a, int l, int r, vector&lt;int&gt;&amp; temp) {
+    if (r - l &lt;= 1) return;
+    int mid = (l + r) &gt;&gt; 1;
+    merge_sort(a, l, mid, temp);
+    merge_sort(a, mid, r, temp);
+    int i = l, j = mid, k = l;
+    while (i &lt; mid &amp;&amp; j &lt; r) temp[k++] = a[i] &lt;= a[j] ? a[i++] : a[j++];
+    while (i &lt; mid) temp[k++] = a[i++];
+    while (j &lt; r)   temp[k++] = a[j++];
+    for (int p = l; p &lt; r; ++p) a[p] = temp[p];
+}
+// Call: vector&lt;int&gt; temp(n); merge_sort(a, 0, n, temp);</code></pre>
+
+  <h3>Inversion Count (merge-sort family, returns long long)</h3>
+  <pre><code>long long count_inv(vector&lt;int&gt;&amp; a, int l, int r, vector&lt;int&gt;&amp; temp) {
+    if (r - l &lt;= 1) return 0;
+    int mid = (l + r) &gt;&gt; 1;
+    long long ans = count_inv(a, l, mid, temp) + count_inv(a, mid, r, temp);
+    int i = l, j = mid, k = l;
+    while (i &lt; mid &amp;&amp; j &lt; r) {
+        if (a[i] &lt;= a[j]) temp[k++] = a[i++];
+        else { temp[k++] = a[j++]; ans += mid - i; }
+    }
+    while (i &lt; mid) temp[k++] = a[i++];
+    while (j &lt; r)   temp[k++] = a[j++];
+    for (int p = l; p &lt; r; ++p) a[p] = temp[p];
+    return ans;
+}</code></pre>
+
+  <h3>3-Way Randomized Quicksort</h3>
+  <pre><code>mt19937 rng((uint32_t)chrono::steady_clock::now().time_since_epoch().count());
+
+void qsort3(vector&lt;int&gt;&amp; a, int l, int r) {
+    if (r - l &lt;= 1) return;
+    int pv = a[uniform_int_distribution&lt;int&gt;(l, r-1)(rng)];
+    int i = l, j = l, k = r;
+    while (i &lt; k) {
+        if      (a[i] &lt; pv) swap(a[i++], a[j++]);
+        else if (a[i] &gt; pv) swap(a[i], a[--k]);
+        else i++;
+    }
+    qsort3(a, l, j); qsort3(a, k, r);
+}</code></pre>
+
+  <h3>Quickselect (returns k-th smallest, 0-indexed)</h3>
+  <pre><code>int qselect(vector&lt;int&gt;&amp; a, int l, int r, int k) {
+    while (true) {
+        if (r - l == 1) return a[l];
+        int pv = a[uniform_int_distribution&lt;int&gt;(l, r-1)(rng)];
+        int i = l, j = l, hi = r;
+        while (i &lt; hi) {
+            if      (a[i] &lt; pv) swap(a[i++], a[j++]);
+            else if (a[i] &gt; pv) swap(a[i], a[--hi]);
+            else i++;
+        }
+        // a[l..j) &lt; pv, a[j..hi) == pv, a[hi..r) &gt; pv
+        if      (k &lt;  j)  r = j;
+        else if (k &lt; hi)  return pv;
+        else              l = hi;
+    }
+}</code></pre>
+</section>
+
+<!-- ── SECTION 16: CODE WALKTHROUGH ── -->
+<section class="card" id="s16">
+  <h2>16. Line-by-Line Code Walkthrough <span class="layer-badge lb-sort">MERGE SORT</span></h2>
+  <p>Walking through merge sort line by line so you can reproduce it from understanding, not memory.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Line</th><th>Code</th><th>Why it is there</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>if (r - l &lt;= 1) return;</code></td><td>Base case. A segment of 0 or 1 elements is already sorted. Without this the function loops forever.</td></tr>
+      <tr><td>2</td><td><code>int mid = (l + r) &gt;&gt; 1;</code></td><td>Split point. Always rounds down. For [0,8) → mid=4. Guarantees both halves are strictly smaller than the whole — termination guaranteed.</td></tr>
+      <tr><td>3–4</td><td><code>merge_sort(a, l, mid, temp);</code><br><code>merge_sort(a, mid, r, temp);</code></td><td>Conquer. After these return, a[l..mid) and a[mid..r) are both sorted. Left-then-right order matters only for cache behavior, not correctness.</td></tr>
+      <tr><td>5</td><td><code>int i = l, j = mid, k = l;</code></td><td>i = next unplaced from left half, j = next unplaced from right half, k = next position in temp.</td></tr>
+      <tr><td>6</td><td><code>if (a[i] &lt;= a[j]) temp[k++] = a[i++];</code></td><td>Take from left if ≤. The &lt;= ensures stability: equal elements from the left half come before equal elements from the right half.</td></tr>
+      <tr><td>7</td><td><code>while (i &lt; mid) temp[k++] = a[i++];</code></td><td>Drain the left half if the right half is exhausted first. These elements are already larger than everything placed.</td></tr>
+      <tr><td>8</td><td><code>while (j &lt; r) temp[k++] = a[j++];</code></td><td>Drain the right half. Symmetric.</td></tr>
+      <tr><td>9</td><td><code>for (int p = l; p &lt; r; ++p) a[p] = temp[p];</code></td><td>Copy back. The merge wrote to temp, not a. We copy the result back to a so the caller sees a sorted segment.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Common bug — wrong copy-back range:</strong> Writing <code>for (int p = 0; p &lt; r; ++p)</code> instead of <code>p = l</code> overwrites the portion [0, l) that was already processed by earlier calls. Always copy back exactly [l, r).</p>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Common bug — wrong aux array size:</strong> Allocating temp inside the recursive function costs O(n log n) memory total and adds significant runtime overhead. Always allocate temp once in the caller with size n, then pass it in.</p>
+  </div>
+</section>
+
+<!-- ── SECTION 17: EDGE CASES ── -->
+<section class="card" id="s17">
+  <h2>17. Edge Cases — Centralized Audit <span class="layer-badge lb-base">PITFALLS</span></h2>
+  <div class="tw"><table>
+    <thead><tr><th>Edge case</th><th>Algorithm</th><th>What happens</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>n = 0 (empty array)</td><td>All</td><td>merge_sort(a, 0, 0) → r−l=0, returns immediately. Safe.</td><td>No fix needed if base is r−l ≤ 1.</td></tr>
+      <tr><td>n = 1</td><td>All</td><td>Returns immediately. Safe.</td><td>No fix needed.</td></tr>
+      <tr><td>All elements equal</td><td>Quicksort (2-way)</td><td>2-way partition degenerates: one side always empty. O(n²) time.</td><td>Use 3-way partition — all equal elements land in the "==" region, no recursion on them.</td></tr>
+      <tr><td>All elements equal</td><td>Quickselect</td><td>Same 3-way fix handles this. With 3-way: O(n) total.</td><td>Use 3-way partition in quickselect too.</td></tr>
+      <tr><td>k out of range</td><td>Quickselect</td><td>Undefined behavior — l ≥ r eventually.</td><td>Validate k ∈ [0, n) before calling.</td></tr>
+      <tr><td>n = 2 for closest pair</td><td>Closest pair</td><td>Base case len ≤ 3 handles this. One pair checked. Safe.</td><td>No fix needed.</td></tr>
+      <tr><td>Duplicate points</td><td>Closest pair</td><td>dist² = 0. Algorithm returns 0 (correct).</td><td>No fix needed.</td></tr>
+      <tr><td>Overflow in dist²</td><td>Closest pair</td><td>If coordinates are ±10⁹, dx² can reach 4×10¹⁸ — fits in long long (max ~9.2×10¹⁸). Safe with long long.</td><td>Use long long for all distance computations.</td></tr>
+      <tr><td>Integer overflow in inv. count</td><td>Inversion count</td><td>Answer can be ~n²/2 ≈ 5×10¹⁰ for n=10⁵. Overflows int.</td><td>Use long long for ans and return type.</td></tr>
+      <tr><td>Negative values in array</td><td>All</td><td>All algorithms work correctly with negative values. No special handling needed.</td><td>No fix needed.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ── SECTION 18: PITFALLS ── -->
+<section class="card" id="s18">
+  <h2>18. Common Pitfalls &amp; Bugs <span class="layer-badge lb-base">PITFALLS</span></h2>
+
+  <div class="grid2">
+    <div>
+      <h3>Pitfall 1 — Wrong base case</h3>
+      <p>The base case must cover all small inputs that would cause infinite recursion or incorrect behavior. For merge sort, <code>r − l ≤ 1</code> is correct. Using <code>r == l</code> misses the single-element case. For closest pair, <code>len ≤ 3</code> is necessary because splitting a 2-element segment can give a 0-element half.</p>
+      <div class="ib ib-red"><i>✗</i><p><code>if (l == r) return;</code> — misses r−l=1, returns before solving the single element.</p></div>
+      <div class="ib ib-green"><i>✓</i><p><code>if (r - l &lt;= 1) return;</code> — handles both empty and single-element correctly.</p></div>
+    </div>
+    <div>
+      <h3>Pitfall 2 — Allocating temp inside recursion</h3>
+      <p>A very common performance bug: declaring <code>vector&lt;int&gt; temp(r - l)</code> inside the recursive function. This allocates O(r−l) memory at every node in the recursion tree, totaling O(n log n) memory and significant allocation overhead.</p>
+      <div class="ib ib-red"><i>✗</i><p>Allocate temp inside — O(n log n) memory, slow.</p></div>
+      <div class="ib ib-green"><i>✓</i><p>Allocate once in main with size n, pass as parameter — O(n) memory.</p></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Pitfall 3 — Naive quicksort on sorted input</h3>
+      <p>Using first or last element as pivot on sorted input gives the degenerate T(n) = T(n−1) + O(n) = O(n²) recurrence. Contest problems are specifically designed to trigger this. Use a random pivot or 3-way partition.</p>
+    </div>
+    <div>
+      <h3>Pitfall 4 — Confusing expected and worst case</h3>
+      <p>"Randomized quicksort is O(n log n)" is imprecise. It is <em>expected</em> O(n log n). The worst case is still O(n²) — just astronomically unlikely with a good RNG. Never claim a randomized algorithm has a deterministic O guarantee unless you are using median-of-medians.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Pitfall 5 — Re-sorting in closest pair</h3>
+      <p>If you sort the strip by y at every recursion level, the combine step costs O(n log n) instead of O(n). The total becomes O(n log² n). This is still a correct algorithm, but it is suboptimal. Use the merge-sort-style y-order propagation for O(n log n).</p>
+    </div>
+    <div>
+      <h3>Pitfall 6 — Forgetting to sort before closest pair</h3>
+      <p>The algorithm requires the input sorted by x before the first recursive call. The recursion maintains y-sorted order through the merge, but x-sorted order must be established before recursion starts. If you forget the initial sort, the strip argument breaks.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Pitfall 7 — Int overflow in inversion count</h3>
+      <p>The maximum answer is n(n−1)/2. For n = 10⁵, this is about 5 × 10⁹, which overflows a 32-bit int (max ≈ 2.1 × 10⁹). Always use <code>long long</code> for the answer and the return type.</p>
+    </div>
+    <div>
+      <h3>Pitfall 8 — Copy-back range error</h3>
+      <p>In merge sort, the copy-back loop must use range <code>[l, r)</code>, not <code>[0, r)</code> or <code>[0, n)</code>. Copying the wrong range overwrites portions of the array that other recursive calls have already correctly sorted.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 19: DECISION GUIDE ── -->
+<section class="card" id="s19">
+  <h2>19. Decision / Recognition Guide <span class="layer-badge lb-base">CONTEST</span></h2>
+  <h3>Quick reflex rules</h3>
+  <div class="chips">
+    <span class="chip g">Pair counting → inversion count template</span>
+    <span class="chip g">k-th smallest → quickselect</span>
+    <span class="chip g">Stable sort needed → merge sort</span>
+    <span class="chip w">Recursive block construction → merge-sort-style D&amp;C</span>
+    <span class="chip w">Cross contribution → three-category argument</span>
+    <span class="chip">Closest pair → D&amp;C with strip combine</span>
+  </div>
+
+  <h3>Decision table</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Signal in problem</th><th>Algorithm family</th><th>Key idea</th></tr></thead>
+    <tbody>
+      <tr><td>"Sort, then count pairs i&lt;j with a[i] &gt; a[j]"</td><td>Merge sort / inversion count</td><td>Cross inversions counted during merge</td></tr>
+      <tr><td>"Count pairs with some cross-half property"</td><td>Merge-sort family D&amp;C</td><td>Split, recurse, count cross in O(n) merge</td></tr>
+      <tr><td>"Find k-th smallest / kth order statistic"</td><td>Quickselect</td><td>Partition, recurse into one side</td></tr>
+      <tr><td>"Sort in O(n log n), stable"</td><td>Merge sort</td><td>Standard template</td></tr>
+      <tr><td>"Recursive self-similar pattern (ABACABA etc.)"</td><td>Recursive construction D&amp;C</td><td>Build smaller, add separator, combine</td></tr>
+      <tr><td>"Array is power of 2, blocks can be swapped"</td><td>Recursive block D&amp;C</td><td>At each level: check which swap needed</td></tr>
+      <tr><td>"Closest pair, minimum distance between points"</td><td>Geometric D&amp;C</td><td>Strip combine after recursive halves</td></tr>
+      <tr><td>"T(n) = 2T(n/2) + O(n)"</td><td>Merge-sort-style D&amp;C</td><td>O(n log n) total time</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The recognition question</h3>
+  <div class="ib ib-purple"><i>🎯</i>
+    <p><strong>The single most useful question:</strong> "If I split the input in half, what information would I want each half to return so that the parent can finish in O(n) or O(n log n) time?" If you can answer this clearly, you have found the D&amp;C solution. If you cannot, D&amp;C may not be the right tool — consider DP or a different decomposition.</p>
+  </div>
+
+  <h3>When NOT to use Divide &amp; Conquer</h3>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>Overlapping subproblems → think DP instead:</strong> If your recursion tree has repeated subtrees (the same subproblem appears more than once), D&C without memoization is exponential. Classic tell: Fibonacci, coin change, shortest paths in a graph. Add memoization and you have DP, not D&C.</p>
+  </div>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>Local irrevocable choice → think greedy instead:</strong> If you can show that the locally optimal choice is always globally safe, greedy is faster and simpler than D&C. Interval scheduling, Huffman coding, and Dijkstra's algorithm all fall here. D&C does more work than necessary by solving full subproblems when one choice suffices.</p>
+  </div>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>State-space search → think backtracking instead:</strong> If the problem requires trying combinations of choices (permutations, subsets, valid assignments), backtracking with pruning is the right tool. D&C requires structuring subproblems independently, which is not possible when choices interact.</p>
+  </div>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>Expensive combine → D&C may fail or degrade:</strong> D&C only helps if the combine step is cheaper than re-solving the original problem. If the combine costs O(n²) at every level, the total is O(n² log n) — worse than brute force for many inputs. Always verify the combine cost before committing to D&C.</p>
+  </div>
+
+  <h3>Common wrong instincts — don't fall for these</h3>
+  <ul class="mistake" style="padding-left:0;font-size:var(--fs-sm);font-weight:700;line-height:2">
+    <li><strong>"Recursive = D&C."</strong> No. DFS on a tree is recursive but not D&C. Fibonacci is recursive but is DP. D&C requires independent subproblems of the same type + a combine step that assembles the parent's answer.</li>
+    <li><strong>"Split the array → it must be D&C."</strong> Splitting is only useful if the combine step can actually be done cheaply. If you split and then have to check all cross-pairs in O(n²), you have gained nothing over brute force.</li>
+    <li><strong>"Sort both halves and concatenate."</strong> This only works if the two halves are known to be non-overlapping in value (like partition sort). In general, sorted left + sorted right is not a sorted whole — you need a real merge.</li>
+    <li><strong>"Quicksort is worst-case O(n log n)."</strong> It is not. Quicksort with a fixed pivot is worst-case O(n²). Only randomized quicksort achieves expected O(n log n). Worst case is still O(n²) even with a random pivot — just with exponentially low probability.</li>
+    <li><strong>"The recursion tree always has O(log n) levels."</strong> Only for balanced splits. If quicksort always picks the worst pivot (min or max), the tree has O(n) levels and complexity is O(n²).</li>
+  </ul>
+
+  <h3>5-second recognition rules — scan the problem statement for these signals</h3>
+  <div class="chips" style="margin:10px 0 16px">
+    <span class="chip g">Sort / recurse / merge halves → merge-sort family</span>
+    <span class="chip g">Count pairs (i&lt;j) with some property → inversion-count template</span>
+    <span class="chip g">Pick pivot, recurse on one side → quickselect family</span>
+    <span class="chip w">Answer = left part + right part + cross part → D&amp;C candidate</span>
+    <span class="chip w">Geometry: split line + strip scan → closest pair family</span>
+    <span class="chip w">Recursive self-similar string/array construction → D&amp;C construction</span>
+    <span class="chip">T(n) = 2T(n/2) + O(n) derivable → likely O(n log n) D&amp;C</span>
+    <span class="chip r">Same subproblem in both branches → NOT D&amp;C, think DP</span>
+    <span class="chip r">One local choice, no recursion → NOT D&amp;C, think greedy</span>
+  </div>
+
+  <h3>Common confusions</h3>
+  <div class="grid2">
+    <div class="ib ib-orange" style="margin:0"><i>⚠</i>
+      <p><strong>D&amp;C vs DP:</strong> If the same subproblem appears in multiple branches of the recursion tree, it is DP, not D&amp;C. Fibonacci: fib(n−2) appears in the subtree of fib(n−1) AND in the direct call — this is DP with overlapping subproblems. Merge sort: the subproblem [l, mid) appears exactly once — this is D&amp;C with independent subproblems.</p>
+    </div>
+    <div class="ib ib-orange" style="margin:0"><i>⚠</i>
+      <p><strong>D&amp;C vs greedy:</strong> D&amp;C solves all subproblems. Greedy makes one local choice at each step and never revisits. Quickselect recurses into one branch — is it greedy? No: it recurses on a subproblem of the same type, it does not make a permanent local choice. The distinction is about structure, not branching factor.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 20: VARIANTS ── -->
+<section class="card" id="s20">
+  <h2>20. Variants &amp; Extensions <span class="layer-badge lb-adv">ADVANCED</span></h2>
+
+  <div class="app-block">
+    <h3>Variant 1 — Print The Pattern (Recursive Construction)</h3>
+    <p><strong>Problem story:</strong> Build the string for level n: level 1 = "a", level n = level(n−1) + char('a'+n−1) + level(n−1). Print the result.</p>
+    <p><strong>Why it fits D&amp;C:</strong> The answer for level n is assembled from two copies of the answer for level n−1 with a separator. This is combine-by-concatenation.</p>
+    <p><strong>What each call returns:</strong> The string for level k.</p>
+    <pre><code>string build(int n) {
+    if (n == 1) return "a";
+    string prev = build(n - 1);
+    char mid = char('a' + n - 1);
+    return prev + mid + prev;
+}
+// Output length is 2^n - 1 (grows exponentially)</code></pre>
+    <p><strong>Complexity:</strong> The output length is 2ⁿ−1, so any algorithm must be at least Ω(2ⁿ). This is not about speed — it is about recognizing recursive self-similarity.</p>
+    <p><strong>Problem link:</strong> <a href="https://codeforces.com/problemset/problem/420/B" target="_blank">Codeforces 420B — Online Meeting</a> (similar recursive string construction)</p>
+  </div>
+
+  <div class="app-block">
+    <h3>Variant 2 — Masha and a Beautiful Tree (Recursive Block Swaps)</h3>
+    <p><strong>Problem story:</strong> An array of length 2ᵏ. A merge-sort-like procedure can swap the two halves of any recursive block. Find the minimum number of swaps to sort the array, or report impossible.</p>
+    <p><strong>Why it fits D&amp;C:</strong> The recursion tree of the procedure is the model. At each node you have exactly two choices: keep children as-is, or swap them. Swapping the two recursive blocks requires that the left block's maximum &lt; right block's minimum (or vice versa if swapped).</p>
+    <p><strong>What each call returns:</strong> Number of swaps needed, −1 if impossible.</p>
+    <pre><code>int solve(vector&lt;int&gt;&amp; a, int l, int r) { // [l, r)
+    if (r - l == 1) return 0;
+    int mid = (l + r) &gt;&gt; 1;
+    int lc = solve(a, l, mid), rc = solve(a, mid, r);
+    if (lc == -1 || rc == -1) return -1;
+
+    // After recursion: left half sorted, right half sorted.
+    // Two valid configurations: left_max &lt; right_min (no swap)
+    //                        or right_max &lt; left_min (swap)
+    int lmax = *max_element(a.begin()+l, a.begin()+mid);
+    int lmin = *min_element(a.begin()+l, a.begin()+mid);
+    int rmax = *max_element(a.begin()+mid, a.begin()+r);
+    int rmin = *min_element(a.begin()+mid, a.begin()+r);
+
+    if (lmax &lt; rmin) return lc + rc;          // already correct order
+    if (rmax &lt; lmin) {                         // swap needed
+        reverse(a.begin()+l, a.begin()+r);     // swap the two halves
+        return lc + rc + 1;
+    }
+    return -1; // neither configuration works
+}</code></pre>
+    <p><strong>Complexity:</strong> O(n log n) — T(n) = 2T(n/2) + O(n) due to min/max calls. Can be optimized to O(n) by returning (min, max) from each call instead.</p>
+    <p><strong>Problem link:</strong> <a href="https://codeforces.com/problemset/problem/1464/B" target="_blank">Codeforces 1464B — Masha and a Beautiful Tree</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>Variant 3 — Merge Sort? (Controlling the Recursion Tree)</h3>
+    <p><strong>Problem story:</strong> Build a permutation of 1..n such that a merge-sort-like procedure makes exactly k recursive calls (where a call on an already-sorted segment is a leaf). Report −1 if impossible.</p>
+    <p><strong>Key observation:</strong> A leaf contributes 1 call. Expanding any internal node adds exactly 2 more calls (the two children) while the node itself still counts as 1. So every expansion adds 2 to the total. Starting from 1 (sorted = no recursion), every reachable k satisfies k ≡ 1 (mod 2). If k is even, output −1.</p>
+    <p><strong>Construction:</strong> Start with sorted array. To force recursion at a segment, swap its two halves — this makes the segment unsorted while each half remains internally valid from previous construction.</p>
+    <pre><code>vector&lt;int&gt; a;
+int budget; // remaining calls to "spend"
+
+void build(int l, int r) {
+    if (r - l &lt;= 1) return;
+    if (budget &lt;= 1) return; // this segment will be a leaf
+    budget -= 2; // this node expands: costs 2 extra calls
+    int mid = (l + r) &gt;&gt; 1;
+    build(l, mid);
+    build(mid, r);
+    // Swap the two halves to make this segment unsorted
+    // (forcing the procedure to recurse here)
+    reverse(a.begin()+l, a.begin()+mid);
+    reverse(a.begin()+mid, a.begin()+r);
+    reverse(a.begin()+l, a.begin()+r);
+}
+
+// main: if k%2==0 → -1. Else set budget=k, build(0,n).
+// If budget != 1 after build → -1 (k too large for n).</code></pre>
+    <p><strong>Core lesson:</strong> This problem is not about sorting at all — it is about controlling the structure of the recursion tree. Understanding that recursion tree is the key to solving this class of problem.</p>
+    <p><strong>Problem link:</strong> <a href="https://codeforces.com/contest/1582/problem/F" target="_blank">Codeforces 1582F — Gregor and Two Painters</a> (related recursion-tree structure)</p>
+  </div>
+
+  <div class="app-block">
+    <h3>Variant 4 — Count Pairs with a[i] &gt; 2·a[j] (Modified Inversion Count)</h3>
+    <p><strong>Problem story:</strong> Count pairs (i, j) with i &lt; j and a[i] &gt; 2·a[j].</p>
+    <p><strong>Why it fits:</strong> Same three-category argument. Cross pairs where i is in the left half and j in the right half can be counted efficiently during the merge step because both halves are sorted.</p>
+    <p><strong>Cross-pair counting during merge:</strong> For each right-half element a[j], use a two-pointer on the sorted left half to find how many left elements exceed 2·a[j]. Since the left half is sorted, this is a monotone scan.</p>
+    <pre><code>// During merge of sorted a[l..mid) and a[mid..r):
+// For each j in [mid, r), count i in [l, mid) with a[i] > 2*a[j].
+// Use pointer ptr starting at mid, moving left.
+long long cross = 0;
+int ptr = mid;
+for (int j = mid; j &lt; r; j++) {
+    while (ptr &gt; l &amp;&amp; a[ptr-1] &gt; 2LL * a[j]) ptr--;
+    cross += (mid - ptr);
+}
+ans += cross;</code></pre>
+    <p><strong>Complexity:</strong> Same as inversion count — O(n log n).</p>
+    <p><strong>Problem link:</strong> <a href="https://vjudge.net/problem/POJ-2299" target="_blank">VJudge POJ-2299 — Ultra-QuickSort (inversion count)</a></p>
+  </div>
+</section>
+
+<!-- ── SECTION 21: PROBLEM APPLICATIONS ── -->
+<section class="card" id="s21">
+  <h2>21. Problem-Based Applications <span class="layer-badge lb-adv">PRACTICE</span></h2>
+  <p>Each entry is a compact mini-lesson: problem story → abstraction → why D&amp;C fits → core idea → complexity → link. Focus on the "core idea" — that is the single piece of thinking that unlocks each problem.</p>
+
+  <div class="app-block">
+    <h3>Ultra-QuickSort — Inversion Count</h3>
+    <p><strong>Problem story:</strong> Given a permutation, find the minimum number of adjacent swaps (bubble sort swaps) needed to sort it.</p>
+    <p><strong>Abstraction:</strong> Count pairs (i, j) where i &lt; j and a[i] &gt; a[j]. Each such pair requires exactly one adjacent swap.</p>
+    <p><strong>Why D&amp;C fits:</strong> Every inversion is either both indices in the left half, both in the right half, or one in each. The first two are recursive. The cross-inversions are counted during the merge step because both halves are sorted.</p>
+    <p><strong>Core idea:</strong> During merge, when a[j] from the right half is taken (because a[i] &gt; a[j]), every remaining left element also exceeds a[j] — so add <code>mid − i</code> inversions at once.</p>
+    <p><strong>Complexity:</strong> O(n log n) — same recurrence as merge sort.</p>
+    <p><strong>Link:</strong> <a href="https://vjudge.net/problem/POJ-2299" target="_blank">VJudge POJ-2299</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>Closer — Closest Pair of Points</h3>
+    <p><strong>Problem story:</strong> Given n points in the plane, find the pair with the smallest Euclidean distance.</p>
+    <p><strong>Abstraction:</strong> Minimum distance over all O(n²) pairs, solved in O(n log n).</p>
+    <p><strong>Why D&amp;C fits:</strong> Split points by x-coordinate. The closest pair is either entirely in the left half, entirely in the right half, or one point in each. The cross-pair case is handled by a strip scan near the dividing line.</p>
+    <p><strong>Core idea:</strong> After recursion gives d = min(d_L, d_R), only points within distance d of the split line can improve the answer. Sort the strip by y and check at most 7 neighbors per point — the packing argument guarantees O(n) combine.</p>
+    <p><strong>Complexity:</strong> O(n log n) with merge-sort-style y-order propagation.</p>
+    <p><strong>Link:</strong> <a href="https://vjudge.net/problem/SPOJ-CLOPPAIR" target="_blank">VJudge SPOJ-CLOPPAIR</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>Masha and a Beautiful Tree — Recursive Block Swaps</h3>
+    <p><strong>Problem story:</strong> Given an array of length 2ᵏ, a merge-sort-like procedure can swap the two halves of any recursive block. Find the minimum swaps to sort it, or report impossible.</p>
+    <p><strong>Abstraction:</strong> At each recursion node, decide: keep or swap the two children. The answer is the total number of swap decisions.</p>
+    <p><strong>Why D&amp;C fits:</strong> The recursion tree of the procedure is the model. Each node has exactly two valid configurations: left_max &lt; right_min (no swap) or right_max &lt; left_min (swap). If neither holds, it is impossible.</p>
+    <p><strong>Core idea:</strong> Recurse on both halves. After they are sorted, check the two configurations. If a swap is needed, reverse the block halves and add 1 to the count.</p>
+    <p><strong>Complexity:</strong> O(n log n) — T(n) = 2T(n/2) + O(n).</p>
+    <p><strong>Link:</strong> <a href="https://codeforces.com/problemset/problem/1464/B" target="_blank">CF 1464B</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>Towers — K-th Order Statistic Queries</h3>
+    <p><strong>Problem story:</strong> Answer multiple queries asking for the k-th smallest element within a given subarray range.</p>
+    <p><strong>Abstraction:</strong> Offline or persistent range order-statistic queries.</p>
+    <p><strong>Why D&amp;C fits:</strong> A merge sort tree stores the sorted state of each recursion level. For each query range, binary search across tree levels to find the k-th element. Alternatively, offline D&amp;C on queries processes them by splitting on the array midpoint.</p>
+    <p><strong>Core idea:</strong> Build a persistent sorted structure at each merge sort level, then binary-search the answer for each query across those levels.</p>
+    <p><strong>Complexity:</strong> O(n log² n) for merge sort tree approach.</p>
+    <p><strong>Link:</strong> <a href="https://www.spoj.com/problems/CTOWER/" target="_blank">SPOJ CTOWER</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>The Inversions Problem — Rotation Inversion Count</h3>
+    <p><strong>Problem story:</strong> Given a permutation of 0..n−1, compute the inversion count for every rotation (cyclically shift the first element to the end, repeat).</p>
+    <p><strong>Abstraction:</strong> Compute the base inversion count once, then derive each rotation's count by a formula relating to how many elements the shifted element is greater/less than.</p>
+    <p><strong>Why D&amp;C fits:</strong> The base inversion count is computed with the standard merge-sort-based inversion count. Each subsequent rotation adjusts the count in O(1).</p>
+    <p><strong>Core idea:</strong> Merge while counting cross-inversions for the base case. Then use the identity: shifting element a[0] to the end removes (a[0]) inversions and adds (n − 1 − a[0]) inversions.</p>
+    <p><strong>Complexity:</strong> O(n log n) for the initial count, O(n) for all rotations.</p>
+    <p><strong>Link:</strong> <a href="https://vjudge.net/problem/HDU-1394" target="_blank">VJudge HDU-1394</a></p>
+  </div>
+
+  <div class="app-block">
+    <h3>K-th Largest in Unsorted Array — Quickselect</h3>
+    <p><strong>Problem story:</strong> Given n unsorted numbers, find the k-th smallest without fully sorting the array.</p>
+    <p><strong>Abstraction:</strong> Order-statistic selection in expected O(n) time.</p>
+    <p><strong>Why D&amp;C fits:</strong> After partitioning around a random pivot, the pivot lands at some position p. If k = p, you found it. If k &lt; p, recurse left. If k &gt; p, recurse right. Only one branch is explored — half the data is discarded each time.</p>
+    <p><strong>Core idea:</strong> Partition + recurse into one side only. The geometric shrinkage n + n/2 + n/4 + … converges to O(2n) = O(n).</p>
+    <p><strong>Complexity:</strong> O(n) expected with random pivot; O(n) worst-case with median-of-medians.</p>
+    <p><strong>Link:</strong> <a href="https://codeforces.com/problemset/problem/1367/E" target="_blank">CF 1367E</a></p>
+  </div>
+
+  <h3>Checklist: before submitting any D&amp;C solution</h3>
+  <ul class="checklist" style="padding-left:0;font-size:var(--fs-sm);font-weight:700;line-height:1.8">
+    <li>Base case handles empty segment (r − l = 0) and single element (r − l = 1)</li>
+    <li>Mid computation uses (l + r) >> 1 — never (l + r) / 2 with signed integers if overflow possible</li>
+    <li>Temp array allocated once outside, passed as parameter</li>
+    <li>Copy-back range is exactly [l, r), not [0, r) or [0, n)</li>
+    <li>Inversion count uses long long</li>
+    <li>Quicksort / quickselect uses random pivot</li>
+    <li>Closest pair uses long long for squared distances</li>
+  </ul>
+</section>
+
+<!-- ── SECTION 22: FINAL SUMMARY ── -->
+<section class="card" id="s22">
+  <h2>22. Final Summary <span class="layer-badge lb-base">SUMMARY</span></h2>
+  <p>The entire paradigm reduces to seven questions. If you can answer them all clearly for a given problem, you have a correct D&amp;C solution.</p>
+
+  <div class="mental-model">
+    <strong style="font-size:22px;font-weight:950">The Seven Questions</strong>
+    <div class="mm-row">
+      <div class="mm-item">
+        <div class="mm-num">①</div>
+        <div class="mm-title">Can I split?</div>
+        <div class="mm-desc">Can the input be divided into smaller subproblems of the same kind?</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">②</div>
+        <div class="mm-title">What does it return?</div>
+        <div class="mm-desc">What exact information does each recursive call give back to its parent?</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">③</div>
+        <div class="mm-title">Three categories?</div>
+        <div class="mm-desc">What are the exhaustive categories of the final answer? Which are recursive, which are cross?</div>
+      </div>
+    </div>
+    <div class="mm-row">
+      <div class="mm-item">
+        <div class="mm-num">④</div>
+        <div class="mm-title">Cheap combine?</div>
+        <div class="mm-desc">Can I handle the cross category in O(n) or O(n log n) time?</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑤</div>
+        <div class="mm-title">Hidden log?</div>
+        <div class="mm-desc">Am I accidentally adding an extra log by re-sorting or re-allocating inside the recursion?</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑥</div>
+        <div class="mm-title">What recurrence?</div>
+        <div class="mm-desc">What recurrence does the finished code produce? Does the Master Method confirm the complexity?</div>
+      </div>
+    </div>
+    <div class="mm-row" style="grid-template-columns:1fr 2fr;gap:12px">
+      <div class="mm-item">
+        <div class="mm-num">⑦</div>
+        <div class="mm-title">Really D&amp;C?</div>
+        <div class="mm-desc">Is this actually D&amp;C, or is it DP (overlapping subproblems), greedy (one local choice), or backtracking (search with pruning)?</div>
+      </div>
+      <div class="mm-item" style="border-color:var(--accent2)">
+        <div class="mm-title" style="font-size:20px;margin-bottom:8px">Complexity quick reference</div>
+        <div class="mm-desc" style="font-size:15px">
+          T(n/2)+O(1) → O(log n)<br>
+          2T(n/2)+O(1) → O(n)<br>
+          2T(n/2)+O(n) → O(n log n) ← most common<br>
+          T(n/2)+O(n) → O(n) ← quickselect<br>
+          T(n−1)+O(n) → O(n²) ← bad pivot
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>The learning order</h3>
+  <ol style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;padding-left:1.4rem">
+    <li>Understand the paradigm: what D&amp;C is and is not</li>
+    <li>Learn to derive recurrences from code</li>
+    <li>Learn the recursion-tree method for complexity</li>
+    <li>Learn the Master Method from the recurrence-tree picture, not by memorizing cases</li>
+    <li>Implement merge sort — understand every line</li>
+    <li>Extend merge sort to inversion counting — understand the cross-pair argument</li>
+    <li>Implement quicksort — understand pivot strategies and their complexity consequences</li>
+    <li>Implement quickselect — understand why recursing into one side gives O(n)</li>
+    <li>Implement closest pair — understand the strip argument and the merge-sort y-order trick</li>
+    <li>Practice recursive construction problems (patterns, block swaps, recursion tree control)</li>
+  </ol>
+</section>
+
+<!-- ── SECTION 23: RUNTIME VALIDATION CHECKLIST ── -->
+<section class="card" id="s23">
+  <h2>23. Runtime Validation Checklist <span class="layer-badge lb-base">QUALITY</span></h2>
+  <p>This checklist confirms that the final file satisfies all final-family shell, accessibility, and content requirements. Verify each item after deployment on any device or browser.</p>
+
+  <div class="grid2">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Sidebar &amp; Hamburger</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">Sidebar opens and closes correctly on click</li>
+        <li style="font-size:17px;margin:.4rem 0">Hamburger animation matches real sidebar state (X when open, ☰ when closed)</li>
+        <li style="font-size:17px;margin:.4rem 0">aria-expanded stays synchronized with sidebar open/closed state</li>
+        <li style="font-size:17px;margin:.4rem 0">Overlay appears only on narrow/mobile layouts when sidebar is open</li>
+        <li style="font-size:17px;margin:.4rem 0">Narrow/mobile layouts start with sidebar closed by default</li>
+        <li style="font-size:17px;margin:.4rem 0">Wide/desktop layouts start with sidebar open by default</li>
+        <li style="font-size:17px;margin:.4rem 0">Escape key closes the sidebar on narrow/mobile layouts</li>
+        <li style="font-size:17px;margin:.4rem 0">Resize does not corrupt sidebar, overlay, or button state</li>
+        <li style="font-size:17px;margin:.4rem 0">Clicking a sidebar link on mobile closes the sidebar after navigation</li>
+        <li style="font-size:17px;margin:.4rem 0">Sidebar open/closed state persists via localStorage on desktop</li>
+      </ul>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Theme System</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">Theme persists across page reload via localStorage</li>
+        <li style="font-size:17px;margin:.4rem 0">System dark-mode preference respected when no saved theme exists</li>
+        <li style="font-size:17px;margin:.4rem 0">Theme switch supports click, Enter, and Space</li>
+        <li style="font-size:17px;margin:.4rem 0">aria-checked is correct on first load (no stale false when dark mode is active)</li>
+        <li style="font-size:17px;margin:.4rem 0">No visible flicker on page load — theme applied before body paint</li>
+        <li style="font-size:17px;margin:.4rem 0">Switch pill slides to the correct position in both light and dark themes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Active Nav &amp; Scrollspy</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">Active nav highlighting updates correctly while scrolling</li>
+        <li style="font-size:17px;margin:.4rem 0">Highlighted link reflects the section currently in view</li>
+        <li style="font-size:17px;margin:.4rem 0">Scrollspy remains correct after window resize</li>
+        <li style="font-size:17px;margin:.4rem 0">All sidebar links scroll to their correct section (no broken anchors)</li>
+      </ul>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Interactive Widgets</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">Max recursion-tree SVG renders correctly in both themes</li>
+        <li style="font-size:17px;margin:.4rem 0">Complexity tree SVG renders correctly in both themes</li>
+        <li style="font-size:17px;margin:.4rem 0">Merge sort tracer: Reset, Prev, Next, Play all work correctly</li>
+        <li style="font-size:17px;margin:.4rem 0">Play button toggles between ▶ and ⏸; step counter updates correctly</li>
+        <li style="font-size:17px;margin:.4rem 0">Tracer log scrolls to current step automatically</li>
+        <li style="font-size:17px;margin:.4rem 0">Quicksort partition tracer: Reset and Next work correctly</li>
+        <li style="font-size:17px;margin:.4rem 0">Inversion count SVG renders correctly in both themes</li>
+        <li style="font-size:17px;margin:.4rem 0">Master Method calculator returns correct output for valid inputs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Integrity &amp; Code Quality</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">No duplicate section IDs in the page source</li>
+        <li style="font-size:17px;margin:.4rem 0">All opened HTML tags are properly closed</li>
+        <li style="font-size:17px;margin:.4rem 0">All script blocks are syntactically valid (no console errors)</li>
+        <li style="font-size:17px;margin:.4rem 0">File is complete and not truncated — ends with &lt;/html&gt;</li>
+        <li style="font-size:17px;margin:.4rem 0">Code blocks scroll horizontally on overflow (no page-wide overflow)</li>
+        <li style="font-size:17px;margin:.4rem 0">Responsive grid collapses to single column below 1300px</li>
+      </ul>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <h4 style="margin:0 0 10px;font-weight:950">Branding &amp; Links</h4>
+      <ul class="checklist" style="padding-left:0;margin:0">
+        <li style="font-size:17px;margin:.4rem 0">Visible email addresses are direct plain mailto links (no obfuscation)</li>
+        <li style="font-size:17px;margin:.4rem 0">coach@coach-academy.net and a.ashraf@coach-academy.net appear correctly</li>
+        <li style="font-size:17px;margin:.4rem 0">Branding reads: Coach Academy / Prepared by The Coach (Dr. Wahab) &amp; Ashraf</li>
+        <li style="font-size:17px;margin:.4rem 0">Footer copyright reads: © 2025 All rights reserved.</li>
+        <li style="font-size:17px;margin:.4rem 0">No Cloudflare email-decode script present in the page</li>
+        <li style="font-size:17px;margin:.4rem 0">All Divide &amp; Conquer content sections remain fully intact</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── PAGE FOOTER ── -->
+<div class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-copy">© 2025 All rights reserved.</div>
+</div>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   SAFE STORAGE WRAPPER (fixes SecurityError on file://)
+═══════════════════════════════════════════════════════ */
+var safeStorage={
+  _mem:{},
+  getItem:function(k){try{return localStorage.getItem(k);}catch(e){return this._mem[k]||null;}},
+  setItem:function(k,v){try{localStorage.setItem(k,v);}catch(e){this._mem[k]=v;}}
+};
+
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR + THEME + NAV — FINAL-FAMILY SHELL
+═══════════════════════════════════════════════════════ */
+(function(){
+  var NARROW=1300;
+  var body=document.body;
+  var toggle=document.getElementById('sidebarToggle');
+  var overlay=document.getElementById('sidebarOverlay');
+  var sidebar=document.getElementById('sidebar');
+
+  function isNarrow(){ return window.innerWidth<=NARROW; }
+
+  /* Unified sidebar state setter — single source of truth */
+  function setSidebar(closed){
+    var narrow=isNarrow();
+    body.classList.toggle('sb-closed',closed);
+    sidebar.classList.toggle('collapsed',closed);
+    toggle.classList.toggle('open',!closed);
+    toggle.setAttribute('aria-expanded',String(!closed));
+    /* Overlay only on narrow layouts */
+    if(narrow&&!closed) overlay.classList.add('show');
+    else overlay.classList.remove('show');
+    safeStorage.setItem('ca-sb',closed?'closed':'open');
+  }
+
+  /* Initial state: narrow = always closed; wide = saved preference, default open */
+  (function(){
+    var narrow=isNarrow();
+    var saved=safeStorage.getItem('ca-sb');
+    setSidebar(narrow ? true : (saved==='closed'));
+  })();
+
+  toggle.addEventListener('click',function(){
+    setSidebar(!body.classList.contains('sb-closed'));
+  });
+  overlay.addEventListener('click',function(){
+    setSidebar(true);
+  });
+
+  /* Escape closes sidebar on narrow layouts */
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&isNarrow()&&!body.classList.contains('sb-closed')){
+      setSidebar(true);
+    }
+  });
+
+  /* Resize: re-sync overlay and aria-expanded without losing saved state */
+  var _rsz;
+  window.addEventListener('resize',function(){
+    clearTimeout(_rsz);
+    _rsz=setTimeout(function(){
+      var narrow=isNarrow();
+      var closed=body.classList.contains('sb-closed');
+      if(!narrow) overlay.classList.remove('show');
+      else if(!closed) overlay.classList.add('show');
+      toggle.setAttribute('aria-expanded',String(!closed));
+    },80);
+  });
+
+  /* ── THEME — system-dark fallback + keyboard support ── */
+  var html=document.documentElement;
+  var sw=document.getElementById('themeSwitch');
+  /* Sync aria-checked to the theme the anti-flicker script may already have set */
+  sw.setAttribute('aria-checked',String(html.getAttribute('data-theme')==='dark'));
+
+  function applyTheme(dark){
+    if(dark){html.setAttribute('data-theme','dark');}else{html.removeAttribute('data-theme');}
+    sw.setAttribute('aria-checked',String(dark));
+    safeStorage.setItem('ca-theme',dark?'dark':'light');
+  }
+  sw.addEventListener('click',function(){
+    applyTheme(html.getAttribute('data-theme')!=='dark');
+  });
+  sw.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key===' '){
+      e.preventDefault();
+      applyTheme(html.getAttribute('data-theme')!=='dark');
+    }
+  });
+
+  /* ── ACTIVE NAV — scrollspy ── */
+  var links=document.querySelectorAll('.nav a');
+  var sections=Array.from(links).map(function(a){
+    var id=(a.getAttribute('href')||'').replace('#','');
+    return document.getElementById(id);
+  });
+  function updateNav(){
+    var best=-1,bestDist=Infinity;
+    var winH=window.innerHeight||document.documentElement.clientHeight;
+    sections.forEach(function(sec,i){
+      if(!sec)return;
+      var r=sec.getBoundingClientRect();
+      if(r.bottom>0&&r.top<winH){
+        var dist=Math.abs(r.top);
+        if(dist<bestDist){bestDist=dist;best=i;}
+      }
+    });
+    links.forEach(function(a,i){a.classList.toggle('active',i===best);});
+  }
+  window.addEventListener('scroll',updateNav,{passive:true});
+  window.addEventListener('resize',updateNav,{passive:true});
+  updateNav();
+
+  /* ── Close sidebar on nav link click (mobile) ── */
+  links.forEach(function(a){
+    a.addEventListener('click',function(){
+      if(isNarrow()) setSidebar(true);
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MAX TREE DIAGRAM
+═══════════════════════════════════════════════════════ */
+(function(){
+  var svg=document.getElementById('maxTreeSvg');
+  if(!svg) return;
+  var W=820,H=340;
+  function makeEl(tag,attrs){
+    var el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(var k in attrs) el.setAttribute(k,attrs[k]);
+    return el;
+  }
+  function makeText(text,x,y,cls,extra){
+    var el=makeEl('text',Object.assign({x:x,y:y,'text-anchor':'middle','dominant-baseline':'middle','font-family':'system-ui,sans-serif','font-weight':'900'},extra||{}));
+    el.textContent=text;
+    if(cls) el.setAttribute('class',cls);
+    return el;
+  }
+  function drawNode(x,y,label,color,r,isLeaf){
+    var g=makeEl('g',{});
+    g.appendChild(makeEl('circle',{cx:x,cy:y,r:r,fill:color,stroke:'rgba(255,255,255,.2)','stroke-width':'2'}));
+    if(isLeaf){
+      g.appendChild(makeText(label,x,y,'',{fill:'white','font-size':'15'}));
+    } else {
+      // Split label at ')' so e.g. "[0,8)" and "max=8" go on two lines
+      var parts=label.split(') ');
+      var line1=parts[0]+')';
+      var line2=parts[1]||'';
+      var t1=makeEl('text',{'text-anchor':'middle','dominant-baseline':'middle','font-family':'system-ui,sans-serif','font-weight':'900',x:x,y:y-(r>40?10:8),fill:'white','font-size':(r>40?13:11)});
+      t1.textContent=line1;
+      var t2=makeEl('text',{'text-anchor':'middle','dominant-baseline':'middle','font-family':'system-ui,sans-serif','font-weight':'900',x:x,y:y+(r>40?10:8),fill:'rgba(255,255,255,.85)','font-size':(r>40?12:10)});
+      t2.textContent=line2;
+      g.appendChild(t1);
+      if(line2) g.appendChild(t2);
+    }
+    return g;
+  }
+  function line(x1,y1,x2,y2){
+    return makeEl('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:'var(--border)','stroke-width':'2.5'});
+  }
+  var arr=[2,1,7,3,5,6,4,8];
+  // Level 0: root [0,8) max=8
+  var nodes=[
+    {l:0,r:8,x:410,y:40,max:8,label:'[0,8) max=8'},
+    {l:0,r:4,x:210,y:110,max:7,label:'[0,4) max=7'},
+    {l:4,r:8,x:610,y:110,max:8,label:'[4,8) max=8'},
+    {l:0,r:2,x:110,y:180,max:2,label:'[0,2) max=2'},
+    {l:2,r:4,x:310,y:180,max:7,label:'[2,4) max=7'},
+    {l:4,r:6,x:510,y:180,max:6,label:'[4,6) max=6'},
+    {l:6,r:8,x:710,y:180,max:8,label:'[6,8) max=8'},
+    // leaves
+    {l:0,r:1,x:60,y:260,max:2,label:'2',leaf:true},
+    {l:1,r:2,x:160,y:260,max:1,label:'1',leaf:true},
+    {l:2,r:3,x:260,y:260,max:7,label:'7',leaf:true},
+    {l:3,r:4,x:360,y:260,max:3,label:'3',leaf:true},
+    {l:4,r:5,x:460,y:260,max:5,label:'5',leaf:true},
+    {l:5,r:6,x:560,y:260,max:6,label:'6',leaf:true},
+    {l:6,r:7,x:660,y:260,max:4,label:'4',leaf:true},
+    {l:7,r:8,x:760,y:260,max:8,label:'8',leaf:true}
+  ];
+  var edges=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6],[3,7],[3,8],[4,9],[4,10],[5,11],[5,12],[6,13],[6,14]];
+  var colors=['#1e40af','#1e40af','#1e40af','#0f766e','#0f766e','#0f766e','#0f766e',
+    '#374151','#374151','#374151','#374151','#374151','#374151','#374151','#374151'];
+  edges.forEach(function(e){
+    var from=nodes[e[0]],to=nodes[e[1]];
+    var fromR=from.leaf?20:42;
+    var toR=to.leaf?20:42;
+    svg.appendChild(line(from.x,from.y+fromR,to.x,to.y-toR));
+  });
+  nodes.forEach(function(n,i){
+    var color=n.leaf?'#374151':colors[i];
+    var r=n.leaf?20:42;
+    var g=drawNode(n.x,n.y,n.label,color,r,n.leaf);
+    svg.appendChild(g);
+  });
+  // legend
+  var leg=makeEl('g',{});
+  leg.appendChild(makeEl('rect',{x:10,y:350,width:18,height:18,rx:'4',fill:'#1e40af'}));
+  leg.appendChild(makeText('Internal node (combine)',29,359,'',{'text-anchor':'start',fill:'var(--muted)','font-size':'14','font-weight':'700'}));
+  leg.appendChild(makeEl('rect',{x:220,y:350,width:18,height:18,rx:'4',fill:'#0f766e'}));
+  leg.appendChild(makeText('Combine: max(L,R)',239,359,'',{'text-anchor':'start',fill:'var(--muted)','font-size':'14','font-weight':'700'}));
+  svg.appendChild(leg);
+})();
+
+/* ═══════════════════════════════════════════════════════
+   COMPLEXITY TREE DIAGRAM
+═══════════════════════════════════════════════════════ */
+(function(){
+  var svg=document.getElementById('complexTreeSvg');
+  if(!svg) return;
+  function el(tag,attrs,text){
+    var e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(var k in attrs) e.setAttribute(k,attrs[k]);
+    if(text!==undefined) e.textContent=text;
+    return e;
+  }
+  // Left tree: 2T(n/2)+O(1) -> O(n) leaf dominant
+  var lvl=[[{x:200,y:32,w:'n',c:'rgba(0,0,0,.0)',work:'O(1)'}],
+    [{x:130,y:90,w:'n/2',c:'rgba(0,0,0,.0)',work:'O(1)'},{x:270,y:90,w:'n/2',c:'rgba(0,0,0,.0)',work:'O(1)'}],
+    [{x:95,y:150,w:'n/4',c:'rgba(0,0,0,.0)',work:'O(1)'},{x:165,y:150,w:'n/4',c:'rgba(0,0,0,.0)',work:'O(1)'},
+     {x:235,y:150,w:'n/4',c:'rgba(0,0,0,.0)',work:'O(1)'},{x:305,y:150,w:'n/4',c:'rgba(0,0,0,.0)',work:'O(1)'}]
+  ];
+  function drawTree(nodes,level,parentMap){
+    nodes[level].forEach(function(n,i){
+      var r=24-level*4;
+      svg.appendChild(el('circle',{cx:n.x,cy:n.y,r:r,fill:'var(--accent2)',opacity:0.7+(level*0.1),'stroke':'rgba(255,255,255,.15)','stroke-width':'1.5'}));
+      svg.appendChild(el('text',{x:n.x,y:n.y,'text-anchor':'middle','dominant-baseline':'middle','font-size':'11','font-weight':'900',fill:'white'},n.w));
+    });
+  }
+  // Draw left tree
+  var edges1=[[{x:200,y:32},{x:130,y:90}],[{x:200,y:32},{x:270,y:90}],
+    [{x:130,y:90},{x:95,y:150}],[{x:130,y:90},{x:165,y:150}],
+    [{x:270,y:90},{x:235,y:150}],[{x:270,y:90},{x:305,y:150}]];
+  edges1.forEach(function(e){svg.appendChild(el('line',{x1:e[0].x,y1:e[0].y+16,x2:e[1].x,y2:e[1].y-16,stroke:'var(--border)','stroke-width':'1.5'}));});
+  lvl.forEach(function(row,lv){
+    row.forEach(function(n){
+      var r=24-lv*4;
+      svg.appendChild(el('circle',{cx:n.x,cy:n.y,r:r,fill:'var(--accent2)',opacity:(0.6+lv*0.12).toFixed(2),'stroke':'rgba(255,255,255,.15)','stroke-width':'1.5'}));
+      svg.appendChild(el('text',{x:n.x,y:n.y,'text-anchor':'middle','dominant-baseline':'middle','font-size':'11','font-weight':'900',fill:'white'},n.w));
+      svg.appendChild(el('text',{x:n.x+r+4,y:n.y,'text-anchor':'start','dominant-baseline':'middle','font-size':'11','font-weight':'700',fill:'var(--warn)'},n.work));
+    });
+  });
+  // Annotation
+  svg.appendChild(el('text',{x:200,y:205,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:'var(--good)'},'2T(n/2)+O(1) → O(n)'));
+  svg.appendChild(el('text',{x:200,y:225,'text-anchor':'middle','font-size':'13','font-weight':'700',fill:'var(--muted)'},'Leaf count dominates: leaves = n'));
+
+  // Right tree: 2T(n/2)+O(n) -> O(n log n) — each level costs O(n)
+  var rx=620;
+  var lvl2=[[{x:rx,y:32,w:'n',work:'n'}],
+    [{x:rx-70,y:90,w:'n/2',work:'n/2'},{x:rx+70,y:90,w:'n/2',work:'n/2'}],
+    [{x:rx-105,y:150,w:'n/4',work:'n/4'},{x:rx-35,y:150,w:'n/4',work:'n/4'},
+     {x:rx+35,y:150,w:'n/4',work:'n/4'},{x:rx+105,y:150,w:'n/4',work:'n/4'}]
+  ];
+  var edges2=[[{x:rx,y:32},{x:rx-70,y:90}],[{x:rx,y:32},{x:rx+70,y:90}],
+    [{x:rx-70,y:90},{x:rx-105,y:150}],[{x:rx-70,y:90},{x:rx-35,y:150}],
+    [{x:rx+70,y:90},{x:rx+35,y:150}],[{x:rx+70,y:90},{x:rx+105,y:150}]];
+  edges2.forEach(function(e){svg.appendChild(el('line',{x1:e[0].x,y1:e[0].y+16,x2:e[1].x,y2:e[1].y-16,stroke:'var(--border)','stroke-width':'1.5'}));});
+  var levelCosts=['= O(n)','= O(n)','= O(n)'];
+  lvl2.forEach(function(row,lv){
+    row.forEach(function(n){
+      var r=24-lv*4;
+      svg.appendChild(el('circle',{cx:n.x,cy:n.y,r:r,fill:'var(--good)',opacity:(0.6+lv*0.12).toFixed(2),'stroke':'rgba(255,255,255,.15)','stroke-width':'1.5'}));
+      svg.appendChild(el('text',{x:n.x,y:n.y,'text-anchor':'middle','dominant-baseline':'middle','font-size':'11','font-weight':'900',fill:'white'},n.w));
+    });
+    // Level cost annotation
+    svg.appendChild(el('text',{x:rx+145,y:row[0].y,'text-anchor':'start','dominant-baseline':'middle','font-size':'13','font-weight':'900',fill:'var(--warn)'},levelCosts[lv]));
+  });
+  svg.appendChild(el('line',{x1:rx+140,y1:32,x2:rx+140,y2:160,stroke:'var(--warn)','stroke-width':'2','stroke-dasharray':'4,3'}));
+  svg.appendChild(el('text',{x:rx,y:205,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:'var(--good)'},'2T(n/2)+O(n) → O(n log n)'));
+  svg.appendChild(el('text',{x:rx,y:225,'text-anchor':'middle','font-size':'13','font-weight':'700',fill:'var(--muted)'},'Each of O(log n) levels costs O(n)'));
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MERGE SORT TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var arr=[5,2,8,1,3,7,6,4];
+  var steps=[];
+  function buildTrace(){
+    steps=[];
+    var a=arr.slice();
+    var temp=new Array(8);
+    function ms(a,l,r,depth){
+      if(r-l<=1){
+        steps.push({a:a.slice(),l:l,r:r,phase:'base',msg:'Base case: ['+l+','+r+') has ≤1 element — trivially sorted',cls:''});
+        return;
+      }
+      var mid=(l+r)>>1;
+      steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'split',msg:'Split ['+l+','+r+') at mid='+mid+' → recurse on ['+l+','+mid+') and ['+mid+','+r+')',cls:'hi'});
+      ms(a,l,mid,depth+1);
+      ms(a,mid,r,depth+1);
+      // merge
+      steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merge-start',msg:'Merge ['+l+','+mid+') and ['+mid+','+r+'): left=['+a.slice(l,mid)+'] right=['+a.slice(mid,r)+']',cls:'hi'});
+      var i=l,j=mid,k=l,t=a.slice();
+      while(i<mid&&j<r){
+        if(a[i]<=a[j]){
+          t[k++]=a[i];
+          steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merge',act_l:i,act_r:-1,msg:'Take a['+i+']='+a[i]+' from left ('+a[i]+' ≤ '+a[j]+')',cls:'ok'});
+          i++;
+        } else {
+          t[k++]=a[j];
+          steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merge',act_l:-1,act_r:j,msg:'Take a['+j+']='+a[j]+' from right ('+a[i]+' > '+a[j]+')',cls:'ok'});
+          j++;
+        }
+      }
+      while(i<mid){t[k++]=a[i];steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merge',act_l:i,act_r:-1,msg:'Drain left: a['+i+']='+a[i],cls:''});i++;}
+      while(j<r){t[k++]=a[j];steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merge',act_l:-1,act_r:j,msg:'Drain right: a['+j+']='+a[j],cls:''});j++;}
+      for(var p=l;p<r;p++) a[p]=t[p];
+      steps.push({a:a.slice(),l:l,r:r,mid:mid,phase:'merged',msg:'Merged ['+l+','+r+'): ['+a.slice(l,r)+']',cls:'ok'});
+    }
+    ms(a,0,8,0);
+    steps.push({a:a.slice(),l:0,r:8,phase:'done',msg:'Sort complete: ['+a+']',cls:'ok'});
+  }
+  buildTrace();
+  var cur=0,playing=false,tmr=null;
+
+  function render(){
+    var s=steps[cur];
+    var wrap=document.getElementById('msArrWrap');
+    wrap.innerHTML='';
+    for(var i=0;i<8;i++){
+      var cell=document.createElement('div');cell.className='arr-cell';
+      cell.textContent=s.a[i];
+      if(s.l!==undefined&&s.r!==undefined&&i>=s.l&&i<s.r){
+        if(s.phase==='merged'||s.phase==='done') cell.classList.add('sorted');
+        else if(s.mid!==undefined&&i>=s.l&&i<s.mid) cell.classList.add('comparing');
+        else if(s.mid!==undefined&&i>=s.mid&&i<s.r) cell.classList.add('active');
+        else cell.classList.add('comparing');
+      }
+      if(s.act_l===i) cell.classList.add('sorted');
+      if(s.act_r===i) cell.classList.add('active');
+      wrap.appendChild(cell);
+    }
+    document.getElementById('msStatus').textContent=s.msg;
+    document.getElementById('msCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('msPrv').disabled=cur===0;
+    document.getElementById('msNxt').disabled=cur===steps.length-1;
+    // log
+    var log=document.getElementById('msLog'),st=Math.max(0,cur-7);log.innerHTML='';
+    for(var i2=st;i2<=cur;i2++){
+      var li=document.createElement('div');li.className='tlog-line '+(steps[i2].cls||'');
+      if(i2===cur)li.classList.add('cur');
+      li.textContent='['+i2+'] '+steps[i2].msg;log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+  }
+  document.getElementById('msRst').addEventListener('click',function(){stopPlay();cur=0;render();});
+  document.getElementById('msPrv').addEventListener('click',function(){stopPlay();if(cur>0){cur--;render();}});
+  document.getElementById('msNxt').addEventListener('click',function(){stopPlay();if(cur<steps.length-1){cur++;render();}});
+  document.getElementById('msPlay').addEventListener('click',function(){playing?stopPlay():startPlay();});
+  function startPlay(){
+    if(playing)return;playing=true;document.getElementById('msPlay').textContent='⏸';
+    function tick(){if(!playing||cur>=steps.length-1){stopPlay();return;}cur++;render();tmr=setTimeout(tick,600);}
+    tmr=setTimeout(tick,600);
+  }
+  function stopPlay(){playing=false;clearTimeout(tmr);document.getElementById('msPlay').textContent='▶';}
+  render();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   QUICKSORT PARTITION TRACER
+═══════════════════════════════════════════════════════ */
+(function(){
+  var origArr=[5,2,8,1,3,7,6,4];
+  var steps=[];
+  function buildPartitionTrace(){
+    steps=[];
+    var a=origArr.slice();
+    var r=a.length,l=0;
+    var pivot=a[r-1];
+    steps.push({a:a.slice(),i:l,j:l,pivot:pivot,pivotIdx:r-1,phase:'start',msg:'Lomuto partition on ['+l+','+r+'). Pivot = a['+(r-1)+']='+pivot+'. i='+l+' (boundary), j='+l+' (scanner).'});
+    var i=l;
+    for(var j=l;j<r-1;j++){
+      steps.push({a:a.slice(),i:i,j:j,pivot:pivot,pivotIdx:r-1,phase:'compare',msg:'j='+j+': a[j]='+a[j]+' vs pivot='+pivot+'  → '+(a[j]<pivot?'a[j] < pivot: swap a['+i+'] and a['+j+'], advance i':'a[j] ≥ pivot: no swap, advance j')});
+      if(a[j]<pivot){
+        var tmp=a[i];a[i]=a[j];a[j]=tmp;
+        i++;
+        steps.push({a:a.slice(),i:i,j:j+1,pivot:pivot,pivotIdx:r-1,phase:'swap',msg:'Swapped. i now = '+i+'. Array: ['+a+']'});
+      }
+    }
+    var tmp=a[i];a[i]=a[r-1];a[r-1]=tmp;
+    steps.push({a:a.slice(),i:i,j:r-1,pivot:pivot,pivotIdx:i,phase:'place',msg:'Place pivot at position '+i+'. Left [0,'+i+') ≤ '+pivot+', right ['+(i+1)+','+r+') ≥ '+pivot+'. Array: ['+a+']'});
+  }
+  buildPartitionTrace();
+  var cur=0;
+  function render(){
+    var s=steps[cur];
+    var wrap=document.getElementById('qsArrWrap');
+    wrap.innerHTML='';
+    for(var k=0;k<origArr.length;k++){
+      var cell=document.createElement('div');cell.className='arr-cell';
+      cell.textContent=s.a[k];
+      if(k===s.pivotIdx)cell.classList.add('pivot');
+      else if(s.phase==='place'&&k===s.i)cell.classList.add('pivot');
+      else if(s.phase!=='place'&&k<s.i)cell.classList.add('sorted');
+      else if(k===s.j)cell.classList.add('active');
+      wrap.appendChild(cell);
+    }
+    document.getElementById('qsStatus').textContent=s.msg;
+    document.getElementById('qsNxt').disabled=cur>=steps.length-1;
+  }
+  document.getElementById('qsRst').addEventListener('click',function(){cur=0;render();});
+  document.getElementById('qsNxt').addEventListener('click',function(){if(cur<steps.length-1){cur++;render();}});
+  render();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   INVERSION COUNT SVG
+═══════════════════════════════════════════════════════ */
+(function(){
+  var svg=document.getElementById('invSvg');
+  if(!svg) return;
+  function el(tag,attrs,text){
+    var e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(var k in attrs) e.setAttribute(k,attrs[k]);
+    if(text!==undefined) e.textContent=text;
+    return e;
+  }
+  var left=[2,3,8],right=[1,6];
+  var ly=60,rx=400,ry=60,cellW=60,cellH=50,gap=12;
+  // Labels
+  svg.appendChild(el('text',{x:130,y:24,'text-anchor':'middle','font-size':'16','font-weight':'900',fill:'var(--accent2)'},'Left half (sorted)'));
+  svg.appendChild(el('text',{x:520,y:24,'text-anchor':'middle','font-size':'16','font-weight':'900',fill:'var(--good)'},'Right half (sorted)'));
+  // Left cells
+  left.forEach(function(v,i){
+    var x=20+i*(cellW+gap);
+    svg.appendChild(el('rect',{x:x,y:ly-cellH/2,width:cellW,height:cellH,rx:'10',fill:'var(--accent2)',opacity:'0.7'}));
+    svg.appendChild(el('text',{x:x+cellW/2,y:ly,'text-anchor':'middle','dominant-baseline':'middle','font-size':'22','font-weight':'900',fill:'white'},v));
+    if(i===0) svg.appendChild(el('text',{x:x+cellW/2,y:ly+cellH/2+18,'text-anchor':'middle','font-size':'14','font-weight':'800',fill:'var(--warn)'},'← i'));
+  });
+  // Right cells
+  right.forEach(function(v,i){
+    var x=rx+i*(cellW+gap);
+    svg.appendChild(el('rect',{x:x,y:ry-cellH/2,width:cellW,height:cellH,rx:'10',fill:'var(--good)',opacity:'0.7'}));
+    svg.appendChild(el('text',{x:x+cellW/2,y:ry,'text-anchor':'middle','dominant-baseline':'middle','font-size':'22','font-weight':'900',fill:'white'},v));
+    if(i===0) svg.appendChild(el('text',{x:x+cellW/2,y:ry+cellH/2+18,'text-anchor':'middle','font-size':'14','font-weight':'800',fill:'var(--bad)'},'← j'));
+  });
+  // Arrow from right[0]=1 to all of left
+  [0,1,2].forEach(function(i){
+    var x1=rx+cellW/2,y1=ry-cellH/2;
+    var x2=20+i*(cellW+gap)+cellW/2,y2=ly-cellH/2;
+    svg.appendChild(el('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:'var(--bad)','stroke-width':'2','stroke-dasharray':'5,3',opacity:'0.7'}));
+  });
+  svg.appendChild(el('text',{x:250,y:132,'text-anchor':'middle','font-size':'14','font-weight':'800',fill:'var(--bad)'},'right[0]=1 < all 3 left elements → add 3 inversions at once'));
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MASTER METHOD CALCULATOR
+═══════════════════════════════════════════════════════ */
+function calcMaster(){
+  var a=parseFloat(document.getElementById('mcA').value);
+  var b=parseFloat(document.getElementById('mcB').value);
+  var p=parseFloat(document.getElementById('mcP').value);
+  var res=document.getElementById('mcResult');
+  if(isNaN(a)||isNaN(b)||isNaN(p)||a<1||b<2){
+    res.textContent='Please enter valid values: a ≥ 1, b ≥ 2.';
+    return;
+  }
+  var logba=Math.log(a)/Math.log(b);
+  var logbaStr=logba.toFixed(3);
+  var eps=0.001;
+  var result,caseNum,explanation;
+  if(p < logba - eps){
+    caseNum='Case 1 (Leaf-dominated)';
+    result='Θ(n^' + logbaStr + ')';
+    explanation='f(n) = n^' + p + ' grows slower than n^' + logbaStr + ' (the leaf count). Recursion dominates. T(n) = ' + result + '.';
+  } else if(p > logba + eps){
+    caseNum='Case 3 (Root-dominated)';
+    result='Θ(n^' + p + ')';
+    explanation='f(n) = n^' + p + ' grows faster than n^' + logbaStr + '. Combine cost dominates. T(n) = ' + result + '.';
+  } else {
+    caseNum='Case 2 (Balanced)';
+    result='Θ(n^' + logbaStr + ' · log n)';
+    explanation='f(n) = n^' + p + ' ≈ n^' + logbaStr + '. Every level contributes equally — O(log n) levels, each costing Θ(n^' + logbaStr + '). T(n) = ' + result + '.';
+  }
+  res.textContent=caseNum + ': ' + result + '. ' + explanation;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+[
+  {
+    "order": 1,
+    "category": "Graph",
+    "title": "Intro to graphs",
+    "url": "https://youtu.be/1bI-tDg8mo8"
+  },
+  {
+    "order": 2,
+    "category": "Graph",
+    "title": "Graph Terminologies",
+    "url": "https://youtu.be/8JOAzeSxSUs"
+  },
+  {
+    "order": 3,
+    "category": "Graph",
+    "title": "Graph Classification",
+    "url": "https://youtu.be/sQcderUVM2Q"
+  },
+  {
+    "order": 4,
+    "category": "Graph",
+    "title": "Graph Data Structure",
+    "url": "https://youtu.be/AEjKBaqK-hE"
+  },
+  {
+    "order": 5,
+    "category": "Graph",
+    "title": "DFS",
+    "url": "https://youtu.be/YEj8YrvmPYw"
+  },
+  {
+    "order": 6,
+    "category": "Graph",
+    "title": "BFS",
+    "url": "https://youtu.be/klMeaQ-Ih64"
+  },
+  {
+    "order": 7,
+    "category": "Graph",
+    "title": "Euler Tour",
+    "url": "https://youtu.be/yLNlfgjbL0M"
+  },
+  {
+    "order": 8,
+    "category": "Graph",
+    "title": "DSU Complexity",
+    "url": "https://youtu.be/oNfC-2XfZ50"
+  },
+  {
+    "order": 9,
+    "category": "Graph",
+    "title": "DSU",
+    "url": "https://youtu.be/C61xevl_KVg"
+  },
+  {
+    "order": 10,
+    "category": "Graph",
+    "title": "Intro to shortest path",
+    "url": "https://youtu.be/2YzNn24eDhc"
+  },
+  {
+    "order": 11,
+    "category": "Graph",
+    "title": "Dijkstra",
+    "url": "https://youtu.be/pCFkKhtPAOQ"
+  },
+  {
+    "order": 12,
+    "category": "Graph",
+    "title": "Bellman Ford",
+    "url": "https://youtu.be/ZOw3ZCHGajA"
+  },
+  {
+    "order": 13,
+    "category": "Graph",
+    "title": "All Pair Shortest Path",
+    "url": "https://youtu.be/pIn4akBovv4"
+  },
+  {
+    "order": 14,
+    "category": "Graph",
+    "title": "Minimum Spanning Tree MST",
+    "url": "https://youtu.be/6GuMM-Kbq50"
+  },
+  {
+    "order": 15,
+    "category": "Graph",
+    "title": "Graph Miscellaneous",
+    "url": "https://youtu.be/QTeQBQ1fvWQ"
+  },
+  {
+    "order": 16,
+    "category": "Graph",
+    "title": "Strongly Connected Components & 2 SAT",
+    "url": "https://youtu.be/msGTvPrUCCk"
+  },
+  {
+    "order": 17,
+    "category": "Graph",
+    "title": "Low Link on Undirected Graphs",
+    "url": "https://youtu.be/gDgJSop3htk"
+  },
+  {
+    "order": 18,
+    "category": "Paradigms",
+    "title": "Binary search and Ternary search",
+    "url": "https://youtu.be/Q94nHEwx-NI"
+  },
+  {
+    "order": 19,
+    "category": "Paradigms",
+    "title": "Divide and Conquer",
+    "url": "https://youtu.be/OXVpUBTzg-s"
+  },
+  {
+    "order": 20,
+    "category": "Paradigms",
+    "title": "Greedy",
+    "url": "https://youtu.be/yXfgBsfPhdY"
+  },
+  {
+    "order": 21,
+    "category": "Paradigms",
+    "title": "BackTracking",
+    "url": "https://youtu.be/6fFhNmu27c8"
+  },
+  {
+    "order": 22,
+    "category": "Paradigms",
+    "title": "DP",
+    "url": "https://youtu.be/xvH6hBSABd8"
+  },
+  {
+    "order": 23,
+    "category": "Data Structure",
+    "title": "STLs",
+    "url": "https://youtu.be/9CMR4Knp_Z4"
+  }
+]

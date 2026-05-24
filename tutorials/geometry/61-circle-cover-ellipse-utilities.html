@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 07 · Circle Cover &amp; Ellipse Utilities</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">◵</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 07 · Circle Cover &amp; Ellipses</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Cover, enclose, contain</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Boundary points decide</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>2 or 3 supports</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>MEC · cover · ellipse</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Why 2 or 3 points</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>Welzl · sweep · membership</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Enclosure contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Uniqueness · circumcenter</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(n) expected · cover O(n² log n)</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Candidates from supports</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every routine explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Duplicates · r=0 · collinear</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>EPS · seeding · degeneracy</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Weighted · ellipse fit</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>Enclose · cover · contain</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">◵</div>
+    <div class="sf-text">Coach Academy · Geometry Class 07<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">◵</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 07 — Circle Cover &amp; Ellipse Utilities</h1>
+        <div class="subtitle">What is the smallest circle that holds every point? How many points can a fixed-radius circle cover at once? And is a point inside an ellipse? We build the smallest enclosing circle from its two or three boundary supports, count fixed-radius coverage by an angular sweep (with a brute Class 06 cross-checker), and test ellipse membership by transforming into the ellipse's own frame.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Given a set of points, two dual questions arise. The <b>smallest enclosing circle</b> asks for the tightest circle that contains every point. The <b>fixed-radius cover</b> flips it: with a circle of a given radius, how many points can you cover at once by placing it well? Alongside these we add the <b>ellipse membership</b> test — is a point inside, on, or outside an ellipse — which generalizes the circle's inside/on/outside check.</p>
+    <div class="chips">
+      <span class="chip">Smallest circle enclosing all <b>n</b> points?</span>
+      <span class="chip">Most points coverable by one radius-<b>r</b> circle?</span>
+      <span class="chip">Is point <b>p</b> inside / on / outside a circle?</span>
+      <span class="chip">Is point <b>p</b> inside / on / outside an ellipse?</span>
+    </div>
+    <p style="margin-top:16px;">The unifying thread is that an optimal circle is pinned down by a few <i>boundary supports</i>: the smallest enclosing circle is fixed by two diametrically opposite points or by three points on its rim. For fixed-radius cover, point-centered candidates handle duplicate or single-location clusters; otherwise, when the best covered set contains at least two distinct locations, there is an optimal placement with two covered points on the boundary. So we enumerate circles defined by a handful of points and test the rest.</p>
+    <div class="callout warn">
+      <b>Carry-over from Class 06.</b> A radius of <span class="inlineCode">0</span> is a degenerate point-circle, and a negative radius is invalid. Two identical positive-radius circles meet at infinitely many points, while two identical zero-radius circles are the same single point and share exactly one. The fixed-radius cover here reuses the Class 06 circle-circle intersection contract for placing candidate centers.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — The smallest enclosing circle is held in place by its rim</h3>
+    <p>Imagine the tightest circle around a cloud of points, then try to shrink it. It cannot shrink unless it can move, and it cannot move freely because points on its boundary block it. With a single boundary point the circle could still slide toward that point and shrink; with two it can still rotate about their chord unless they are diametrically opposite; only when <b>two opposite points</b> or <b>three points</b> sit on the rim is the circle fully pinned. So the smallest enclosing circle is always determined by two or three of the input points.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Smallest enclosing circle supported by two boundary points</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <circle cx="450" cy="200" r="150" fill="none" stroke="var(--accent2)" stroke-width="3"/>
+        <circle cx="450" cy="200" r="6" fill="var(--accent)"/><text x="462" y="196" font-size="18" font-weight="900" fill="var(--accent)">O</text>
+        <circle cx="300" cy="200" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/><text x="276" y="234" font-size="20" font-weight="950" fill="var(--bad)">A</text>
+        <circle cx="600" cy="200" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/><text x="592" y="234" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <line x1="300" y1="200" x2="600" y2="200" stroke="var(--bad)" stroke-width="3" stroke-dasharray="7 7"/>
+        <text x="396" y="190" font-size="17" font-weight="900" fill="var(--bad)">diameter A–B</text>
+        <circle cx="430" cy="120" r="8" fill="var(--good)"/><circle cx="500" cy="280" r="8" fill="var(--good)"/><circle cx="380" cy="270" r="8" fill="var(--good)"/>
+        <text x="380" y="345" font-size="16" font-weight="900" fill="var(--good)">other points stay inside</text>
+      </svg>
+    </div>
+
+    <h3>2.2 — A fixed-radius circle slides until two points touch its rim</h3>
+    <p>For the fixed-radius cover, take any circle of radius <span class="inlineCode">r</span> covering some points. If only one point is on the boundary (or none), you can drift the circle slightly without losing coverage until a second point lands on the rim. So when the best covered set contains at least two distinct locations, there is an optimal placement with two covered points on its boundary — and those two points, with the fixed radius, determine the candidate center exactly, via the same circle-circle intersection from Class 06. If all covered points are at one location, a point-centered candidate handles the case.</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — Two supports versus three supports</h3>
+    <p>The smallest enclosing circle has exactly one of two shapes: a circle whose diameter is two of the points, or the circumscribed circle of three of the points. The first happens when the spread is dominated by one farthest pair; the second when three points form an acute-enough triangle that no single pair can contain the rest.</p>
+
+    <div class="grid2">
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Two-point support (diameter circle)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid meet" style="height:300px;">
+          <circle cx="240" cy="160" r="120" fill="none" stroke="var(--accent2)" stroke-width="3"/>
+          <circle cx="240" cy="160" r="5" fill="var(--accent)"/>
+          <circle cx="120" cy="160" r="9" fill="var(--bad)"/><circle cx="360" cy="160" r="9" fill="var(--bad)"/>
+          <line x1="120" y1="160" x2="360" y2="160" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 6"/>
+          <circle cx="230" cy="90" r="7" fill="var(--good)"/><circle cx="270" cy="230" r="7" fill="var(--good)"/>
+          <text x="150" y="305" font-size="16" font-weight="900" fill="var(--bad)">2 points as diameter</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Three-point support (circumcircle)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid meet" style="height:300px;">
+          <circle cx="240" cy="170" r="120" fill="none" stroke="var(--accent2)" stroke-width="3"/>
+          <circle cx="240" cy="170" r="5" fill="var(--accent)"/>
+          <circle cx="240" cy="50" r="9" fill="var(--bad)"/><circle cx="344" cy="230" r="9" fill="var(--bad)"/><circle cx="136" cy="230" r="9" fill="var(--bad)"/>
+          <line x1="240" y1="50" x2="344" y2="230" stroke="var(--bad)" stroke-width="2" stroke-dasharray="5 5"/>
+          <line x1="344" y1="230" x2="136" y2="230" stroke="var(--bad)" stroke-width="2" stroke-dasharray="5 5"/>
+          <line x1="136" y1="230" x2="240" y2="50" stroke="var(--bad)" stroke-width="2" stroke-dasharray="5 5"/>
+          <text x="150" y="305" font-size="16" font-weight="900" fill="var(--bad)">3 points on the rim</text>
+        </svg>
+      </div>
+    </div>
+
+    <h3>3.2 — Inside, on, or outside — and the EPS band</h3>
+    <p>Every containment question reduces to comparing a distance against a radius. Because floating-point equality is fragile, the boundary is not a razor edge but a thin tolerance band of width set by <span class="inlineCode">EPS</span>: just inside it we call the point "on."</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Inside / on / outside a circle, with the EPS boundary band</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <circle cx="320" cy="180" r="140" fill="none" stroke="var(--accent2)" stroke-width="14" opacity="0.18"/>
+        <circle cx="320" cy="180" r="140" fill="none" stroke="var(--accent2)" stroke-width="2.5"/>
+        <circle cx="320" cy="180" r="6" fill="var(--accent)"/><text x="332" y="176" font-size="17" font-weight="900" fill="var(--accent)">O</text>
+        <circle cx="270" cy="150" r="9" fill="var(--good)"/><text x="200" y="150" font-size="17" font-weight="900" fill="var(--good)">inside</text>
+        <circle cx="460" cy="180" r="9" fill="var(--warn)"/><text x="470" y="176" font-size="17" font-weight="900" fill="var(--warn)">on (within EPS)</text>
+        <circle cx="560" cy="180" r="9" fill="var(--bad)"/><text x="572" y="176" font-size="17" font-weight="900" fill="var(--bad)">outside</text>
+        <text x="640" y="120" font-size="16" font-weight="800" fill="var(--muted)">cmp(dist, r): &lt;0 inside, =0 on, &gt;0 outside</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — Candidate circles from boundary points</h3>
+    <p>Two boundary points <span class="inlineCode">a, b</span> give the diameter circle with center <span class="inlineCode">(a+b)/2</span> and radius <span class="inlineCode">|a−b|/2</span>. Three boundary points give the circumscribed circle, whose center — the <b>circumcenter</b> — is equidistant from all three and lies at the intersection of the perpendicular bisectors of two sides.</p>
+
+    <h3>4.2 — The circumcenter from perpendicular bisectors</h3>
+    <p>Translate so <span class="inlineCode">a</span> is the origin and write <span class="inlineCode">B = b − a</span>, <span class="inlineCode">C = c − a</span>. The circumcenter offset <span class="inlineCode">(ux, uy)</span> from <span class="inlineCode">a</span> solves the two equal-distance conditions, giving</p>
+<pre><code>D  = 2 (Bx·Cy − By·Cx)            // = 2 * cross(B, C)
+ux = ( Cy·|B|² − By·|C|² ) / D
+uy = ( Bx·|C|² − Cx·|B|² ) / D
+center = a + (ux, uy)</code></pre>
+    <p>The denominator <span class="inlineCode">D</span> is twice the signed area of the triangle; it vanishes exactly when the three points are collinear, in which case no finite circumcircle exists.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Circumcenter as the meeting of two perpendicular bisectors</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+        <circle cx="450" cy="210" r="140" fill="none" stroke="var(--accent2)" stroke-width="2.5" opacity="0.55"/>
+        <circle cx="450" cy="70" r="10" fill="var(--bad)"/><text x="462" y="64" font-size="18" font-weight="950" fill="var(--bad)">A</text>
+        <circle cx="571.2" cy="280" r="10" fill="var(--bad)"/><text x="583" y="284" font-size="18" font-weight="950" fill="var(--bad)">B</text>
+        <circle cx="328.8" cy="280" r="10" fill="var(--bad)"/><text x="300" y="284" font-size="18" font-weight="950" fill="var(--bad)">C</text>
+        <line x1="450" y1="70" x2="571.2" y2="280" stroke="var(--muted)" stroke-width="2"/>
+        <line x1="571.2" y1="280" x2="328.8" y2="280" stroke="var(--muted)" stroke-width="2"/>
+        <line x1="328.8" y1="280" x2="450" y2="70" stroke="var(--muted)" stroke-width="2"/>
+        <!-- perp bisector of BC (midpoint 450,280) is vertical x=450 -->
+        <circle cx="450" cy="280" r="6" fill="var(--good)"/>
+        <line x1="450" y1="320" x2="450" y2="150" stroke="var(--good)" stroke-width="3" stroke-dasharray="6 6"/>
+        <!-- perp bisector of AC (midpoint 389.4,175) toward O -->
+        <circle cx="389.4" cy="175" r="6" fill="var(--good)"/>
+        <line x1="320" y1="134.96" x2="580" y2="285.13" stroke="var(--good)" stroke-width="3" stroke-dasharray="6 6"/>
+        <circle cx="450" cy="210" r="9" fill="var(--accent)"/><text x="462" y="206" font-size="18" font-weight="950" fill="var(--accent)">O = circumcenter</text>
+        <text x="300" y="360" font-size="16" font-weight="800" fill="var(--muted)">bisectors meet at the point equidistant from A, B, C</text>
+      </svg>
+    </div>
+
+    <h3>4.3 — Containment tests</h3>
+    <p>For a circle, the sign of <span class="inlineCode">cmp(dist(O, p), r)</span> classifies <span class="inlineCode">p</span> as inside, on, or outside. For an ellipse with center <span class="inlineCode">c</span>, semi-axes <span class="inlineCode">a, b</span>, and rotation <span class="inlineCode">θ</span>, transform <span class="inlineCode">p</span> into the ellipse's own frame by translating and rotating by <span class="inlineCode">−θ</span>, then evaluate</p>
+<pre><code>local = rot(p − c, −θ)
+v = (local.x / a)² + (local.y / b)²     // v &lt; 1 inside, = 1 on, &gt; 1 outside</code></pre>
+
+    <h3>4.4 — Ellipse measurements</h3>
+    <p>The area is <span class="inlineCode">π·a·b</span>. The linear eccentricity (focal distance from center) is <span class="inlineCode">c = √|a² − b²|</span>, with the two foci on the major axis at <span class="inlineCode">center ± c</span>. The defining focal property is that every boundary point has the same summed distance <span class="inlineCode">2·(major semi-axis)</span> to the two foci.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Ellipse axes, foci, and the focal distance c</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <!-- ellipse: semi-major a = 200px (horizontal), semi-minor b = 120px (vertical) -->
+        <!-- c = sqrt(a^2 - b^2) = sqrt(200^2 - 120^2) = 160px, so foci at 450 +/- 160 -->
+        <ellipse cx="450" cy="190" rx="200" ry="120" fill="rgba(37,99,235,.06)" stroke="var(--accent2)" stroke-width="3"/>
+        <!-- major and minor axes -->
+        <line x1="250" y1="190" x2="650" y2="190" stroke="currentColor" stroke-width="2" stroke-dasharray="6 6" opacity="0.7"/>
+        <line x1="450" y1="70" x2="450" y2="310" stroke="currentColor" stroke-width="2" stroke-dasharray="6 6" opacity="0.7"/>
+        <!-- center -->
+        <circle cx="450" cy="190" r="6" fill="var(--accent)"/><text x="458" y="214" font-size="16" font-weight="900" fill="var(--accent)">center</text>
+        <!-- semi-major axis a (center to right vertex) -->
+        <line x1="450" y1="190" x2="650" y2="190" stroke="var(--good)" stroke-width="4"/>
+        <text x="540" y="178" font-size="20" font-weight="950" fill="var(--good)">a</text>
+        <!-- semi-minor axis b (center to top co-vertex) -->
+        <line x1="450" y1="190" x2="450" y2="70" stroke="var(--warn)" stroke-width="4"/>
+        <text x="460" y="120" font-size="20" font-weight="950" fill="var(--warn)">b</text>
+        <!-- foci F1, F2 at center +/- 160 -->
+        <circle cx="290" cy="190" r="8" fill="var(--bad)"/><text x="270" y="222" font-size="18" font-weight="950" fill="var(--bad)">F₁</text>
+        <circle cx="610" cy="190" r="8" fill="var(--bad)"/><text x="600" y="222" font-size="18" font-weight="950" fill="var(--bad)">F₂</text>
+        <!-- focal distance c (center to F2) -->
+        <line x1="450" y1="190" x2="610" y2="190" stroke="var(--bad)" stroke-width="3"/>
+        <text x="500" y="206" font-size="16" font-weight="900" fill="var(--bad)">c = √(a²−b²)</text>
+        <!-- annotations -->
+        <text x="690" y="120" font-size="17" font-weight="850" fill="var(--muted)">area = π·a·b</text>
+        <text x="690" y="150" font-size="17" font-weight="850" fill="var(--muted)">foci at center ± c</text>
+        <text x="690" y="180" font-size="15" font-weight="800" fill="var(--muted)">on the major axis</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Optimal circles are pinned by 2 or 3 points.</b> The smallest enclosing circle has either a diametric pair or three rim points as supports; nothing else is needed to define it.</li>
+      <li><b>O2 — Incremental construction stays correct in any order.</b> Adding points one at a time and rebuilding only when a point falls outside yields the exact MEC; random order makes it expected linear.</li>
+      <li><b>O3 — Containment is one comparison.</b> Inside/on/outside is the sign of <span class="inlineCode">cmp(dist, r)</span> — the same primitive that drives every enclosure decision.</li>
+      <li><b>O4 — Fixed-radius cover needs two kinds of candidates.</b> Point-centered candidates handle duplicates and single-location clusters; for distinct support locations, an optimal placement can be chosen with two covered points on the boundary, so the remaining candidates are circle-circle intersections of two radius-<span class="inlineCode">r</span> circles (Class 06).</li>
+      <li><b>O5 — The circumcenter is a linear solve.</b> Two perpendicular-bisector equations give a 2×2 system whose determinant is twice the triangle area; zero area means collinear, no circle.</li>
+      <li><b>O6 — An ellipse is a circle in disguise.</b> Transform into the ellipse frame and the membership test becomes the unit-circle test on scaled coordinates.</li>
+      <li><b>O7 — EPS governs every boundary.</b> Whether a point is "on" the circle or ellipse, and whether the MEC just barely contains a point, are all <span class="inlineCode">cmp</span> decisions sharing one tolerance.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — Smallest enclosing circle (incremental Welzl)</h3>
+    <p>Process the points in random order, keeping the MEC of those seen so far. When a new point lies inside or on the current circle, nothing changes. When it lies outside, that point must be on the boundary of the new MEC, so rebuild with it fixed on the rim — nesting the same idea two more levels deep to fix a second and possibly a third boundary point.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · MEC incremental boundary-update flow</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <rect x="40" y="160" width="190" height="64" rx="12" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="135" y="188" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">add point p[i]</text>
+        <text x="135" y="210" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">to current circle c</text>
+        <line x1="230" y1="192" x2="285" y2="192" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="285" y="160" width="200" height="64" rx="12" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="385" y="196" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">p[i] inside or on c ?</text>
+        <!-- yes -->
+        <line x1="385" y1="160" x2="385" y2="110" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="290" y="56" width="190" height="54" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="385" y="80" font-size="14" font-weight="900" fill="var(--good)" text-anchor="middle">YES — keep c,</text>
+        <text x="385" y="100" font-size="14" font-weight="900" fill="var(--good)" text-anchor="middle">continue</text>
+        <!-- no -->
+        <line x1="485" y1="192" x2="540" y2="192" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="540" y="150" width="320" height="84" rx="12" fill="rgba(180,83,9,.08)" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="700" y="178" font-size="14" font-weight="900" fill="var(--warn)" text-anchor="middle">NO — fix p[i] on the rim;</text>
+        <text x="700" y="200" font-size="14" font-weight="900" fill="var(--warn)" text-anchor="middle">rebuild over earlier points,</text>
+        <text x="700" y="222" font-size="14" font-weight="900" fill="var(--warn)" text-anchor="middle">fixing a 2nd then 3rd support</text>
+        <line x1="700" y1="234" x2="700" y2="300" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="560" y="300" width="280" height="54" rx="12" fill="rgba(37,99,235,.06)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="700" y="334" font-size="14" font-weight="900" fill="var(--text)" text-anchor="middle">2 supports → diameter · 3 → circumcircle</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — Brute force for cross-checking</h3>
+    <p>Deterministically, try every pair as a diameter and every triple as a circumcircle; for each candidate that contains all points, keep the smallest. This is unmistakably correct and serves as an oracle to validate the incremental version on small inputs.</p>
+
+    <h3>6.3 — Maximum points covered by a fixed-radius circle</h3>
+    <p>For duplicate and single-location cases, first test each input point itself as a candidate center. Then, for each pair of <i>distinct</i> point locations no farther apart than <span class="inlineCode">2r</span>, the radius-<span class="inlineCode">r</span> circles passing through both have their centers at the intersection of two radius-<span class="inlineCode">r</span> circles centered at the points — a Class 06 circle-circle intersection. Test each candidate center by counting points within <span class="inlineCode">r</span>, and keep the maximum.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Fixed-radius circle covering several points</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <circle cx="300" cy="190" r="120" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="3"/>
+        <circle cx="300" cy="190" r="6" fill="var(--accent)"/><text x="312" y="186" font-size="16" font-weight="900" fill="var(--accent)">center</text>
+        <circle cx="250" cy="160" r="9" fill="var(--good)"/><circle cx="330" cy="150" r="9" fill="var(--good)"/>
+        <circle cx="290" cy="250" r="9" fill="var(--good)"/><circle cx="360" cy="220" r="9" fill="var(--good)"/>
+        <circle cx="660" cy="120" r="9" fill="var(--bad)"/><text x="600" y="120" font-size="16" font-weight="900" fill="var(--bad)">uncovered</text>
+        <text x="220" y="345" font-size="16" font-weight="900" fill="var(--good)">4 points within radius r</text>
+      </svg>
+    </div>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Two candidate centers for a fixed-radius circle through two points</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <circle cx="330" cy="120" r="100" fill="none" stroke="var(--accent2)" stroke-width="2.5" opacity="0.7"/>
+        <circle cx="330" cy="240" r="100" fill="none" stroke="var(--accent)" stroke-width="2.5" opacity="0.7"/>
+        <circle cx="250" cy="180" r="11" fill="var(--bad)"/><text x="216" y="180" font-size="19" font-weight="950" fill="var(--bad)">P</text>
+        <circle cx="410" cy="180" r="11" fill="var(--bad)"/><text x="424" y="180" font-size="19" font-weight="950" fill="var(--bad)">Q</text>
+        <circle cx="330" cy="120" r="8" fill="var(--accent2)"/><text x="344" y="116" font-size="16" font-weight="900" fill="var(--accent2)">center 1</text>
+        <circle cx="330" cy="240" r="8" fill="var(--accent)"/><text x="344" y="252" font-size="16" font-weight="900" fill="var(--accent)">center 2</text>
+        <text x="540" y="180" font-size="16" font-weight="800" fill="var(--muted)">both radius-r circles pass through P and Q</text>
+        <text x="540" y="206" font-size="16" font-weight="800" fill="var(--muted)">centers = circle-circle intersection (Class 06)</text>
+      </svg>
+    </div>
+
+    <h3>6.4 — Ellipse membership</h3>
+    <p>Translate the query point by the ellipse center, rotate by <span class="inlineCode">−θ</span> so the ellipse becomes axis-aligned, and evaluate the normalized form. The sign of <span class="inlineCode">v − 1</span> gives inside, on, or outside, mirroring the circle test exactly.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Ellipse membership by transforming into the ellipse frame</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <g transform="rotate(-22 250 180)">
+          <ellipse cx="250" cy="180" rx="150" ry="80" fill="none" stroke="var(--accent2)" stroke-width="3"/>
+        </g>
+        <circle cx="250" cy="180" r="5" fill="var(--accent)"/>
+        <circle cx="360" cy="120" r="9" fill="var(--warn)"/><text x="372" y="116" font-size="16" font-weight="900" fill="var(--warn)">p (rotated frame)</text>
+        <line x1="430" y1="180" x2="520" y2="180" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <text x="448" y="166" font-size="15" font-weight="800" fill="var(--muted)">rot(p−c, −θ)</text>
+        <ellipse cx="690" cy="180" rx="150" ry="80" fill="none" stroke="var(--good)" stroke-width="3"/>
+        <circle cx="690" cy="180" r="5" fill="var(--accent)"/>
+        <circle cx="775" cy="135" r="9" fill="var(--warn)"/>
+        <text x="600" y="300" font-size="16" font-weight="800" fill="var(--muted)">axis-aligned: test (x/a)² + (y/b)² vs 1</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — The running circle encloses all processed points.</b> After step <span class="inlineCode">i</span> of the incremental MEC, every point <span class="inlineCode">p[0..i]</span> is inside or on the current circle.</li>
+      <li><b>I2 — Supports lie on the boundary.</b> Whenever the circle is rebuilt, the points fixed during the rebuild lie exactly on its rim (up to tolerance), never strictly inside.</li>
+      <li><b>I3 — Containment is sign-exact.</b> <span class="inlineCode">pointVsCircle</span> and <span class="inlineCode">pointVsEllipse</span> return <span class="inlineCode">+1/0/−1</span> for inside/on/outside under a single shared <span class="inlineCode">EPS</span>.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Rebuilds only shrink-to-fit upward.</b> A point outside the current circle forces a strictly larger circle that now contains it on the boundary; the circle never needlessly grows for an already-contained point.</li>
+      <li><b>I5 — Candidate validity for fixed-radius cover.</b> A candidate center is used only when the two generating points are within <span class="inlineCode">2r</span>; otherwise no radius-<span class="inlineCode">r</span> circle passes through both and the pair is skipped.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>The incremental MEC runs three nested single-pass loops, so it always terminates; with random order the expected total work is linear. The brute force is three fixed nested loops, and the fixed-radius cover is two nested loops with a constant-work candidate step — all finite.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> An empty point set has no enclosing circle; the routine returns a sentinel with negative radius. <span class="inlineCode">circleFrom3</span> reports <span class="inlineCode">found = false</span> for collinear points. A negative cover radius returns <span class="inlineCode">0</span>. Ellipse semi-axes must be positive for the membership test to be meaningful.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — The smallest enclosing circle is unique</h3>
+    <p>Suppose two distinct circles of the same minimal radius both enclosed all points. Their intersection region (a lens) is contained in a strictly smaller circle — the one centered at the midpoint of the centers with radius reduced by the chord geometry — which would also enclose every point, contradicting minimality. Hence the minimum is unique. Uniqueness is what lets the incremental algorithm commit to each rebuild without backtracking.</p>
+
+    <h3>8.2 — Why a point outside forces a boundary support</h3>
+    <p>If point <span class="inlineCode">p</span> lies outside the MEC of the earlier points, then the MEC of the whole set must include <span class="inlineCode">p</span>. It cannot contain <span class="inlineCode">p</span> in its strict interior while staying minimal: shrinking toward the others until <span class="inlineCode">p</span> reaches the boundary gives a no-larger enclosing circle. So <span class="inlineCode">p</span> is on the rim of the new MEC, justifying fixing it as a support and recursing on the rest. The same argument applied twice more bounds the supports at three.</p>
+
+    <h3>8.3 — The circumcenter formula is exact</h3>
+    <p>The circumcenter is equidistant from <span class="inlineCode">a, b, c</span>. Writing <span class="inlineCode">B = b−a</span>, <span class="inlineCode">C = c−a</span>, the conditions <span class="inlineCode">|x|² = |x−B|²</span> and <span class="inlineCode">|x|² = |x−C|²</span> linearize to <span class="inlineCode">2B·x = |B|²</span> and <span class="inlineCode">2C·x = |C|²</span>. Solving this 2×2 system by Cramer's rule gives the displayed <span class="inlineCode">ux, uy</span> with determinant <span class="inlineCode">D = 2·cross(B, C)</span>. The system is singular precisely when <span class="inlineCode">B</span> and <span class="inlineCode">C</span> are parallel — the collinear case — where the three points share no finite circumcircle.</p>
+
+    <h3>8.4 — Fixed-radius cover candidates are complete</h3>
+    <p>Let an optimal radius-<span class="inlineCode">r</span> circle cover a maximal set <span class="inlineCode">S</span>. If all points of <span class="inlineCode">S</span> occupy one location, then a circle centered at that location covers the same set, and this is included by the point-centered candidates. Otherwise, choose two distinct covered locations. The center can be moved within the feasible region that keeps all points of <span class="inlineCode">S</span> covered until it reaches the boundary of at least two disk constraints; equivalently, there exists an optimal placement where two distinct covered points lie on the circle boundary. Such centers are exactly the intersections of two radius-<span class="inlineCode">r</span> circles centered at input points, which are enumerated. Therefore the maximum count is found.</p>
+
+    <h3>8.5 — The ellipse transform preserves membership</h3>
+    <p>Rotation and translation are isometries, so a point's position relative to the ellipse is unchanged by moving into the ellipse's frame. In that frame the curve is the axis-aligned ellipse <span class="inlineCode">(x/a)² + (y/b)² = 1</span>, whose inside/on/outside is read directly from the sign of <span class="inlineCode">v − 1</span>. Hence the transformed test answers the original question exactly.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">pointVsCircle</span> / <span class="inlineCode">pointVsEllipse</span></td><td>O(1)</td><td>One distance or one transform plus a compare.</td></tr>
+        <tr><td><span class="inlineCode">circleFrom2</span> / <span class="inlineCode">circleFrom3</span></td><td>O(1)</td><td>Midpoint, or a 2×2 linear solve.</td></tr>
+        <tr><td><span class="inlineCode">minEnclosingCircle</span> (incremental)</td><td>O(n) expected</td><td>Random order; worst case O(n³) on adversarial order.</td></tr>
+        <tr><td><span class="inlineCode">minEnclosingCircleBrute</span></td><td>O(n⁴)</td><td>O(n³) triples (and O(n²) pairs), each tested in O(n).</td></tr>
+        <tr><td><span class="inlineCode">maxCoverFixedRadius</span> (brute, O(n³))</td><td>O(n³)</td><td>O(n²) pairs, each candidate counted in O(n). Use for small <span class="inlineCode">n</span> or as a cross-checker.</td></tr>
+        <tr><td><b><span class="inlineCode">maxCircleCoverFixedRadius</span> (angular sweep, recommended)</b></td><td>O(n² log n)</td><td>Per anchor, build O(n) angular intervals and sort them; sweep once. Start events fire before end events at equal angles, so boundary points count.</td></tr>
+        <tr><td><span class="inlineCode">addAngularInterval</span> / <span class="inlineCode">normAngle</span></td><td>O(1) amortized</td><td>Push 2 or 4 events depending on whether <span class="inlineCode">[l, r]</span> wraps around 0.</td></tr>
+        <tr><td><span class="inlineCode">ellipseArea</span> / <span class="inlineCode">ellipseFocalDistance</span> / <span class="inlineCode">ellipseEccentricity</span></td><td>O(1)</td><td>Closed-form.</td></tr>
+        <tr><td><span class="inlineCode">ellipsePointAt</span> / <span class="inlineCode">ellipseTangentAt</span> / <span class="inlineCode">ellipseNormalAt</span></td><td>O(1)</td><td>One trig pair plus a frame rotation.</td></tr>
+        <tr><td><span class="inlineCode">toLocal</span> / <span class="inlineCode">toWorld</span> / <span class="inlineCode">ellipseFoci</span> / <span class="inlineCode">ellipseCentroid</span></td><td>O(1)</td><td>Translate-then-rotate (or its inverse); centroid is the center by symmetry.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">The randomized MEC is the workhorse: shuffling makes the expected number of rebuilds constant per point. The brute force exists to validate it on small inputs. For maximum cover at a fixed radius, prefer the angular-sweep <span class="inlineCode">maxCircleCoverFixedRadius</span>; the cubic <span class="inlineCode">maxCoverFixedRadius</span> stays as a simple oracle for cross-checking on small inputs.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Candidates from supports.</b> Enumerate the few circles defined by two or three points; never search the continuous space of all circles.</li>
+      <li><b>One containment primitive.</b> Inside/on/outside is a single signed compare reused everywhere — MEC rebuilds, cover counts, ellipse tests.</li>
+      <li><b>Reuse Class 06 for placement.</b> Fixed-radius candidate centers are point-centered candidates plus circle-circle intersections from pairs of distinct locations; do not re-derive them.</li>
+      <li><b>Shuffle for the bound, not for correctness.</b> The incremental MEC is correct in any order; randomization only buys the expected-linear running time.</li>
+      <li><b>Validate with a brute oracle.</b> Keep an obviously-correct O(n⁴) MEC to cross-check the fast one on small cases.</li>
+      <li><b>Transform, don't special-case.</b> An ellipse becomes a unit circle in its own frame — solve the easy problem and map back.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Standalone, compiles with <span class="inlineCode">g++ -std=c++17</span>. The first block repeats just enough of the Class 01–06 substrate (including the trimmed circle-circle classifier) for the file to build on its own; the Class 07 additions follow the divider.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }
+
+// ---- Class 01-06 substrate ----------------------------------------
+template&lt;class U&gt; int cmpInt(const U&amp; a, const U&amp; b = U(0)) { return (a &gt; b) - (a &lt; b); }
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+// raw-domain clamp for the inverse-trig helpers (no EPS budget; protects against tiny drift only).
+T safeAcos(T x) { if (x &gt;  (T)1) x =  1; if (x &lt; (T)-1) x = -1; return (T)acosl((long double)x); }
+T safeAsin(T x) { if (x &gt;  (T)1) x =  1; if (x &lt; (T)-1) x = -1; return (T)asinl((long double)x); }
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }
+Point perpCW (const Point&amp; v) { return Point( v.Y,-v.X); }
+int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    return cmp(cross(b - a, p - a));
+}
+
+struct Circle { Point c; T r; };
+
+// point vs circle: +1 strictly inside, 0 on boundary, -1 outside.
+int pointVsCircle(const Circle&amp; C, const Point&amp; p) {
+    return -cmp(dist(C.c, p), C.r);   // dist&lt;r inside, =r on, &gt;r outside
+}
+bool inOrOn(const Circle&amp; C, const Point&amp; p) { return cmp(dist(C.c, p), C.r) &lt;= 0; }
+
+// Class 06 circle classification (trimmed) for fixed-radius cover.
+//   -3 invalid radius, -2 coincident positive-radius (infinite), -1 concentric,
+//    0 disjoint/nested, 1 tangent or identical zero-radius point-circles, 2 crossing.
+int classifyCircles(const Circle&amp; A, const Circle&amp; B) {
+    if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return -3;
+    T d = dist(A.c, B.c);
+    if (cmp(d) == 0) {
+        if (cmp(A.r, B.r) == 0) { if (cmp(A.r) == 0) return 1; return -2; }
+        return -1;
+    }
+    int outer = cmp(d, A.r + B.r);
+    int inner = cmp(d, (T)fabsl((long double)(A.r - B.r)));
+    if (outer &gt; 0) return 0;
+    if (inner &lt; 0) return 0;
+    if (outer == 0 || inner == 0) return 1;
+    return 2;
+}
+
+// ===================================================================
+// CLASS 07 — circle cover &amp; ellipse utilities
+// ===================================================================
+
+// Centers of the radius-r circles passing through both a and b.
+// Equal-radius circle-circle intersection: returns 0, 1 (tangent), or 2 centers.
+int twoCircleCenters(const Point&amp; a, const Point&amp; b, T r, Point&amp; C1, Point&amp; C2) {
+    if (cmp(r) &lt; 0) return 0;                      // invalid radius
+    if (samePoint(a, b)) {                         // coincident input locations
+        if (cmp(r) == 0) { C1 = a; return 1; }     // only the point-circle at a passes through it
+        return 0;                                  // r&gt;0: infinitely many centers, no finite unique pair
+    }
+    T d = dist(a, b);
+    if (cmp(d, 2 * r) &gt; 0) return 0;               // too far for one radius-r circle
+    T x = d / 2;                                  // equal radii =&gt; foot at the midpoint
+    T h2 = r*r - x*x;
+    Point dir = (b - a) / d, mid = a + dir * x;
+    if (cmp(h2) == 0) { C1 = mid; return 1; }     // tangent: one center
+    T h = safeSqrt(h2);
+    Point nrm = perpCCW(dir);
+    C1 = mid + nrm * h;
+    C2 = mid - nrm * h;
+    return 2;
+}
+
+// Smallest circle with a, b as a diameter.
+Circle circleFrom2(const Point&amp; a, const Point&amp; b) {
+    Point c = (a + b) / (T)2;
+    return { c, dist(a, b) / 2 };
+}
+
+// Circumscribed circle of a, b, c via perpendicular-bisector intersection.
+// found = false when the three points are collinear (no unique circumcircle).
+Circle circleFrom3(const Point&amp; a, const Point&amp; b, const Point&amp; c, bool&amp; found) {
+    Point B = b - a, C = c - a;
+    T D = 2 * cross(B, C);                        // twice the signed triangle area
+    if (cmp(D) == 0) { found = false; return { a, 0 }; }
+    T B2 = dot(B, B), C2 = dot(C, C);
+    T ux = (C.Y * B2 - B.Y * C2) / D;
+    T uy = (B.X * C2 - C.X * B2) / D;
+    Point center = a + Point(ux, uy);
+    found = true;
+    return { center, dist(center, a) };
+}
+
+// Smallest enclosing circle (incremental Welzl).
+// Shuffling gives expected O(n) time; correctness holds for any order.
+// An empty input returns a sentinel circle with negative radius.
+Circle minEnclosingCircle(vector&lt;Point&gt; p) {
+    int n = (int)p.size();
+    if (n == 0) return { Point(0, 0), -1 };
+    static mt19937 rng(42);                       // fixed seed: reproducible demos
+    shuffle(p.begin(), p.end(), rng);
+    Circle c = { p[0], 0 };
+    for (int i = 1; i &lt; n; i++) {
+        if (inOrOn(c, p[i])) continue;
+        c = { p[i], 0 };                          // p[i] must be on the new rim
+        for (int j = 0; j &lt; i; j++) {
+            if (inOrOn(c, p[j])) continue;
+            c = circleFrom2(p[i], p[j]);          // p[i], p[j] on the rim
+            for (int k = 0; k &lt; j; k++) {
+                if (inOrOn(c, p[k])) continue;
+                bool ok;
+                Circle t = circleFrom3(p[i], p[j], p[k], ok);
+                if (ok) c = t;                    // three boundary supports
+            }
+        }
+    }
+    return c;
+}
+
+// Deterministic brute-force MEC, O(n^4): an oracle for cross-checking.
+Circle minEnclosingCircleBrute(const vector&lt;Point&gt;&amp; p) {
+    int n = (int)p.size();
+    if (n == 0) return { Point(0, 0), -1 };
+    if (n == 1) return { p[0], 0 };
+    Circle best = { Point(0, 0), -1 };
+    bool have = false;
+    auto consider = [&amp;](const Circle&amp; c) {
+        for (const auto&amp; q : p) if (!inOrOn(c, q)) return;
+        if (!have || cmp(c.r, best.r) &lt; 0) { best = c; have = true; }
+    };
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++)
+            consider(circleFrom2(p[i], p[j]));
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++)
+            for (int k = j + 1; k &lt; n; k++) {
+                bool ok; Circle c = circleFrom3(p[i], p[j], p[k], ok);
+                if (ok) consider(c);
+            }
+    return best;
+}
+
+// Maximum points covered by a circle of fixed radius r. O(n^3).
+// Duplicates and single-location clusters are caught by point-centered candidates;
+// otherwise an optimal placement has two distinct covered points on its boundary
+// (proof 8.4), so the candidate centers are equal-radius circle-circle intersections.
+int maxCoverFixedRadius(const vector&lt;Point&gt;&amp; p, T r) {
+    if (cmp(r) &lt; 0) return 0;                      // invalid radius
+    int n = (int)p.size();
+    if (n == 0) return 0;
+    auto countAt = [&amp;](const Point&amp; center) {
+        int cnt = 0;
+        for (const auto&amp; q : p) if (inOrOn({ center, r }, q)) cnt++;
+        return cnt;
+    };
+    int best = 0;
+    for (const auto&amp; center : p)                   // point-centered candidates: handle duplicates
+        best = max(best, countAt(center));
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++) {
+            if (cmp(dist(p[i], p[j]), 2 * r) &gt; 0) continue;   // too far for one circle
+            Point C1, C2;
+            int k = twoCircleCenters(p[i], p[j], r, C1, C2);
+            if (k &gt;= 1) best = max(best, countAt(C1));
+            if (k &gt;= 2) best = max(best, countAt(C2));
+        }
+    return best;
+}
+
+// ---- ellipse utilities --------------------------------------------
+// Semi-axes a (local x) and b (local y), rotated by theta, centered at c.
+struct Ellipse { Point c; T a; T b; T theta; };
+
+// +1 inside, 0 on, -1 outside.
+int pointVsEllipse(const Ellipse&amp; E, const Point&amp; p) {
+    Point local = rot(p - E.c, -E.theta);          // into the ellipse frame
+    T v = (local.X * local.X) / (E.a * E.a)
+        + (local.Y * local.Y) / (E.b * E.b);
+    return -cmp(v, (T)1);                          // v&lt;1 inside, =1 on, &gt;1 outside
+}
+T ellipseArea(const Ellipse&amp; E) { return PI * E.a * E.b; }
+// Linear eccentricity c = sqrt(|a^2 - b^2|); foci at center +/- c on the major axis.
+T ellipseFocalDistance(const Ellipse&amp; E) {
+    return safeSqrt((T)fabsl((long double)(E.a * E.a - E.b * E.b)));
+}
+
+// ---- Extended ellipse toolkit -------------------------------------
+// Convert a WORLD point p into the ellipse's LOCAL axis-aligned frame:
+// translate by -center, then undo the rotation by -theta.
+Point toLocal(const Ellipse&amp; E, const Point&amp; p) {
+    return rot(p - E.c, -E.theta);
+}
+// Inverse: rotate from local frame and add center back.
+Point toWorld(const Ellipse&amp; E, const Point&amp; p) {
+    return E.c + rot(p, E.theta);
+}
+
+// Parametric boundary point: (a cos t, b sin t) in local coords, mapped to world.
+// Note: for an ellipse, t is the parameter angle, NOT the polar angle from the center.
+Point ellipsePointAt(const Ellipse&amp; E, T t) {
+    return toWorld(E, Point(E.a * cosl((long double)t),
+                            E.b * sinl((long double)t)));
+}
+
+// Tangent direction at parameter t. Derivative of (a cos t, b sin t) is
+// (-a sin t, b cos t). We return the rotated WORLD direction (un-normalized).
+Point ellipseTangentAt(const Ellipse&amp; E, T t) {
+    return rot(Point(-E.a * sinl((long double)t),
+                      E.b * cosl((long double)t)), E.theta);
+}
+
+// Outward normal at parameter t (un-normalized). For a CCW parameter sweep,
+// perpCW(tangent) points outward.
+Point ellipseNormalAt(const Ellipse&amp; E, T t) {
+    return perpCW(ellipseTangentAt(E, t));
+}
+
+// World positions of the two foci.
+//   If a >= b: foci sit on the local x-axis at (-c, 0) and (c, 0).
+//   If b >  a: the major axis is the local y-axis, so foci sit at (0, +-c).
+pair&lt;Point,Point&gt; ellipseFoci(const Ellipse&amp; E) {
+    if (cmp(E.a, E.b) &gt;= 0) {
+        T c = safeSqrt(E.a * E.a - E.b * E.b);
+        return { toWorld(E, Point(-c, 0)), toWorld(E, Point(c, 0)) };
+    } else {
+        T c = safeSqrt(E.b * E.b - E.a * E.a);
+        return { toWorld(E, Point(0, -c)), toWorld(E, Point(0, c)) };
+    }
+}
+
+// Eccentricity = focal distance / semi-major axis. In [0, 1):
+//   0     => circle (a == b).
+//   ->1   => extremely elongated.
+T ellipseEccentricity(const Ellipse&amp; E) {
+    T A = max(E.a, E.b), B = min(E.a, E.b);
+    return safeSqrt(A * A - B * B) / A;
+}
+
+// A complete ellipse is point-symmetric about its center,
+// so the area centroid is exactly the center.
+Point ellipseCentroid(const Ellipse&amp; E) { return E.c; }
+
+// ---- Angular-interval sweep for fixed-radius cover ----------------
+// Each anchor produces O(n) angular events; sorting them is O(n log n).
+// addAngularInterval normalizes [l, r] modulo 2*PI and splits it across 0
+// if it wraps around.
+T normAngle(T a) {
+    T two = 2 * PI;
+    a = (T)fmodl((long double)a, (long double)two);
+    if (cmp(a) &lt; 0) a += two;
+    return a;
+}
+void addAngularInterval(vector&lt;pair&lt;T,int&gt;&gt;&amp; ev, T l, T r) {
+    l = normAngle(l);
+    r = normAngle(r);
+    if (cmp(l, r) &lt;= 0) {
+        ev.push_back({l, +1});
+        ev.push_back({r, -1});
+    } else {
+        ev.push_back({l,         +1});
+        ev.push_back({2 * PI,    -1});
+        ev.push_back({0,         +1});
+        ev.push_back({r,         -1});
+    }
+}
+
+// Maximum points covered by a circle of fixed radius r. O(n^2 log n).
+// For each anchor p[i], every other point within 2r becomes an angular
+// interval of valid center directions. The busiest direction wins.
+// Boundary rule: at equal angles, start events (+1) are processed BEFORE
+// end events (-1), so points lying exactly on the boundary still count.
+int maxCircleCoverFixedRadius(const vector&lt;Point&gt;&amp; p, T r) {
+    int n = (int)p.size();
+    if (n == 0)        return 0;
+    if (cmp(r) &lt; 0)    return 0;                        // invalid radius
+    if (cmp(r) == 0) {
+        // r == 0 collapses the "cover" to "how many points coincide at the chosen center".
+        // The arc formula d / (2r) would be 0/0, so handle this case explicitly:
+        // return the largest multiplicity of identical points under samePoint().
+        int best0 = 0;
+        for (int i = 0; i &lt; n; i++) {
+            int c = 0;
+            for (int j = 0; j &lt; n; j++) if (samePoint(p[i], p[j])) ++c;
+            if (c &gt; best0) best0 = c;
+        }
+        return best0;
+    }
+    int best = 1;                                       // any single point is always coverable
+
+    for (int i = 0; i &lt; n; i++) {
+        vector&lt;pair&lt;T,int&gt;&gt; ev;
+        for (int j = 0; j &lt; n; j++) if (i != j) {
+            T d = dist(p[i], p[j]);
+            if (cmp(d, 2 * r) &gt; 0) continue;            // too far for one radius-r circle
+            T base  = (T)atan2l((long double)(p[j] - p[i]).Y,
+                                (long double)(p[j] - p[i]).X);
+            T delta = safeAcos(d / (2 * r));            // half-angle of the valid arc
+            addAngularInterval(ev, base - delta, base + delta);
+        }
+        sort(ev.begin(), ev.end(),
+             [](const pair&lt;T,int&gt;&amp; a, const pair&lt;T,int&gt;&amp; b) {
+                 int c = cmp(a.first, b.first);
+                 if (c != 0) return c &lt; 0;
+                 return a.second &gt; b.second;            // +1 BEFORE -1 at the same angle
+             });
+        int cur = 1;                                    // anchor p[i] is always covered
+        best = max(best, cur);
+        for (auto&amp; e : ev) {
+            cur += e.second;
+            best = max(best, cur);
+        }
+    }
+    return best;
+}
+</code></pre>
+    <div class="callout">
+      <b>Two macros that look like fields but are not.</b> <span class="inlineCode">#define X real()</span> makes <span class="inlineCode">v.X</span> expand to <span class="inlineCode">v.real()</span>; <span class="inlineCode">#define Y imag()</span> likewise. <span class="inlineCode">rot</span> is a typed helper function, never a macro — and never named <span class="inlineCode">rotate</span> (which collides with <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>minEnclosingCircle <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (n == 0) return { Point(0,0), -1 };</div><div class="lineExpl">No points: return a sentinel with negative radius — there is no enclosing circle.</div>
+        <div class="lineNo">2</div><div class="lineCode">shuffle(p.begin(), p.end(), rng);</div><div class="lineExpl">Random order makes the expected number of rebuilds constant per point (expected O(n)).</div>
+        <div class="lineNo">3</div><div class="lineCode">Circle c = { p[0], 0 };</div><div class="lineExpl">Start with the degenerate circle on the first point.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (inOrOn(c, p[i])) continue;</div><div class="lineExpl">If the new point is already covered, the circle is unchanged.</div>
+        <div class="lineNo">5</div><div class="lineCode">c = { p[i], 0 };</div><div class="lineExpl">Otherwise <span class="inlineCode">p[i]</span> must lie on the new rim; reset and fix it as the first support.</div>
+        <div class="lineNo">6</div><div class="lineCode">c = circleFrom2(p[i], p[j]);</div><div class="lineExpl">A second uncovered point becomes the diametric partner.</div>
+        <div class="lineNo">7</div><div class="lineCode">Circle t = circleFrom3(p[i], p[j], p[k], ok);</div><div class="lineExpl">A third uncovered point pins the circumcircle; use it only when not collinear.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>circleFrom3 (circumcircle) <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">Point B = b - a, C = c - a;</div><div class="lineExpl">Translate so <span class="inlineCode">a</span> is the origin; the circumcenter is sought as an offset from <span class="inlineCode">a</span>.</div>
+        <div class="lineNo">2</div><div class="lineCode">T D = 2 * cross(B, C);</div><div class="lineExpl">Twice the signed triangle area — the determinant of the bisector system.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (cmp(D) == 0) { found = false; … }</div><div class="lineExpl">Zero area means collinear points: no unique circumcircle, so report failure.</div>
+        <div class="lineNo">4</div><div class="lineCode">T ux = (C.Y*B2 - B.Y*C2) / D;</div><div class="lineExpl">Cramer's-rule solution of <span class="inlineCode">2B·x = |B|²</span>, <span class="inlineCode">2C·x = |C|²</span> for the x-offset.</div>
+        <div class="lineNo">5</div><div class="lineCode">T uy = (B.X*C2 - C.X*B2) / D;</div><div class="lineExpl">The matching y-offset of the circumcenter.</div>
+        <div class="lineNo">6</div><div class="lineCode">return { a + Point(ux,uy), dist(center, a) };</div><div class="lineExpl">Shift back by <span class="inlineCode">a</span>; the radius is the distance to any of the three points.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>maxCoverFixedRadius · twoCircleCenters · pointVsEllipse <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (cmp(r) &lt; 0) return 0;</div><div class="lineExpl">A negative cover radius is invalid (Class 06 carry-over) — report zero coverage.</div>
+        <div class="lineNo">2</div><div class="lineCode">for (auto&amp; c : p) best = max(best, countAt(c));</div><div class="lineExpl">Point-centered candidates first: a circle at any input point covers every duplicate sharing that location, so duplicates are never undercounted.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (cmp(dist(p[i],p[j]), 2*r) &gt; 0) continue;</div><div class="lineExpl">If two points are farther than <span class="inlineCode">2r</span>, no radius-<span class="inlineCode">r</span> circle holds both; skip the pair.</div>
+        <div class="lineNo">4</div><div class="lineCode">int k = twoCircleCenters(p[i], p[j], r, C1, C2);</div><div class="lineExpl">Candidate centers from a distinct pair = equal-radius circle-circle intersection (Class 06 contract).</div>
+        <div class="lineNo">5</div><div class="lineCode">best = max(best, countAt(C1));</div><div class="lineExpl">Count points within <span class="inlineCode">r</span> of the candidate; keep the best.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (samePoint(a,b)) { if (cmp(r)==0){C1=a;return 1;} return 0; }</div><div class="lineExpl">Coincident inputs are handled before any division: <span class="inlineCode">r = 0</span> gives the point-circle at <span class="inlineCode">a</span>; for <span class="inlineCode">r &gt; 0</span> infinitely many centers exist, so the pair yields no finite unique center. Duplicates are already counted by the point-centered seeding, and pair-generated centers come only from distinct point pairs.</div>
+        <div class="lineNo">7</div><div class="lineCode">Point local = rot(p - E.c, -E.theta);</div><div class="lineExpl">Ellipse test: translate by the center, rotate by <span class="inlineCode">−θ</span> into the axis-aligned frame.</div>
+        <div class="lineNo">8</div><div class="lineCode">return -cmp(v, (T)1);</div><div class="lineExpl">Normalized form <span class="inlineCode">v</span>: <span class="inlineCode">&lt;1</span> inside, <span class="inlineCode">=1</span> on, <span class="inlineCode">&gt;1</span> outside.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Empty point set</td><td>No circle can enclose nothing meaningfully.</td><td>MEC returns a sentinel with negative radius; cover returns <span class="inlineCode">0</span>.</td></tr>
+        <tr><td>Single point</td><td>The tightest circle is the point itself.</td><td>MEC returns center = the point, radius <span class="inlineCode">0</span>.</td></tr>
+        <tr><td>Two points</td><td>Diameter circle is optimal.</td><td><span class="inlineCode">circleFrom2</span>: center at midpoint, radius half the distance.</td></tr>
+        <tr><td>Duplicate points (cover)</td><td>Several points share one location.</td><td>The brute <span class="inlineCode">maxCoverFixedRadius</span> seeds with point-centered candidates and counts every duplicate. The angular sweep <span class="inlineCode">maxCircleCoverFixedRadius</span> takes an explicit <span class="inlineCode">r = 0</span> branch that returns the largest multiplicity (count of <span class="inlineCode">samePoint</span> matches at any anchor).</td></tr>
+        <tr><td>Collinear triple</td><td>No finite circumcircle exists.</td><td><span class="inlineCode">circleFrom3</span> sets <span class="inlineCode">found = false</span>; the MEC falls back to a two-point support.</td></tr>
+        <tr><td>All points identical</td><td>Zero spread.</td><td>MEC is that point with radius <span class="inlineCode">0</span> — a valid zero-radius circle (Class 06).</td></tr>
+        <tr><td>Cover radius 0</td><td>Only exact coincidences are covered.</td><td>Both <span class="inlineCode">maxCoverFixedRadius</span> (point-centered candidates) and <span class="inlineCode">maxCircleCoverFixedRadius</span> (explicit <span class="inlineCode">r == 0</span> branch) return the multiplicity at the most-stacked location.</td></tr>
+        <tr><td>Negative cover radius</td><td>Invalid input.</td><td>Both <span class="inlineCode">maxCoverFixedRadius</span> and <span class="inlineCode">maxCircleCoverFixedRadius</span> return <span class="inlineCode">0</span> immediately, before any arithmetic.</td></tr>
+        <tr><td>Cover points farther than 2r</td><td>No single radius-<span class="inlineCode">r</span> circle holds both.</td><td>The pair is skipped; each point is still counted by its own point-centered candidate.</td></tr>
+        <tr><td>Point exactly on the boundary</td><td>Distance equals radius within tolerance.</td><td><span class="inlineCode">cmp</span> returns <span class="inlineCode">0</span>; classified as "on," and treated as covered.</td></tr>
+        <tr><td>Degenerate ellipse axis</td><td>A semi-axis near zero.</td><td>The membership ratio blows up; positive semi-axes are a stated precondition.</td></tr>
+        <tr><td>Circle is a special ellipse</td><td><span class="inlineCode">a = b</span>.</td><td>The ellipse test reduces to the circle test, with rotation irrelevant.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Forgetting to randomize the MEC order.</b> Without a shuffle, adversarial input (e.g. sorted along a line) drives the incremental algorithm to its O(n³) worst case. Shuffle once up front.</li>
+      <li><b>P2 — Treating collinear triples as a valid circumcircle.</b> Dividing by the zero determinant produces garbage; always check <span class="inlineCode">cmp(D) == 0</span> and fall back to a two-point circle.</li>
+      <li><b>P3 — Raw <span class="inlineCode">&lt;</span> / <span class="inlineCode">==</span> on the containment boundary.</b> A point meant to be "on" the circle flickers inside/outside under rounding; always compare with <span class="inlineCode">cmp</span> and a shared <span class="inlineCode">EPS</span>.</li>
+      <li><b>P4 — Missing one of the two fixed-radius candidate families.</b> Sampling only grid centers misses the optimum, but sampling only pair-generated circle-circle centers can undercount duplicate/single-location cases. Seed with point-centered candidates first, then add the circle-circle intersection centers from distinct point pairs.</li>
+      <li><b>P5 — Skipping the <span class="inlineCode">2r</span> feasibility check or the same-point guard.</b> Calling the intersection for far-apart pairs wastes work; calling it for coincident points divides by a zero distance. Guard with the distance test, and handle <span class="inlineCode">samePoint(a, b)</span> before any division.</li>
+      <li><b>P8 — Initializing the cover count from a single pair.</b> Starting <span class="inlineCode">best = 1</span> and only testing pair-generated centers undercounts duplicates: three points stacked at one location with any <span class="inlineCode">r ≥ 0</span> should return 3. Seed <span class="inlineCode">best</span> by counting coverage at every input point first.</li>
+      <li><b>P6 — Negative or near-zero radii unguarded.</b> A negative cover radius must return <span class="inlineCode">0</span>; a zero radius is a point-circle, not an error (Class 06).</li>
+      <li><b>P7 — Forgetting to rotate into the ellipse frame.</b> Testing <span class="inlineCode">(x/a)² + (y/b)²</span> in world coordinates ignores the ellipse's rotation; always apply <span class="inlineCode">rot(p − c, −θ)</span> first.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>Tightest circle enclosing all points?</td><td><span class="inlineCode">minEnclosingCircle</span> (expected O(n))</td></tr>
+        <tr><td>Need an obviously-correct check on small input?</td><td><span class="inlineCode">minEnclosingCircleBrute</span> (O(n⁴) oracle)</td></tr>
+        <tr><td>Most points one radius-<span class="inlineCode">r</span> circle can cover?</td><td><b><span class="inlineCode">maxCircleCoverFixedRadius</span> (angular sweep, O(n² log n))</b> — recommended.<br><span class="inlineCode">maxCoverFixedRadius</span> (brute, O(n³)) is the small-<span class="inlineCode">n</span> oracle.</td></tr>
+        <tr><td>Circle through three given points?</td><td><span class="inlineCode">circleFrom3</span> (circumcircle; collinear ⇒ none)</td></tr>
+        <tr><td>Is a point inside / on / outside a circle?</td><td><span class="inlineCode">pointVsCircle</span> → <span class="inlineCode">+1/0/−1</span></td></tr>
+        <tr><td>Is a point inside / on / outside an ellipse?</td><td><span class="inlineCode">pointVsEllipse</span> after <span class="inlineCode">rot(p−c, −θ)</span></td></tr>
+        <tr><td>Ellipse area or foci?</td><td><span class="inlineCode">ellipseArea</span> = <span class="inlineCode">π·a·b</span>; <span class="inlineCode">ellipseFocalDistance</span> = <span class="inlineCode">√|a²−b²|</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">MEC supports: 2 opposite points, or 3 on the rim.</span>
+      <span class="chip good">Shuffle ⇒ expected O(n); correctness order-free.</span>
+      <span class="chip good">Circumcenter: D = 2·cross(B,C); D = 0 ⇒ collinear.</span>
+      <span class="chip good">Fixed-radius candidates: point centers for duplicate/single-location cases, plus two-point boundary centers.</span>
+      <span class="chip warn">Cover radius &lt; 0 ⇒ 0; radius = 0 ⇒ point-circle.</span>
+      <span class="chip good">Ellipse = unit circle in its own frame.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"The smallest enclosing circle should pass through the two farthest points."</b> Not always — the farthest pair gives a lower bound, but three points can force a larger circle than any single diameter. Only enumerate or run the incremental algorithm; do not assume the diameter of the farthest pair is the answer.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Smallest enclosing circle of circles (not just points)</h3>
+    <p>If the inputs are disks rather than points, the enclosing circle must contain each disk entirely. <b>What changes:</b> the containment test becomes <span class="inlineCode">dist(O, cᵢ) + rᵢ ≤ R</span>, and the supports are tangency conditions rather than point incidences. <b>When to use:</b> bounding clusters with extent, such as covering sensor ranges.</p>
+<pre><code>// Does the enclosing circle (O, R) fully contain disk (ci, ri)?
+bool containsDisk(const Circle&amp; enc, const Circle&amp; disk) {
+    return cmp(dist(enc.c, disk.c) + disk.r, enc.r) &lt;= 0;
+}</code></pre>
+
+    <h3>16.2 — Maximum cover by angular sweep (recommended fixed-radius)</h3>
+    <p>The cubic <span class="inlineCode">maxCoverFixedRadius</span> is fine as a small-<span class="inlineCode">n</span> oracle, but the workhorse for contest sizes is the angular-sweep version: anchor on each point, and for every other point within <span class="inlineCode">2r</span> compute the arc of center directions for which a radius-<span class="inlineCode">r</span> circle through the anchor also covers that point. Sweep those events to find the busiest direction.</p>
+
+    <p><b>Boundary rule.</b> At equal angles, start events (<span class="inlineCode">+1</span>) must fire <em>before</em> end events (<span class="inlineCode">−1</span>). Otherwise a point that sits exactly on an interval endpoint gets dropped, and the cover misses the optimal direction by one. The sort comparator below encodes this rule.</p>
+
+    <p><b>Radius edge cases.</b> A negative radius is rejected as invalid (return <span class="inlineCode">0</span>). <b>Zero radius</b> is handled separately: with <span class="inlineCode">r = 0</span> the half-angle formula <span class="inlineCode">acos(d / (2r))</span> would be <span class="inlineCode">0 / 0</span>, so before the sweep we short-circuit and return the largest <em>multiplicity</em> of identical points (counted under the same EPS policy as <span class="inlineCode">samePoint</span>). For <span class="inlineCode">r &gt; 0</span> the angular sweep runs as described.</p>
+
+    <p><b>Decision map.</b> Use <span class="inlineCode">maxCircleCoverFixedRadius</span> by default; fall back to <span class="inlineCode">maxCoverFixedRadius</span> only when you need a brute oracle to cross-check the sweep on adversarial inputs.</p>
+
+<pre><code>// Wrap any angle into [0, 2*PI).
+T normAngle(T a) {
+    T two = 2 * PI;
+    a = (T)fmodl((long double)a, (long double)two);
+    if (cmp(a) &lt; 0) a += two;
+    return a;
+}
+// Push 2 events for an interval [l, r], or 4 events when it wraps around 0.
+void addAngularInterval(vector&lt;pair&lt;T,int&gt;&gt;&amp; ev, T l, T r) {
+    l = normAngle(l); r = normAngle(r);
+    if (cmp(l, r) &lt;= 0) {
+        ev.push_back({l, +1});
+        ev.push_back({r, -1});
+    } else {
+        ev.push_back({l,      +1});
+        ev.push_back({2 * PI, -1});
+        ev.push_back({0,      +1});
+        ev.push_back({r,      -1});
+    }
+}
+// Recommended: O(n^2 log n) maximum cover at fixed radius.
+int maxCircleCoverFixedRadius(const vector&lt;Point&gt;&amp; p, T r) {
+    int n = (int)p.size();
+    if (n == 0 || cmp(r) &lt; 0) return 0;
+    int best = 1;                                        // any single point is always coverable
+    for (int i = 0; i &lt; n; i++) {
+        vector&lt;pair&lt;T,int&gt;&gt; ev;
+        for (int j = 0; j &lt; n; j++) if (i != j) {
+            T d = dist(p[i], p[j]);
+            if (cmp(d, 2 * r) &gt; 0) continue;             // too far for one radius-r circle
+            T base  = (T)atan2l((long double)(p[j] - p[i]).Y,
+                                (long double)(p[j] - p[i]).X);
+            T delta = safeAcos(d / (2 * r));             // half-angle of the valid arc
+            addAngularInterval(ev, base - delta, base + delta);
+        }
+        sort(ev.begin(), ev.end(),
+             [](const pair&lt;T,int&gt;&amp; a, const pair&lt;T,int&gt;&amp; b) {
+                 int c = cmp(a.first, b.first);
+                 if (c != 0) return c &lt; 0;
+                 return a.second &gt; b.second;             // start (+1) BEFORE end (-1)
+             });
+        int cur = 1;                                     // anchor p[i] is always covered
+        best = max(best, cur);
+        for (auto&amp; e : ev) {
+            cur += e.second;
+            best = max(best, cur);
+        }
+    }
+    return best;
+}</code></pre>
+
+    <h3>16.3 — Fitting an ellipse / general conic</h3>
+    <p>Beyond membership, one can <i>fit</i> an ellipse to points by least squares on the general conic <span class="inlineCode">Ax² + Bxy + Cy² + Dx + Ey + F = 0</span> with a constraint that selects the ellipse branch. <b>When to use:</b> recovering an ellipse from boundary samples; the membership and area utilities here then interpret the fitted parameters.</p>
+<pre><code>// Recover semi-axes and rotation from axis-aligned ellipse half-extents.
+// (Full conic fitting is a least-squares solve; this is the read-back step.)
+Ellipse ellipseFromAxes(const Point&amp; center, T semiX, T semiY, T theta) {
+    return { center, semiX, semiY, theta };
+}</code></pre>
+
+    <h3>16.4 — Full ellipse toolkit (frames, boundary, tangent, foci, eccentricity)</h3>
+    <p>The original Class 07 ships only <span class="inlineCode">pointVsEllipse</span>, <span class="inlineCode">ellipseArea</span>, and <span class="inlineCode">ellipseFocalDistance</span>. Most contest ellipse problems actually need more: a way to walk along the boundary, a tangent/normal at a parameter, and a clean way to switch between the world and the ellipse's own coordinates. The master implementation block already defines them — this section is the conceptual map.</p>
+
+    <p><b>Preconditions for every helper.</b></p>
+    <ul style="padding-left:24px;">
+      <li><span class="inlineCode">E.a &gt; 0</span> and <span class="inlineCode">E.b &gt; 0</span> (positive semi-axes). A zero semi-axis collapses the ellipse to a segment; all of these helpers assume an honest ellipse.</li>
+      <li><span class="inlineCode">E.theta</span> rotates the <em>local</em> x-axis to the desired world direction. The local frame is axis-aligned; the world frame may not be.</li>
+      <li>If <span class="inlineCode">E.a == E.b</span>, the ellipse is a circle. Every helper still works — <span class="inlineCode">ellipseEccentricity</span> returns <span class="inlineCode">0</span>, the two "foci" coincide with the center, and <span class="inlineCode">ellipsePointAt</span> traces a circle.</li>
+    </ul>
+
+    <p><b>Coordinate frames.</b> <span class="inlineCode">toLocal</span> takes a world point into the ellipse's axis-aligned frame (subtract center, rotate by <span class="inlineCode">−θ</span>). <span class="inlineCode">toWorld</span> is the inverse (rotate by <span class="inlineCode">+θ</span>, add center). Use them whenever you have a routine that only knows how to work on axis-aligned shapes (point-in-ellipse, ray–ellipse intersection, etc.).</p>
+
+    <p><b>Parametric boundary.</b> <span class="inlineCode">ellipsePointAt(E, t)</span> returns the world position of <span class="inlineCode">(a cos t, b sin t)</span> after rotation and translation. <b>Important:</b> the parameter <span class="inlineCode">t</span> is <em>not</em> the polar angle from the center for a non-circular ellipse — it is the angle on the underlying unit circle that gets scaled. If you need an actual world heading, derive it from two boundary samples or from <span class="inlineCode">ellipseTangentAt</span>.</p>
+
+    <p><b>Tangent and normal.</b> <span class="inlineCode">ellipseTangentAt(E, t)</span> returns the derivative <span class="inlineCode">(−a sin t, b cos t)</span> rotated to world; <span class="inlineCode">ellipseNormalAt(E, t)</span> applies <span class="inlineCode">perpCW</span> to that tangent so it points outward for a CCW parameter sweep. Neither result is normalized; divide by <span class="inlineCode">len(...)</span> if you need a unit vector.</p>
+
+    <p><b>Foci.</b> <span class="inlineCode">ellipseFoci(E)</span> dispatches on which axis is major. When <span class="inlineCode">a ≥ b</span> the major axis is the local x-axis and the foci sit at <span class="inlineCode">(±√(a²−b²), 0)</span>; when <span class="inlineCode">b &gt; a</span> the major axis is the local y-axis and the foci sit at <span class="inlineCode">(0, ±√(b²−a²))</span>. The return value pushes both through <span class="inlineCode">toWorld</span>, so callers never have to repeat the rotation themselves.</p>
+
+    <p><b>Eccentricity.</b> Defined as <span class="inlineCode">e = c / A</span> where <span class="inlineCode">A = max(a, b)</span> and <span class="inlineCode">c = √(A² − B²)</span>. <span class="inlineCode">ellipseEccentricity</span> returns <span class="inlineCode">0</span> for a circle and approaches <span class="inlineCode">1</span> as the ellipse degenerates toward a segment.</p>
+
+    <p><b>Centroid.</b> A filled ellipse is point-symmetric about its center, so <span class="inlineCode">ellipseCentroid(E)</span> simply returns <span class="inlineCode">E.c</span>. (Half-ellipses, elliptical arcs, and elliptical sectors have a different centroid — those require an integral over the chosen region.)</p>
+
+    <p><b>Rotated ellipses.</b> All helpers honour <span class="inlineCode">E.theta</span> automatically because they route through <span class="inlineCode">toLocal</span>/<span class="inlineCode">toWorld</span>. If you only ever face axis-aligned ellipses, pass <span class="inlineCode">E.theta = 0</span> and the rotations become identities.</p>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>Training drill — smallest enclosing circle of n points <span class="rightHint">the canonical MEC pattern, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A training drill for the smallest enclosing circle, not a full contest problem. It isolates the incremental construction and the inside/on test.</p>
+      <p><b>Story.</b> Given <span class="inlineCode">n</span> points, output the center and radius of the smallest circle that contains all of them.</p>
+      <p><b>Abstraction.</b> Run <span class="inlineCode">minEnclosingCircle</span>; the supports are found automatically as points fall outside the running circle.</p>
+      <p><b>Why this geometry model fits.</b> The optimum is pinned by two or three boundary points (§8.1–8.2), so the incremental rebuilds reach the exact circle.</p>
+      <p><b>Algorithm.</b> Read the points; shuffle; run the three nested passes; print the result with fixed precision.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+
+struct Circle { Point c; T r; };
+bool inOrOn(const Circle&amp; C, const Point&amp; p) { return cmp(dist(C.c, p), C.r) &lt;= 0; }
+
+Circle circleFrom2(const Point&amp; a, const Point&amp; b) {
+    return { (a + b) / (T)2, dist(a, b) / 2 };
+}
+Circle circleFrom3(const Point&amp; a, const Point&amp; b, const Point&amp; c, bool&amp; ok) {
+    Point B = b - a, C = c - a;
+    T D = 2 * cross(B, C);
+    if (cmp(D) == 0) { ok = false; return { a, 0 }; }
+    T B2 = dot(B, B), C2 = dot(C, C);
+    T ux = (C.Y * B2 - B.Y * C2) / D;
+    T uy = (B.X * C2 - C.X * B2) / D;
+    Point ctr = a + Point(ux, uy);
+    ok = true;
+    return { ctr, dist(ctr, a) };
+}
+
+Circle minEnclosingCircle(vector&lt;Point&gt; p) {
+    int n = (int)p.size();
+    if (n == 0) return { Point(0, 0), -1 };
+    static mt19937 rng(42);
+    shuffle(p.begin(), p.end(), rng);
+    Circle c = { p[0], 0 };
+    for (int i = 1; i &lt; n; i++) {
+        if (inOrOn(c, p[i])) continue;
+        c = { p[i], 0 };
+        for (int j = 0; j &lt; i; j++) {
+            if (inOrOn(c, p[j])) continue;
+            c = circleFrom2(p[i], p[j]);
+            for (int k = 0; k &lt; j; k++) {
+                if (inOrOn(c, p[k])) continue;
+                bool ok; Circle t = circleFrom3(p[i], p[j], p[k], ok);
+                if (ok) c = t;
+            }
+        }
+    }
+    return c;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Point&gt; p(n);
+    for (int i = 0; i &lt; n; i++) {
+        long double x, y; cin &gt;&gt; x &gt;&gt; y; p[i] = Point(x, y);
+    }
+    Circle c = minEnclosingCircle(p);
+    if (cmp(c.r) &lt; 0) { cout &lt;&lt; "EMPTY\n"; return 0; }
+    cout &lt;&lt; fixed &lt;&lt; setprecision(6)
+         &lt;&lt; c.c.X &lt;&lt; ' ' &lt;&lt; c.c.Y &lt;&lt; ' ' &lt;&lt; c.r &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> Expected <span class="inlineCode">O(n)</span> with the shuffle.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">EMPTY</span> is printed only for an empty input; otherwise the center and radius are exact to the printed precision.</p>
+      <p><b>Pitfalls.</b> Keep the shuffle for the expected-linear bound, and compare containment with <span class="inlineCode">cmp</span> so boundary points are treated as covered.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — maximum points covered by a fixed-radius circle <span class="rightHint">brute oracle / small n; the angular sweep is the recommended contest version</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A pattern drill for the fixed-radius cover, not a standalone contest problem. It shows the candidate-center enumeration that reuses Class 06. <b>For contest sizes use <span class="inlineCode">maxCircleCoverFixedRadius</span> (angular sweep, O(n² log n));</b> the drill code below is the simpler O(n³) brute that doubles as a cross-checker.</p>
+      <p><b>Story.</b> Given <span class="inlineCode">n</span> points and a radius <span class="inlineCode">r</span>, output the maximum number of points that a single radius-<span class="inlineCode">r</span> circle can cover, including duplicates at the same location.</p>
+      <p><b>Abstraction.</b> This is the brute <span class="inlineCode">maxCoverFixedRadius</span>: seed candidate centers from the input points to handle duplicates and single-location clusters, then enumerate pairs within <span class="inlineCode">2r</span>, place candidate centers via equal-radius circle-circle intersection, and count.</p>
+      <p><b>Why this geometry model fits.</b> If the best covered set is concentrated at one location, a point-centered candidate captures it. Otherwise, an optimal circle can be chosen so that two distinct covered points touch its rim (§8.4), so pair-generated centers complete the search.</p>
+      <p><b>Algorithm.</b> Read points and <span class="inlineCode">r</span>; first count coverage at every input point as a candidate center; then for each close-enough pair compute up to two boundary centers; count coverage; report the best.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }
+
+struct Circle { Point c; T r; };
+bool inOrOn(const Circle&amp; C, const Point&amp; p) { return cmp(dist(C.c, p), C.r) &lt;= 0; }
+
+// equal-radius circle-circle intersection centers (Class 06 contract).
+int twoCircleCenters(const Point&amp; a, const Point&amp; b, T r, Point&amp; C1, Point&amp; C2) {
+    if (cmp(r) &lt; 0) return 0;                      // invalid radius
+    if (samePoint(a, b)) {                        // coincident input locations
+        if (cmp(r) == 0) { C1 = a; return 1; }    // only the point-circle at a passes through it
+        return 0;                                  // r&gt;0: infinitely many centers, no finite unique pair
+    }
+    T d = dist(a, b);
+    if (cmp(d, 2 * r) &gt; 0) return 0;               // too far apart
+    T x = d / 2, h2 = r * r - x * x;
+    Point dir = (b - a) / d, mid = a + dir * x;
+    if (cmp(h2) == 0) { C1 = mid; return 1; }
+    T h = safeSqrt(h2);
+    Point nrm = perpCCW(dir);
+    C1 = mid + nrm * h; C2 = mid - nrm * h;
+    return 2;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n; long double r;
+    if (!(cin &gt;&gt; n &gt;&gt; r)) return 0;
+    vector&lt;Point&gt; p(n);
+    for (int i = 0; i &lt; n; i++) {
+        long double x, y; cin &gt;&gt; x &gt;&gt; y; p[i] = Point(x, y);
+    }
+    if (cmp((T)r) &lt; 0) { cout &lt;&lt; "INVALID\n"; return 0; }
+    if (n == 0) { cout &lt;&lt; 0 &lt;&lt; '\n'; return 0; }
+
+    auto countAt = [&amp;](const Point&amp; ctr) {
+        int cnt = 0;
+        for (auto&amp; q : p) if (inOrOn({ ctr, (T)r }, q)) cnt++;
+        return cnt;
+    };
+
+    int best = 0;
+    for (const auto&amp; ctr : p)                      // point-centered candidates: count duplicates
+        best = max(best, countAt(ctr));
+    for (int i = 0; i &lt; n; i++)
+        for (int j = i + 1; j &lt; n; j++) {
+            Point C1, C2;
+            int k = twoCircleCenters(p[i], p[j], (T)r, C1, C2);
+            if (k &gt;= 1) best = max(best, countAt(C1));
+            if (k &gt;= 2) best = max(best, countAt(C2));
+        }
+    cout &lt;&lt; best &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n³)</span>: <span class="inlineCode">O(n²)</span> pairs, each candidate counted in <span class="inlineCode">O(n)</span>. The recommended <span class="inlineCode">maxCircleCoverFixedRadius</span> (angular sweep) is <span class="inlineCode">O(n² log n)</span>.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">INVALID</span> flags a negative radius; otherwise the integer is the maximum coverage. For a non-empty set it is at least 1 because each point is counted by its own point-centered candidate, and duplicates at one location are all counted together.</p>
+      <p><b>Pitfalls.</b> Guard the same-center and far-apart cases before dividing by <span class="inlineCode">d</span>, and treat boundary points as covered with <span class="inlineCode">cmp</span>.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>MEC supports</b>: two opposite points or three rim points.</li>
+          <li><b>Incremental build</b>: rebuild only when a point falls outside.</li>
+          <li><b>Circumcenter</b>: <span class="inlineCode">D = 2·cross(B,C)</span>; <span class="inlineCode">D = 0</span> ⇒ collinear.</li>
+          <li><b>Fixed-radius cover</b>: test point centers, then two-point boundary centers.</li>
+          <li><b>Containment</b>: sign of <span class="inlineCode">cmp(dist, r)</span>.</li>
+          <li><b>Ellipse</b>: transform into its frame, test <span class="inlineCode">(x/a)²+(y/b)²</span>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Shuffle for expected O(n); correctness is order-free.</li>
+          <li>Check <span class="inlineCode">D = 0</span> before dividing — collinear has no circumcircle.</li>
+          <li>Negative cover radius ⇒ 0; radius 0 is a point-circle.</li>
+          <li>Use <span class="inlineCode">cmp</span>/EPS at every boundary.</li>
+          <li>Validate the fast MEC against the brute oracle on small inputs.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 07 turns the circle primitives of Classes 05–06 into enclosure and coverage tools: the smallest enclosing circle from its supports, the fixed-radius cover (recommended via the angular sweep <span class="inlineCode">maxCircleCoverFixedRadius</span>, with the brute <span class="inlineCode">maxCoverFixedRadius</span> kept as a cross-checker), and ellipse membership by reduction to the unit circle. These containment tests feed directly into the area and lattice work of Class 08.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 08 turns to polygon area and Pick's theorem, where deciding whether lattice points lie inside a region builds on the same inside/on/outside reasoning sharpened here.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using these circle-cover and ellipse routines in a contest solution, verify each item below. The Class 01 numeric checklist and the Class 05–06 construction and classification checklists still apply underneath.</p>
+
+    <h4>Enclosure &amp; cover</h4>
+    <ul class="checklist">
+      <li>The point set is shuffled before the incremental MEC so the running time is expected linear.</li>
+      <li>Containment uses <span class="inlineCode">cmp(dist, r)</span> with a shared <span class="inlineCode">EPS</span>; boundary points count as covered.</li>
+      <li><span class="inlineCode">circleFrom3</span> checks <span class="inlineCode">D = 2·cross(B,C) = 0</span> for collinear points before dividing.</li>
+      <li>Fixed-radius coverage prefers <span class="inlineCode">maxCircleCoverFixedRadius</span> (angular sweep, <span class="inlineCode">O(n² log n)</span>) for contest sizes; the brute <span class="inlineCode">maxCoverFixedRadius</span> (<span class="inlineCode">O(n³)</span>) seeds <span class="inlineCode">best</span> from point-centered candidates and is kept as a small-<span class="inlineCode">n</span> oracle.</li>
+      <li><span class="inlineCode">twoCircleCenters</span> handles coincident inputs before any division: <span class="inlineCode">r = 0</span> returns the point-circle center, <span class="inlineCode">r &gt; 0</span> returns none, and distinct point pairs generate the true two-boundary centers.</li>
+      <li>A negative cover radius returns <span class="inlineCode">0</span>; a zero radius is treated as a point-circle, not an error.</li>
+    </ul>
+
+    <h4>Ellipse</h4>
+    <ul class="checklist">
+      <li>The query point is transformed by <span class="inlineCode">rot(p − c, −θ)</span> into the ellipse frame before the membership test.</li>
+      <li>Semi-axes are positive; <span class="inlineCode">a = b</span> reduces the ellipse to a circle.</li>
+      <li>Area uses <span class="inlineCode">π·a·b</span> and focal distance uses <span class="inlineCode">√|a²−b²|</span>.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">circleFrom2((0,0),(4,0))</span> = center <span class="inlineCode">(2,0)</span>, radius <span class="inlineCode">2</span>.</li>
+      <li><span class="inlineCode">circleFrom3((0,0),(4,0),(0,3))</span> = center <span class="inlineCode">(2,1.5)</span>, radius <span class="inlineCode">2.5</span> (half the hypotenuse).</li>
+      <li>MEC of the right triangle <span class="inlineCode">(0,0),(4,0),(0,3)</span> = that same circle; the brute oracle agrees.</li>
+      <li>MEC of the unit square <span class="inlineCode">(0,0),(2,0),(2,2),(0,2)</span> = center <span class="inlineCode">(1,1)</span>, radius <span class="inlineCode">√2 ≈ 1.4142</span>.</li>
+      <li><span class="inlineCode">maxCircleCoverFixedRadius</span> (and the brute <span class="inlineCode">maxCoverFixedRadius</span>) on a tight cluster of 3 plus a far point, with <span class="inlineCode">r = 1</span>, returns <span class="inlineCode">3</span>; with a tiny radius, returns <span class="inlineCode">1</span>.</li>
+      <li><span class="inlineCode">maxCircleCoverFixedRadius</span> on three identical points <span class="inlineCode">(0,0),(0,0),(0,0)</span> with <span class="inlineCode">r = 0</span> returns <span class="inlineCode">3</span> — the explicit <span class="inlineCode">r == 0</span> branch reports the multiplicity.</li>
+      <li><span class="inlineCode">maxCircleCoverFixedRadius</span> on <span class="inlineCode">(0,0),(0,0),(1,0)</span> with <span class="inlineCode">r = 0</span> returns <span class="inlineCode">2</span> — the two coincident points, not the separate one.</li>
+      <li><span class="inlineCode">maxCircleCoverFixedRadius</span> on <span class="inlineCode">(0,0),(2,0),(1,1)</span> with <span class="inlineCode">r = 1</span> returns <span class="inlineCode">3</span> — the center <span class="inlineCode">(1,0)</span> sits one unit from all three.</li>
+      <li><span class="inlineCode">pointVsCircle((0,0),5 ; (3,4)) = 0</span> (on); <span class="inlineCode">(0,0) → +1</span> (inside); <span class="inlineCode">(5,1) → −1</span> (outside).</li>
+      <li>Ellipse <span class="inlineCode">a=5, b=3</span>: area <span class="inlineCode">15π ≈ 47.124</span>, focal distance <span class="inlineCode">4</span>; <span class="inlineCode">(5,0)</span> and <span class="inlineCode">(0,3)</span> are on, <span class="inlineCode">(0,0)</span> inside, <span class="inlineCode">(5,3)</span> outside.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 07</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Circle cover &amp; ellipse utilities · Enclosing, covering, and containing.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

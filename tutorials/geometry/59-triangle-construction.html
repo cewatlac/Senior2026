@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 05 · Triangle Construction</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">△</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 05 · Triangle Construction</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Build a triangle from data</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Two circles meeting</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Foot + height offset</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>x, h, feasibility</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Two mirror solutions</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>foot · normal · side</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>found ∈ {0,1,2}</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>x · h · Heron</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(1) construction</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Report both, fail clean</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every step explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Degenerate · impossible</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>Sign · feasibility · EPS</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Circles · area · integer</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>Locate third vertex · feasibility</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">△</div>
+    <div class="sf-text">Coach Academy · Geometry Class 05<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">△</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 05 — Triangle Construction</h1>
+        <div class="subtitle">Given two vertices and the two distances to a third, where does the third vertex go? We build the triangle from a base and a height, recover the two mirror solutions, classify feasibility with the triangle inequality, and handle every degenerate case cleanly — all on the <span class="inlineCode">dot</span>/<span class="inlineCode">cross</span>/<span class="inlineCode">orient</span> substrate from Classes 01–04.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Triangle construction asks: from partial data about a triangle, recover its actual vertices. The central version in this class fixes two vertices and the two distances from them to the third:</p>
+    <div class="chips">
+      <span class="chip">Given <b>A</b>, <b>B</b>, and distances <b>b = |AC|</b>, <b>a = |BC|</b> — where is <b>C</b>?</span>
+      <span class="chip">Do three given side lengths even form a triangle?</span>
+      <span class="chip">When the third vertex exists, why are there usually <b>two</b> of them?</span>
+      <span class="chip">What happens when the triangle is flat (zero area)?</span>
+    </div>
+    <p style="margin-top:16px;">The natural picture is <b>two circles</b>: <span class="inlineCode">C</span> lies on the circle of radius <span class="inlineCode">b</span> around <span class="inlineCode">A</span> and simultaneously on the circle of radius <span class="inlineCode">a</span> around <span class="inlineCode">B</span>. Their intersection points are the candidate vertices. We will not solve that with messy circle algebra, though — we decompose the displacement of <span class="inlineCode">C</span> into a slide along the base <span class="inlineCode">AB</span> plus a perpendicular lift, which turns the whole thing into one square root and a Class 02 perpendicular.</p>
+    <div class="callout warn">
+      <b>Why this is the spine of the circle classes.</b> <span class="inlineCode">triangleThirdPoint</span> is exactly the engine behind circle-circle intersection (Class 06): two intersecting circles define a triangle whose third vertex <i>is</i> the intersection point. Getting the two-solution and degenerate handling right here pays off directly there.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — Two circles meeting</h3>
+    <p>Pin one end of a string of length <span class="inlineCode">b</span> at <span class="inlineCode">A</span> and another of length <span class="inlineCode">a</span> at <span class="inlineCode">B</span>. The free end of the first sweeps a circle around <span class="inlineCode">A</span>; the free end of the second sweeps a circle around <span class="inlineCode">B</span>. The third vertex <span class="inlineCode">C</span> must lie where both strings can reach at once — the intersection of the two circles. Two circles in general position meet in <b>two</b> points, one on each side of the line <span class="inlineCode">AB</span>; those are the two mirror triangles.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Two circles around A and B meet at C above and below the base</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <line x1="120" y1="210" x2="780" y2="210" stroke="var(--accent)" stroke-width="5"/>
+
+        <circle cx="300" cy="210" r="11" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="278" y="244" font-size="20" font-weight="950" fill="var(--good)">A</text>
+
+        <circle cx="600" cy="210" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="592" y="244" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+
+        <circle cx="300" cy="210" r="170" fill="none" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 7"/>
+        <circle cx="600" cy="210" r="150" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 7"/>
+
+        <text x="150" y="120" font-size="17" font-weight="850" fill="var(--good)">radius b = |AC| = 170</text>
+        <text x="610" y="120" font-size="17" font-weight="850" fill="var(--bad)">radius a = |BC| = 150</text>
+
+        <line x1="460.667" y1="154.447" x2="460.667" y2="265.553" stroke="var(--accent2)" stroke-width="2.5" stroke-dasharray="6 6" opacity="0.7"/>
+        <circle cx="460.667" cy="210" r="7" fill="var(--warn)"/>
+        <text x="472" y="213" font-size="16" font-weight="900" fill="var(--warn)">F</text>
+
+        <circle cx="460.667" cy="154.447" r="10" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="474" y="149" font-size="20" font-weight="950" fill="var(--accent2)">C</text>
+
+        <circle cx="460.667" cy="265.553" r="10" fill="var(--warn)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="474" y="285" font-size="20" font-weight="950" fill="var(--warn)">C'</text>
+
+        <line x1="300" y1="210" x2="460.667" y2="154.447" stroke="var(--good)" stroke-width="2.5"/>
+        <line x1="600" y1="210" x2="460.667" y2="154.447" stroke="var(--bad)" stroke-width="2.5"/>
+        <line x1="300" y1="210" x2="460.667" y2="265.553" stroke="var(--good)" stroke-width="2.5" opacity="0.65"/>
+        <line x1="600" y1="210" x2="460.667" y2="265.553" stroke="var(--bad)" stroke-width="2.5" opacity="0.65"/>
+
+        <text x="185" y="365" font-size="16" font-weight="800" fill="var(--muted)">
+          Both labelled points lie on both circles: distance to A is 170 and distance to B is 150.
+        </text>
+      </svg>
+    </div>
+
+    <h3>2.2 — From circles to a base-and-height decomposition</h3>
+    <p>Intersecting circles directly is algebra-heavy. The cleaner route: walk from <span class="inlineCode">A</span> along the base toward <span class="inlineCode">B</span> by some signed amount <span class="inlineCode">x</span> to reach the <b>foot</b> of the perpendicular under <span class="inlineCode">C</span>, then lift straight off the base by the <b>height</b> <span class="inlineCode">h</span>. That replaces two circle equations with one right triangle on each side of the foot.</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — Foot on the base, then lift by the height</h3>
+    <p>Drop a perpendicular from <span class="inlineCode">C</span> to the base line <span class="inlineCode">AB</span>; call the landing point the foot <span class="inlineCode">F</span>. The whole position of <span class="inlineCode">C</span> is then "slide from <span class="inlineCode">A</span> to <span class="inlineCode">F</span> along the base, then rise by <span class="inlineCode">h</span> perpendicular to it." The base splits into two right triangles sharing the height <span class="inlineCode">h</span>: one with legs <span class="inlineCode">x, h</span> and hypotenuse <span class="inlineCode">b</span>, the other with legs <span class="inlineCode">c − x, h</span> and hypotenuse <span class="inlineCode">a</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · The foot F, the slide x, and the height h form two right triangles</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+        <line x1="160" y1="320" x2="760" y2="320" stroke="var(--accent)" stroke-width="5"/>
+        <circle cx="160" cy="320" r="11" fill="var(--good)"/><text x="138" y="354" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="760" cy="320" r="11" fill="var(--bad)"/><text x="752" y="354" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <circle cx="420" cy="120" r="11" fill="var(--accent2)"/><text x="434" y="114" font-size="20" font-weight="950" fill="var(--accent2)">C</text>
+        <line x1="420" y1="120" x2="420" y2="320" stroke="var(--warn)" stroke-width="4"/>
+        <circle cx="420" cy="320" r="8" fill="var(--warn)"/><text x="430" y="356" font-size="18" font-weight="900" fill="var(--warn)">F (foot)</text>
+        <rect x="398" y="298" width="22" height="22" fill="none" stroke="var(--warn)" stroke-width="2.5"/>
+        <line x1="160" y1="320" x2="420" y2="120" stroke="var(--good)" stroke-width="3"/>
+        <line x1="760" y1="320" x2="420" y2="120" stroke="var(--bad)" stroke-width="3"/>
+        <text x="250" y="205" font-size="18" font-weight="900" fill="var(--good)">b</text>
+        <text x="600" y="205" font-size="18" font-weight="900" fill="var(--bad)">a</text>
+        <text x="275" y="345" font-size="18" font-weight="900" fill="var(--accent)">x</text>
+        <text x="575" y="345" font-size="18" font-weight="900" fill="var(--accent)">c − x</text>
+        <text x="432" y="230" font-size="18" font-weight="900" fill="var(--warn)">h</text>
+      </svg>
+    </div>
+
+    <h3>3.2 — The two mirror solutions</h3>
+    <p>Once the foot and the height are known, lifting <span class="inlineCode">C</span> "up" (left of directed <span class="inlineCode">A → B</span>) or "down" (right of it) both give a valid triangle. They are reflections of each other across the base line, so they share the same side lengths and area. We pick one with an explicit side flag.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Mirror solutions: C and C' reflected across the base AB</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+        <line x1="160" y1="200" x2="760" y2="200" stroke="var(--accent)" stroke-width="5"/>
+        <circle cx="160" cy="200" r="11" fill="var(--good)"/><text x="138" y="194" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="760" cy="200" r="11" fill="var(--bad)"/><text x="752" y="194" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <circle cx="420" cy="200" r="7" fill="var(--warn)"/><text x="406" y="232" font-size="16" font-weight="900" fill="var(--warn)">F</text>
+        <line x1="420" y1="200" x2="420" y2="80" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <line x1="420" y1="200" x2="420" y2="320" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <circle cx="420" cy="80" r="11" fill="var(--accent2)"/><text x="434" y="74" font-size="20" font-weight="950" fill="var(--accent2)">C (side = +1, left/CCW)</text>
+        <circle cx="420" cy="320" r="11" fill="var(--warn)"/><text x="434" y="326" font-size="20" font-weight="950" fill="var(--warn)">C' (side = −1, right/CW)</text>
+        <text x="180" y="120" font-size="16" font-weight="800" fill="var(--muted)">same base, same b and a, mirror images: orient(A,B,C) = +1, orient(A,B,C') = −1.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — Naming the quantities</h3>
+    <p>Let the base length be <span class="inlineCode">c = |A − B|</span>. Let <span class="inlineCode">b = |A − C|</span> and <span class="inlineCode">a = |B − C|</span> be the two given distances (named so that side <span class="inlineCode">a</span> is opposite vertex <span class="inlineCode">A</span>, matching the usual convention). Let <span class="inlineCode">x</span> be the signed distance from <span class="inlineCode">A</span> to the foot <span class="inlineCode">F</span> measured along the unit base direction, and <span class="inlineCode">h ≥ 0</span> the height.</p>
+
+    <h3>4.2 — The two key formulas</h3>
+    <p>The two right triangles give two Pythagorean equations sharing <span class="inlineCode">h²</span>:</p>
+<pre><code>b^2 = x^2 + h^2                 (triangle A–F–C)
+a^2 = (c - x)^2 + h^2           (triangle B–F–C)</code></pre>
+    <p>Subtracting eliminates <span class="inlineCode">h²</span> and solves for the foot offset, then back-substitution gives the height:</p>
+<pre><code>x  = (b^2 - a^2 + c^2) / (2c)
+h^2 = b^2 - x^2          ⇒   h = sqrt(b^2 - x^2)   (requires b^2 - x^2 >= 0)</code></pre>
+
+    <h3>4.3 — Feasibility is the sign of the radicand</h3>
+    <p>The construction succeeds exactly when <span class="inlineCode">h² = b² − x² ≥ 0</span>. This single condition is algebraically equivalent to the triangle inequality on <span class="inlineCode">a, b, c</span>. The clean way to see it is the factored form of sixteen times the squared area:</p>
+<pre><code>16 * Area^2 = (a + b + c)(-a + b + c)(a - b + c)(a + b - c)</code></pre>
+    <p>The product is non-negative exactly when every triangle-inequality factor is non-negative, i.e. when no side exceeds the sum of the other two. So "the height is real" and "the sides satisfy the triangle inequality" are the same statement.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Impossible triangle — one side too long, the circles never meet</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <line x1="120" y1="200" x2="780" y2="200" stroke="var(--accent)" stroke-width="5"/>
+        <circle cx="250" cy="200" r="11" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/><text x="228" y="234" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="650" cy="200" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/><text x="642" y="234" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <!-- small radius around A and small radius around B: gap between them -->
+        <circle cx="250" cy="200" r="90" fill="none" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 7"/>
+        <circle cx="650" cy="200" r="80" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 7"/>
+        <text x="150" y="95" font-size="17" font-weight="850" fill="var(--good)">radius b</text>
+        <text x="600" y="95" font-size="17" font-weight="850" fill="var(--bad)">radius a</text>
+        <!-- the uncovered gap on the base -->
+        <line x1="340" y1="200" x2="570" y2="200" stroke="var(--warn)" stroke-width="9" opacity="0.5"/>
+        <text x="352" y="180" font-size="18" font-weight="950" fill="var(--warn)">gap: b + a &lt; c</text>
+        <text x="200" y="320" font-size="17" font-weight="800" fill="var(--muted)">The two reaches do not overlap, so no C can be at distance b from A and a from B at once: h² &lt; 0.</text>
+      </svg>
+    </div>
+
+    <h3>4.4 — Feasibility classification</h3>
+    <table>
+      <thead><tr><th>Condition on sides</th><th>Geometry</th><th>Return code</th></tr></thead>
+      <tbody>
+        <tr><td>Some side &gt; sum of other two (or a negative length)</td><td>Circles never meet — impossible.</td><td><span class="inlineCode">-1</span></td></tr>
+        <tr><td>Some side = sum of other two</td><td>Circles tangent — flat, zero-area triangle.</td><td><span class="inlineCode">0</span></td></tr>
+        <tr><td>Every side &lt; sum of other two</td><td>Two genuine triangles (mirror pair).</td><td><span class="inlineCode">+1</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Decompose, don't intersect.</b> Writing <span class="inlineCode">C = foot + h·normal</span> replaces two circle equations with one slide and one lift — a single square root, no quadratic in two variables.</li>
+      <li><b>O2 — The foot offset is forced.</b> <span class="inlineCode">x = (b² − a² + c²) / (2c)</span> is completely determined by the three lengths; only the <i>side</i> of the lift is free.</li>
+      <li><b>O3 — Feasibility = real height = triangle inequality.</b> <span class="inlineCode">b² − x² ≥ 0</span> is exactly "the three lengths satisfy the triangle inequality" (§4.3).</li>
+      <li><b>O4 — Two solutions, mirror images.</b> <span class="inlineCode">h &gt; 0</span> gives two points reflected across <span class="inlineCode">AB</span>; they differ only by the sign on the normal, i.e. by orientation.</li>
+      <li><b>O5 — Height zero ⇒ one solution.</b> When <span class="inlineCode">h = 0</span> the two mirrors collapse onto the base line into a single degenerate (collinear) point.</li>
+      <li><b>O6 — Side choice is an orientation choice.</b> Lifting along <span class="inlineCode">perpCCW(dir)</span> puts <span class="inlineCode">C</span> on the left (<span class="inlineCode">orient(A,B,C) = +1</span>); negating it puts <span class="inlineCode">C</span> on the right. The <span class="inlineCode">side</span> flag selects which.</li>
+      <li><b>O7 — Area two ways.</b> The same area comes from Heron's formula on the sides or from <span class="inlineCode">½ · base · height</span>; equating them gives <span class="inlineCode">h = 2·Area / c</span>, a useful cross-check.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — Constructing the third vertex, step by step</h3>
+    <ol style="padding-left:24px;">
+      <li>Compute the base length <span class="inlineCode">c = |A − B|</span>. If <span class="inlineCode">c = 0</span>, the base direction does not exist. If <span class="inlineCode">a = b = 0</span>, the unique collapsed answer is <span class="inlineCode">C = A = B</span>; otherwise the construction reports <span class="inlineCode">found = 0</span> because the answer is either impossible (<span class="inlineCode">a ≠ b</span>) or non-unique (<span class="inlineCode">a = b &gt; 0</span>).</li>
+      <li>Compute the foot offset <span class="inlineCode">x = (b² − a² + c²) / (2c)</span>.</li>
+      <li>Compute <span class="inlineCode">h² = b² − x²</span>. If <span class="inlineCode">h² &lt; 0</span> the distances cannot meet — report failure.</li>
+      <li>Take <span class="inlineCode">h = sqrt(h²)</span>. Build the unit base direction <span class="inlineCode">dir = (B − A)/c</span> and the foot <span class="inlineCode">F = A + dir·x</span>.</li>
+      <li>If <span class="inlineCode">h = 0</span> the answer is the single point <span class="inlineCode">F</span> on the base — report one degenerate solution.</li>
+      <li>Otherwise lift: <span class="inlineCode">C = F + perpCCW(dir)·(h·side)</span>, where <span class="inlineCode">side = +1</span> (left) or <span class="inlineCode">−1</span> (right). The mirror is obtained by flipping <span class="inlineCode">side</span>.</li>
+    </ol>
+
+    <h3>6.2 — How the function reports its outcome</h3>
+    <p>A single <span class="inlineCode">found</span> out-parameter encodes the three possible outcomes, so the caller always knows what the returned point means:</p>
+    <table>
+      <thead><tr><th><span class="inlineCode">found</span></th><th>Meaning</th><th>Returned point</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">0</span></td><td>No unique usable point: negative length, invalid side flag, infeasible distances, impossible coincident-base case, or non-unique coincident-base circle-locus case.</td><td>Unused placeholder; caller must not read it as a constructed vertex.</td></tr>
+        <tr><td><span class="inlineCode">1</span></td><td>Degenerate single solution: either a flat point on the base line (<span class="inlineCode">h = 0</span>) or the fully collapsed case <span class="inlineCode">A = B = C</span>.</td><td>The single constructed point.</td></tr>
+        <tr><td><span class="inlineCode">2</span></td><td>Two solutions exist; this is the one on the requested <span class="inlineCode">side</span>.</td><td>The off-line vertex; flip <span class="inlineCode">side</span> for the other.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.3 — Base direction and the perpendicular lift</h3>
+    <p>The lift direction is the Class 02 perpendicular of the unit base direction. <span class="inlineCode">perpCCW(dir) = (−dir.y, dir.x)</span> is the left normal; using <span class="inlineCode">h·side</span> as its length signs the lift. Because <span class="inlineCode">dir</span> is already a unit vector and <span class="inlineCode">perpCCW</span> preserves length, the offset has magnitude exactly <span class="inlineCode">h</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Projection foot on AB plus the perpendicular offset by h</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <line x1="150" y1="260" x2="760" y2="260" stroke="var(--accent)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="772" y="266" font-size="18" font-weight="900" fill="var(--accent)">dir</text>
+        <circle cx="150" cy="260" r="11" fill="var(--good)"/><text x="128" y="294" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="700" cy="260" r="11" fill="var(--bad)"/><text x="692" y="294" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <line x1="150" y1="260" x2="430" y2="260" stroke="var(--accent2)" stroke-width="9" opacity="0.35"/>
+        <text x="270" y="248" font-size="18" font-weight="900" fill="var(--accent2)">slide by x</text>
+        <circle cx="430" cy="260" r="8" fill="var(--warn)"/><text x="416" y="294" font-size="18" font-weight="900" fill="var(--warn)">F</text>
+        <line x1="430" y1="260" x2="430" y2="120" stroke="var(--warn)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="442" y="190" font-size="18" font-weight="900" fill="var(--warn)">lift by h · perpCCW(dir)</text>
+        <rect x="430" y="238" width="22" height="22" fill="none" stroke="var(--warn)" stroke-width="2.5"/>
+        <circle cx="430" cy="120" r="11" fill="var(--accent2)"/><text x="444" y="114" font-size="20" font-weight="950" fill="var(--accent2)">C</text>
+      </svg>
+    </div>
+
+    <h3>6.4 — The degenerate (collinear, zero-area) case</h3>
+    <p>When the height is exactly zero, there is nothing to lift: the two mirror candidates both sit on the base line and coincide at the foot. The "triangle" is flat — its three vertices are collinear and its area is zero. The function reports this with <span class="inlineCode">found = 1</span> and returns that single point, rather than pretending two distinct vertices exist.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Degenerate triangle — h = 0, C collapses onto the base line</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 320" preserveAspectRatio="xMidYMid meet">
+        <line x1="150" y1="180" x2="770" y2="180" stroke="var(--accent)" stroke-width="5"/>
+        <circle cx="150" cy="180" r="11" fill="var(--good)"/><text x="128" y="214" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="770" cy="180" r="11" fill="var(--bad)"/><text x="762" y="214" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <circle cx="305" cy="180" r="12" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="250" y="150" font-size="19" font-weight="950" fill="var(--accent2)">C = foot (h = 0)</text>
+        <text x="200" y="255" font-size="17" font-weight="800" fill="var(--muted)">b + (distance C→B) = c exactly: the apex lies on AB, the two mirror solutions merge into one.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — <span class="inlineCode">found</span> is exhaustive and exclusive.</b> Every call sets <span class="inlineCode">found</span> to exactly one of <span class="inlineCode">{0, 1, 2}</span>; the returned point is meaningful only when <span class="inlineCode">found ≥ 1</span>.</li>
+      <li><b>I2 — Distances are honoured when <span class="inlineCode">found ≥ 1</span>.</b> The returned <span class="inlineCode">C</span> satisfies <span class="inlineCode">|A − C| = b</span> and <span class="inlineCode">|B − C| = a</span> up to floating tolerance, by construction from the two Pythagorean equations.</li>
+      <li><b>I3 — Side flag controls orientation.</b> When <span class="inlineCode">found = 2</span>, <span class="inlineCode">orient(A, B, C) = side</span>: <span class="inlineCode">+1</span> lifts left/CCW, <span class="inlineCode">−1</span> lifts right/CW.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Mirror symmetry.</b> Calling with <span class="inlineCode">+side</span> and <span class="inlineCode">−side</span> returns two points that are reflections of each other across the line <span class="inlineCode">AB</span>; their foot and height are identical.</li>
+      <li><b>I5 — Feasibility agrees with the classifier under valid construction preconditions.</b> Given non-negative lengths, a valid side flag, and a non-degenerate base, <span class="inlineCode">triangleThirdPoint</span> reports <span class="inlineCode">found = 0</span> exactly when <span class="inlineCode">triangleFeasible(c, b, a) = −1</span>, and <span class="inlineCode">found = 1</span> exactly when it returns <span class="inlineCode">0</span>.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>The construction is straight-line arithmetic — one square root, a handful of multiplies, no loops or recursion — so it returns in <span class="inlineCode">O(1)</span>.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> The distances <span class="inlineCode">a, b</span> must be non-negative (they are lengths); a negative input reports <span class="inlineCode">found = 0</span>. The base must be non-degenerate for a direction to exist. If <span class="inlineCode">A = B</span>, the function only returns a unique point in the fully collapsed case <span class="inlineCode">a = b = 0</span>; otherwise it reports <span class="inlineCode">found = 0</span> because the construction has no unique vertex to return.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Deriving the foot offset <span class="inlineCode">x</span></h3>
+    <p>Place the base on a local axis with <span class="inlineCode">A</span> at coordinate <span class="inlineCode">0</span> and <span class="inlineCode">B</span> at coordinate <span class="inlineCode">c</span>, and let the foot sit at coordinate <span class="inlineCode">x</span> with the apex at height <span class="inlineCode">h</span>. The two right triangles give <span class="inlineCode">b² = x² + h²</span> and <span class="inlineCode">a² = (c − x)² + h²</span>. Subtract the second from the first:</p>
+<pre><code>b^2 - a^2 = x^2 - (c - x)^2
+          = x^2 - (c^2 - 2cx + x^2)
+          = 2cx - c^2
+⇒  x = (b^2 - a^2 + c^2) / (2c)</code></pre>
+    <p>The division is safe because <span class="inlineCode">c &gt; 0</span> whenever <span class="inlineCode">A ≠ B</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Local frame for the derivation — A at 0, B at c, apex (x, h)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="120" y1="280" x2="820" y2="280" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="160" y1="320" x2="160" y2="40" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <circle cx="160" cy="280" r="10" fill="var(--good)"/><text x="138" y="312" font-size="18" font-weight="900" fill="var(--good)">A = 0</text>
+        <circle cx="700" cy="280" r="10" fill="var(--bad)"/><text x="676" y="312" font-size="18" font-weight="900" fill="var(--bad)">B = c</text>
+        <circle cx="430" cy="100" r="10" fill="var(--accent2)"/><text x="444" y="94" font-size="18" font-weight="900" fill="var(--accent2)">C = (x, h)</text>
+        <line x1="430" y1="100" x2="430" y2="280" stroke="var(--warn)" stroke-width="4"/>
+        <rect x="408" y="258" width="22" height="22" fill="none" stroke="var(--warn)" stroke-width="2.5"/>
+        <line x1="160" y1="280" x2="430" y2="100" stroke="var(--good)" stroke-width="3"/><text x="260" y="180" font-size="18" font-weight="900" fill="var(--good)">b</text>
+        <line x1="700" y1="280" x2="430" y2="100" stroke="var(--bad)" stroke-width="3"/><text x="585" y="180" font-size="18" font-weight="900" fill="var(--bad)">a</text>
+        <text x="270" y="305" font-size="17" font-weight="900" fill="var(--accent)">x</text>
+        <text x="540" y="305" font-size="17" font-weight="900" fill="var(--accent)">c − x</text>
+        <text x="442" y="200" font-size="17" font-weight="900" fill="var(--warn)">h</text>
+      </svg>
+    </div>
+
+    <h3>8.2 — Recovering the height <span class="inlineCode">h</span></h3>
+    <p>From <span class="inlineCode">b² = x² + h²</span> we get <span class="inlineCode">h² = b² − x²</span>, hence <span class="inlineCode">h = √(b² − x²)</span>, taking the non-negative root (height is a length). The apex in the local frame is <span class="inlineCode">(x, h)</span>; mapping back to world coordinates is "start at <span class="inlineCode">A</span>, move <span class="inlineCode">x</span> along the unit base direction, then <span class="inlineCode">h</span> along its perpendicular," which is exactly <span class="inlineCode">A + dir·x + perpCCW(dir)·h</span>.</p>
+
+    <h3>8.3 — Feasibility equals the triangle inequality</h3>
+    <p>The construction needs <span class="inlineCode">h² = b² − x² ≥ 0</span>. Substituting <span class="inlineCode">x = (b² − a² + c²)/(2c)</span> and simplifying yields the symmetric identity</p>
+<pre><code>16 * Area^2 = (a + b + c)(-a + b + c)(a - b + c)(a + b - c)
+            = 4 c^2 (b^2 - x^2)</code></pre>
+    <p>Since <span class="inlineCode">4c² &gt; 0</span>, the sign of <span class="inlineCode">b² − x²</span> matches the sign of the four-factor product. Every factor is non-negative precisely when each side is at most the sum of the other two — the triangle inequality. Thus <span class="inlineCode">h² ≥ 0 ⟺</span> the lengths form a triangle, with equality (<span class="inlineCode">h = 0</span>) exactly at the degenerate, collinear case where one factor vanishes.</p>
+
+    <h3>8.4 — Heron and the area / height relationship</h3>
+    <p>Taking the square root of the identity above and dividing by <span class="inlineCode">4</span> gives <b>Heron's formula</b> with semi-perimeter <span class="inlineCode">s = (a + b + c)/2</span>:</p>
+<pre><code>Area = sqrt( s (s - a)(s - b)(s - c) )</code></pre>
+    <p>Independently the triangle's area is <span class="inlineCode">½ · base · height = ½ · c · h</span>. Equating the two expressions gives the cross-check <span class="inlineCode">h = 2·Area / c</span>, confirming the height we computed from the Pythagorean route agrees with the Heron area.</p>
+
+    <h3>8.5 — Why the side flag yields the correct orientation</h3>
+    <p>The lift uses <span class="inlineCode">perpCCW(dir)</span>, the left normal of the directed base <span class="inlineCode">A → B</span>. For a point displaced from the base by a positive multiple of the left normal, <span class="inlineCode">cross(B − A, C − A) &gt; 0</span>, so <span class="inlineCode">orient(A, B, C) = +1</span>. Multiplying the lift by <span class="inlineCode">side = −1</span> flips the sign of the cross product, giving <span class="inlineCode">orient = −1</span>. Hence the returned point lies on exactly the requested side, and the two choices are mirror images across <span class="inlineCode">AB</span>.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">triangleFeasible</span></td><td>O(1)</td><td>A few comparisons via <span class="inlineCode">cmp</span>.</td></tr>
+        <tr><td><span class="inlineCode">triangleThirdPoint</span> (preconditioned, single side)</td><td>O(1)</td><td>One <span class="inlineCode">dist</span>, one <span class="inlineCode">safeSqrt</span>, a constant number of multiplies and adds.</td></tr>
+        <tr><td><b><span class="inlineCode">triangle3rdPoint</span> (recommended, returns both mirrors)</b></td><td>O(1)</td><td>Same arithmetic; returns <span class="inlineCode">vector&lt;Point&gt;</span> of size 0 (infeasible), 1 (tangent), or 2 (mirror pair, +1 side first).</td></tr>
+        <tr><td><span class="inlineCode">triangleAreaHeron</span></td><td>O(1)</td><td>One <span class="inlineCode">safeSqrt</span> over the semi-perimeter product.</td></tr>
+        <tr><td>Recovering both vertices</td><td>O(1)</td><td>Call once per side, or lift with <span class="inlineCode">±h</span>.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">Everything here is constant-time. When triangle construction sits inside a loop — for instance computing every circle-circle intersection across <span class="inlineCode">n</span> circles — the asymptotic cost belongs to the loop, not to this primitive.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Report both, fail clean.</b> A construction that can yield two points must expose both, and one that can fail must say so explicitly. The <span class="inlineCode">found ∈ {0,1,2}</span> contract makes the caller handle every outcome.</li>
+      <li><b>Decompose into base + height.</b> Prefer the slide-and-lift decomposition over raw circle intersection: one square root, no two-variable quadratic, and it reuses the Class 02 perpendicular directly.</li>
+      <li><b>Feasibility through the radicand.</b> Let <span class="inlineCode">h² ≥ 0</span> be the single gate; it is the triangle inequality in disguise, so there is no separate inequality bookkeeping to keep in sync.</li>
+      <li><b>Side as orientation.</b> Encode the left/right choice as a <span class="inlineCode">±1</span> flag tied to <span class="inlineCode">orient</span>, so the geometry and the sign convention never drift apart.</li>
+      <li><b>Const-reference inputs, documented preconditions.</b> Points pass by <span class="inlineCode">const Point&amp;</span>; non-negativity of lengths and <span class="inlineCode">A ≠ B</span> are stated where they matter.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Standalone, compiles with <span class="inlineCode">g++ -std=c++17</span>. The first block repeats just enough of the Class 01–04 substrate for the file to build on its own; the Class 05 additions follow the divider.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }
+
+// ---- Class 01-04 substrate ----------------------------------------
+template&lt;class U&gt; int cmpInt(const U&amp; a, const U&amp; b = U(0)) { return (a &gt; b) - (a &lt; b); }
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }   // left normal
+int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    return cmp(cross(b - a, p - a));                          // +1 left, -1 right, 0 collinear
+}
+
+// ===================================================================
+// CLASS 05 — triangle construction
+// ===================================================================
+
+// Feasibility from three side lengths x, y, z.
+// Returns: -1 impossible, 0 degenerate (one side == sum of the other two),
+//          +1 strict triangle.
+// Precondition: lengths are intended non-negative; a negative input => impossible.
+int triangleFeasible(T x, T y, T z) {
+    if (cmp(x) &lt; 0 || cmp(y) &lt; 0 || cmp(z) &lt; 0) return -1;  // negative length
+    if (cmp(x + y, z) &lt; 0) return -1;
+    if (cmp(y + z, x) &lt; 0) return -1;
+    if (cmp(x + z, y) &lt; 0) return -1;
+    if (cmp(x + y, z) == 0) return 0;
+    if (cmp(y + z, x) == 0) return 0;
+    if (cmp(x + z, y) == 0) return 0;
+    return 1;
+}
+
+// Locate the third vertex C given base endpoints A, B and the two distances
+// b = |A - C| and a = |B - C|.
+//   side = +1 : C on the LEFT of directed A->B  (orient(A,B,C) = +1, CCW)
+//   side = -1 : C on the RIGHT of directed A->B (orient(A,B,C) = -1, CW)
+// found (out):
+//   0 -> no unique usable point: negative length, infeasible distances,
+//        or A == B with infinitely many possible vertices (a == b > 0) / a != b
+//   1 -> degenerate single point: a flat point on the base (height == 0),
+//        or the fully collapsed case A == B == C (a == b == 0)
+//   2 -> a genuine off-line vertex on the requested side; mirror is the other side
+// Preconditions: a >= 0, b >= 0, and side is exactly +1 or -1.
+// Invalid lengths or invalid side flags report found = 0.
+Point triangleThirdPoint(const Point&amp; A, const Point&amp; B,
+                         T b, T a, int side, int&amp; found) {
+    if (cmp(a) &lt; 0 || cmp(b) &lt; 0) {    // negative distance is not a valid length
+        found = 0;
+        return A;                     // value unused when found == 0
+    }
+    if (side != +1 &amp;&amp; side != -1) {   // invalid side flag
+        found = 0;
+        return A;
+    }
+    T c = dist(A, B);                 // base length |A - B|
+    if (cmp(c) == 0) {                // A and B coincide -> no base direction
+        if (cmp(a) == 0 &amp;&amp; cmp(b) == 0) {
+            found = 1;                // all three points collapse to one: C = A = B
+            return A;
+        }
+        found = 0;                    // a != b impossible, or a == b > 0 non-unique (whole circle)
+        return A;                     // value unused when found == 0
+    }
+    // foot offset along the base:  x = (b^2 - a^2 + c^2) / (2c)
+    T x  = (b*b - a*a + c*c) / (2*c);
+    T h2 = b*b - x*x;                 // squared height
+    if (cmp(h2) &lt; 0) {                // circles do not meet -> infeasible
+        found = 0;
+        return A;
+    }
+    T h = safeSqrt(h2);
+    Point dir  = (B - A) / c;         // unit base direction
+    Point foot = A + dir * x;         // foot of the perpendicular on the base
+    if (cmp(h) == 0) {                // circles tangent -> single point on the base
+        found = 1;
+        return foot;
+    }
+    Point nrm = perpCCW(dir);         // unit left normal (the +1 side)
+    found = 2;
+    return foot + nrm * (h * (T)side);
+}
+
+// ---- Recommended vector-return API ---------------------------------
+// triangle3rdPoint(A, B, b, a): same construction, but returns BOTH
+// mirror solutions at once. Empty vector = infeasible; size 1 = the
+// tangent/collapsed case; size 2 = the genuine mirror pair, with the
+// "+1 side" (CCW from base A->B) listed first.
+//
+// Prefer this in new code: callers no longer have to track a `side` flag
+// or an integer `found` count, and the same call covers every outcome.
+vector&lt;Point&gt; triangle3rdPoint(const Point&amp; A, const Point&amp; B, T b, T a) {
+    if (cmp(a) &lt; 0 || cmp(b) &lt; 0) return {};      // negative length: infeasible
+    T c = dist(A, B);
+    if (cmp(c) == 0) {
+        if (cmp(a) == 0 &amp;&amp; cmp(b) == 0) return { A };   // all three points coincide
+        return {};                                  // no base direction, no unique answer
+    }
+    T x  = (b*b - a*a + c*c) / (2*c);
+    T h2 = b*b - x*x;
+    if (cmp(h2) &lt; 0) return {};                    // circles do not meet
+    T h = safeSqrt(h2);
+    Point dir  = (B - A) / c;
+    Point foot = A + dir * x;
+    if (cmp(h) == 0) return { foot };              // tangent: a single point on the base
+    Point nrm  = perpCCW(dir);
+    return { foot + nrm * h, foot - nrm * h };     // +1 side first, then mirror
+}
+
+// Area of a triangle with sides a, b, c via Heron's formula.
+// Precondition: a, b, c form a valid (possibly degenerate) triangle.
+T triangleAreaHeron(T a, T b, T c) {
+    T s = (a + b + c) / 2;
+    return safeSqrt(s * (s - a) * (s - b) * (s - c));
+}
+</code></pre>
+    <div class="callout">
+      <b>Two macros that look identical to fields but are not.</b> <span class="inlineCode">#define X real()</span> makes <span class="inlineCode">v.X</span> expand to <span class="inlineCode">v.real()</span>; <span class="inlineCode">#define Y imag()</span> likewise. <span class="inlineCode">rot</span> is a typed helper function, never a macro — and never named <span class="inlineCode">rotate</span> (which collides with <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>triangleThirdPoint <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (cmp(a) &lt; 0 || cmp(b) &lt; 0) { found = 0; return A; }</div><div class="lineExpl">A negative distance is not a valid length; report failure immediately, before any computation.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (side != +1 &amp;&amp; side != -1) { found = 0; return A; }</div><div class="lineExpl">Validate the side flag. Only <span class="inlineCode">+1</span> and <span class="inlineCode">−1</span> are accepted; any other value reports <span class="inlineCode">found = 0</span> so an invalid flag cannot silently choose a side or scale the height wrongly.</div>
+        <div class="lineNo">3</div><div class="lineCode">T c = dist(A, B);</div><div class="lineExpl">The base length. Everything downstream divides by <span class="inlineCode">c</span>, so it must be positive.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (cmp(c) == 0) { … }</div><div class="lineExpl">Coincident base: no base direction exists. The only unique case is <span class="inlineCode">a = b = 0</span>, where <span class="inlineCode">C = A = B</span> and <span class="inlineCode">found = 1</span>. Otherwise <span class="inlineCode">found = 0</span> because the result is impossible (<span class="inlineCode">a ≠ b</span>) or non-unique (<span class="inlineCode">a = b &gt; 0</span>).</div>
+        <div class="lineNo">5</div><div class="lineCode">T x = (b*b - a*a + c*c) / (2*c);</div><div class="lineExpl">The forced foot offset (§8.1). Determined entirely by the three lengths.</div>
+        <div class="lineNo">6</div><div class="lineCode">T h2 = b*b - x*x;</div><div class="lineExpl">Squared height from <span class="inlineCode">b² = x² + h²</span>.</div>
+        <div class="lineNo">7</div><div class="lineCode">if (cmp(h2) &lt; 0) { found = 0; return A; }</div><div class="lineExpl">Negative radicand ⇒ the distances cannot meet ⇒ infeasible (the triangle inequality fails, §8.3).</div>
+        <div class="lineNo">8</div><div class="lineCode">T h = safeSqrt(h2);</div><div class="lineExpl"><span class="inlineCode">safeSqrt</span> clamps a tiny negative <span class="inlineCode">h²</span> (from rounding) to <span class="inlineCode">0</span> instead of returning NaN.</div>
+        <div class="lineNo">9</div><div class="lineCode">Point dir = (B - A) / c;</div><div class="lineExpl">Unit base direction. Length <span class="inlineCode">1</span> because we divide by <span class="inlineCode">c = |B − A|</span>.</div>
+        <div class="lineNo">10</div><div class="lineCode">Point foot = A + dir * x;</div><div class="lineExpl">Slide from <span class="inlineCode">A</span> along the base to the foot of the perpendicular.</div>
+        <div class="lineNo">11</div><div class="lineCode">if (cmp(h) == 0) { found = 1; return foot; }</div><div class="lineExpl">Zero height ⇒ the two mirrors collapse to one collinear point — the foot itself.</div>
+        <div class="lineNo">12</div><div class="lineCode">Point nrm = perpCCW(dir);</div><div class="lineExpl">Left normal of the base; unit length since <span class="inlineCode">perpCCW</span> preserves magnitude.</div>
+        <div class="lineNo">13</div><div class="lineCode">found = 2; return foot + nrm * (h * side);</div><div class="lineExpl">Lift by <span class="inlineCode">h</span> on the chosen side. Validated <span class="inlineCode">side = +1</span> left, <span class="inlineCode">−1</span> right; the other sign is the mirror.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>triangleFeasible · triangleAreaHeron <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (cmp(x) &lt; 0 || …) return -1;</div><div class="lineExpl">A negative length can never be a side; reject immediately as impossible.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (cmp(x + y, z) &lt; 0) return -1; …</div><div class="lineExpl">Strict failure of any triangle inequality ⇒ impossible. Three checks, one per side.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (cmp(x + y, z) == 0) return 0; …</div><div class="lineExpl">Exact equality ⇒ degenerate (flat) triangle. Checked after the strict-failure cases.</div>
+        <div class="lineNo">4</div><div class="lineCode">return 1;</div><div class="lineExpl">All inequalities strict ⇒ a genuine triangle exists (two mirror placements).</div>
+        <div class="lineNo">5</div><div class="lineCode">T s = (a + b + c) / 2;</div><div class="lineExpl">Heron's semi-perimeter.</div>
+        <div class="lineNo">6</div><div class="lineCode">return safeSqrt(s*(s-a)*(s-b)*(s-c));</div><div class="lineExpl">Heron's area. <span class="inlineCode">safeSqrt</span> guards a slightly-negative product on a near-degenerate triangle.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Strict triangle (e.g. 3-4-5)</td><td>Two mirror vertices exist.</td><td><span class="inlineCode">found = 2</span>; flip <span class="inlineCode">side</span> for the mirror.</td></tr>
+        <tr><td>Degenerate, one side = sum of others (e.g. 1-1-2)</td><td>Circles tangent; <span class="inlineCode">h = 0</span>.</td><td><span class="inlineCode">found = 1</span>, returns the single foot point on the base.</td></tr>
+        <tr><td>Impossible, one side &gt; sum of others (e.g. 1-1-5)</td><td>Circles never meet; <span class="inlineCode">h² &lt; 0</span>.</td><td><span class="inlineCode">found = 0</span>, returned point is a placeholder.</td></tr>
+        <tr><td>Negative length supplied</td><td>Not a valid side length.</td><td><span class="inlineCode">triangleThirdPoint</span> returns <span class="inlineCode">found = 0</span> at the very first check; <span class="inlineCode">triangleFeasible</span> independently returns <span class="inlineCode">−1</span>.</td></tr>
+        <tr><td>Coincident base, <span class="inlineCode">A = B</span>, <span class="inlineCode">b = a = 0</span></td><td>All three vertices collapse to the same point.</td><td><span class="inlineCode">found = 1</span>, returns <span class="inlineCode">A</span>.</td></tr>
+        <tr><td>Coincident base, <span class="inlineCode">A = B</span>, <span class="inlineCode">b = a &gt; 0</span></td><td>The locus is a whole circle, not a unique third vertex.</td><td><span class="inlineCode">found = 0</span> — non-unique, so the construction refuses to guess.</td></tr>
+        <tr><td>Coincident base, <span class="inlineCode">A = B</span>, <span class="inlineCode">b ≠ a</span></td><td>No point is at two different distances from one location.</td><td><span class="inlineCode">found = 0</span>.</td></tr>
+        <tr><td>Apex exactly above an endpoint (right triangle, e.g. <span class="inlineCode">x = 0</span>)</td><td>Foot lands on <span class="inlineCode">A</span> (or <span class="inlineCode">B</span>).</td><td>Handled uniformly: <span class="inlineCode">x = 0</span> just means the foot equals <span class="inlineCode">A</span>; the lift still applies.</td></tr>
+        <tr><td>Near-degenerate from rounding (<span class="inlineCode">h²</span> a tiny negative)</td><td>Float error pushes a true-zero height below zero.</td><td><span class="inlineCode">cmp(h2) &lt; 0</span> uses EPS, and <span class="inlineCode">safeSqrt</span> clamps to <span class="inlineCode">0</span> — no NaN.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Returning only one solution.</b> A generic third-vertex query has two answers. Silently returning the "up" one hides the mirror; expose the <span class="inlineCode">side</span> flag (or return both) so the caller chooses.</li>
+      <li><b>P2 — Swapping which distance is <span class="inlineCode">a</span> and which is <span class="inlineCode">b</span>.</b> Here <span class="inlineCode">b = |A − C|</span> and <span class="inlineCode">a = |B − C|</span>. Swapping them mirrors the foot offset to <span class="inlineCode">c − x</span> and moves <span class="inlineCode">C</span>. Keep the "side <span class="inlineCode">a</span> is opposite vertex <span class="inlineCode">A</span>" convention.</li>
+      <li><b>P3 — Taking <span class="inlineCode">sqrt</span> of a negative radicand.</b> When the triangle is infeasible, <span class="inlineCode">h² &lt; 0</span>. Test the sign first; only then call <span class="inlineCode">safeSqrt</span>. A raw <span class="inlineCode">sqrt</span> on a negative gives NaN that silently poisons the result.</li>
+      <li><b>P4 — Forgetting the degenerate (<span class="inlineCode">h = 0</span>) case.</b> If you always lift by <span class="inlineCode">±h</span> you will "find" two coincident points and may report a phantom second triangle. Detect <span class="inlineCode">h = 0</span> and report a single solution.</li>
+      <li><b>P5 — Dividing by <span class="inlineCode">c</span> without checking <span class="inlineCode">A ≠ B</span>.</b> A coincident base gives <span class="inlineCode">c = 0</span> and a division by zero. Guard first.</li>
+      <li><b>P6 — Using raw <span class="inlineCode">&lt;</span> / <span class="inlineCode">==</span> on the feasibility tests.</b> Float sums need <span class="inlineCode">cmp</span> with EPS, or a true-degenerate triangle reads as impossible (or a true-impossible reads as degenerate) right on the boundary.</li>
+      <li><b>P7 — Not signing the lift.</b> Lifting by <span class="inlineCode">h·perpCCW(dir)</span> always lands on the left. Multiply by <span class="inlineCode">side</span> to honour a requested right-hand placement; otherwise orientation-sensitive callers get the wrong winding.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>Three side lengths — do they form a triangle?</td><td><span class="inlineCode">triangleFeasible(x, y, z)</span> → <span class="inlineCode">−1 / 0 / +1</span></td></tr>
+        <tr><td>Two vertices + two distances — where is the third?</td><td><b><span class="inlineCode">vector&lt;Point&gt; triangle3rdPoint(A, B, b, a)</span></b> (recommended)<br>or <span class="inlineCode">triangleThirdPoint(A, B, b, a, side, found)</span> (preconditioned)</td></tr>
+        <tr><td>Need the mirror vertex too.</td><td>The vector-return API already gives both as one call (size-2 result). With the preconditioned form, call again with <span class="inlineCode">−side</span> (or lift by <span class="inlineCode">−h</span>).</td></tr>
+        <tr><td>Only need the area from three sides.</td><td><span class="inlineCode">triangleAreaHeron(a, b, c)</span></td></tr>
+        <tr><td>Only need the height to the base.</td><td><span class="inlineCode">h = 2·Area / c</span>, or the <span class="inlineCode">√(b² − x²)</span> route</td></tr>
+        <tr><td>Intersecting two circles.</td><td>Same engine: treat centres as <span class="inlineCode">A, B</span> and radii as <span class="inlineCode">b, a</span> (Class 06)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Foot offset: x = (b² − a² + c²) / (2c).</span>
+      <span class="chip good">Height: h = √(b² − x²).</span>
+      <span class="chip good">Lift: C = foot + perpCCW(dir)·(h·side).</span>
+      <span class="chip warn">Feasible ⟺ h² ≥ 0 ⟺ triangle inequality.</span>
+      <span class="chip warn">h = 0 ⇒ one collinear solution.</span>
+      <span class="chip bad">Never sqrt before checking the radicand's sign.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"My triangle came out on the wrong side."</b> The lift defaults to the left normal <span class="inlineCode">perpCCW(dir)</span>. If you need the clockwise placement, pass <span class="inlineCode">side = −1</span>; do not negate the base direction, which would also move the foot.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Circle-circle intersection (the same engine)</h3>
+    <p>Two circles with centres <span class="inlineCode">A, B</span> and radii <span class="inlineCode">b, a</span> intersect exactly where a triangle with base <span class="inlineCode">AB</span> and those two side lengths has its third vertex. <b>What changes:</b> nothing in the math — the centres are <span class="inlineCode">A, B</span>, the radii are the distances. <b>Why:</b> it reuses the third-point engine verbatim. <b>When to use:</b> Class 06 / 60 builds full circle-circle intersection on top of this.</p>
+
+    <p><b>Recommended (vector-return).</b> The cleanest CP-style wrapper is a single line on top of the vector API: every possible outcome (0, 1, or 2 points) flows out as a <span class="inlineCode">vector&lt;Point&gt;</span>.</p>
+<pre><code>// Both intersection points of circles (A, rA) and (B, rB), if any.
+// Returns 0, 1, or 2 points; the "+1 side" (CCW from base) comes first.
+vector&lt;Point&gt; circleCircleIntersection(const Point&amp; A, T rA,
+                                       const Point&amp; B, T rB) {
+    return triangle3rdPoint(A, B, rA, rB);
+}</code></pre>
+
+    <p><b>Defensive count/output-parameter variant.</b> The older two-output form is still useful when you are programming defensively (or porting code that expects the <span class="inlineCode">found</span> flag).</p>
+<pre><code>// found:
+//   0 -> no finite unique output from this wrapper
+//        (none, invalid radius, or coincident circles with infinitely many intersections)
+//   1 -> tangent, single point
+//   2 -> two intersection points
+void circleCircle(const Point&amp; A, T rA, const Point&amp; B, T rB,
+                  Point&amp; P1, Point&amp; P2, int&amp; found) {
+    P1 = triangleThirdPoint(A, B, rA, rB, +1, found);   // rA = |A-C|, rB = |B-C|
+    if (found == 2) P2 = triangleThirdPoint(A, B, rA, rB, -1, found);
+    // found is 0 when this wrapper has no finite unique output,
+    // 1 for tangent, or 2 for two finite intersection points.
+}</code></pre>
+
+    <h3>16.2 — Area straight from the base and apex</h3>
+    <p>Once <span class="inlineCode">C</span> is constructed, the signed area is immediate from the cross product, no Heron needed: <span class="inlineCode">Area = ½ · cross(B − A, C − A)</span> (positive when <span class="inlineCode">C</span> is on the left). The magnitude matches <span class="inlineCode">triangleAreaHeron</span>; the sign carries the orientation.</p>
+<pre><code>T triangleSignedArea(const Point&amp; A, const Point&amp; B, const Point&amp; C) {
+    return cross(B - A, C - A) / 2;   // sign = orientation, |value| = area
+}</code></pre>
+
+    <h3>16.3 — Integer side-length feasibility without floating error</h3>
+    <p>For problems where the three side lengths are integers, decide feasibility exactly by sorting the lengths and comparing the sum of the two smaller sides against the largest side. This avoids <span class="inlineCode">sqrt</span> and avoids EPS entirely. <b>When to use:</b> direct integer side-length inputs, not squared distances.</p>
+<pre><code>// Exact feasibility from integer side lengths.
+// Returns -1 impossible, 0 degenerate, +1 strict triangle.
+int triangleFeasibleInt(long long x, long long y, long long z) {
+    if (x &lt; 0 || y &lt; 0 || z &lt; 0) return -1;
+    // sort so z is the largest; then the only inequality that can fail is x + y vs z
+    long long s[3] = {x, y, z};
+    sort(s, s + 3);
+    if (s[0] + s[1] &lt; s[2]) return -1;   // strict failure
+    if (s[0] + s[1] == s[2]) return 0;   // exact equality -> degenerate
+    return 1;
+}</code></pre>
+    <div class="callout">
+      <b>Why integers can be exact.</b> With integer side lengths, <span class="inlineCode">x + y</span> and <span class="inlineCode">z</span> are integers, so <span class="inlineCode">&lt;</span> and <span class="inlineCode">==</span> are exact — no EPS needed. If your input is squared distances, do not use this side-length template directly; compare with a squared-distance-specific method instead.
+    </div>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>Training drill — locate the third vertex of a triangle <span class="rightHint">the canonical construction pattern, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> This is a training drill for the base-and-height construction, not a full contest problem. It isolates the third-vertex computation before Class 06 uses the same engine for circle-circle intersection.</p>
+      <p><b>Story.</b> Given two vertices <span class="inlineCode">A</span> and <span class="inlineCode">B</span> and the two distances <span class="inlineCode">b = |AC|</span> and <span class="inlineCode">a = |BC|</span>, output the left-hand third vertex <span class="inlineCode">C</span>, report that the unique construction is degenerate, or report that there is no unique usable point.</p>
+      <p><b>Abstraction.</b> This is exactly <span class="inlineCode">triangleThirdPoint(A, B, b, a, +1, found)</span>, branching on <span class="inlineCode">found ∈ {0, 1, 2}</span>.</p>
+      <p><b>Why this geometry model fits.</b> The displacement of <span class="inlineCode">C</span> decomposes into a slide along the base by <span class="inlineCode">x = (b² − a² + c²)/(2c)</span> and a perpendicular lift by <span class="inlineCode">h = √(b² − x²)</span>; the sign of <span class="inlineCode">h²</span> decides feasibility (§8.3).</p>
+      <p><b>Algorithm.</b> Read <span class="inlineCode">A, B, b, a</span>; construct with <span class="inlineCode">side = +1</span>; print according to <span class="inlineCode">found</span>, where <span class="inlineCode">found = 0</span> means no unique usable point.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }
+
+Point triangleThirdPoint(const Point&amp; A, const Point&amp; B,
+                         T b, T a, int side, int&amp; found) {
+    if (cmp(a) &lt; 0 || cmp(b) &lt; 0) { found = 0; return A; }  // negative length
+    if (side != +1 &amp;&amp; side != -1) {                          // invalid side flag
+        found = 0;
+        return A;
+    }
+    T c = dist(A, B);
+    if (cmp(c) == 0) {                                       // coincident base
+        if (cmp(a) == 0 &amp;&amp; cmp(b) == 0) { found = 1; return A; }  // C = A = B
+        found = 0; return A;                                // non-unique or impossible
+    }
+    T x  = (b*b - a*a + c*c) / (2*c);
+    T h2 = b*b - x*x;
+    if (cmp(h2) &lt; 0) { found = 0; return A; }
+    T h = safeSqrt(h2);
+    Point dir  = (B - A) / c;
+    Point foot = A + dir * x;
+    if (cmp(h) == 0) { found = 1; return foot; }
+    found = 2;
+    return foot + perpCCW(dir) * (h * (T)side);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long double ax, ay, bx, by, b, a;
+    while (cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; bx &gt;&gt; by &gt;&gt; b &gt;&gt; a) {
+        int found;
+        Point C = triangleThirdPoint(Point(ax, ay), Point(bx, by),
+                                     b, a, +1, found);
+        if (found == 0) {
+            cout &lt;&lt; "NO_UNIQUE_POINT\n";
+        } else if (found == 1) {
+            cout &lt;&lt; fixed &lt;&lt; setprecision(6)
+                 &lt;&lt; "DEGENERATE " &lt;&lt; C.X &lt;&lt; ' ' &lt;&lt; C.Y &lt;&lt; '\n';
+        } else {
+            cout &lt;&lt; fixed &lt;&lt; setprecision(6)
+                 &lt;&lt; C.X &lt;&lt; ' ' &lt;&lt; C.Y &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">NO_UNIQUE_POINT</span> covers impossible distances and also non-unique cases such as <span class="inlineCode">A = B</span>, <span class="inlineCode">a = b &gt; 0</span>, where infinitely many valid points exist.</p>
+      <p><b>Pitfalls.</b> Keep <span class="inlineCode">b = |AC|</span> and <span class="inlineCode">a = |BC|</span> in that order. The only coincident-base case with a unique answer is <span class="inlineCode">A = B</span> and <span class="inlineCode">a = b = 0</span>; otherwise the base direction does not define a unique construction. As a worked check: <span class="inlineCode">A = (0,0)</span>, <span class="inlineCode">B = (4,0)</span>, <span class="inlineCode">b = 3</span>, <span class="inlineCode">a = 5</span> gives the left vertex <span class="inlineCode">(0, 3)</span>; flipping the side gives the mirror <span class="inlineCode">(0, −3)</span>.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — feasibility from three side lengths <span class="rightHint">triangle-inequality classifier, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A pattern drill for the feasibility classifier, not a standalone contest problem. It shows the impossible / degenerate / strict trichotomy that gates the construction above.</p>
+      <p><b>Story.</b> Given three side lengths, decide whether they form a strict triangle, a flat (degenerate) one, or no triangle at all.</p>
+      <p><b>Abstraction.</b> This is <span class="inlineCode">triangleFeasible(x, y, z)</span>: reject negatives and strict inequality failures (<span class="inlineCode">−1</span>), flag exact equalities as degenerate (<span class="inlineCode">0</span>), otherwise accept (<span class="inlineCode">+1</span>).</p>
+      <p><b>Why this geometry model fits.</b> Feasibility is the triangle inequality, which §8.3 shows is exactly the condition <span class="inlineCode">h² ≥ 0</span> for a real apex height. Equality is the tangent (zero-area) case.</p>
+      <p><b>Algorithm.</b> For integer inputs, sort the three lengths and compare the two smallest against the largest — exact, no <span class="inlineCode">sqrt</span>, no EPS.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// Exact feasibility from integer side lengths.
+// -1 impossible, 0 degenerate (flat), +1 strict triangle.
+int triangleFeasibleInt(long long x, long long y, long long z) {
+    if (x &lt; 0 || y &lt; 0 || z &lt; 0) return -1;
+    long long s[3] = {x, y, z};
+    sort(s, s + 3);                      // s[2] is the longest side
+    if (s[0] + s[1] &lt; s[2])  return -1;   // longest exceeds the other two
+    if (s[0] + s[1] == s[2]) return 0;    // exactly flat
+    return 1;                             // genuine triangle
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long long x, y, z;
+    while (cin &gt;&gt; x &gt;&gt; y &gt;&gt; z) {
+        int r = triangleFeasibleInt(x, y, z);
+        if      (r &lt; 0) cout &lt;&lt; "IMPOSSIBLE\n";
+        else if (r == 0) cout &lt;&lt; "DEGENERATE\n";
+        else            cout &lt;&lt; "TRIANGLE\n";
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query (sorting three elements is constant).</p>
+      <p><b>Pitfalls.</b> Use the sorted comparison so only one inequality can fail; check the strict failure <i>before</i> the equality. For real-valued lengths switch to the floating <span class="inlineCode">triangleFeasible</span> with <span class="inlineCode">cmp</span>, since the boundary needs EPS.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Two circles</b> around <span class="inlineCode">A</span> and <span class="inlineCode">B</span> meet at the third vertex.</li>
+          <li><b>Decompose</b>: slide to the foot by <span class="inlineCode">x</span>, lift by <span class="inlineCode">h</span>.</li>
+          <li><b>Foot</b>: <span class="inlineCode">x = (b² − a² + c²)/(2c)</span>.</li>
+          <li><b>Height</b>: <span class="inlineCode">h = √(b² − x²)</span>.</li>
+          <li><b>Two solutions</b>: lift left or right (mirror across <span class="inlineCode">AB</span>).</li>
+          <li><b>Area</b>: Heron, or <span class="inlineCode">½·base·h</span>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Feasible ⟺ <span class="inlineCode">h² ≥ 0</span> ⟺ triangle inequality.</li>
+          <li><span class="inlineCode">found</span>: <span class="inlineCode">0</span> no unique usable point, <span class="inlineCode">1</span> one point, <span class="inlineCode">2</span> two mirror choices.</li>
+          <li>Never <span class="inlineCode">sqrt</span> a negative radicand — test sign first.</li>
+          <li>Guard <span class="inlineCode">A ≠ B</span> before dividing by <span class="inlineCode">c</span>.</li>
+          <li>Sign the lift with <span class="inlineCode">side</span> for the right orientation.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 05 turns "two distances from two known points" into an explicit vertex, with honest reporting of zero, one, or two solutions. The same base-and-height engine drives circle-circle intersection in Class 06; the feasibility radicand and Heron identity reappear in the circle-cover and area work of Class 07 and Pick's-theorem area in Class 08.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 06 takes this construction directly into circles: intersecting two circles, intersecting a circle with a line, and finding tangents — all resting on the third-vertex engine built here.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using triangle construction in a contest solution, verify each item below. The Class 01 numeric checklist and the Class 02 orientation checklist still apply underneath.</p>
+
+    <h4>Feasibility &amp; reporting</h4>
+    <ul class="checklist">
+      <li>Side lengths screened for negativity and the triangle inequality before constructing.</li>
+      <li>The <span class="inlineCode">found</span> out-parameter is read on every call; the returned point is used only when <span class="inlineCode">found ≥ 1</span>.</li>
+      <li>The degenerate case (<span class="inlineCode">found = 1</span>, <span class="inlineCode">h = 0</span>) is handled as a single point, not a phantom pair.</li>
+      <li>The infeasible case (<span class="inlineCode">found = 0</span>) never has its placeholder point treated as a vertex.</li>
+    </ul>
+
+    <h4>Construction &amp; orientation</h4>
+    <ul class="checklist">
+      <li>Base direction divides by <span class="inlineCode">c = |A − B|</span> only after handling the coincident-base case <span class="inlineCode">A = B</span>.</li>
+      <li>The radicand <span class="inlineCode">b² − x²</span> has its sign checked with <span class="inlineCode">cmp</span> before <span class="inlineCode">safeSqrt</span>.</li>
+      <li>The lift is signed by <span class="inlineCode">side</span>, and <span class="inlineCode">orient(A, B, C) = side</span> is confirmed when two solutions exist.</li>
+      <li>The mirror solution is obtained by flipping <span class="inlineCode">side</span> (or lifting by <span class="inlineCode">−h</span>).</li>
+      <li><span class="inlineCode">side</span> is exactly <span class="inlineCode">+1</span> or <span class="inlineCode">−1</span>; invalid side flags are rejected with <span class="inlineCode">found = 0</span>.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">triangleFeasible(3,4,5) = +1</span>; <span class="inlineCode">(1,1,2) = 0</span>; <span class="inlineCode">(1,1,5) = −1</span>.</li>
+      <li><span class="inlineCode">triangleThirdPoint((0,0),(4,0), 3, 5, +1)</span> = <span class="inlineCode">(0, 3)</span>, <span class="inlineCode">found = 2</span>; the <span class="inlineCode">−1</span> side gives <span class="inlineCode">(0, −3)</span>.</li>
+      <li>Equilateral side 2: <span class="inlineCode">triangleThirdPoint((0,0),(2,0), 2, 2, +1)</span> = <span class="inlineCode">(1, √3) ≈ (1, 1.7321)</span>.</li>
+      <li>Degenerate base 4, <span class="inlineCode">b = 1</span>, <span class="inlineCode">a = 3</span>: returns <span class="inlineCode">(1, 0)</span>, <span class="inlineCode">found = 1</span>.</li>
+      <li>Impossible <span class="inlineCode">b = a = 1</span> on base 4: <span class="inlineCode">found = 0</span>.</li>
+      <li><span class="inlineCode">triangleThirdPoint((0,0),(0,0), 0, 0, +1)</span> returns <span class="inlineCode">(0,0)</span>, <span class="inlineCode">found = 1</span>.</li>
+      <li><span class="inlineCode">triangleThirdPoint((0,0),(4,0), 3, 5, 0)</span> returns <span class="inlineCode">found = 0</span> because <span class="inlineCode">side = 0</span> is invalid.</li>
+      <li><span class="inlineCode">triangleThirdPoint((0,0),(4,0), 3, 5, 2)</span> returns <span class="inlineCode">found = 0</span> because <span class="inlineCode">side = 2</span> is invalid.</li>
+      <li><span class="inlineCode">triangleAreaHeron(3,4,5) = 6</span>, matching <span class="inlineCode">½·4·3 = 6</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 05</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Triangle construction · The base-and-height engine the circle classes build on.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Euler Path · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+    --white:#e5e7eb; --gray:#fbbf24; --black:#34d399;
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+    --white:#334155; --gray:#fbbf24; --black:#10b981;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:26px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  svg.graphsvg{width:100%;height:470px;border-radius:16px;background:rgba(0,0,0,0);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:700;overflow-x:auto;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .tooltip{position:fixed;pointer-events:none;background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:10px 12px;font-weight:900;font-size:20px;box-shadow:var(--shadow);transform:translate(12px,12px);opacity:0;transition:opacity .08s ease;z-index:50;max-width:520px;}
+  .tooltip.show{opacity:1}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .stackBox,.orderBox,.logBox{min-height:70px;}
+  .stackItem,.orderItem,.colorKey,.legendItem{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;border-radius:12px;padding:0 14px;border:2px solid var(--border);background:var(--panel);font-weight:950;margin:4px 6px 4px 0;}
+  .stackItem.top{background:var(--hl-edge);border-color:var(--warn);color:var(--warn);}
+  .orderItem{background:var(--hl-cell);border-color:var(--good);color:var(--good);}
+  .nodeCircle{transition:all .25s ease;cursor:pointer;}
+  .edgeLine{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;font-size:24px;pointer-events:none;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:20px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:8px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  .swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .sw-white{background:var(--white)} .sw-gray{background:var(--gray)} .sw-black{background:var(--black)}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  /* Euler-specific */
+  .edgeUsed{stroke:#b91c1c !important; stroke-width:7 !important;}
+  .edgeCurrent{stroke:#b45309 !important; stroke-width:10 !important;}
+  .edgeUnused{stroke:var(--border);}
+  .ansBox{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:10px;background:var(--panel2);border:3px solid var(--border);border-radius:16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .ansItem{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 10px;border-radius:10px;font-weight:950;font-size:18px;border:2px solid var(--good);background:rgba(15,118,110,.12);color:var(--good);}
+  .degreeChecker{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .degreeRow{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;background:var(--panel2);border:2px solid var(--border);font-size:20px;font-weight:900;}
+  .degreeVal{min-width:36px;text-align:center;font-family:ui-monospace,monospace;font-size:22px;font-weight:950;color:var(--accent2);}
+  .degreeOdd{color:var(--bad) !important;}
+  .degreeEven{color:var(--good) !important;}
+  .eulResult{padding:14px 18px;border-radius:16px;font-weight:950;font-size:24px;margin-top:14px;text-align:center;}
+  .eulResult.ok{background:rgba(15,118,110,.12);border:3px solid rgba(15,118,110,.35);color:var(--good);}
+  .eulResult.warn{background:rgba(180,83,9,.12);border:3px solid rgba(180,83,9,.35);color:var(--warn);}
+  .eulResult.bad{background:rgba(185,28,28,.12);border:3px solid rgba(185,28,28,.35);color:var(--bad);}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:6px;padding:2px 4px;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">Euler Path</div>
+    <div class="t2">Euler Tour · Hierholzer</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#intro" id="nav-intro">🧩 What is Euler Path?<small>Definition &amp; examples</small></a>
+  <a href="#conditions" id="nav-conditions">✅ Existence Conditions<small>Undirected &amp; directed</small></a>
+  <div class="sub">
+    <a href="#deg-checker">Interactive Degree Checker</a>
+  </div>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#hierholzer" id="nav-hierholzer">⚙️ Hierholzer's Algorithm<small>Step-by-step trace</small></a>
+  <div class="sub">
+    <a href="#trace-simple">Simple circuit trace</a>
+    <a href="#trace-two-squares">Two-squares trace</a>
+    <a href="#trace-directed">Directed path trace</a>
+  </div>
+  <div class="groupTitle">Data Structure</div>
+  <a href="#forward-star" id="nav-fstar">🌟 Forward-Star<small>Why it's perfect for Euler</small></a>
+  <a href="#ref-trick" id="nav-ref">🎩 The &amp; Trick<small>Reference magic</small></a>
+  <div class="groupTitle">Templates</div>
+  <a href="#template-undirected" id="nav-tund">📄 Undirected Template<small>Full C++ code</small></a>
+  <a href="#template-directed" id="nav-tdir">📄 Directed Template<small>Full C++ code</small></a>
+  <div class="groupTitle">Applications</div>
+  <a href="#apps" id="nav-apps">🚀 Applications<small>Yosupo · Word Chain</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Pitfalls &amp; Tips<small>Common mistakes</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(E) analysis</small></a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy · Euler Path<br/>Forward-Star Template Series</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🎓</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy</div>
+        <h1>Euler Path &amp; Euler Tour</h1>
+        <div class="subtitle">Hierholzer's Algorithm · Forward-Star · &amp; Trick · Full Templates</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- SECTION 1: INTRO -->
+  <section class="card" id="intro">
+    <h2>🧩 What is an Euler Path?</h2>
+    <p>Given a graph, we want a <b>walk that uses every edge exactly once</b>. We may visit the same vertex many times, but each edge is traversed at most once.</p>
+    <div class="chips">
+      <span class="chip">Euler Path / Trail — uses every edge once, start ≠ end</span>
+      <span class="chip good">Euler Circuit / Tour — uses every edge once, start = end</span>
+    </div>
+    <div class="grid2" style="margin-top:18px;">
+      <div class="statusPanel">
+        <h3>Example 1 — Euler Circuit</h3>
+        <pre style="font-size:19px;"><code>A ---- B
+|      |
+|      |
+D ---- C
+
+Walk: A → B → C → D → A
+All edges used once. Returns to start. ✓</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>Example 2 — Euler Path</h3>
+        <pre style="font-size:19px;"><code>A ---- B ---- C
+
+Walk: A → B → C
+All edges used once.
+Start ≠ End. ✓</code></pre>
+      </div>
+    </div>
+    <p style="margin-top:14px;" class="note">The key difference: a circuit starts and ends at the same vertex. A path does not.</p>
+  </section>
+
+  <!-- SECTION 2: CONDITIONS -->
+  <section class="card" id="conditions">
+    <h2>✅ Existence Conditions</h2>
+
+    <h3>Undirected Graph</h3>
+    <p>Each edge contributes <b>1</b> to the degree of each endpoint. The condition is purely about parity:</p>
+    <table>
+      <thead><tr><th>Odd-degree vertices</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><span class="chip good">Euler Circuit exists</span></td></tr>
+        <tr><td>2</td><td><span class="chip warn">Euler Path exists (those 2 are start/end)</span></td></tr>
+        <tr><td>Any other count</td><td><span class="chip bad">Impossible</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;"><b>Why?</b> Every time you enter a middle vertex you must leave it — edges consumed in pairs (in + out), so middle vertices must have even degree. Only start/end can be odd.</p>
+    <p class="note">Also: all vertices with nonzero degree must be in <b>one connected component</b>.</p>
+
+    <h3>Directed Graph</h3>
+    <p>We track <code class="inlineCode">degDif[u] = outDeg[u] − inDeg[u]</code>:</p>
+    <table>
+      <thead><tr><th>Condition</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>All vertices: outDeg = inDeg</td><td><span class="chip good">Euler Circuit</span></td></tr>
+        <tr><td>Exactly one vertex with out−in=+1 (start) and one with in−out=+1 (end), rest balanced</td><td><span class="chip warn">Euler Path</span></td></tr>
+        <tr><td>Anything else</td><td><span class="chip bad">Impossible</span></td></tr>
+      </tbody>
+    </table>
+
+    <!-- INTERACTIVE DEGREE CHECKER -->
+    <h3 id="deg-checker">🔬 Interactive Degree Checker</h3>
+    <p class="note">Click edges to toggle them on/off. The checker updates degree counts and tells you if an Euler path or circuit exists.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Degree Condition Checker</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="dcResetBtn">Reset</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+          <svg id="dcSvg" viewBox="0 0 600 360" style="width:100%;max-height:360px;border-radius:14px;background:rgba(0,0,0,0);display:block;"></svg>
+        </div>
+        <div style="flex:0 0 220px;min-width:180px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:8px;">Node Degrees</div>
+          <div id="dcDegrees" class="dsBox" style="font-size:19px;line-height:2;"></div>
+          <div id="dcResult" class="eulResult ok" style="margin-top:12px;">Click edges to modify graph</div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Edge ON</span>
+        <span><span class="swatch" style="background:#d6d9e6;"></span> Edge OFF</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Even degree</span>
+        <span><span class="swatch" style="background:var(--bad);"></span> Odd degree</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: HIERHOLZER -->
+  <section class="card" id="hierholzer">
+    <h2>⚙️ Hierholzer's Algorithm</h2>
+    <p><b>Main idea:</b> Start from a valid start node. Keep following unused edges. When stuck, backtrack. Save edges on the way back. Answer is built in reverse.</p>
+    <div class="statusPanel" style="margin:14px 0;">
+      <h3>Pseudocode</h3>
+      <pre><code>euler(u):
+    while u has unused edges:
+        take one edge u → v
+        mark edge as used
+        euler(v)
+        add this edge to ans[]   ← saved on return
+reverse(ans)</code></pre>
+    </div>
+    <p class="note">Every edge is processed exactly once → <b>O(E)</b> time.</p>
+
+    <!-- TRACE 1: SIMPLE CIRCUIT -->
+    <h3 id="trace-simple">Trace 1 — Simple Euler Circuit (Square A-B-C-D)</h3>
+    <p class="note">A square graph. All degrees = 2. Euler circuit exists. Watch how edges are consumed and saved in reverse.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Undirected Circuit Tracer — Square</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="sq1ResetBtn">Reset</button>
+          <button class="miniBtn" id="sq1NextBtn">Next Step</button>
+          <button class="miniBtn" id="sq1AutoBtn">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+          <svg id="sq1Svg" viewBox="0 0 600 380" style="width:100%;max-height:380px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 240px;min-width:180px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Call Stack</div>
+          <div id="sq1Stack" class="dsBox stackBox" style="font-size:19px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Answer (reversed)</div>
+          <div id="sq1Ans" class="ansBox"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Status</div>
+          <div id="sq1Status" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Current node</span>
+        <span><span class="swatch" style="background:#b45309;"></span> Edge being taken</span>
+        <span><span class="swatch" style="background:#b91c1c;"></span> Used edge</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Tour complete</span>
+      </div>
+      <div id="sq1StepLabel" style="text-align:center;font-weight:900;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <!-- TRACE 2: TWO SQUARES -->
+    <h3 id="trace-two-squares">Trace 2 — Two Squares Sharing Vertex X</h3>
+    <p class="note">This graph is two cycles joined at vertex X. Hierholzer naturally merges them. Watch how it walks one cycle, returns to X, then walks the other.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Two-Squares Euler Tour Tracer</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="ts1ResetBtn">Reset</button>
+          <button class="miniBtn" id="ts1NextBtn">Next Step</button>
+          <button class="miniBtn" id="ts1AutoBtn">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+          <svg id="ts1Svg" viewBox="0 0 700 400" style="width:100%;max-height:400px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 240px;min-width:180px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Call Stack</div>
+          <div id="ts1Stack" class="dsBox stackBox" style="font-size:19px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Answer (built in reverse)</div>
+          <div id="ts1Ans" class="ansBox"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Status</div>
+          <div id="ts1Status" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Current node</span>
+        <span><span class="swatch" style="background:#b45309;"></span> Active edge</span>
+        <span><span class="swatch" style="background:#b91c1c;"></span> Used edge</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Done</span>
+      </div>
+      <div id="ts1StepLabel" style="text-align:center;font-weight:900;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <!-- TRACE 3: DIRECTED -->
+    <h3 id="trace-directed">Trace 3 — Directed Euler Path</h3>
+    <p class="note">A directed graph with exactly one start (out−in=+1) and one end (in−out=+1). All other nodes balanced.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Directed Euler Path Tracer</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="dir1ResetBtn">Reset</button>
+          <button class="miniBtn" id="dir1NextBtn">Next Step</button>
+          <button class="miniBtn" id="dir1AutoBtn">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+          <svg id="dir1Svg" viewBox="0 0 660 380" style="width:100%;max-height:380px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 240px;min-width:180px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Call Stack</div>
+          <div id="dir1Stack" class="dsBox stackBox" style="font-size:19px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Answer (built in reverse)</div>
+          <div id="dir1Ans" class="ansBox"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Status</div>
+          <div id="dir1Status" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Current node</span>
+        <span><span class="swatch" style="background:#b45309;"></span> Active edge</span>
+        <span><span class="swatch" style="background:#b91c1c;"></span> Used edge</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Start (out−in=+1)</span>
+        <span><span class="swatch" style="background:#7c3aed;"></span> End (in−out=+1)</span>
+      </div>
+      <div id="dir1StepLabel" style="text-align:center;font-weight:900;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: FORWARD STAR -->
+  <section class="card" id="forward-star">
+    <h2>🌟 Forward-Star Data Structure</h2>
+    <p>We represent edges with three flat arrays:</p>
+    <div class="statusPanel">
+      <pre style="font-size:20px;"><code>head[u]  = first edge leaving u     (or -1 if none)
+to[e]    = destination of edge e
+nxt[e]   = next edge in same start-vertex list</code></pre>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3>Why it's perfect for Euler</h3>
+        <p>Euler only needs: <b>take the current edge, then advance to next</b>. It does NOT need random erase, sorted access, or balanced BST operations.</p>
+        <p>Forward-star delivers all of this in <b>O(1) per edge</b> with minimal memory overhead.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>addEdge in code</h3>
+        <pre style="font-size:19px;"><code>void addEdge(int u, int v) {
+    to[ne]  = v;
+    nxt[ne] = head[u];
+    head[u] = ne++;
+}</code></pre>
+        <p class="note">New edge is always inserted at the front of u's list.</p>
+      </div>
+    </div>
+
+    <!-- Forward-star animation -->
+    <h3>Interactive Forward-Star Builder</h3>
+    <p class="note">Watch the arrays update as edges are added one by one.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Forward-Star Arrays</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="fsResetBtn">Reset</button>
+          <button class="miniBtn" id="fsNextBtn">Add Edge</button>
+        </div>
+      </div>
+      <div id="fsDisplay" class="dsBox" style="font-size:19px;line-height:2;min-height:120px;"></div>
+      <div id="fsStatus" class="statusPanel" style="margin-top:10px;font-size:20px;"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: & TRICK -->
+  <section class="card" id="ref-trick">
+    <h2>🎩 The &amp; Reference Trick</h2>
+    <p>This single line is the heart of the Euler implementation:</p>
+    <pre><code>for (int v, <span class="hlCode">&amp;e = head[u]</span>; ~e; ) {
+    int ee = e;
+    e = nxt[e];   // ← this MODIFIES head[u] directly!
+    ...
+}</code></pre>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3>With <code>&amp;e</code> (reference)</h3>
+        <pre style="font-size:19px;"><code>int &amp;e = head[u];
+// e IS head[u]
+e = nxt[e];
+// head[u] now points to
+// the NEXT edge — edge
+// 17 is consumed forever!</code></pre>
+        <div class="chips" style="margin-top:8px;"><span class="chip good">✓ Edge consumed correctly</span></div>
+      </div>
+      <div class="statusPanel">
+        <h3>Without <code>&amp;e</code> (copy)</h3>
+        <pre style="font-size:19px;"><code>int e = head[u];
+// e is a COPY of head[u]
+e = nxt[e];
+// head[u] is UNCHANGED —
+// edge 17 still there
+// when recursion returns!</code></pre>
+        <div class="chips" style="margin-top:8px;"><span class="chip bad">✗ Infinite loop / wrong answer</span></div>
+      </div>
+    </div>
+    <div class="statusPanel" style="margin-top:14px;background:linear-gradient(180deg,rgba(251,191,36,.10),rgba(0,0,0,0));border-color:rgba(180,83,9,.35);">
+      <h3>Why this makes the code O(E)</h3>
+      <p>Each time we advance the loop, we permanently update <code class="inlineCode">head[u]</code>. So even after deep recursion returns to <code>u</code>, the already-processed edge is gone. We never revisit it. This is what gives us the clean O(E) complexity.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 6: TEMPLATES -->
+  <section class="card" id="template-undirected">
+    <h2>📄 Master Template — Undirected Euler</h2>
+    <div class="chips">
+      <span class="chip good">vis[ee] = vis[ee^1] = vid</span>
+      <span class="chip warn">ans[i]/2 = original edge index</span>
+      <span class="chip">O(E) time</span>
+    </div>
+    <details open>
+      <summary>Full C++ Template — Undirected <span class="rightHint">click to expand/collapse</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 200000 + 5;
+const int M = 400000 + 5;  // M*2 for bidirectional
+int head[N], to[M*2], nxt[M*2], ne, n;
+
+void init() {
+    memset(head, -1, n * sizeof head[0]);
+    ne = 0;
+}
+
+void addEdge(int u, int v) {
+    to[ne] = v; nxt[ne] = head[u]; head[u] = ne++;
+}
+void addBiEdge(int u, int v) {
+    addEdge(u, v); addEdge(v, u);
+}
+
+int degArr[N];
+int vis[M*2];
+int ans[M*2], sz;
+int vid = 1;
+
+void euler(int u) {
+    for (int v, &amp;e = head[u]; ~e; ) {
+        int ee = e;
+        e = nxt[e];
+        if (vis[ee] == vid) continue;  // ← already used
+        vis[ee] = vis[ee ^ 1] = vid;   // ← mark both directions
+        v = to[ee];
+        euler(v);
+        ans[sz++] = ee;                // ← save on return
+    }
+}
+
+// Returns true if Euler path/circuit exists.
+// Sets st = valid start node.
+bool buildEulerUndirected(int &amp;st, int m) {
+    int odd = 0;
+    st = -1;
+    for (int i = 0; i &lt; n; i++) {
+        if (degArr[i] &amp; 1) { odd++; st = i; }
+        if (degArr[i] &gt; 0 &amp;&amp; st == -1) st = i;
+    }
+    if (!(odd == 0 || odd == 2)) return false;
+    if (st == -1) { sz = 0; return true; }
+    sz = 0; ++vid;
+    euler(st);
+    if (sz != m) return false;   // ← disconnected check
+    reverse(ans, ans + sz);
+    return true;
+}
+
+// Usage:
+// addBiEdge(u, v); degArr[u]++; degArr[v]++;
+// int st;
+// bool ok = buildEulerUndirected(st, m);
+// vertex sequence: st, to[ans[0]], to[ans[1]], ...
+// original edge:   ans[i] / 2</code></pre>
+      </div>
+    </details>
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Key points</h3>
+      <p>• <code class="inlineCode">ee ^ 1</code> — because edges are added in pairs (0,1), (2,3)... XOR flips the last bit, giving you the reverse direction of the same physical edge.</p>
+      <p>• <code class="inlineCode">vis[ee] == vid</code> — we use a generation counter so we don't need to reset the vis array between test cases.</p>
+      <p>• <code class="inlineCode">sz != m</code> after euler — catches the disconnected graph case.</p>
+      <p>• <code class="inlineCode">reverse(ans, ans+sz)</code> — because edges are saved on return (deepest first), we reverse to get traversal order.</p>
+    </div>
+  </section>
+
+  <section class="card" id="template-directed">
+    <h2>📄 Master Template — Directed Euler</h2>
+    <div class="chips">
+      <span class="chip good">No vis array needed</span>
+      <span class="chip warn">degDif[u] = outDeg[u] − inDeg[u]</span>
+      <span class="chip">O(E) time</span>
+    </div>
+    <details open>
+      <summary>Full C++ Template — Directed <span class="rightHint">click to expand/collapse</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 200000 + 5;
+const int M = 200000 + 5;
+int head[N], to[M], nxt[M], ne, n;
+
+void init() {
+    memset(head, -1, n * sizeof head[0]);
+    ne = 0;
+}
+void addEdge(int u, int v) {
+    to[ne] = v; nxt[ne] = head[u]; head[u] = ne++;
+}
+
+int inDeg[N], outDeg[N];
+int ans[M], sz;
+
+void euler(int u) {
+    for (int v, &amp;e = head[u]; ~e; ) {
+        int ee = e;
+        e = nxt[e];   // consume edge immediately via reference
+        v = to[ee];
+        euler(v);
+        ans[sz++] = ee;
+    }
+}
+
+// Returns true if Euler path/circuit exists.
+// Sets st = valid start node.
+bool buildEulerDirected(int &amp;st, int m) {
+    int plus1 = 0, minus1 = 0;
+    st = -1;
+    for (int i = 0; i &lt; n; i++) {
+        int diff = outDeg[i] - inDeg[i];
+        if (diff == 1)       { plus1++; st = i; }
+        else if (diff == -1) { minus1++; }
+        else if (diff != 0)  { return false; }
+        if (outDeg[i] &gt; 0 &amp;&amp; st == -1) st = i;
+    }
+    if (!((plus1==0 &amp;&amp; minus1==0) || (plus1==1 &amp;&amp; minus1==1)))
+        return false;
+    if (st == -1) { sz = 0; return true; }
+    sz = 0;
+    euler(st);
+    if (sz != m) return false;
+    reverse(ans, ans + sz);
+    return true;
+}
+
+// Usage:
+// addEdge(u, v); outDeg[u]++; inDeg[v]++;
+// int st;
+// bool ok = buildEulerDirected(st, m);
+// vertex sequence: st, to[ans[0]], to[ans[1]], ...
+// edge sequence:   ans[i]</code></pre>
+      </div>
+    </details>
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Why no vis[] needed in directed version?</h3>
+      <p>In directed graphs, each edge has exactly one direction. The <code class="inlineCode">&amp;e = head[u]</code> reference trick already consumes the edge by advancing <code>head[u]</code>. Since we never revisit edges (forward-star only moves forward), no visited array is necessary.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 7: APPLICATIONS -->
+  <section class="card" id="apps">
+    <h2>🚀 Applications</h2>
+
+    <h3>9.1 Yosupo — Eulerian Trail Undirected</h3>
+    <p><a href="https://judge.yosupo.jp/problem/eulerian_trail_undirected" target="_blank">judge.yosupo.jp/problem/eulerian_trail_undirected</a></p>
+    <details>
+      <summary>Full Solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int N=200005, M=200005;
+int head[N],to[M*2],nxt[M*2],ne,n;
+void init(){memset(head,-1,n*sizeof head[0]);ne=0;}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void addBiEdge(int u,int v){addEdge(u,v);addEdge(v,u);}
+int degArr[N],vis[M*2],vid=1,ans[M*2],sz;
+void euler(int u){
+    for(int v,&amp;e=head[u];~e;){
+        int ee=e; e=nxt[e];
+        if(vis[ee]==vid)continue;
+        vis[ee]=vis[ee^1]=vid;
+        v=to[ee]; euler(v); ans[sz++]=ee;
+    }
+}
+bool buildEuler(int &amp;st,int m){
+    int odd=0; st=-1;
+    for(int i=0;i&lt;n;i++){
+        if(degArr[i]&amp;1){odd++;st=i;}
+        if(degArr[i]&gt;0&amp;&amp;st==-1)st=i;
+    }
+    if(!(odd==0||odd==2))return false;
+    if(st==-1){sz=0;return true;}
+    sz=0;++vid;euler(st);
+    if(sz!=m)return false;
+    reverse(ans,ans+sz);return true;
+}
+int main(){
+    int t; scanf("%d",&amp;t);
+    while(t--){
+        int m; scanf("%d%d",&amp;n,&amp;m);
+        init(); memset(degArr,0,n*sizeof degArr[0]);
+        for(int i=0;i&lt;m;i++){
+            int u,v; scanf("%d%d",&amp;u,&amp;v);
+            addBiEdge(u,v); degArr[u]++; degArr[v]++;
+        }
+        int st;
+        if(!buildEuler(st,m)){puts("No");continue;}
+        puts("Yes");
+        printf("%d",st);
+        for(int i=0;i&lt;sz;i++) printf(" %d",to[ans[i]]);
+        puts("");
+        for(int i=0;i&lt;sz;i++)
+            printf("%d%s",ans[i]/2,i+1==sz?"\n":" ");
+    }
+}</code></pre>
+      </div>
+    </details>
+    <div class="chips" style="margin:8px 0 0;">
+      <span class="chip good">ans[i]/2 = original edge id</span>
+      <span class="chip">vis[ee^1] marks reverse direction</span>
+    </div>
+
+    <h3 style="margin-top:22px;">9.2 Yosupo — Eulerian Trail Directed</h3>
+    <p><a href="https://judge.yosupo.jp/problem/eulerian_trail_directed" target="_blank">judge.yosupo.jp/problem/eulerian_trail_directed</a></p>
+    <details>
+      <summary>Full Solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int N=200005, M=200005;
+int head[N],to[M],nxt[M],ne,n;
+void init(){memset(head,-1,n*sizeof head[0]);ne=0;}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+int inDeg[N],outDeg[N],ans[M],sz;
+void euler(int u){
+    for(int v,&amp;e=head[u];~e;){
+        int ee=e; e=nxt[e];
+        v=to[ee]; euler(v); ans[sz++]=ee;
+    }
+}
+bool buildEuler(int &amp;st,int m){
+    int plus1=0,minus1=0; st=-1;
+    for(int i=0;i&lt;n;i++){
+        int d=outDeg[i]-inDeg[i];
+        if(d==1){plus1++;st=i;}
+        else if(d==-1)minus1++;
+        else if(d!=0)return false;
+        if(outDeg[i]&gt;0&amp;&amp;st==-1)st=i;
+    }
+    if(!((plus1==0&amp;&amp;minus1==0)||(plus1==1&amp;&amp;minus1==1)))return false;
+    if(st==-1){sz=0;return true;}
+    sz=0; euler(st);
+    if(sz!=m)return false;
+    reverse(ans,ans+sz); return true;
+}
+int main(){
+    int t; scanf("%d",&amp;t);
+    while(t--){
+        int m; scanf("%d%d",&amp;n,&amp;m);
+        init(); memset(inDeg,0,n*sizeof inDeg[0]); memset(outDeg,0,n*sizeof outDeg[0]);
+        for(int i=0;i&lt;m;i++){
+            int u,v; scanf("%d%d",&amp;u,&amp;v);
+            addEdge(u,v); outDeg[u]++; inDeg[v]++;
+        }
+        int st;
+        if(!buildEuler(st,m)){puts("No");continue;}
+        puts("Yes");
+        printf("%d",st);
+        for(int i=0;i&lt;sz;i++) printf(" %d",to[ans[i]]);
+        puts("");
+        for(int i=0;i&lt;sz;i++)
+            printf("%d%s",ans[i],i+1==sz?"\n":" ");
+    }
+}</code></pre>
+      </div>
+    </details>
+
+    <h3 style="margin-top:22px;">9.3 Word Chain — Lexicographic Order (Catenyms-style)</h3>
+    <p>Each word becomes a <b>directed edge</b> from <code class="inlineCode">word[0]</code> to <code class="inlineCode">word[last]</code>. An Euler path gives the valid word chain order.</p>
+    <div class="statusPanel" style="margin:10px 0;">
+      <h3>Lexicographic Trick</h3>
+      <p>Forward-star inserts at the front. To get lexicographic traversal order (a, b, c), insert in reverse (c, b, a):</p>
+      <pre style="font-size:19px;"><code>sort(idx, idx+m, [](int a, int b){
+    return strcmp(words[a], words[b]) &lt; 0;
+});
+// Insert in REVERSE sorted order:
+for (int k = m-1; k &gt;= 0; k--) {
+    int i = idx[k];
+    addEdge(words[i][0], words[i][last]);
+}
+// Recover original word from edge id:
+int originalWordIdx = idx[m - 1 - internalEdgeId];</code></pre>
+    </div>
+    <details>
+      <summary>Full Word Chain Solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int N=128, M=1005;
+int head[N],to[M],nxt[M],ne,n=128;
+char words[M][25]; int idx[M],lenArr[M];
+void init(){memset(head,-1,sizeof head);ne=0;}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+int inDeg[N],outDeg[N],ans[M],sz;
+void euler(int u){
+    for(int v,&amp;e=head[u];~e;){
+        int ee=e;e=nxt[e];v=to[ee];euler(v);ans[sz++]=ee;
+    }
+}
+bool buildEuler(int &amp;st,int m){
+    int p=0,q=0;st=-1;
+    for(int i=0;i&lt;n;i++){
+        int d=outDeg[i]-inDeg[i];
+        if(d==1){p++;st=i;}
+        else if(d==-1)q++;
+        else if(d!=0)return false;
+        if(outDeg[i]&gt;0&amp;&amp;st==-1)st=i;
+    }
+    if(!((p==0&amp;&amp;q==0)||(p==1&amp;&amp;q==1)))return false;
+    if(st==-1){sz=0;return true;}
+    sz=0;euler(st);
+    if(sz!=m)return false;
+    reverse(ans,ans+sz);return true;
+}
+int main(){
+    int t; cin&gt;&gt;t;
+    while(t--){
+        int m; cin&gt;&gt;m;
+        for(int i=0;i&lt;m;i++){
+            cin&gt;&gt;words[i]; idx[i]=i; lenArr[i]=strlen(words[i]);
+        }
+        sort(idx,idx+m,[](int a,int b){return strcmp(words[a],words[b])&lt;0;});
+        init(); memset(inDeg,0,sizeof inDeg); memset(outDeg,0,sizeof outDeg);
+        for(int k=m-1;k&gt;=0;k--){
+            int i=idx[k];
+            int u=words[i][0], v=words[i][lenArr[i]-1];
+            addEdge(u,v); outDeg[u]++; inDeg[v]++;
+        }
+        int st;
+        if(!buildEuler(st,m)){cout&lt;&lt;"***\n";continue;}
+        for(int i=0;i&lt;m;i++){
+            int orig=idx[m-1-ans[i]];
+            cout&lt;&lt;words[orig]&lt;&lt;".\n"[i+1==m];
+        }
+    }
+}</code></pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- SECTION 8: PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Pitfalls &amp; Contest Tips</h2>
+    <table>
+      <thead><tr><th>Pitfall</th><th>Why it happens</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Forgetting to check connectivity</td><td>Degree conditions pass but graph is disconnected</td><td>After euler(), check <code>sz == m</code></td></tr>
+        <tr><td>Not reversing <code>ans[]</code></td><td>Edges are saved deepest-first (post-order)</td><td>Always call <code>reverse(ans, ans+sz)</code></td></tr>
+        <tr><td>Missing <code>&amp;</code> in <code>&amp;e = head[u]</code></td><td>Edge not consumed → infinite recursion</td><td>Must be <code>int &amp;e = head[u]</code></td></tr>
+        <tr><td>Undirected: no <code>vis[ee^1]</code></td><td>Reverse direction re-traversed</td><td><code>vis[ee] = vis[ee^1] = vid</code></td></tr>
+        <tr><td>Wrong start node</td><td>Circuit started at odd-degree node</td><td>Pick an odd-degree node for path; any node with edges for circuit</td></tr>
+        <tr><td>Word chain: forgetting reverse insertion</td><td>Forward-star inserts at front, reversing order</td><td>Sort ascending, insert from back to front</td></tr>
+        <tr><td>Forgetting <code>ans[i]/2</code> for undirected edges</td><td>Internal ids are doubled (bidirectional storage)</td><td>Original edge = <code>ans[i] / 2</code></td></tr>
+        <tr><td>Stack overflow on large graphs</td><td>Recursive euler() with huge input</td><td>Convert to iterative using explicit stack if needed</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 9: COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity</h2>
+    <div class="grid2">
+      <div class="statusPanel">
+        <h3>Time — O(E)</h3>
+        <p>Each edge is processed exactly once. The <code class="inlineCode">&amp;e = head[u]</code> trick ensures we never revisit. Total work is proportional to the number of edges.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Space — O(N + E)</h3>
+        <p><code>head[]</code>, <code>to[]</code>, <code>nxt[]</code>, <code>vis[]</code>, <code>ans[]</code> are all linear. Recursion depth is at most O(E) in the worst case (long chain).</p>
+      </div>
+    </div>
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Golden CP Recipe</h3>
+      <ol style="font-size:22px;line-height:2;margin:8px 0 0 18px;">
+        <li>Build graph with forward-star (<code>addEdge / addBiEdge</code>)</li>
+        <li>Check Euler existence conditions (degree parity / in-out balance)</li>
+        <li>Pick correct start node (odd-degree / out−in=+1 / any with edges)</li>
+        <li>Run recursive <code>euler(start)</code></li>
+        <li>Check <code>sz == m</code> for connectivity</li>
+        <li>Reverse <code>ans[]</code></li>
+        <li>Recover vertices / original edges / words as needed</li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="tooltip" id="tooltip"></div>
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Euler Path · Forward-Star Template Series</div>
+    <div class="footer-copy">Hierholzer's Algorithm · O(E) · Forward-Star + &amp; Trick</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+function make(tag,attrs={},html=''){
+  const el=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  if(html)el.innerHTML=html;
+  return el;
+}
+function makeSVG(tag,attrs={}){
+  const el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+function getVar(name){return getComputedStyle(document.body).getPropertyValue(name).trim();}
+
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+const saved=localStorage.getItem('euler_theme');
+if(saved)document.body.setAttribute('data-theme',saved);
+$('#themeSwitch').onclick=()=>{
+  const next=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.body.setAttribute('data-theme',next);
+  localStorage.setItem('euler_theme',next);
+};
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+const sidebarToggle=$('#sidebarToggle');
+const sidebar=$('#sidebar');
+const appEl=$('#app');
+const overlay=$('#sidebarOverlay');
+let sidebarOpen=true;
+function setSidebar(open){
+  sidebarOpen=open;
+  if(open){
+    sidebar.classList.remove('collapsed');
+    sidebarToggle.classList.add('open');
+    overlay.classList.remove('show');
+    appEl.classList.remove('sidebar-hidden');
+  } else {
+    appEl.classList.add('sidebar-hidden');
+    sidebar.classList.add('collapsed');
+    sidebarToggle.classList.remove('open');
+  }
+}
+sidebarToggle.onclick=()=>{
+  if(sidebarOpen){ setSidebar(false); }
+  else { setSidebar(true); if(window.innerWidth<=1400){ sidebar.classList.remove('collapsed'); overlay.classList.add('show'); } }
+};
+overlay.onclick=()=>{ sidebar.classList.add('collapsed'); overlay.classList.remove('show'); };
+if(window.innerWidth<=1400){ setSidebar(false); }
+
+// ============================================================
+// SCROLL NAV HIGHLIGHT
+// ============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<180) cur=s.id; });
+  navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+$('.content').addEventListener('scroll',updateNav);
+
+// ============================================================
+// DC — DEGREE CONDITION CHECKER
+// ============================================================
+(function(){
+  // 6 nodes arranged in a hexagon, with a bunch of potential edges
+  const N=6;
+  const labels=['A','B','C','D','E','F'];
+  const cx=300, cy=180, r=130;
+  const pos=labels.map((_,i)=>{
+    const a= -Math.PI/2 + (2*Math.PI*i/N);
+    return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+  });
+  // All possible edges
+  const allEdges=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,3],[1,4],[2,5]];
+  let active=new Array(allEdges.length).fill(false);
+  // Start with a square (edges 0,1,2,3 = A-B-C-D-A... plus E,F for interest)
+  [0,1,2,3,6,7].forEach(i=>active[i]=true);
+
+  function drawDC(){
+    const svg=$('#dcSvg'); clearEl(svg);
+    const deg=new Array(N).fill(0);
+    allEdges.forEach(([u,v],i)=>{ if(active[i]){ deg[u]++; deg[v]++; } });
+
+    // Draw edges — visible line + wide invisible hit target on top
+    allEdges.forEach(([u,v],i)=>{
+      const line=makeSVG('line',{
+        x1:pos[u][0],y1:pos[u][1],x2:pos[v][0],y2:pos[v][1],
+        stroke:active[i]?'var(--accent2)':'var(--border)',
+        'stroke-width':active[i]?8:4,'stroke-linecap':'round','pointer-events':'none',
+        opacity:active[i]?1:0.4
+      });
+      svg.appendChild(line);
+      // Wide invisible hit target
+      const hit=makeSVG('line',{
+        x1:pos[u][0],y1:pos[u][1],x2:pos[v][0],y2:pos[v][1],
+        stroke:'transparent','stroke-width':22,'stroke-linecap':'round',style:'cursor:pointer'
+      });
+      hit.onclick=()=>{ active[i]=!active[i]; drawDC(); };
+      svg.appendChild(hit);
+      // Edge label
+      const mx=(pos[u][0]+pos[v][0])/2, my=(pos[u][1]+pos[v][1])/2;
+      const tl=makeSVG('text',{x:mx,y:my-10,'text-anchor':'middle','font-size':'14','font-weight':'900',
+        fill:active[i]?'var(--accent2)':'var(--muted)','pointer-events':'none'});
+      tl.textContent=active[i]?'ON':'tap';
+      svg.appendChild(tl);
+    });
+
+    // Draw nodes — pointer-events:none so they never block edge hit targets
+    pos.forEach(([x,y],u)=>{
+      const isOdd=(deg[u]%2===1);
+      const c=makeSVG('circle',{cx:x,cy:y,r:32,
+        fill:deg[u]===0?'var(--panel2)':isOdd?'rgba(185,28,28,.15)':'rgba(15,118,110,.15)',
+        stroke:isOdd?'var(--bad)':deg[u]===0?'var(--border)':'var(--good)',
+        'stroke-width':5,'pointer-events':'none'});
+      const t=makeSVG('text',{x,y:y+9,'text-anchor':'middle','font-size':'22','font-weight':'950',
+        fill:'var(--text)','pointer-events':'none'});
+      t.textContent=labels[u];
+      svg.appendChild(c); svg.appendChild(t);
+    });
+
+    // Update degree display
+    const box=$('#dcDegrees'); clearEl(box);
+    labels.forEach((l,u)=>{
+      const isOdd=(deg[u]%2===1);
+      const row=make('div',{style:'line-height:2;'});
+      row.innerHTML=`<span style="font-weight:900;">${l}</span> : <span style="color:${deg[u]===0?'var(--muted)':isOdd?'var(--bad)':'var(--good)'};font-weight:950;">${deg[u]}${isOdd?' (odd)':' (even)'}</span>`;
+      box.appendChild(row);
+    });
+
+    // Determine result
+    const oddCount=deg.filter((d,i)=>allEdges.some(([u,v],ei)=>active[ei]&&(u===i||v===i))>0||true).filter((d,i)=>d%2===1&&d>0).length;
+    const activeEdgeCount=active.filter(Boolean).length;
+    const res=$('#dcResult');
+    if(activeEdgeCount===0){
+      res.className='eulResult warn'; res.textContent='No edges — trivially OK';
+    } else {
+      const oddNodes=deg.filter((d,i)=>d%2===1&&d>0).length;
+      if(oddNodes===0){ res.className='eulResult ok'; res.textContent='✓ Euler Circuit exists (all degrees even)'; }
+      else if(oddNodes===2){ res.className='eulResult warn'; res.textContent='~ Euler Path exists (exactly 2 odd-degree nodes)'; }
+      else { res.className='eulResult bad'; res.textContent=`✗ Impossible (${oddNodes} odd-degree nodes)`; }
+    }
+  }
+  drawDC();
+  $('#dcResetBtn').onclick=()=>{ active=[0,1,2,3,6,7].map(i=>allEdges.map((_,j)=>j)).flat(); active=new Array(allEdges.length).fill(false); [0,1,2,3,6,7].forEach(i=>active[i]=true); drawDC(); };
+})();
+
+// ============================================================
+// EULER TRACER — GENERIC FRAME-BASED ENGINE
+// ============================================================
+function buildUndirectedFrames(nodeLabels, nodePos, edges, startNode){
+  // Build adjacency (forward-star style, pairs)
+  // edges: [{u,v,label?}]
+  const n=nodeLabels.length;
+  const m=edges.length;
+  // Internal: edge 2i = u->v, edge 2i+1 = v->u
+  const to=[], nxt=[], head=new Array(n).fill(-1);
+  let ne=0;
+  function addEdge(u,v){ to.push(v); nxt.push(head[u]); head[u]=ne++; }
+  edges.forEach(({u,v})=>{ addEdge(u,v); addEdge(v,u); });
+
+  const vis=new Array(m*2).fill(-1); // -1 = unused
+  const ansArr=[];
+  const frames=[];
+
+  function snap(type,data={}){
+    frames.push({type, stack:[...callStack], ans:[...ansArr], head:[...head], vis:[...vis], ...data});
+  }
+
+  const callStack=[];
+
+  function euler(u){
+    callStack.push(u);
+    snap('enter',{u});
+    let e=head[u];
+    while(e!==-1){
+      const ee=e;
+      head[u]=nxt[e];
+      e=head[u];
+      if(vis[ee]===1){ snap('skip',{u,ee}); continue; }
+      vis[ee]=vis[ee^1]=1;
+      const v=to[ee];
+      snap('take',{u,v,ee});
+      euler(v);
+      ansArr.push(ee);
+      snap('save',{u,v,ee,savedEdge:ee});
+    }
+    callStack.pop();
+    snap('return',{u});
+  }
+
+  euler(startNode);
+  snap('done',{finalAns:[...ansArr].reverse()});
+  return {frames, edges, nodeLabels, nodePos, n, m};
+}
+
+function buildDirectedFrames(nodeLabels, nodePos, edges, startNode){
+  const n=nodeLabels.length;
+  const m=edges.length;
+  const to=[], nxt=[], head=new Array(n).fill(-1);
+  let ne=0;
+  function addEdge(u,v){ to.push(v); nxt.push(head[u]); head[u]=ne++; }
+  edges.forEach(({u,v})=>addEdge(u,v));
+
+  const ansArr=[];
+  const frames=[];
+  const callStack=[];
+
+  function snap(type,data={}){
+    frames.push({type, stack:[...callStack], ans:[...ansArr], head:[...head], ...data});
+  }
+
+  // Track which edges are used
+  const usedEdge=new Array(m).fill(false);
+
+  function euler(u){
+    callStack.push(u);
+    snap('enter',{u});
+    let e=head[u];
+    while(e!==-1){
+      const ee=e;
+      head[u]=nxt[e];
+      e=head[u];
+      usedEdge[ee]=true;
+      const v=to[ee];
+      snap('take',{u,v,ee,usedArr:[...usedEdge]});
+      euler(v);
+      ansArr.push(ee);
+      snap('save',{u,v,ee,savedEdge:ee,usedArr:[...usedEdge]});
+    }
+    callStack.pop();
+    snap('return',{u});
+  }
+
+  euler(startNode);
+  snap('done',{finalAns:[...ansArr].reverse(),usedArr:[...usedEdge]});
+  return {frames, edges, nodeLabels, nodePos, n, m, directed:true};
+}
+
+function renderEulerSvg(svgId, data, frameIdx, directed=false){
+  const svg=$(svgId); clearEl(svg);
+  const {frames, edges, nodeLabels, nodePos, n, m} = data;
+  const f = frames[Math.min(frameIdx, frames.length-1)];
+
+  // Determine edge states
+  // For undirected: vis array in frame; for directed: usedArr
+  function edgeUsed(ei){
+    if(directed) return f.usedArr && f.usedArr[ei];
+    return f.vis && (f.vis[ei*2]===1 || f.vis[ei*2+1]===1);
+  }
+  const activeTake = f.type==='take'||f.type==='save';
+  const activeEdge = activeTake ? Math.floor(f.ee/2) : -1; // for undirected
+  const activeEdgeDir = activeTake ? f.ee : -1; // for directed
+
+  // Arrow marker for directed
+  if(directed){
+    const defs=makeSVG('defs');
+    ['norm','used','active'].forEach((id,ci)=>{
+      const col=['#8899aa','#b91c1c','#b45309'][ci];
+      const mk=makeSVG('marker',{id:`dm_${id}_${svgId.replace(/[^a-z]/gi,'')}`,markerWidth:'18',markerHeight:'12',refX:'16',refY:'6',orient:'auto',markerUnits:'userSpaceOnUse'});
+      const poly=makeSVG('polygon',{points:'0 0, 16 6, 0 12',fill:col});
+      mk.appendChild(poly); defs.appendChild(mk);
+    });
+    svg.appendChild(defs);
+  }
+
+  // Draw edges
+  const RN=32;
+  edges.forEach(({u,v},ei)=>{
+    const [x1,y1]=nodePos[u], [x2,y2]=nodePos[v];
+    const dx=x2-x1, dy=y2-y1, dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const ux=dx/dist, uy=dy/dist;
+    const used=edgeUsed(ei);
+    const isCurrent=directed ? (activeEdgeDir===ei) : (activeEdge===ei);
+    const color=isCurrent?'#b45309':used?'#b91c1c':'#8899aa';
+    const sw=isCurrent?9:used?6:5;
+
+    if(directed){
+      const ex1=x1+ux*RN, ey1=y1+uy*RN;
+      const ex2=x2-ux*(RN+2), ey2=y2-uy*(RN+2);
+      const uid=svgId.replace(/[^a-z]/gi,'');
+      const mtype=isCurrent?'active':used?'used':'norm';
+      const line=makeSVG('line',{x1:ex1,y1:ey1,x2:ex2,y2:ey2,stroke:color,'stroke-width':sw,'marker-end':`url(#dm_${mtype}_${uid})`,'stroke-linecap':'round'});
+      svg.appendChild(line);
+    } else {
+      const line=makeSVG('line',{x1,y1,x2,y2,stroke:color,'stroke-width':sw,'stroke-linecap':'round',opacity:used&&!isCurrent?0.5:1});
+      svg.appendChild(line);
+    }
+
+    // Edge label
+    const mx=(x1+x2)/2+uy*(-18), my=(y1+y2)/2+ux*(directed?18:-18);
+    const tl=makeSVG('text',{x:mx,y:my,'text-anchor':'middle','font-size':'16','font-weight':'900',fill:color,'pointer-events':'none'});
+    tl.textContent=`e${ei}`;
+    svg.appendChild(tl);
+  });
+
+  // Draw nodes
+  nodePos.forEach(([x,y],u)=>{
+    const isCurrent=f.u===u && (f.type==='enter'||f.type==='take'||f.type==='save'||f.type==='return');
+    const inStack=f.stack && f.stack.includes(u);
+    let fill='var(--panel2)', stroke='var(--border)', sw=4;
+    if(isCurrent){ fill='rgba(37,99,235,.25)'; stroke='var(--accent2)'; sw=7; }
+    else if(inStack){ fill='rgba(37,99,235,.10)'; stroke='var(--accent)'; sw=5; }
+
+    const c=makeSVG('circle',{cx:x,cy:y,r:RN,fill,stroke,'stroke-width':sw});
+    const t=makeSVG('text',{x,y:y+9,'text-anchor':'middle','font-size':'22','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+    t.textContent=nodeLabels[u];
+    svg.appendChild(c); svg.appendChild(t);
+  });
+}
+
+function describeFrame(f){
+  if(!f) return '';
+  switch(f.type){
+    case 'enter': return `→ Entering euler(${f.stack[f.stack.length-1]??''})`;
+    case 'take': return `↗ Taking edge e${Math.floor(f.ee/2)} → visiting ${f.v!==undefined?String.fromCharCode?.[0]:f.v} (stack depth: ${f.stack.length})`;
+    case 'skip': return `⏭ Edge already used — skip`;
+    case 'save': return `← Saving edge e${Math.floor(f.ee/2)} to ans[] on return`;
+    case 'return': return `↩ Returning from euler(${f.u??''})`;
+    case 'done': return `✅ Done! ans[] reversed = [${(f.finalAns||[]).map(e=>Math.floor(e/2)).join(', ')}]`;
+    default: return f.type;
+  }
+}
+function describeFrameDir(f){
+  if(!f) return '';
+  switch(f.type){
+    case 'enter': return `→ Entering euler(${f.stack[f.stack.length-1]??''})`;
+    case 'take': return `↗ Taking edge e${f.ee} → visiting ${f.v}`;
+    case 'save': return `← Saving edge e${f.ee} to ans[] on return`;
+    case 'return': return `↩ Returning from euler(${f.u??''})`;
+    case 'done': return `✅ Done! ans[] = [${(f.finalAns||[]).join(', ')}]`;
+    default: return f.type;
+  }
+}
+
+function renderStackItems(el, stack, labels){
+  clearEl(el);
+  if(!stack||stack.length===0){ el.textContent='(empty)'; return; }
+  stack.forEach((u,i)=>{
+    const item=make('span',{class:'stackItem'+(i===stack.length-1?' top':'')});
+    item.textContent=labels[u]??u;
+    el.appendChild(item);
+  });
+}
+
+function renderAnsItems(el, ans, labels, directed=false){
+  clearEl(el);
+  if(!ans||ans.length===0){ el.textContent='(empty)'; return; }
+  ans.forEach(ee=>{
+    const item=make('span',{class:'ansItem'});
+    item.textContent=directed?`e${ee}`:`e${Math.floor(ee/2)}`;
+    el.appendChild(item);
+  });
+}
+
+// ============================================================
+// TRACER 1 — SIMPLE SQUARE
+// ============================================================
+(function(){
+  const labels=['A','B','C','D'];
+  const pos=[[200,80],[400,80],[400,280],[200,280]];
+  const edges=[{u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0}];
+  const data=buildUndirectedFrames(labels,pos,edges,0);
+  let step=0, autoTimer=null;
+
+  function render(){
+    renderEulerSvg('#sq1Svg',data,step,false);
+    const f=data.frames[step];
+    renderStackItems($('#sq1Stack'),f.stack,labels);
+    renderAnsItems($('#sq1Ans'),f.ans,labels,false);
+    $('#sq1Status').textContent=describeFrame(f);
+    $('#sq1StepLabel').textContent=`Step ${step+1} / ${data.frames.length}`;
+  }
+  function reset(){ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#sq1AutoBtn').classList.remove('active');} render(); }
+  function next(){ if(step<data.frames.length-1){step++;render();} }
+  $('#sq1ResetBtn').onclick=reset;
+  $('#sq1NextBtn').onclick=next;
+  $('#sq1AutoBtn').onclick=function(){
+    if(autoTimer){ clearInterval(autoTimer);autoTimer=null;this.classList.remove('active'); }
+    else { this.classList.add('active'); autoTimer=setInterval(()=>{ if(step>=data.frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#sq1AutoBtn').classList.remove('active');}else{next();} },700); }
+  };
+  render();
+})();
+
+// ============================================================
+// TRACER 2 — TWO SQUARES SHARING X
+// ============================================================
+(function(){
+  // Nodes: A=0,B=1,X=2,D=3,F=4,G=5,H=6
+  const labels=['A','B','X','D','F','G','H'];
+  const pos=[[120,120],[320,120],[480,220],[280,320],[640,120],[680,280],[520,340]];
+  // Square 1: A-B-X-D-A   edges: A-B, B-X, X-D, D-A
+  // Square 2: X-F-G-H-X   edges: X-F, F-G, G-H, H-X
+  const edges=[
+    {u:0,v:1},{u:1,v:2},{u:2,v:3},{u:3,v:0}, // square1
+    {u:2,v:4},{u:4,v:5},{u:5,v:6},{u:6,v:2}  // square2
+  ];
+  const data=buildUndirectedFrames(labels,pos,edges,0);
+  let step=0, autoTimer=null;
+
+  function render(){
+    renderEulerSvg('#ts1Svg',data,step,false);
+    const f=data.frames[step];
+    renderStackItems($('#ts1Stack'),f.stack,labels);
+    renderAnsItems($('#ts1Ans'),f.ans,labels,false);
+    $('#ts1Status').textContent=describeFrame(f);
+    $('#ts1StepLabel').textContent=`Step ${step+1} / ${data.frames.length}`;
+  }
+  function reset(){ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#ts1AutoBtn').classList.remove('active');} render(); }
+  function next(){ if(step<data.frames.length-1){step++;render();} }
+  $('#ts1ResetBtn').onclick=reset;
+  $('#ts1NextBtn').onclick=next;
+  $('#ts1AutoBtn').onclick=function(){
+    if(autoTimer){ clearInterval(autoTimer);autoTimer=null;this.classList.remove('active'); }
+    else { this.classList.add('active'); autoTimer=setInterval(()=>{ if(step>=data.frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#ts1AutoBtn').classList.remove('active');}else{next();} },600); }
+  };
+  render();
+})();
+
+// ============================================================
+// TRACER 3 — DIRECTED EULER PATH
+// ============================================================
+(function(){
+  // Nodes: S=0, A=1, B=2, C=3, E=4
+  // Directed edges forming a path: S→A, S→B, A→C, B→A, C→B, C→E
+  // S: out=2,in=0 → degDif=+2? Let's design a proper graph:
+  // S→A, A→B, B→C, C→A, A→D, D→E
+  // S: out=1,in=0 → start (out-in=+1)
+  // A: out=2,in=2 → balanced
+  // B: out=1,in=1 → balanced
+  // C: out=1,in=1 → balanced
+  // D: out=1,in=1 → balanced
+  // E: out=0,in=1 → end (in-out=+1)
+  const labels=['S','A','B','C','D','E'];
+  const pos=[[90,190],[250,100],[380,190],[380,310],[530,190],[650,190]];
+  const edges=[
+    {u:0,v:1}, // S→A
+    {u:1,v:2}, // A→B
+    {u:2,v:3}, // B→C
+    {u:3,v:1}, // C→A
+    {u:1,v:4}, // A→D
+    {u:4,v:5}  // D→E
+  ];
+  const data=buildDirectedFrames(labels,pos,edges,0);
+  let step=0, autoTimer=null;
+
+  function render(){
+    // Custom render for directed with special start/end coloring
+    const svg=$('#dir1Svg'); clearEl(svg);
+    const f=data.frames[Math.min(step,data.frames.length-1)];
+    const {nodePos:np,nodeLabels:nl,directed} = {nodePos:pos,nodeLabels:labels,directed:true};
+    const m=edges.length;
+    const RN=30;
+
+    // Draw defs/arrows
+    const defs=makeSVG('defs');
+    [['n','#8899aa'],['u','#b91c1c'],['a','#b45309']].forEach(([id,col])=>{
+      const mk=makeSVG('marker',{id:`dir1_${id}`,markerWidth:'16',markerHeight:'11',refX:'14',refY:'5.5',orient:'auto',markerUnits:'userSpaceOnUse'});
+      const p=makeSVG('polygon',{points:'0 0, 14 5.5, 0 11',fill:col});
+      mk.appendChild(p); defs.appendChild(mk);
+    });
+    svg.appendChild(defs);
+
+    // Edges
+    edges.forEach(({u,v},ei)=>{
+      const [x1,y1]=pos[u],[x2,y2]=pos[v];
+      const dx=x2-x1,dy=y2-y1,dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const ux=dx/dist,uy=dy/dist;
+      const used=f.usedArr&&f.usedArr[ei];
+      const isCur=(f.type==='take'||f.type==='save')&&f.ee===ei;
+      const col=isCur?'#b45309':used?'#b91c1c':'#8899aa';
+      const sw=isCur?9:used?6:4;
+      const mtype=isCur?'a':used?'u':'n';
+      const ex1=x1+ux*RN,ey1=y1+uy*RN,ex2=x2-ux*(RN+2),ey2=y2-uy*(RN+2);
+      const line=makeSVG('line',{x1:ex1,y1:ey1,x2:ex2,y2:ey2,stroke:col,'stroke-width':sw,'marker-end':`url(#dir1_${mtype})`,'stroke-linecap':'round'});
+      svg.appendChild(line);
+      const mx=(x1+x2)/2+(uy*(-16)),my=(y1+y2)/2+(ux*16);
+      const tl=makeSVG('text',{x:mx,y:my,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:col,'pointer-events':'none'});
+      tl.textContent=`e${ei}`;
+      svg.appendChild(tl);
+    });
+
+    // Nodes — S=start (green tint), E=end (purple tint)
+    pos.forEach(([x,y],u)=>{
+      const isCur=f.u===u&&(f.type==='enter'||f.type==='take'||f.type==='save');
+      const inStk=f.stack&&f.stack.includes(u);
+      const isStart=u===0, isEnd=u===5;
+      let fill='var(--panel2)',stroke='var(--border)',sw=4;
+      if(isCur){fill='rgba(37,99,235,.28)';stroke='var(--accent2)';sw=7;}
+      else if(isStart){fill='rgba(15,118,110,.15)';stroke='var(--good)';sw=5;}
+      else if(isEnd){fill='rgba(124,58,237,.15)';stroke='#7c3aed';sw=5;}
+      else if(inStk){fill='rgba(37,99,235,.08)';stroke='var(--accent)';sw=4;}
+      const c=makeSVG('circle',{cx:x,cy:y,r:RN,fill,stroke,'stroke-width':sw});
+      const t=makeSVG('text',{x,y:y+9,'text-anchor':'middle','font-size':'20','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=labels[u];
+      svg.appendChild(c); svg.appendChild(t);
+      // Label out-in
+      const odiff=[1,0,0,0,0,-1][u];
+      if(odiff!==0){
+        const badge=makeSVG('text',{x:x+RN+2,y:y-RN+4,'font-size':'14','font-weight':'900',fill:odiff>0?'var(--good)':'#7c3aed'});
+        badge.textContent=odiff>0?'out-in=+1':'in-out=+1';
+        svg.appendChild(badge);
+      }
+    });
+
+    renderStackItems($('#dir1Stack'),f.stack,labels);
+    renderAnsItems($('#dir1Ans'),f.ans,labels,true);
+    $('#dir1Status').textContent=describeFrameDir(f);
+    $('#dir1StepLabel').textContent=`Step ${step+1} / ${data.frames.length}`;
+  }
+
+  function reset(){ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#dir1AutoBtn').classList.remove('active');} render(); }
+  function next(){ if(step<data.frames.length-1){step++;render();} }
+  $('#dir1ResetBtn').onclick=reset;
+  $('#dir1NextBtn').onclick=next;
+  $('#dir1AutoBtn').onclick=function(){
+    if(autoTimer){ clearInterval(autoTimer);autoTimer=null;this.classList.remove('active'); }
+    else { this.classList.add('active'); autoTimer=setInterval(()=>{ if(step>=data.frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#dir1AutoBtn').classList.remove('active');}else{next();} },700); }
+  };
+  render();
+})();
+
+// ============================================================
+// FORWARD-STAR DEMO
+// ============================================================
+(function(){
+  const edgesToAdd=[
+    {u:'A',v:'B'},{u:'A',v:'C'},{u:'B',v:'C'},{u:'C',v:'D'}
+  ];
+  const uMap={'A':0,'B':1,'C':2,'D':3};
+  const head=[-1,-1,-1,-1];
+  const toArr=[],nxtArr=[];
+  let ne=0,step=0;
+
+  function render(){
+    const box=$('#fsDisplay'); clearEl(box);
+    const status=$('#fsStatus');
+    const lines=[];
+    lines.push(`<b>ne = ${ne}</b>   (next edge id to assign)`);
+    ['A','B','C','D'].forEach((label,u)=>{
+      let chain='', e=head[u];
+      while(e!==-1){ chain+=` → e${e}(to=${['A','B','C','D'][toArr[e]]})`; e=nxtArr[e]; }
+      if(!chain) chain=' → (none)';
+      lines.push(`head[${label}] = ${head[u]==-1?'-1':head[u]}${chain}`);
+    });
+    if(ne>0){
+      lines.push('');
+      lines.push('to[]  = [' + toArr.map((v,i)=>`e${i}→${'ABCD'[v]}`).join(', ')+']');
+      lines.push('nxt[] = [' + nxtArr.map((v,i)=>`${v}`).join(', ')+']');
+    }
+    box.innerHTML=lines.join('<br>');
+    if(step<edgesToAdd.length){
+      const {u,v}=edgesToAdd[step];
+      status.innerHTML=`<b>Next:</b> addEdge(${u}, ${v}) → to[${ne}]=${v}, nxt[${ne}]=head[${u}]=${head[uMap[u]]}, head[${u}]=${ne}`;
+    } else { status.innerHTML='<b>Done!</b> All edges added. Try tracing adjacency via head[] chains above.'; }
+  }
+  function reset(){ head.fill(-1); toArr.length=0; nxtArr.length=0; ne=0; step=0; render(); }
+  function addNextEdge(){
+    if(step>=edgesToAdd.length) return;
+    const {u,v}=edgesToAdd[step];
+    const ui=uMap[u], vi=uMap[v];
+    toArr.push(vi); nxtArr.push(head[ui]); head[ui]=ne++;
+    step++;
+    render();
+  }
+  $('#fsResetBtn').onclick=reset;
+  $('#fsNextBtn').onclick=addNextEdge;
+  render();
+})();
+</script>
+</body>
+</html>

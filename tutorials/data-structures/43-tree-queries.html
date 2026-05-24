@@ -1,0 +1,3628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Tree Queries: Ancestors, Paths, and Subtrees · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+    --hl-anc: rgba(124,58,237,.22);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+    --hl-anc: rgba(167,139,250,.28);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:26px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  svg.graphsvg{width:100%;height:470px;border-radius:16px;background:rgba(0,0,0,0);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:700;overflow-x:auto;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .tooltip{position:fixed;pointer-events:none;background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:10px 12px;font-weight:900;font-size:20px;box-shadow:var(--shadow);transform:translate(12px,12px);opacity:0;transition:opacity .08s ease;z-index:50;max-width:520px;}
+  .tooltip.show{opacity:1}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .nodeCircle{transition:all .25s ease;cursor:pointer;}
+  .edgeLine{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;font-size:24px;pointer-events:none;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:20px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:8px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  .swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  /* Tree-Queries-specific */
+  .flatArr{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--panel2);border:3px solid var(--border);border-radius:16px;}
+  .flatCell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;min-height:54px;padding:6px 8px;border-radius:10px;font-weight:950;font-size:20px;border:2px solid var(--border);background:var(--panel);}
+  .flatCell .idx{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:2px;}
+  .flatCell.inRange{background:var(--hl-cell);border-color:var(--good);color:var(--good);}
+  .flatCell.minPick{background:var(--hl-anc);border-color:#7c3aed;color:#7c3aed;}
+  .liftBits{display:inline-flex;gap:4px;font-family:ui-monospace,monospace;font-weight:950;}
+  .liftBit{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:2px solid var(--border);background:var(--panel);font-size:20px;}
+  .liftBit.on{background:var(--hl-cell);border-color:var(--good);color:var(--good);}
+  .liftBit.fired{background:var(--hl-anc);border-color:#7c3aed;color:#7c3aed;}
+  .invariantBox{padding:14px 16px;border-radius:14px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(15,118,110,.08),rgba(0,0,0,0));margin:10px 0;font-weight:800;}
+  .invariantBox b.tag{display:inline-block;background:var(--good);color:white;padding:2px 10px;border-radius:999px;font-size:18px;margin-right:8px;}
+  .invariantBox.warn{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));}
+  .invariantBox.warn b.tag{background:var(--warn);}
+  .invariantBox.bad{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));}
+  .invariantBox.bad b.tag{background:var(--bad);}
+  .formula{display:block;text-align:center;padding:14px;border-radius:14px;background:var(--panel2);border:3px solid var(--border);font-family:ui-monospace,monospace;font-size:24px;font-weight:950;margin:10px 0;}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">Tree Queries</div>
+    <div class="t2">Ancestors · Paths · Subtrees</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#intro" id="nav-intro">🧩 Problem Definition<small>LCA, distance, kth, subtree</small></a>
+  <a href="#vocab" id="nav-vocab">📚 Tree Vocabulary<small>parent, depth, ancestor, subtree</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition from Scratch<small>climb together · subtree=range</small></a>
+  <a href="#mental-model" id="nav-mental-model">🌳 Visual Mental Model<small>DFS timestamps tracer</small></a>
+  <a href="#abstraction" id="nav-abstraction">🧠 Formal Abstraction<small>tin/tout · depth · distRoot</small></a>
+  <a href="#observations" id="nav-observations">🔭 Key Observations<small>why everything works</small></a>
+
+  <div class="groupTitle">Binary Lifting</div>
+  <a href="#naive" id="nav-naive">🐢 Naive Climb<small>O(height) baseline</small></a>
+  <a href="#binary-lifting" id="nav-binary-lifting">⚡ Binary Lifting Idea<small>powers of two ancestors</small></a>
+  <div class="sub">
+    <a href="#lift-tracer">kth-ancestor tracer</a>
+    <a href="#lca-tracer">LCA query tracer</a>
+  </div>
+  <a href="#invariants" id="nav-invariants">🔐 Invariants<small>DFS · lifting · ancestor · LCA</small></a>
+  <a href="#proofs" id="nav-proofs">📐 Proof of Correctness<small>5 sub-proofs</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity Analysis<small>build · query · memory</small></a>
+
+  <div class="groupTitle">Templates</div>
+  <a href="#template-philosophy" id="nav-template-philosophy">🧩 Template Philosophy<small>one struct · all queries</small></a>
+  <a href="#master-template" id="nav-master-template">📄 Master Template<small>TreeLCA — full code</small></a>
+  <a href="#line-by-line" id="nav-line-by-line">🔬 Line-by-Line<small>every line explained</small></a>
+
+  <div class="groupTitle">Euler Tour Family</div>
+  <a href="#euler-flatten" id="nav-euler-flatten">🪞 Subtree Flattening<small>subtree = array range</small></a>
+  <div class="sub">
+    <a href="#flat-tracer">Flattening tracer</a>
+  </div>
+  <a href="#euler-rmq" id="nav-euler-rmq">🏔 Euler Tour + RMQ LCA<small>O(1) per query</small></a>
+  <div class="sub">
+    <a href="#rmq-tracer">RMQ LCA tracer</a>
+  </div>
+  <a href="#distinction" id="nav-distinction">⚠️ Three Euler-Style Ideas<small>don't confuse them</small></a>
+
+  <div class="groupTitle">Offline Family</div>
+  <a href="#tarjan" id="nav-tarjan">🧮 Tarjan Offline LCA<small>DFS + DSU · O(α)</small></a>
+
+  <div class="groupTitle">Contest Reference</div>
+  <a href="#edge-cases" id="nav-edge-cases">🧪 Edge-Case Audit<small>centralized checklist</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>real bugs you'll hit</small></a>
+  <a href="#decision-guide" id="nav-decision-guide">🧭 Decision Guide<small>which technique when</small></a>
+  <a href="#variants" id="nav-variants">🪄 Variants &amp; Extensions<small>weighted · directed · etc.</small></a>
+
+  <div class="groupTitle">Applications</div>
+  <a href="#problems" id="nav-problems">🚀 Problem-Based Learning<small>6 worked solutions</small></a>
+  <div class="sub">
+    <a href="#problem1">P1 — CSES Company Queries II</a>
+    <a href="#problem2">P2 — CSES Subtree Queries</a>
+    <a href="#problem3">P3 — Yosupo LCA</a>
+    <a href="#problem4">P4 — SPOJ QTREE2</a>
+    <a href="#problem5">P5 — HDU 2586</a>
+    <a href="#problem6">P6 — SPOJ COT</a>
+  </div>
+  <a href="#summary" id="nav-summary">🎯 Final Summary<small>mental model recap</small></a>
+  <a href="#validation" id="nav-validation">✅ Runtime Validation<small>checklist</small></a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🎓</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy</div>
+        <h1>Tree Queries: Ancestors, Paths, and Subtrees</h1>
+        <div class="subtitle">LCA · Binary Lifting · Euler Tour Flattening · Euler Tour + RMQ · Tarjan Offline · Distances · k-th Ancestor · k-th Node on Path</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SECTION 1 — PROBLEM DEFINITION
+       ========================================================= -->
+  <section class="card" id="intro">
+    <h2>🧩 1. Problem Definition</h2>
+    <p>We are given a <b>rooted tree</b> with <span class="inlineCode">n</span> nodes. We use the global convention <b>0-based nodes</b>, root <span class="inlineCode">0</span>. We want to answer many queries fast, across three families:</p>
+
+    <div class="grid3" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">👪 Ancestor Queries</h3>
+        <p class="note" style="margin:0;"><b>LCA(u, v)</b> — deepest common ancestor.<br/><b>kth ancestor</b> of u.<br/><b>isAncestor(u, v)</b>.</p>
+      </div>
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">🛤 Path Queries</h3>
+        <p class="note" style="margin:0;"><b>distEdges(u, v)</b>, <b>distWeight(u, v)</b>, <b>kth node on path</b> u → v.</p>
+      </div>
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">🌳 Subtree Queries</h3>
+        <p class="note" style="margin:0;"><b>sum / min / xor</b> over <i>subtree(u)</i>, point/subtree updates, ancestor tests.</p>
+      </div>
+    </div>
+
+    <h3>LCA — the unifier</h3>
+    <p>The <b>Lowest Common Ancestor</b> of two nodes <span class="inlineCode">u</span> and <span class="inlineCode">v</span> is the <b>deepest</b> node that is an ancestor of both. A node is allowed to be its own ancestor.</p>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="statusPanel">
+        <h3>Example tree</h3>
+<pre style="font-size:19px;"><code>        0
+      /   \
+     1     2
+    / \
+   3   4</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>Sample LCAs</h3>
+<pre style="font-size:19px;"><code>LCA(3, 4) = 1
+LCA(3, 2) = 0
+LCA(1, 4) = 1
+LCA(2, 2) = 2</code></pre>
+      </div>
+    </div>
+
+    <p class="note" style="margin-top:14px;">LCA is the <b>spine</b> of tree query problems. Distance, k-th node on path, ancestor tests, offline tree queries, and many subtree decompositions all reduce to LCA plus a few helper arrays.</p>
+
+    <h3>Global conventions (used everywhere in this chapter)</h3>
+    <div class="chips">
+      <span class="chip">0-based nodes</span>
+      <span class="chip">root = 0</span>
+      <span class="chip"><code>--u; --v;</code> on input if judge is 1-based</span>
+      <span class="chip"><code>cout &lt;&lt; answer + 1</code> on output if judge is 1-based</span>
+      <span class="chip good">Safety: <code>up[root][j] = root</code></span>
+    </div>
+    <p class="note" style="margin-top:10px;">The convention <span class="inlineCode">up[root][j] = root</span> is critical — it avoids invalid ancestor access (no <code>-1</code> sentinel arithmetic), simplifies the lifting loop, and lets <code>isAncestor</code> work even when <code>u</code> is the root.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 2 — TREE VOCABULARY
+       ========================================================= -->
+  <section class="card" id="vocab">
+    <h2>📚 2. Tree Vocabulary</h2>
+    <p>Every technique in this chapter rests on five quantities that we compute during a single DFS from the root.</p>
+    <table>
+      <thead><tr><th>Quantity</th><th>Meaning</th><th>Computed</th></tr></thead>
+      <tbody>
+        <tr><td><code>parent[u]</code></td><td>node directly above <code>u</code> (parent of root = root, by convention)</td><td>recorded at DFS entry</td></tr>
+        <tr><td><code>depth[u]</code></td><td>number of edges from root to <code>u</code></td><td><code>depth[v] = depth[u] + 1</code></td></tr>
+        <tr><td><code>distRoot[u]</code></td><td>weighted distance from root to <code>u</code> (long long)</td><td><code>distRoot[v] = distRoot[u] + w</code></td></tr>
+        <tr><td><code>tin[u]</code></td><td>discovery time of <code>u</code></td><td>set when DFS enters <code>u</code></td></tr>
+        <tr><td><code>tout[u]</code></td><td>last discovery time inside subtree(<code>u</code>)</td><td>set when DFS leaves <code>u</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2" style="margin-top:16px;">
+      <div class="statusPanel">
+        <h3>For the example tree</h3>
+<pre style="font-size:19px;"><code>parent[1] = 0
+parent[3] = 1
+depth[0]  = 0
+depth[1]  = 1
+depth[3]  = 2
+subtree(1) = {1, 3, 4}</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>Ancestor, descendant</h3>
+        <p style="margin:0;font-weight:800;">An <b>ancestor</b> of <code>u</code> is any node on the path from root to <code>u</code> (including <code>u</code> itself).<br/>A <b>descendant</b> of <code>u</code> is any node in subtree(<code>u</code>) (including <code>u</code> itself).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 3 — INTUITION FROM SCRATCH
+       ========================================================= -->
+  <section class="card" id="intuition">
+    <h2>💡 3. Intuition from Scratch</h2>
+
+    <h3>3.1 The "two people climbing" picture (for LCA)</h3>
+    <p>Imagine two people standing at <code>u</code> and <code>v</code>. To find their LCA they perform a two-phase ritual:</p>
+    <ol style="font-weight:800;line-height:1.5;">
+      <li>The <b>deeper</b> person climbs upward until both are on the same depth.</li>
+      <li>From there, <b>both climb together</b>, one edge at a time.</li>
+      <li>The first node where they meet is the LCA.</li>
+    </ol>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div class="statusPanel">
+        <h3>Walk-through: LCA(3, 2)</h3>
+<pre style="font-size:19px;"><code>path 3 → root: 3 → 1 → 0
+path 2 → root: 2 → 0
+
+first common node = 0
+LCA(3, 2) = 0</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>Why this is slow</h3>
+        <p style="margin:0;">If the tree is the chain <code>0 — 1 — 2 — ... — 99999</code>, one query already costs <code>O(n)</code>. With <code>q</code> queries the total is <code>O(n · q)</code> — unusable.</p>
+        <p style="margin:8px 0 0;font-weight:900;color:var(--accent2);">Fix: jump in powers of two instead of one edge at a time. That's binary lifting.</p>
+      </div>
+    </div>
+
+    <h3>3.2 The "subtree is a contiguous block" picture (for subtree queries)</h3>
+    <p>When a DFS enters node <code>u</code>, it must visit <i>every</i> descendant before leaving. So if we stamp each node with a discovery time <code>tin[u]</code>, the subtree of <code>u</code> occupies a <b>contiguous interval</b> <code>[tin[u], tout[u]]</code> in DFS order.</p>
+    <p class="note">This single observation reduces every subtree question to an array range question — and array range questions we already know how to solve with Fenwick trees, segment trees, prefix sums, and so on.</p>
+
+    <h3>3.3 The big picture in one sentence</h3>
+    <div class="formula">DFS gives us depth and timestamps · Binary lifting gives us fast ancestor jumps · Flattening turns subtrees into ranges.</div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 4 — VISUAL MENTAL MODEL (TIN/TOUT TRACER)
+       ========================================================= -->
+  <section class="card" id="mental-model">
+    <h2>🌳 4. Visual Mental Model — DFS Timestamps</h2>
+    <p>Click <b>Next Step</b> to walk a DFS over a sample tree. Watch how <code>tin[u]</code> is assigned on entry and <code>tout[u]</code> on exit, and how the array on the right grows in DFS order. The <b>subtree of any node u</b> is the contiguous slice <code>[tin[u] .. tout[u]]</code> of that array.</p>
+
+    <div class="diagramWrap" id="dfs-tracer">
+      <div class="diagramHeader">
+        <span class="diagramTitle">DFS Tracer — tin, tout, and the Flat Array</span>
+        <div class="diagramTools">
+          <button class="miniBtn active" id="dfsReset">Reset</button>
+          <button class="miniBtn" id="dfsNext">Next Step</button>
+          <button class="miniBtn" id="dfsAuto">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:320px;">
+          <svg id="dfsSvg" viewBox="0 0 640 440" style="width:100%;max-height:460px;border-radius:14px;display:block;"></svg>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Flat DFS array (positions = <code>tin</code>)</div>
+          <div id="dfsFlat" class="flatArr"></div>
+        </div>
+        <div style="flex:0 0 280px;min-width:240px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">DFS Call Stack</div>
+          <div id="dfsStack" class="dsBox" style="font-size:19px;min-height:60px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">tin / tout table</div>
+          <div id="dfsTable" class="dsBox" style="font-size:18px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Status</div>
+          <div id="dfsStatus" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Current node</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Closed (tout set)</span>
+        <span><span class="swatch" style="background:var(--hl-cell);"></span> Subtree slice</span>
+      </div>
+      <div id="dfsStepLabel" style="text-align:center;font-weight:900;font-size:20px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <p class="note" style="margin-top:14px;">In this tracer the tree is <code>0-{1,2,5}, 1-{3,4}, 5-{6}</code>. After the full traversal, click any node label (the orange circle below) to highlight its subtree interval.</p>
+    <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;" id="dfsNodePicker"></div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 5 — FORMAL ABSTRACTION
+       ========================================================= -->
+  <section class="card" id="abstraction">
+    <h2>🧠 5. Formal Abstraction</h2>
+    <p>We define everything precisely. From now on every algorithm is just a mechanical consequence of these definitions.</p>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>depth(u)</b> = number of edges on the unique path from root to u. <code>depth(root) = 0</code>.</div>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>distRoot(u)</b> = sum of edge weights on the unique path from root to u. <code>distRoot(root) = 0</code>. Stored as <code>long long</code>.</div>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>ancestor(u)</b> = u, parent(u), parent(parent(u)), ... up to the root. (u itself counts.)</div>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>LCA(u, v)</b> = the unique ancestor of both u and v that has the largest depth.</div>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>tin(u), tout(u)</b> are DFS timestamps such that subtree(u) = {x : tin(u) ≤ tin(x) ≤ tout(u)}.</div>
+    <div class="invariantBox"><b class="tag">DEF</b> <b>up[u][j]</b> = the 2<sup>j</sup>-th ancestor of u. For root, <code>up[root][j] = root</code> for all j.</div>
+
+    <h3>Distance, in two lines</h3>
+    <div class="formula">distEdges(u, v) = depth(u) + depth(v) − 2·depth(LCA(u, v))</div>
+    <div class="formula">distWeight(u, v) = distRoot(u) + distRoot(v) − 2·distRoot(LCA(u, v))</div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 6 — KEY OBSERVATIONS
+       ========================================================= -->
+  <section class="card" id="observations">
+    <h2>🔭 6. Key Observations</h2>
+    <ol style="font-weight:800;line-height:1.6;">
+      <li><b>DFS makes subtrees contiguous.</b> When DFS enters <code>u</code>, it cannot leave until every descendant is visited. So <code>{tin(x) : x ∈ subtree(u)} = [tin(u), tout(u)]</code>.</li>
+      <li><b>Ancestor test = interval containment.</b> <code>u</code> is an ancestor of <code>v</code> iff <code>tin(u) ≤ tin(v) ≤ tout(v) ≤ tout(u)</code>. No DSU, no climbing, just two integer comparisons.</li>
+      <li><b>Every non-negative integer is a sum of distinct powers of two.</b> So any "climb <code>k</code> edges upward" decomposes into at most <code>⌈log₂ k⌉</code> power-of-two jumps. This is the engine behind binary lifting and behind sparse-table RMQ.</li>
+      <li><b>Doubling recurrence.</b> <code>2<sup>j</sup> = 2<sup>j−1</sup> + 2<sup>j−1</sup></code>, so <code>up[u][j] = up[ up[u][j−1] ][j−1]</code> — every entry is built from two smaller entries in O(1).</li>
+      <li><b>Path u→v splits at the LCA.</b> Every simple path in a tree decomposes as <code>u → LCA(u,v) → v</code>. So every "what happens on path u→v" question reduces to "what happens on path root→u" plus "what happens on path root→v" minus what's on path root→LCA (twice).</li>
+      <li><b>The full Euler Tour turns LCA into RMQ.</b> Between the first occurrences of <code>u</code> and <code>v</code> in the full Euler Tour, the shallowest node visited is exactly <code>LCA(u, v)</code>. So LCA collapses to a Range Minimum Query on a depth array.</li>
+      <li><b>Offline batches are free.</b> If all queries are known up front, DFS + DSU answers each in amortized <code>O(α(n))</code> — Tarjan's algorithm.</li>
+    </ol>
+  </section>
+  <!-- =========================================================
+       SECTION 7 — NAIVE CLIMB
+       ========================================================= -->
+  <section class="card" id="naive">
+    <h2>🐢 7. Naive Climb (Baseline)</h2>
+    <p>Before optimizing, let's nail the obvious algorithm. It is correct, easy to remember, and useful as a sanity check during stress-testing.</p>
+    <details open>
+      <summary>Naive LCA pseudocode <span class="rightHint">read me first</span></summary>
+      <div class="detailsBody">
+<pre><code>while depth[u] &gt; depth[v]:
+    u = parent[u]
+
+while depth[v] &gt; depth[u]:
+    v = parent[v]
+
+while u != v:
+    u = parent[u]
+    v = parent[v]
+
+return u</code></pre>
+        <p class="note" style="margin-top:8px;">This is the literal "two people climbing" story. The first two loops equalize depth; the last loop walks them up together.</p>
+      </div>
+    </details>
+    <div class="chips">
+      <span class="chip">Time per query: O(height)</span>
+      <span class="chip bad">Worst case O(n) on a chain</span>
+      <span class="chip good">Useful as a brute force for testing</span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 8 — BINARY LIFTING
+       ========================================================= -->
+  <section class="card" id="binary-lifting">
+    <h2>⚡ 8. Binary Lifting</h2>
+    <p>Instead of remembering only <code>parent[u]</code>, we precompute, for every node, its 2<sup>0</sup>-th, 2<sup>1</sup>-th, 2<sup>2</sup>-th, ... ancestor:</p>
+<pre><code>up[u][0] = parent[u]              // jump  1 edge
+up[u][1] = grandparent[u]         // jump  2 edges
+up[u][2] = great-grand-grand[u]   // jump  4 edges
+up[u][3] = ...                    // jump  8 edges
+up[u][j] = ...                    // jump 2^j edges</code></pre>
+
+    <h3>The doubling recurrence</h3>
+    <p>To jump 2<sup>j</sup> edges, jump 2<sup>j−1</sup> twice:</p>
+    <div class="formula">up[u][j] = up[ up[u][j−1] ][j−1]</div>
+    <p class="note">This is O(1) per entry, so the entire table costs <code>O(n log n)</code>.</p>
+
+    <h3>How many levels do we need?</h3>
+    <p>The loop computes <code>LOG = floor(log<sub>2</sub>(n)) + 1</code> for <code>n &gt; 0</code>. Therefore the available columns are <code>0..LOG−1</code>, and the largest stored jump is <code>2<sup>LOG−1</sup></code>, the highest power of two not exceeding <code>n</code>. Since any climb length is at most <code>n − 1</code>, its binary representation uses only these bit positions, so every reachable ancestor can be represented as a sum of stored jumps.</p>
+<pre><code>LOG = 1;
+while ((1 &lt;&lt; LOG) &lt;= max(1, n)) LOG++;</code></pre>
+    <p>For <code>n = 100000</code>, <code>LOG = 17</code>, so columns <code>0..16</code> are available. The largest stored jump is <code>2<sup>16</sup> = 65536</code>, and together these bits can represent any climb length up to <code>99999</code>. The table size is <code>n · LOG ≈ 1.7M</code> ints.</p>
+
+    <h3>Climbing exactly k edges with binary lifting</h3>
+    <p>Write <code>k</code> in binary. For every set bit at position <code>j</code>, replace <code>u</code> by <code>up[u][j]</code>:</p>
+<pre><code>for (int j = 0; j &lt; LOG; j++)
+    if (k &amp; (1 &lt;&lt; j))
+        u = up[u][j];</code></pre>
+    <p class="note">Example: <code>k = 13 = 0b1101 = 8 + 4 + 1</code>. So jump <code>up[u][0]</code> (1), then <code>up[u][2]</code> (4), then <code>up[u][3]</code> (8). Three jumps, in any order, give the 13-th ancestor.</p>
+
+    <!-- KTH ANCESTOR TRACER -->
+    <h3 id="lift-tracer">🎯 Interactive — kth Ancestor Tracer</h3>
+    <p class="note">Pick a node and a value of <code>k</code>. The tracer shows the binary decomposition of <code>k</code>, fires each bit one at a time, and walks the corresponding lifting jumps on the tree.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Binary Lifting — kth Ancestor</span>
+        <div class="diagramTools">
+          <button class="miniBtn" id="liftReset">Reset</button>
+          <button class="miniBtn" id="liftStep">Next Bit</button>
+          <button class="miniBtn" id="liftAuto">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:300px;">
+          <svg id="liftSvg" viewBox="0 0 640 460" style="width:100%;max-height:460px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 280px;min-width:240px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Pick start node u</div>
+          <div id="liftNodePicker" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Pick k (edges to climb)</div>
+          <div id="liftKPicker" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Binary of k</div>
+          <div id="liftBits" class="liftBits"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Status</div>
+          <div id="liftStatus" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Start u</span>
+        <span><span class="swatch" style="background:#b45309;"></span> Current position</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Final answer</span>
+        <span><span class="swatch" style="background:rgba(124,58,237,.35);"></span> Bit fired</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 8b — LCA QUERY (continues binary-lifting card)
+       ========================================================= -->
+  <section class="card" id="lca-query">
+    <h2>🧭 8b. The LCA Query Loop</h2>
+    <p>Once the lifting table exists, answering LCA(u, v) is three lines of reasoning:</p>
+    <ol style="font-weight:800;line-height:1.6;">
+      <li>If <code>u</code> is an ancestor of <code>v</code>, then <code>LCA = u</code>. Symmetrically for <code>v</code>.</li>
+      <li>Otherwise, lift <code>u</code> upward in powers of two, taking each jump <b>only when the destination is still NOT an ancestor of v</b>.</li>
+      <li>When all bits are processed, <code>u</code> sits exactly one edge below the LCA. Return <code>up[u][0]</code>.</li>
+    </ol>
+<pre><code>int lca(int u, int v) const {
+    if (isAncestor(u, v)) return u;
+    if (isAncestor(v, u)) return v;
+
+    for (int j = LOG - 1; j &gt;= 0; j--) {
+        if (!isAncestor(up[u][j], v)) {
+            u = up[u][j];
+        }
+    }
+    return up[u][0];
+}</code></pre>
+    <p class="note">We sweep <b>from large bits to small bits</b>. This greediness is the same trick as binary search: large jumps first, then refine. We never "overshoot" because we only commit to a jump that keeps us strictly below the LCA.</p>
+
+    <!-- LCA TRACER -->
+    <h3 id="lca-tracer">🎯 Interactive — LCA Lift Tracer</h3>
+    <p class="note">Pick two nodes <code>u</code> and <code>v</code>. Step through the lifting loop and watch <code>u</code> move upward. The purple node is the current LCA candidate; the lift only commits when the candidate is still below an ancestor of <code>v</code>.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">LCA via Binary Lifting</span>
+        <div class="diagramTools">
+          <button class="miniBtn" id="lcaReset">Reset</button>
+          <button class="miniBtn" id="lcaStep">Next Bit</button>
+          <button class="miniBtn" id="lcaAuto">Auto Run</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:300px;">
+          <svg id="lcaSvg" viewBox="0 0 640 460" style="width:100%;max-height:460px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 280px;min-width:240px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Pick u</div>
+          <div id="lcaUPicker" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Pick v</div>
+          <div id="lcaVPicker" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Lift bits (high → low)</div>
+          <div id="lcaBits" class="liftBits"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Status</div>
+          <div id="lcaStatus" class="statusPanel" style="font-size:20px;min-height:60px;"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> u (moving)</span>
+        <span><span class="swatch" style="background:var(--bad);"></span> v (fixed)</span>
+        <span><span class="swatch" style="background:#7c3aed;"></span> LCA</span>
+        <span><span class="swatch" style="background:var(--good);"></span> Resolved</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 9 — INVARIANTS
+       ========================================================= -->
+  <section class="card" id="invariants">
+    <h2>🔐 9. Invariants</h2>
+    <p>Every correctness argument later in this chapter chains together the four invariants below. Memorize them as the <i>contract</i> of the data structure.</p>
+
+    <div class="invariantBox"><b class="tag">I1 · DFS</b> When <code>dfs(u, p)</code> begins, three facts already hold: (a) <code>p</code> is the parent of <code>u</code>, (b) <code>depth[u]</code> is final, (c) <code>distRoot[u]</code> is final. Children are processed only after these three facts are stable.</div>
+
+    <div class="invariantBox"><b class="tag">I2 · Lifting</b> After preprocessing, for every <code>u</code> and every <code>j ∈ [0, LOG)</code>, <code>up[u][j]</code> is the 2<sup>j</sup>-th ancestor of <code>u</code>. For the root, <code>up[root][j] = root</code> (sentinel-free).</div>
+
+    <div class="invariantBox"><b class="tag">I3 · Timestamps</b> <code>tin[u]</code> is set on entry, <code>tout[u]</code> on exit, and for every pair <code>(u, v)</code>:<br/><code>u</code> is an ancestor of <code>v</code> &nbsp;⇔&nbsp; <code>tin[u] ≤ tin[v]</code> and <code>tout[v] ≤ tout[u]</code>.</div>
+
+    <div class="invariantBox"><b class="tag">I4 · LCA Lift</b> Inside the lifting loop, the moving pointer <code>u</code> always satisfies "<code>up[u][j]</code> is NOT an ancestor of <code>v</code>" before every committed jump. When the loop ends, <code>u</code> is exactly one edge below LCA(u, v), so <code>up[u][0] = LCA(u, v)</code>.</div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 10 — PROOF OF CORRECTNESS
+       ========================================================= -->
+  <section class="card" id="proofs">
+    <h2>📐 10. Proof of Correctness</h2>
+
+    <details open>
+      <summary>10.1 The lifting table is correct <span class="rightHint">induction on j</span></summary>
+      <div class="detailsBody">
+        <p><b>Claim.</b> For every <code>u</code> and every <code>j ≥ 0</code>, <code>up[u][j]</code> stores the 2<sup>j</sup>-th ancestor of <code>u</code>.</p>
+        <p><b>Base case (j = 0).</b> By definition, <code>up[u][0] = parent[u]</code>, which is the 2<sup>0</sup>=1-st ancestor.</p>
+        <p><b>Inductive step.</b> Suppose the claim holds for <code>j − 1</code>. Let <code>mid = up[u][j − 1]</code> — by hypothesis this is the 2<sup>j−1</sup>-th ancestor of <code>u</code>. Then <code>up[mid][j − 1]</code> is the 2<sup>j−1</sup>-th ancestor of <code>mid</code>, again by hypothesis. Climbing 2<sup>j−1</sup> twice from <code>u</code> ends 2<sup>j−1</sup> + 2<sup>j−1</sup> = 2<sup>j</sup> edges above <code>u</code>. So <code>up[u][j] = up[ up[u][j−1] ][j−1]</code> is the 2<sup>j</sup>-th ancestor. ∎</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>10.2 isAncestor is correct <span class="rightHint">subtree = interval</span></summary>
+      <div class="detailsBody">
+        <p>During DFS we never leave <code>u</code> before every node in subtree(<code>u</code>) is discovered. So <code>tin[u]</code> is assigned <i>before</i> any <code>tin[x]</code> with <code>x ∈ subtree(u) \ {u}</code>, and <code>tout[u]</code> is assigned <i>after</i> every <code>tout[x]</code> in that subtree. Therefore:</p>
+        <p><code>v ∈ subtree(u)</code> ⇔ <code>tin[u] ≤ tin[v]</code> and <code>tout[v] ≤ tout[u]</code>.</p>
+        <p>Conversely, if <code>v ∉ subtree(u)</code>, then either DFS has not yet entered <code>u</code> when it enters <code>v</code> (so <code>tin[v] &lt; tin[u]</code>) or DFS has already left <code>u</code> (so <code>tout[u] &lt; tin[v]</code>), in either case violating the condition. ∎</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>10.3 The LCA loop is correct <span class="rightHint">big-to-small bit greedy</span></summary>
+      <div class="detailsBody">
+        <p>If <code>u</code> is an ancestor of <code>v</code>, the deepest common ancestor is <code>u</code>; symmetrically for <code>v</code>. Otherwise neither is an ancestor of the other, so the true LCA <code>w</code> is a strict ancestor of <b>both</b> on different branches.</p>
+        <p>The loop sweeps <code>j</code> from high to low and commits the jump <code>u ← up[u][j]</code> only when <code>up[u][j]</code> is <b>not</b> an ancestor of <code>v</code>. By induction on the loop counter, after processing bit <code>j</code>, the current <code>u</code> is the highest descendant of the original <code>u</code> that is still a strict descendant of the true LCA <code>w</code> and whose <code>2<sup>0..j−1</sup></code> ancestors are all strict descendants of <code>w</code>.</p>
+        <p>After the last bit (j = 0), no further power-of-two jump keeps us strictly below <code>w</code>, so <code>u</code> sits exactly one edge below <code>w</code>. Hence <code>up[u][0] = w = LCA(u, v)</code>. ∎</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>10.4 Distance formula <span class="rightHint">path splits at LCA</span></summary>
+      <div class="detailsBody">
+        <p>Let <code>w = LCA(u, v)</code>. The unique simple path from <code>u</code> to <code>v</code> in a tree is <code>u → w → v</code>. Its edge count is <code>(depth[u] − depth[w]) + (depth[v] − depth[w]) = depth[u] + depth[v] − 2·depth[w]</code>. Replacing <code>depth</code> by <code>distRoot</code> gives the weighted version. ∎</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>10.5 k-th node on path u → v <span class="rightHint">decompose into two kth-ancestor calls</span></summary>
+      <div class="detailsBody">
+        <p>Let <code>w = LCA(u, v)</code>, <code>upLen = depth[u] − depth[w]</code>, <code>downLen = depth[v] − depth[w]</code>, <code>totalLen = upLen + downLen</code>. With our convention <code>k = 0</code> means <code>u</code> itself.</p>
+        <p>If <code>k ≤ upLen</code>, the answer is on the upward leg <code>u → w</code>: it is the <code>k</code>-th ancestor of <code>u</code>. Otherwise the answer is on the downward leg <code>w → v</code>; instead of descending (which we cannot do efficiently), we walk upward from <code>v</code> a distance of <code>totalLen − k</code> — same node. ∎</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- =========================================================
+       SECTION 11 — COMPLEXITY ANALYSIS
+       ========================================================= -->
+  <section class="card" id="complexity">
+    <h2>⏱ 11. Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Memory</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>DFS traversal</td><td>O(n)</td><td>O(n) recursion + O(n) adjacency</td><td>iterative stack if recursion limit is tight</td></tr>
+        <tr><td>Build lifting table</td><td>O(n · LOG) = O(n log n)</td><td>O(n log n)</td><td>standard</td></tr>
+        <tr><td>LCA(u, v)</td><td>O(log n)</td><td>—</td><td>uses I3 + I4</td></tr>
+        <tr><td>kthAncestor(u, k)</td><td>O(log n)</td><td>—</td><td>scans bits of <code>k</code></td></tr>
+        <tr><td>distEdges / distWeight</td><td>O(log n)</td><td>—</td><td>one LCA call</td></tr>
+        <tr><td>kthNodeOnPath</td><td>O(log n)</td><td>—</td><td>one LCA + one kthAncestor</td></tr>
+        <tr><td>Euler Tour + sparse table</td><td>Build O(n log n), Query O(1)</td><td>O(n log n)</td><td>best when only LCA is needed</td></tr>
+        <tr><td>Tarjan offline LCA</td><td>O((n + q) · α(n))</td><td>O(n + q)</td><td>requires all queries known</td></tr>
+        <tr><td>Subtree query via flattening</td><td>O(n) flatten + DS-dependent query</td><td>O(n) + DS</td><td>Fenwick / seg tree / prefix sum</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px;">For competitive programming the binary lifting template is the default — its <code>O(log n)</code> per query is fast enough up to a few million queries, and it gives you distance, k-th ancestor, k-th node on path, and ancestor tests for free.</p>
+  </section>
+  <!-- =========================================================
+       SECTION 12 — TEMPLATE PHILOSOPHY
+       ========================================================= -->
+  <section class="card" id="template-philosophy">
+    <h2>🧩 12. Core Template Philosophy</h2>
+    <p>We use one master struct <code>TreeLCA</code> that owns the whole "rooted-tree query toolkit". It supports every query in this chapter from a single DFS pass plus the lifting table.</p>
+
+    <table>
+      <thead><tr><th>Method</th><th>Returns</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td><code>build(root)</code></td><td>—</td><td>O(n log n)</td></tr>
+        <tr><td><code>lca(u, v)</code></td><td>LCA node</td><td>O(log n)</td></tr>
+        <tr><td><code>kthAncestor(u, k)</code></td><td>node or −1</td><td>O(log n)</td></tr>
+        <tr><td><code>distEdges(u, v)</code></td><td>int (edges)</td><td>O(log n)</td></tr>
+        <tr><td><code>distWeight(u, v)</code></td><td>long long</td><td>O(log n)</td></tr>
+        <tr><td><code>kthNodeOnPath(u, v, k)</code></td><td>node on path (k=0 → u)</td><td>O(log n)</td></tr>
+        <tr><td><code>isAncestor(u, v)</code></td><td>bool</td><td>O(1)</td></tr>
+        <tr><td>Subtree range</td><td><code>[tin[u], tout[u]]</code></td><td>O(1)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Naming contract</h3>
+    <p>Every variant in this chapter — directed, weighted, offline, RMQ-based — uses the same names: <code>adj</code>, <code>up</code>, <code>depth</code>, <code>distRoot</code>, <code>tin</code>, <code>tout</code>, <code>subtreeSize</code>. Variants only change <i>which</i> fields are populated and how they are combined; the mental model is the same.</p>
+
+    <h3>Key indexing rule for k-th node on path</h3>
+    <div class="invariantBox warn"><b class="tag">⚠ k=0 means u</b> Throughout this chapter, <code>kthNodeOnPath(u, v, 0) = u</code> and <code>kthNodeOnPath(u, v, totalLen) = v</code>. Many online judges (e.g. SPOJ QTREE2) use <code>k=1 means u</code>. <b>Convert on input</b> with <code>--k</code> when needed.</div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 13 — MASTER TEMPLATE
+       ========================================================= -->
+  <section class="card" id="master-template">
+    <h2>📄 13. Master Template — <code>TreeLCA</code></h2>
+    <p>This is the reusable struct. Copy-paste-and-go for any contest that needs ancestor or path queries on a static rooted tree.</p>
+    <details open>
+      <summary>TreeLCA — full C++ <span class="rightHint">click to expand / collapse</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct TreeLCA {
+    int n = 0;
+    int LOG = 0;
+    int timer = 0;
+
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj;
+    vector&lt;vector&lt;int&gt;&gt; up;
+
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; tin;
+    vector&lt;int&gt; tout;
+    vector&lt;int&gt; subtreeSize;
+
+    vector&lt;long long&gt; distRoot;
+
+    TreeLCA() {}
+
+    TreeLCA(int n) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        LOG = 1;
+        while ((1 &lt;&lt; LOG) &lt;= max(1, n)) {
+            LOG++;
+        }
+
+        adj.assign(n, {});
+        up.assign(n, vector&lt;int&gt;(LOG, 0));
+
+        depth.assign(n, 0);
+        tin.assign(n, 0);
+        tout.assign(n, 0);
+        subtreeSize.assign(n, 0);
+        distRoot.assign(n, 0);
+
+        timer = 0;
+    }
+
+    void addEdge(int u, int v, long long w = 1) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    void dfs(int u, int p) {
+        tin[u] = timer++;
+        subtreeSize[u] = 1;
+
+        up[u][0] = p;
+
+        for (int j = 1; j &lt; LOG; j++) {
+            up[u][j] = up[up[u][j - 1]][j - 1];
+        }
+
+        for (auto [v, w] : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            depth[v] = depth[u] + 1;
+            distRoot[v] = distRoot[u] + w;
+
+            dfs(v, u);
+
+            subtreeSize[u] += subtreeSize[v];
+        }
+
+        tout[u] = timer - 1;
+    }
+
+    void build(int root = 0) {
+        timer = 0;
+        depth[root] = 0;
+        distRoot[root] = 0;
+
+        dfs(root, root);
+    }
+
+    bool isAncestor(int u, int v) const {
+        return tin[u] &lt;= tin[v] &amp;&amp; tout[v] &lt;= tout[u];
+    }
+
+    int kthAncestor(int u, int k) const {
+        if (k &lt; 0 || k &gt; depth[u]) {
+            return -1;
+        }
+
+        for (int j = 0; j &lt; LOG; j++) {
+            if (k &amp; (1 &lt;&lt; j)) {
+                u = up[u][j];
+            }
+        }
+
+        return u;
+    }
+
+    int lca(int u, int v) const {
+        if (isAncestor(u, v)) {
+            return u;
+        }
+
+        if (isAncestor(v, u)) {
+            return v;
+        }
+
+        for (int j = LOG - 1; j &gt;= 0; j--) {
+            if (!isAncestor(up[u][j], v)) {
+                u = up[u][j];
+            }
+        }
+
+        return up[u][0];
+    }
+
+    int distEdges(int u, int v) const {
+        int w = lca(u, v);
+        return depth[u] + depth[v] - 2 * depth[w];
+    }
+
+    long long distWeight(int u, int v) const {
+        int w = lca(u, v);
+        return distRoot[u] + distRoot[v] - 2LL * distRoot[w];
+    }
+
+    int kthNodeOnPath(int u, int v, int k) const {
+        int w = lca(u, v);
+
+        int upLen = depth[u] - depth[w];
+        int downLen = depth[v] - depth[w];
+        int totalLen = upLen + downLen;
+
+        if (k &lt; 0 || k &gt; totalLen) {
+            return -1;
+        }
+
+        if (k &lt;= upLen) {
+            return kthAncestor(u, k);
+        }
+
+        return kthAncestor(v, totalLen - k);
+    }
+};</code></pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- =========================================================
+       SECTION 14 — LINE BY LINE
+       ========================================================= -->
+  <section class="card" id="line-by-line">
+    <h2>🔬 14. Line-by-Line Code Explanation</h2>
+
+    <h3>14.1 Computing LOG</h3>
+<pre><code>LOG = 1;
+while ((1 &lt;&lt; LOG) &lt;= max(1, n)) LOG++;</code></pre>
+    <p>The loop computes <code>LOG = floor(log<sub>2</sub>(n)) + 1</code> for <code>n &gt; 0</code>, so columns <code>0..LOG−1</code> are available. The largest stored jump is <code>2<sup>LOG−1</sup></code>, the highest power of two not exceeding <code>n</code>. Since any reachable climb length is at most <code>n − 1</code>, its binary representation uses only these bit positions and every reachable ancestor can be reached by a sum of stored jumps. The <code>max(1, n)</code> guards against the pathological <code>n = 0</code> case. For <code>n = 100000</code>, <code>LOG = 17</code>, so the largest jump is <code>2<sup>16</sup> = 65536</code> and these bits together represent any climb up to <code>99999</code>.</p>
+
+    <h3>14.2 Weighted adjacency list</h3>
+<pre><code>vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj;</code></pre>
+    <p>Each edge stores <code>{neighbor, weight}</code>. For unweighted trees we just pass <code>w = 1</code> (the default) and ignore <code>distRoot</code>. Using the same struct for both eliminates an entire family of "I forgot to swap structs" bugs.</p>
+
+    <h3>14.3 DFS entry timestamp</h3>
+<pre><code>tin[u] = timer++;</code></pre>
+    <p>The first thing we do on entering <code>u</code>. <code>tin[u]</code> is the position of <code>u</code> in DFS preorder. This is also the index where <code>u</code>'s value lives in the flat array used for subtree queries.</p>
+
+    <h3>14.4 Root parent convention</h3>
+<pre><code>dfs(root, root);
+// → up[root][0] = root, so up[root][j] = root for all j</code></pre>
+    <p>This is the safety net. With <code>up[root][j] = root</code>, the lifting loop in <code>kthAncestor</code> can fall off the top without crashing — it just sits at the root. The <code>k &gt; depth[u]</code> guard returns <code>-1</code> explicitly when the user really asked for an ancestor that doesn't exist.</p>
+
+    <h3>14.5 Building the lifting table during DFS</h3>
+<pre><code>up[u][0] = p;
+for (int j = 1; j &lt; LOG; j++) {
+    up[u][j] = up[up[u][j - 1]][j - 1];
+}</code></pre>
+    <p>We exploit the order of DFS: when we are at <code>u</code>, the entire row <code>up[p][*]</code> for the parent is already complete (filled when DFS entered <code>p</code>). So <code>up[u][j]</code> can be derived in O(1). This is why we fill the table <i>inside</i> DFS rather than in a separate pass — it saves both code and cache misses.</p>
+
+    <h3>14.6 Recording <code>tout</code> on exit</h3>
+<pre><code>tout[u] = timer - 1;</code></pre>
+    <p>We set <code>tout</code> to <code>timer − 1</code> (the most recent <code>tin</code> ever assigned). Because we set <code>tin</code> with <code>timer++</code>, this is exactly the <code>tin</code> of the last descendant of <code>u</code> — closing the interval <code>[tin[u], tout[u]]</code>. Some texts use a separate exit counter; both are correct, but our version makes the flat array exactly <code>n</code> long (perfect for Fenwick trees).</p>
+
+    <h3>14.7 isAncestor — interval containment</h3>
+<pre><code>bool isAncestor(int u, int v) const {
+    return tin[u] &lt;= tin[v] &amp;&amp; tout[v] &lt;= tout[u];
+}</code></pre>
+    <p>Direct application of Invariant I3. Two integer comparisons, no climbing, no DSU. This is also why <code>isAncestor</code> is <code>O(1)</code> even though <code>lca</code> is <code>O(log n)</code>.</p>
+
+    <h3>14.8 kthAncestor — bit-scan climb</h3>
+<pre><code>for (int j = 0; j &lt; LOG; j++) {
+    if (k &amp; (1 &lt;&lt; j)) {
+        u = up[u][j];
+    }
+}</code></pre>
+    <p>We iterate over the bits of <code>k</code>. For each set bit, we replace <code>u</code> by its 2<sup>j</sup>-th ancestor. The order does not matter because tree ancestry composes commutatively; we scan low-to-high purely as a convention.</p>
+
+    <h3>14.9 The LCA loop — the "stay-below" pattern</h3>
+<pre><code>for (int j = LOG - 1; j &gt;= 0; j--) {
+    if (!isAncestor(up[u][j], v)) {
+        u = up[u][j];
+    }
+}
+return up[u][0];</code></pre>
+    <p>This sweeps bits <b>high-to-low</b>, the opposite direction from <code>kthAncestor</code>. The asymmetry is essential: we are searching for the largest jump that <i>still keeps us below the LCA</i>, so we must try big jumps first. The "stay-below" check is the loop's invariant I4. When all bits are exhausted, <code>u</code>'s next single step is the LCA.</p>
+
+    <h3>14.10 Distance formulas</h3>
+<pre><code>int  distEdges (int u,int v) const { int w=lca(u,v); return depth[u]+depth[v]-2*depth[w]; }
+long long distWeight(int u,int v) const { int w=lca(u,v); return distRoot[u]+distRoot[v]-2LL*distRoot[w]; }</code></pre>
+    <p>The <code>2LL</code> on the weighted version forces <code>long long</code> arithmetic. Edge weights up to 10<sup>9</sup> over a chain of 10<sup>5</sup> nodes already overflow <code>int</code>.</p>
+
+    <h3>14.11 k-th node on path — the upLen/downLen split</h3>
+<pre><code>int w = lca(u, v);
+int upLen   = depth[u] - depth[w];
+int downLen = depth[v] - depth[w];
+int totalLen = upLen + downLen;
+
+if (k &lt;= upLen) return kthAncestor(u, k);
+return kthAncestor(v, totalLen - k);</code></pre>
+    <p>If <code>k</code> is on the upward leg, climb directly from <code>u</code>. If it is on the downward leg, climb upward from <code>v</code> by <code>totalLen − k</code> edges — the same node, reached from the other side. This trick is what avoids ever having to descend the tree, which would be expensive in general.</p>
+
+    <h3>14.12 Iterative <code>buildIterative()</code> — drop-in replacement for deep chains</h3>
+    <p>The recursive <code>dfs()</code> above is short and clear but relies on the process call stack. On adversarial inputs (e.g. a chain of <code>n = 10<sup>5</sup>+</code> nodes) C++'s default stack can overflow long before <code>n</code> is exhausted. The snippet below is a faithful, in-place replacement that produces the exact same <code>tin</code>, <code>tout</code>, <code>depth</code>, <code>distRoot</code>, <code>subtreeSize</code>, and <code>up[][]</code> arrays as the recursive version, but uses an explicit stack of frames instead. The inclusive <code>tin/tout</code> convention is preserved: <code>tout[u] = timer - 1</code> at exit, matching the recursive code byte-for-byte.</p>
+
+    <p>To use it, leave the recursive <code>dfs()</code> in place for pedagogy and simply call <code>solver.buildIterative(0)</code> instead of <code>solver.build(0)</code> in the main function. Nothing else changes.</p>
+
+<pre><code>void buildIterative(int root = 0) {
+    timer = 0;
+    depth[root] = 0;
+    distRoot[root] = 0;
+
+    struct Frame {
+        int u, p, idx;
+    };
+
+    vector&lt;Frame&gt; st;
+    st.push_back({root, root, 0});
+
+    tin[root] = timer++;
+    subtreeSize[root] = 1;
+    up[root][0] = root;
+    for (int j = 1; j &lt; LOG; j++) {
+        up[root][j] = up[up[root][j - 1]][j - 1];
+    }
+
+    while (!st.empty()) {
+        Frame &amp;f = st.back();
+        int u = f.u;
+
+        if (f.idx &lt; (int)adj[u].size()) {
+            auto [v, w] = adj[u][f.idx++];
+            if (v == f.p) {
+                continue;
+            }
+
+            depth[v] = depth[u] + 1;
+            distRoot[v] = distRoot[u] + w;
+
+            tin[v] = timer++;
+            subtreeSize[v] = 1;
+
+            up[v][0] = u;
+            for (int j = 1; j &lt; LOG; j++) {
+                up[v][j] = up[up[v][j - 1]][j - 1];
+            }
+
+            st.push_back({v, u, 0});
+        } else {
+            tout[u] = timer - 1;
+
+            if (u != f.p) {
+                subtreeSize[f.p] += subtreeSize[u];
+            }
+
+            st.pop_back();
+        }
+    }
+}</code></pre>
+
+    <p>The structure is the classical "explicit recursion-stack" pattern. Each frame remembers which child index it is currently processing. When the frame's child index reaches the size of the adjacency list, the frame closes: we set <code>tout[u]</code> and fold <code>subtreeSize[u]</code> into the parent before popping. The order of operations — stamp <code>tin</code> and fill <code>up[][]</code> at <i>push</i> time, stamp <code>tout</code> and accumulate <code>subtreeSize</code> at <i>pop</i> time — mirrors what the recursive DFS does before and after the recursive call, so the contract on every produced array is identical.</p>
+    <div class="chips">
+      <span class="chip good">Stack-safe for deep chains</span>
+      <span class="chip">Same tin/tout/depth/distRoot/up as recursive</span>
+      <span class="chip">Drop-in: just call <code>buildIterative(root)</code></span>
+    </div>
+  </section>
+  <!-- =========================================================
+       SECTION 15 — EULER TOUR SUBTREE FLATTENING
+       ========================================================= -->
+  <section class="card" id="euler-flatten">
+    <h2>🪞 15. Euler Tour — Subtree Flattening</h2>
+    <p>Binary lifting answers ancestor and path queries. A different but complementary idea — <b>tree flattening</b> — handles subtree queries by reducing them to array range queries.</p>
+
+    <h3>The construction</h3>
+    <p>During DFS, append the value of each node to a flat array at position <code>tin[u]</code>:</p>
+<pre><code>tin[u] = timer++;
+flat[tin[u]] = value[u];
+
+for (int v : children(u)) dfs(v);
+
+tout[u] = timer - 1;</code></pre>
+    <p>Because DFS visits all descendants of <code>u</code> before backtracking, subtree(<code>u</code>) maps to the contiguous slice <code>flat[tin[u] .. tout[u]]</code>. From this point on every subtree question is just an array range question.</p>
+
+    <h3>What this buys you</h3>
+    <table>
+      <thead><tr><th>Tree operation</th><th>Becomes (on flat[])</th><th>Data structure</th></tr></thead>
+      <tbody>
+        <tr><td>subtree sum / min / max / xor</td><td>range sum / min / max / xor</td><td>Fenwick, segment tree</td></tr>
+        <tr><td>point update (one node's value)</td><td>point update at <code>tin[u]</code></td><td>Fenwick, segment tree</td></tr>
+        <tr><td>subtree add + point query</td><td>range add + point query</td><td>Fenwick difference trick</td></tr>
+        <tr><td>subtree add + subtree sum</td><td>range add + range sum</td><td>lazy seg tree, two Fenwicks</td></tr>
+        <tr><td>static subtree sum (no updates)</td><td>prefix sum array</td><td>plain <code>vector&lt;long long&gt;</code></td></tr>
+      </tbody>
+    </table>
+
+    <!-- FLATTENING TRACER -->
+    <h3 id="flat-tracer">🎯 Interactive — Subtree Flattening Tracer</h3>
+    <p class="note">Each node has a small value. Click any node — its subtree slice in the flat array highlights, and we display the sum across that slice. This is exactly what a Fenwick tree computes in <code>O(log n)</code>.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Subtree-to-Range</span>
+        <div class="diagramTools">
+          <span class="chip">Click any node</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:300px;">
+          <svg id="flatSvg" viewBox="0 0 640 420" style="width:100%;max-height:440px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 280px;min-width:240px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">Selected node</div>
+          <div id="flatPick" class="statusPanel" style="font-size:22px;font-weight:950;">click a node</div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Subtree interval</div>
+          <div id="flatInterval" class="statusPanel" style="font-size:22px;font-weight:950;">—</div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">Sum on slice</div>
+          <div id="flatSum" class="statusPanel" style="font-size:22px;font-weight:950;color:var(--good);">—</div>
+        </div>
+      </div>
+      <div style="font-weight:900;font-size:20px;margin:14px 0 6px;">flat[] (length n, indexed by tin)</div>
+      <div id="flatArr" class="flatArr"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#2563eb;"></span> Selected node</span>
+        <span><span class="swatch" style="background:var(--hl-cell);"></span> Subtree slice</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 16 — EULER TOUR + RMQ LCA
+       ========================================================= -->
+  <section class="card" id="euler-rmq">
+    <h2>🏔 16. Euler Tour + RMQ — LCA in O(1)</h2>
+    <p>Binary lifting gives <code>O(log n)</code> per LCA query. For purely-LCA, purely-static problems we can do better: <code>O(1)</code> per query after <code>O(n log n)</code> preprocessing.</p>
+
+    <h3>The full Euler Tour</h3>
+    <p>Unlike the subtree flattening (where each node appears once), the <b>full Euler Tour</b> appends a node every time DFS enters it <i>and</i> every time DFS returns to it from a child. The array has length <code>2n − 1</code>.</p>
+<pre><code>void dfs(int u, int p, int d) {
+    depth[u] = d;
+    if (first[u] == -1) first[u] = (int)euler.size();
+    euler.push_back(u);
+    eulerDepth.push_back(d);
+    for (int v : adj[u]) if (v != p) {
+        dfs(v, u, d + 1);
+        euler.push_back(u);            // record u again on return
+        eulerDepth.push_back(d);
+    }
+}</code></pre>
+
+    <h3>Why this turns LCA into a range minimum</h3>
+    <p>Between the first occurrence of <code>u</code> and the first occurrence of <code>v</code> in the Euler array, DFS must <b>climb</b> from <code>u</code> up to their common ancestor and then <b>descend</b> back down to <code>v</code>. The shallowest node visited in that window is precisely LCA(<code>u</code>, <code>v</code>) — anything shallower would mean DFS left the common ancestor's subtree before reaching <code>v</code>, contradicting the fact that <code>v</code> is in that subtree.</p>
+    <div class="formula">LCA(u, v) = the node with minimum eulerDepth in euler[first[u] .. first[v]]</div>
+    <p class="note">Range minimum on a static array is a classic sparse-table problem: <code>O(n log n)</code> build, <code>O(1)</code> query.</p>
+
+    <!-- RMQ LCA TRACER -->
+    <h3 id="rmq-tracer">🎯 Interactive — Euler Tour LCA</h3>
+    <p class="note">Pick two nodes. The euler[] array and its depth[] highlight the chosen window; the cell with minimum depth (purple) is the LCA.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Euler Tour → RMQ → LCA</span>
+        <div class="diagramTools">
+          <span class="chip">Pick u and v below</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1;min-width:300px;">
+          <svg id="rmqSvg" viewBox="0 0 640 420" style="width:100%;max-height:430px;border-radius:14px;display:block;"></svg>
+        </div>
+        <div style="flex:0 0 280px;min-width:240px;">
+          <div style="font-weight:900;font-size:20px;margin-bottom:6px;">u</div>
+          <div id="rmqUPick" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">v</div>
+          <div id="rmqVPick" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          <div style="font-weight:900;font-size:20px;margin:12px 0 6px;">Window [first[u], first[v]]</div>
+          <div id="rmqWindow" class="statusPanel" style="font-size:20px;">—</div>
+          <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">LCA</div>
+          <div id="rmqAns" class="statusPanel" style="font-size:22px;font-weight:950;color:#7c3aed;">—</div>
+        </div>
+      </div>
+      <div style="font-weight:900;font-size:20px;margin:14px 0 6px;">euler[] (length 2n − 1)</div>
+      <div id="rmqEuler" class="flatArr"></div>
+      <div style="font-weight:900;font-size:20px;margin:10px 0 6px;">eulerDepth[]</div>
+      <div id="rmqDepth" class="flatArr"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--hl-cell);"></span> In window</span>
+        <span><span class="swatch" style="background:rgba(124,58,237,.55);"></span> Min depth → LCA</span>
+      </div>
+    </div>
+
+    <h3>Reference template</h3>
+    <details>
+      <summary>EulerRMQLCA — full C++ <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct EulerRMQLCA {
+    int n;
+    vector&lt;vector&lt;int&gt;&gt; adj;
+
+    vector&lt;int&gt; first;
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; euler;
+    vector&lt;int&gt; eulerDepth;
+
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;int&gt;&gt; st;
+
+    EulerRMQLCA(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+        adj.assign(n, {});
+        first.assign(n, -1);
+        depth.assign(n, 0);
+        euler.clear();
+        eulerDepth.clear();
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p, int d) {
+        depth[u] = d;
+
+        if (first[u] == -1) {
+            first[u] = (int)euler.size();
+        }
+
+        euler.push_back(u);
+        eulerDepth.push_back(d);
+
+        for (int v : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            dfs(v, u, d + 1);
+
+            euler.push_back(u);
+            eulerDepth.push_back(d);
+        }
+    }
+
+    int betterIndex(int i, int j) const {
+        if (eulerDepth[i] &lt; eulerDepth[j]) {
+            return i;
+        }
+        return j;
+    }
+
+    void buildSparseTable() {
+        int m = (int)euler.size();
+
+        lg.assign(m + 1, 0);
+        for (int i = 2; i &lt;= m; i++) {
+            lg[i] = lg[i / 2] + 1;
+        }
+
+        int K = lg[m] + 1;
+        st.assign(K, vector&lt;int&gt;(m));
+
+        for (int i = 0; i &lt; m; i++) {
+            st[0][i] = i;
+        }
+
+        for (int k = 1; k &lt; K; k++) {
+            for (int i = 0; i + (1 &lt;&lt; k) &lt;= m; i++) {
+                int a = st[k - 1][i];
+                int b = st[k - 1][i + (1 &lt;&lt; (k - 1))];
+                st[k][i] = betterIndex(a, b);
+            }
+        }
+    }
+
+    void build(int root = 0) {
+        dfs(root, -1, 0);
+        buildSparseTable();
+    }
+
+    int rmqIndex(int l, int r) const {
+        int len = r - l + 1;
+        int k = lg[len];
+
+        int a = st[k][l];
+        int b = st[k][r - (1 &lt;&lt; k) + 1];
+
+        return betterIndex(a, b);
+    }
+
+    int lca(int u, int v) const {
+        int l = first[u];
+        int r = first[v];
+
+        if (l &gt; r) {
+            swap(l, r);
+        }
+
+        return euler[rmqIndex(l, r)];
+    }
+
+    int distEdges(int u, int v) const {
+        int w = lca(u, v);
+        return depth[u] + depth[v] - 2 * depth[w];
+    }
+};</code></pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- =========================================================
+       SECTION 17 — THREE EULER-STYLE IDEAS (DISTINCTION)
+       ========================================================= -->
+  <section class="card" id="distinction">
+    <h2>⚠️ 17. Three Euler-Style Ideas — Don't Confuse Them</h2>
+    <p>The word "Euler tour" gets reused for at least three different constructions. Mixing them up is the single most common source of WA on tree problems. They differ in <b>array length</b>, <b>what is stored</b>, and <b>what they can answer</b>.</p>
+
+    <div class="grid3">
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">17.1 Subtree flattening</h3>
+        <p style="margin:0;"><b>Length:</b> n.<br/><b>Each node appears:</b> once, at <code>tin[u]</code>.<br/><b>Use:</b> subtree sum / update / min / xor via Fenwick or seg tree.<br/><b>Example:</b> <code>[0, 1, 3, 4, 2]</code> for the sample tree.</p>
+      </div>
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">17.2 Full Euler Tour</h3>
+        <p style="margin:0;"><b>Length:</b> 2n − 1.<br/><b>Each node appears:</b> deg(u) + 1 times.<br/><b>Use:</b> LCA via RMQ on depth.<br/><b>Example:</b> <code>[0, 1, 3, 1, 4, 1, 0, 2, 0]</code>.</p>
+      </div>
+      <div class="statusPanel">
+        <h3 style="margin:0 0 6px;">17.3 Entry/exit timestamps</h3>
+        <p style="margin:0;"><b>Length:</b> 0 (no array!).<br/><b>Each node has:</b> <code>tin[u]</code>, <code>tout[u]</code>.<br/><b>Use:</b> ancestor test <code>O(1)</code>, subtree interval bounds.<br/>No physical Euler array is stored.</p>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px;">A useful mnemonic: <b>(1)</b> for subtree queries, <b>(2)</b> for LCA-as-RMQ, <b>(3)</b> for ancestor tests. They are friends, not the same person.</p>
+  </section>
+  <!-- =========================================================
+       SECTION 18 — TARJAN OFFLINE LCA
+       ========================================================= -->
+  <section class="card" id="tarjan">
+    <h2>🧮 18. Tarjan Offline LCA</h2>
+    <p>If all queries are known <i>before</i> we start, we can answer every LCA in amortized <code>O(α(n))</code> using a single DFS plus a Disjoint Set Union (DSU). This is Tarjan's offline algorithm.</p>
+
+    <h3>The mental model</h3>
+    <p>Think of DFS sweeping over the tree. A subtree that DFS has fully finished collapses into a single DSU component. Inside that component we remember one designated representative — the <i>ancestor</i> of the component, which is the node that "owns" this finished subtree from the outside view.</p>
+
+    <p>When DFS is currently at node <code>u</code> and it sees a query <code>(u, v)</code>:</p>
+    <p style="font-weight:900;">— If <code>v</code> has already been visited, then <code>LCA(u, v) = ancestor[find(v)]</code>.</p>
+    <p>Why? Because <code>v</code> is now inside some already-finished component. That component's ancestor is the topmost node DFS has not yet left after merging <code>v</code>'s subtree into its parent's. That topmost node is on the active DFS path; the deepest such node that is also an ancestor of <code>u</code> is the LCA.</p>
+
+    <div class="invariantBox"><b class="tag">Tarjan Invariant</b> After DFS finishes child subtree <code>v</code> of <code>u</code>, we <code>unite(u, v)</code> and set <code>ancestor[find(u)] = u</code>. So the merged component's official ancestor is always the highest still-open node — exactly what every later query against this subtree needs.</div>
+
+    <h3>Algorithm sketch</h3>
+<pre><code>dfs(u, p):
+    ancestor[find(u)] = u
+    visited[u] = true
+
+    for each child v of u:
+        distRoot[v] = distRoot[u] + w
+        dfs(v, u)
+        unite(u, v)
+        ancestor[find(u)] = u
+
+    for each query (u, v, id) attached to u:
+        if visited[v]:
+            w = ancestor[find(v)]
+            answer[id] = distRoot[u] + distRoot[v] - 2 * distRoot[w]</code></pre>
+    <p class="note">The query is answered <b>only when the other endpoint has been visited</b> — this is the symmetric counterpart of the visited[] test. Each query is stored at both endpoints; the one we process is the second one DFS reaches.</p>
+
+    <h3>Complexity</h3>
+    <div class="chips">
+      <span class="chip">Build: O((n + q) · α(n))</span>
+      <span class="chip">Practically linear</span>
+      <span class="chip">Memory: O(n + q)</span>
+      <span class="chip bad">Requires ALL queries known in advance</span>
+    </div>
+
+    <h3>Reference template (weighted-distance ready)</h3>
+    <details>
+      <summary>TarjanOfflineLCA — full C++ <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct DSU {
+    vector&lt;int&gt; parent;
+    vector&lt;int&gt; sz;
+
+    DSU(int n = 0) {
+        init(n);
+    }
+
+    void init(int n) {
+        parent.resize(n);
+        sz.assign(n, 1);
+        iota(parent.begin(), parent.end(), 0);
+    }
+
+    int find(int u) {
+        if (parent[u] == u) {
+            return u;
+        }
+        return parent[u] = find(parent[u]);
+    }
+
+    void unite(int u, int v) {
+        u = find(u);
+        v = find(v);
+
+        if (u == v) {
+            return;
+        }
+
+        if (sz[u] &lt; sz[v]) {
+            swap(u, v);
+        }
+
+        parent[v] = u;
+        sz[u] += sz[v];
+    }
+};
+
+struct TarjanOfflineLCA {
+    int n;
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; queries;
+
+    vector&lt;int&gt; ancestor;
+    vector&lt;int&gt; visited;
+    vector&lt;long long&gt; distRoot;
+    vector&lt;long long&gt; answer;
+
+    DSU dsu;
+
+    TarjanOfflineLCA(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        adj.assign(n, {});
+        queries.assign(n, {});
+
+        ancestor.assign(n, 0);
+        visited.assign(n, 0);
+        distRoot.assign(n, 0);
+
+        dsu.init(n);
+    }
+
+    void addEdge(int u, int v, long long w = 1) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    void addQuery(int id, int u, int v) {
+        queries[u].push_back({v, id});
+        queries[v].push_back({u, id});
+    }
+
+    void dfs(int u, int p) {
+        ancestor[dsu.find(u)] = u;
+        visited[u] = 1;
+
+        for (auto [v, w] : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            distRoot[v] = distRoot[u] + w;
+
+            dfs(v, u);
+
+            dsu.unite(u, v);
+            ancestor[dsu.find(u)] = u;
+        }
+
+        for (auto [v, id] : queries[u]) {
+            if (visited[v]) {
+                int w = ancestor[dsu.find(v)];
+                answer[id] = distRoot[u] + distRoot[v] - 2LL * distRoot[w];
+            }
+        }
+    }
+
+    vector&lt;long long&gt; solve(int root, int queryCount) {
+        answer.assign(queryCount, 0);
+        distRoot[root] = 0;
+        dfs(root, root);
+        return answer;
+    }
+};</code></pre>
+      </div>
+    </details>
+  </section>
+  <!-- =========================================================
+       SECTION 19 — EDGE-CASE AUDIT
+       ========================================================= -->
+  <section class="card" id="edge-cases">
+    <h2>🧪 19. Edge-Case Audit (Centralized)</h2>
+    <p>Run through this list before submitting. Each item has caused a real WA at some point.</p>
+    <table>
+      <thead><tr><th>Edge case</th><th>What can go wrong</th><th>Defense</th></tr></thead>
+      <tbody>
+        <tr><td><code>n = 1</code></td><td>LOG loop never runs, <code>up[0][*]</code> uninitialized</td><td>The <code>max(1, n)</code> in <code>LOG</code> initialization and <code>up[root][0] = root</code> together cover this.</td></tr>
+        <tr><td><code>u = v</code></td><td>Some implementations return parent, not <code>u</code></td><td><code>isAncestor(u, u)</code> is true by the interval test, so <code>lca</code> returns <code>u</code> immediately.</td></tr>
+        <tr><td>One endpoint is ancestor of the other</td><td>Lifting loop overshoots</td><td>The two early <code>isAncestor</code> checks at the top of <code>lca</code> are not optional.</td></tr>
+        <tr><td>Query involving the root</td><td>Climbing above root</td><td>Convention <code>up[root][j] = root</code> makes overflows benign.</td></tr>
+        <tr><td><code>k = 0</code> for k-th node on path</td><td>Some judges define k=1 as u</td><td>Decide once: our convention is k=0 → u. Convert on input with <code>--k</code> if needed.</td></tr>
+        <tr><td><code>k = totalLen</code></td><td>Hits the v-side branch boundary</td><td>The <code>k &lt;= upLen</code> test handles equality on the u-side; using <code>&lt;=</code> not <code>&lt;</code> is intentional.</td></tr>
+        <tr><td><code>k &gt; totalLen</code></td><td>kthAncestor returns -1</td><td>Explicit guard at function entry.</td></tr>
+        <tr><td>Weighted distance overflow</td><td>Edges up to 10<sup>9</sup>, n up to 10<sup>5</sup> → 10<sup>14</sup></td><td><code>long long distRoot[]</code>; the <code>2LL</code> multiplier.</td></tr>
+        <tr><td>Input is 1-based</td><td>Off-by-one indexing</td><td><code>--u; --v;</code> on input; <code>+ 1</code> on output.</td></tr>
+        <tr><td>Multiple test cases</td><td>State leaks between cases</td><td><code>init(n)</code> at the top of every test case clears <i>everything</i>.</td></tr>
+        <tr><td>Recursive DFS stack overflow</td><td>Deep chains (n = 10<sup>5</sup>+) can blow the default stack in C++.</td><td>The tutorial templates use recursive DFS for clarity; for judges with adversarial chains or small stack limits, convert the DFS to the iterative version shown in the note below or increase the stack only when the judge environment allows it.</td></tr>
+        <tr><td>LOG too small</td><td>kthAncestor with large k misses a bit</td><td>The <code>while ((1 &lt;&lt; LOG) &lt;= max(1, n))</code> loop guarantees enough bits.</td></tr>
+        <tr><td>Forgot to clear adjacency</td><td>Old edges resurface in next test case</td><td><code>adj.assign(n, {})</code> in <code>init</code>.</td></tr>
+        <tr><td>Confusing subtree Euler order with full Euler Tour</td><td>RMQ LCA returns garbage</td><td>See section 17. The full tour stores each node 2deg+1 times, not once.</td></tr>
+        <tr><td>Tarjan: query (u, v) answered too early</td><td>Wrong LCA on uninitialized DSU state</td><td><code>if (visited[v])</code> guard is mandatory.</td></tr>
+        <tr><td>Inclusive/exclusive subtree bounds</td><td>Fenwick off-by-one</td><td>This template uses inclusive <code>[tin[u], tout[u]]</code> on both ends.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="invariantBox warn">
+      <b class="tag">AC-ready stack note</b>
+      The recursive DFS versions are intentionally kept short for teaching and are accepted on many judges with safe stack settings. For strict production use on arbitrary deep chains, replace the DFS with an iterative enter/exit stack so that <code>tin</code>, <code>tout</code>, <code>depth</code>, <code>distRoot</code>, and <code>up</code> are produced without relying on the process call stack. See §14.12 for a drop-in iterative <code>buildIterative()</code> replacement.
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 20 — COMMON PITFALLS
+       ========================================================= -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ 20. Common Pitfalls / Bugs</h2>
+
+    <h3>20.1 Using subtree Euler order to compute LCA by RMQ</h3>
+    <p>The subtree order has each node <i>once</i>. There is no "second occurrence after the children" to mark the climb. RMQ on this array does not yield the LCA — it yields garbage. RMQ LCA needs the <b>full</b> Euler Tour (each node deg(u)+1 times).</p>
+
+    <h3>20.2 Returning <code>u</code> instead of <code>up[u][0]</code></h3>
+    <p>After the lifting loop in <code>lca(u, v)</code>, the moving pointer is <b>one edge below</b> the LCA. Returning <code>u</code> gives a wrong answer that is correct in exactly half of the cases (when the test already returned from the initial <code>isAncestor</code> short circuit). This bug is famously elusive in stress tests because the easy cases pass.</p>
+
+    <h3>20.3 k-th node indexing confusion</h3>
+    <p>This tutorial uses <code>k = 0 → u</code>. Several judges (SPOJ QTREE2 among them) use <code>k = 1 → u</code>. Settle the convention <i>once</i> in the I/O block (typically <code>--k;</code> on input) and never touch <code>kthNodeOnPath</code> for the rest of the solution. Do not patch the discrepancy inside the data structure.</p>
+
+    <h3>20.4 <code>distRoot</code> stored as <code>int</code></h3>
+    <p>Edge weights are typically up to 10<sup>9</sup>. With n up to 10<sup>5</sup>, distances can reach 10<sup>14</sup>. Always use <code>long long</code>. Note the <code>2LL</code> in <code>distWeight</code> — without it, even with <code>long long</code> operands, the literal <code>2</code> can promote to <code>int</code> before multiplication in some edge cases.</p>
+
+    <h3>20.5 Tarjan query answered before <code>v</code> is visited</h3>
+    <p>Each query is stored at both endpoints. The correct one to answer is the one DFS reaches second — i.e. the moment we are at <code>u</code> and <code>v</code> is already marked visited. Skipping the guard leads to using uninitialized <code>ancestor[]</code> entries and reporting LCAs that don't exist.</p>
+
+    <h3>20.6 Forgetting to set <code>up[root][0] = root</code></h3>
+    <p>If <code>up[root][0]</code> is left as something else (zero, garbage, −1), a <code>kthAncestor</code> call with <code>k</code> equal to <code>depth[u]</code> may walk off the end. The DFS in this template handles this by calling <code>dfs(root, root)</code> — the parent of the root is itself.</p>
+
+    <h3>20.7 Recomputing depth on each lifting iteration</h3>
+    <p>Reading <code>depth[u]</code> inside the lift loop instead of comparing with <code>depth[v]</code> once is harmless but slow. Worse is using <code>depth</code> instead of <code>isAncestor</code> as the "stay below LCA" test — that breaks when <code>u</code> and <code>v</code> are on different branches at the same depth.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 21 — DECISION GUIDE
+       ========================================================= -->
+  <section class="card" id="decision-guide">
+    <h2>🧭 21. Decision &amp; Recognition Guide</h2>
+    <p>This is the table to glance at during a contest, after you've read the problem twice.</p>
+    <table>
+      <thead><tr><th>Requirement</th><th>Best technique</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Online LCA queries</td><td>Binary lifting</td><td>O(log n) per query, also gives distance + k-th node free.</td></tr>
+        <tr><td>Distance between nodes</td><td>Binary lifting (LCA + depth/distRoot)</td><td>O(log n) per query, no extra storage.</td></tr>
+        <tr><td>k-th ancestor</td><td>Binary lifting</td><td>Direct bit scan on <code>k</code>.</td></tr>
+        <tr><td>k-th node on path</td><td>Binary lifting</td><td>Split at LCA, two kthAncestor calls.</td></tr>
+        <tr><td>Ancestor checking <code>isAncestor(u, v)</code></td><td>tin/tout</td><td>Two integer comparisons, O(1).</td></tr>
+        <tr><td>Subtree sum / update</td><td>Euler flattening + Fenwick / seg tree</td><td>Range turns subtree into <code>[tin[u], tout[u]]</code>.</td></tr>
+        <tr><td>O(1) LCA query after preprocessing</td><td>Full Euler Tour + sparse table RMQ</td><td>Best for purely-LCA problems with many queries.</td></tr>
+        <tr><td>All queries known offline</td><td>Tarjan offline LCA</td><td>O((n+q)α(n)) — fastest in practice.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Quick reflex rules</h3>
+    <p>If the problem is <b>static</b> and the question is <b>about ancestors or path distance</b>, reach for <code>TreeLCA</code> first. If the question is <b>about subtrees</b>, flatten with DFS and switch to a Fenwick tree. If the question is <b>only LCA, very many queries, no updates</b>, consider the <code>O(1)</code>-query Euler-Tour + sparse table. If <b>all queries are listed up front</b>, Tarjan is the cheapest. If the tree <b>changes</b>, none of these work — look at link-cut trees or Euler-tour trees for that case.</p>
+
+    <h3>Common confusion note</h3>
+    <p>The word "Euler tour" appears in this chapter in two completely different roles: <b>subtree flattening</b> (each node once) and <b>full Euler Tour for LCA RMQ</b> (each node deg(u)+1 times). They share an ancestor in DFS theory but solve different problems. A third trap is mistakenly equating "Euler tour" with "Euler path" — the latter (visits every <i>edge</i> once) is an entirely different topic covered in chapter 13.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 22 — VARIANTS &amp; EXTENSIONS
+       ========================================================= -->
+  <section class="card" id="variants">
+    <h2>🪄 22. Variants &amp; Extensions</h2>
+
+    <h3>22.1 Unweighted vs weighted</h3>
+    <p>Use the same struct. For unweighted trees, pass <code>w = 1</code> (the default in <code>addEdge</code>) and read <code>distEdges</code> instead of <code>distWeight</code>. The lifting table is identical because weights do not affect <i>ancestry</i>.</p>
+
+    <h3>22.2 Distance in number of edges only</h3>
+    <p>Skip <code>distRoot</code> entirely. Compute distance from depths alone: <code>depth[u] + depth[v] − 2·depth[LCA]</code>. Saves a vector of <code>long long</code>s.</p>
+
+    <h3>22.3 Multiple roots / forest</h3>
+    <p>Run DFS from each root. Use a single global <code>timer</code> so that <code>tin</code>/<code>tout</code> intervals never overlap across trees. <code>isAncestor</code> then correctly returns false for cross-tree pairs.</p>
+
+    <h3>22.4 Path aggregates over min / max / xor</h3>
+    <p>Store <code>up[u][j]</code> alongside a parallel array <code>aggUp[u][j]</code> that holds the min/max/xor of edge weights on the 2<sup>j</sup>-edge jump. Same recurrence: <code>aggUp[u][j] = combine(aggUp[u][j−1], aggUp[ up[u][j−1] ][j−1])</code>. Query the path's aggregate by accumulating <code>aggUp</code> as you lift, on both sides of the LCA.</p>
+
+    <h3>22.5 Subtree updates that touch only descendants of <code>u</code></h3>
+    <p>Use the difference trick on the flat array: a Fenwick tree storing <code>+x</code> at <code>tin[u]</code> and <code>−x</code> at <code>tout[u] + 1</code> turns "add x to every node in subtree(u)" into two point updates. Point query at <code>tin[v]</code> returns the accumulated value at <code>v</code>.</p>
+
+    <h3>22.6 Persistent path counters (root-to-node)</h3>
+    <p>Build a persistent segment tree where version <code>x</code> is the multiset of values on the path root → <code>x</code>. The values on path u → v are <code>version[u] + version[v] − version[LCA] − version[parent[LCA]]</code>. This is the technique behind Problem 6 below (SPOJ COT).</p>
+
+    <h3>22.7 Directed trees (arborescence)</h3>
+    <p>If edges are directed from parent to child, only push <code>{child, w}</code> into <code>adj[parent]</code>. The DFS becomes simpler — no <code>if (v == p)</code> check needed — and lifting works unchanged.</p>
+  </section>
+  <!-- =========================================================
+       SECTION 23 — PROBLEM-BASED LEARNING
+       ========================================================= -->
+  <section class="card" id="problems">
+    <h2>🚀 23. Problem-Based Learning</h2>
+    <p>Six worked solutions, each touching a different technique from this chapter. Every problem follows the same template: <b>story → abstraction → why this technique fits → full code → complexity → link</b>.</p>
+  </section>
+
+  <!-- ============= PROBLEM 1 ============= -->
+  <section class="card" id="problem1">
+    <h2>P1 — CSES Company Queries II</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CSES-1688" target="_blank">https://vjudge.net/problem/CSES-1688</a></p>
+
+    <h3>Problem story</h3>
+    <p>You are given a company hierarchy tree where every employee has one boss. For pairs of employees <code>(u, v)</code>, find their lowest common boss — the deepest employee who is a boss (direct or indirect) of both.</p>
+
+    <h3>Abstraction</h3>
+    <p>This is exactly <code>LCA(u, v)</code> on the company tree.</p>
+
+    <h3>Why binary lifting fits</h3>
+    <p>Queries are online (we must answer each before reading the next), there are many of them (up to 2·10<sup>5</sup>), and the tree is static. Binary lifting gives <code>O(log n)</code> per query after <code>O(n log n)</code> preprocessing — easily fast enough.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct LCA {
+    int n;
+    int LOG;
+    int timer;
+
+    vector&lt;vector&lt;int&gt;&gt; adj;
+    vector&lt;vector&lt;int&gt;&gt; up;
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; tin;
+    vector&lt;int&gt; tout;
+
+    LCA(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+        LOG = 1;
+
+        while ((1 &lt;&lt; LOG) &lt;= max(1, n)) {
+            LOG++;
+        }
+
+        timer = 0;
+
+        adj.assign(n, {});
+        up.assign(n, vector&lt;int&gt;(LOG, 0));
+        depth.assign(n, 0);
+        tin.assign(n, 0);
+        tout.assign(n, 0);
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p) {
+        tin[u] = timer++;
+
+        up[u][0] = p;
+
+        for (int j = 1; j &lt; LOG; j++) {
+            up[u][j] = up[up[u][j - 1]][j - 1];
+        }
+
+        for (int v : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            depth[v] = depth[u] + 1;
+            dfs(v, u);
+        }
+
+        tout[u] = timer - 1;
+    }
+
+    void build(int root = 0) {
+        timer = 0;
+        depth[root] = 0;
+        dfs(root, root);
+    }
+
+    bool isAncestor(int u, int v) const {
+        return tin[u] &lt;= tin[v] &amp;&amp; tout[v] &lt;= tout[u];
+    }
+
+    int lca(int u, int v) const {
+        if (isAncestor(u, v)) {
+            return u;
+        }
+
+        if (isAncestor(v, u)) {
+            return v;
+        }
+
+        for (int j = LOG - 1; j &gt;= 0; j--) {
+            if (!isAncestor(up[u][j], v)) {
+                u = up[u][j];
+            }
+        }
+
+        return up[u][0];
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    LCA solver(n);
+
+    for (int child = 1; child &lt; n; child++) {
+        int parent;
+        cin &gt;&gt; parent;
+        --parent;
+
+        solver.addEdge(parent, child);
+    }
+
+    solver.build(0);
+
+    while (q--) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        --u;
+        --v;
+
+        cout &lt;&lt; solver.lca(u, v) + 1 &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">Preprocessing: O(n log n)</span>
+      <span class="chip">Each query: O(log n)</span>
+      <span class="chip">Memory: O(n log n)</span>
+    </div>
+  </section>
+
+  <!-- ============= PROBLEM 2 ============= -->
+  <section class="card" id="problem2">
+    <h2>P2 — CSES Subtree Queries</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CSES-1137" target="_blank">https://vjudge.net/problem/CSES-1137</a></p>
+
+    <h3>Problem story</h3>
+    <p>Each node of a rooted tree has a value. Support two operations: update the value of a single node, and report the sum of values in the subtree of a node.</p>
+
+    <h3>Abstraction</h3>
+    <p>Flatten the tree: <code>subtree(u) = [tin[u], tout[u]]</code> on the DFS order array. Then the two operations become point update and range sum on a 1D array — the canonical Fenwick tree problem.</p>
+
+    <h3>Why flattening fits</h3>
+    <p>We are not doing any ancestor or path query — just subtree queries with point updates. Binary lifting is overkill; subtree flattening exactly matches the operations.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Fenwick {
+    int n;
+    vector&lt;long long&gt; bit;
+
+    Fenwick(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+        bit.assign(n + 1, 0);
+    }
+
+    void add(int idx, long long delta) {
+        idx++;
+
+        while (idx &lt;= n) {
+            bit[idx] += delta;
+            idx += idx &amp; -idx;
+        }
+    }
+
+    long long sumPrefix(int idx) const {
+        idx++;
+
+        long long result = 0;
+
+        while (idx &gt; 0) {
+            result += bit[idx];
+            idx -= idx &amp; -idx;
+        }
+
+        return result;
+    }
+
+    long long rangeSum(int l, int r) const {
+        if (l &gt; r) {
+            return 0;
+        }
+
+        long long result = sumPrefix(r);
+
+        if (l &gt; 0) {
+            result -= sumPrefix(l - 1);
+        }
+
+        return result;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;long long&gt; value(n);
+
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; value[i];
+    }
+
+    vector&lt;vector&lt;int&gt;&gt; adj(n);
+
+    for (int i = 0; i &lt; n - 1; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+        --u;
+        --v;
+
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    vector&lt;int&gt; tin(n), tout(n);
+    vector&lt;long long&gt; flat(n);
+
+    int timer = 0;
+
+    function&lt;void(int, int)&gt; dfs = [&amp;](int u, int p) {
+        tin[u] = timer;
+        flat[timer] = value[u];
+        timer++;
+
+        for (int v : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            dfs(v, u);
+        }
+
+        tout[u] = timer - 1;
+    };
+
+    dfs(0, -1);
+
+    Fenwick fw(n);
+
+    for (int i = 0; i &lt; n; i++) {
+        fw.add(i, flat[i]);
+    }
+
+    while (q--) {
+        int type;
+        cin &gt;&gt; type;
+
+        if (type == 1) {
+            int s;
+            long long x;
+            cin &gt;&gt; s &gt;&gt; x;
+            --s;
+
+            long long delta = x - value[s];
+            value[s] = x;
+
+            fw.add(tin[s], delta);
+        } else {
+            int s;
+            cin &gt;&gt; s;
+            --s;
+
+            cout &lt;&lt; fw.rangeSum(tin[s], tout[s]) &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">DFS flattening: O(n)</span>
+      <span class="chip">Each update: O(log n)</span>
+      <span class="chip">Each query: O(log n)</span>
+      <span class="chip">Memory: O(n)</span>
+    </div>
+  </section>
+
+  <!-- ============= PROBLEM 3 ============= -->
+  <section class="card" id="problem3">
+    <h2>P3 — Yosupo LCA</h2>
+    <p><b>Original:</b> <a href="https://judge.yosupo.jp/problem/lca" target="_blank">https://judge.yosupo.jp/problem/lca</a></p>
+
+    <h3>Problem story</h3>
+    <p>Given a rooted tree, answer many static LCA queries.</p>
+
+    <h3>Abstraction</h3>
+    <p>Pure LCA, no updates, no path or subtree queries — and the constraints are large enough that even <code>O(log n)</code> per query matters. This is the textbook setting for the <code>O(1)</code>-per-query Euler-Tour + sparse-table technique.</p>
+
+    <h3>Why Euler-Tour RMQ fits</h3>
+    <p>Build once in <code>O(n log n)</code>; every subsequent query is two array reads. The sparse table fits comfortably in memory for <code>n ≤ 5·10<sup>5</sup></code>.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct EulerRMQLCA {
+    int n;
+
+    vector&lt;vector&lt;int&gt;&gt; adj;
+
+    vector&lt;int&gt; first;
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; euler;
+    vector&lt;int&gt; eulerDepth;
+
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;int&gt;&gt; st;
+
+    EulerRMQLCA(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        adj.assign(n, {});
+        first.assign(n, -1);
+        depth.assign(n, 0);
+
+        euler.clear();
+        eulerDepth.clear();
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p, int d) {
+        depth[u] = d;
+
+        if (first[u] == -1) {
+            first[u] = (int)euler.size();
+        }
+
+        euler.push_back(u);
+        eulerDepth.push_back(d);
+
+        for (int v : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            dfs(v, u, d + 1);
+
+            euler.push_back(u);
+            eulerDepth.push_back(d);
+        }
+    }
+
+    int betterIndex(int i, int j) const {
+        if (eulerDepth[i] &lt; eulerDepth[j]) {
+            return i;
+        }
+
+        return j;
+    }
+
+    void buildSparseTable() {
+        int m = (int)euler.size();
+
+        lg.assign(m + 1, 0);
+
+        for (int i = 2; i &lt;= m; i++) {
+            lg[i] = lg[i / 2] + 1;
+        }
+
+        int K = lg[m] + 1;
+        st.assign(K, vector&lt;int&gt;(m));
+
+        for (int i = 0; i &lt; m; i++) {
+            st[0][i] = i;
+        }
+
+        for (int k = 1; k &lt; K; k++) {
+            for (int i = 0; i + (1 &lt;&lt; k) &lt;= m; i++) {
+                int a = st[k - 1][i];
+                int b = st[k - 1][i + (1 &lt;&lt; (k - 1))];
+
+                st[k][i] = betterIndex(a, b);
+            }
+        }
+    }
+
+    void build(int root = 0) {
+        dfs(root, -1, 0);
+        buildSparseTable();
+    }
+
+    int rmqIndex(int l, int r) const {
+        int len = r - l + 1;
+        int k = lg[len];
+
+        int a = st[k][l];
+        int b = st[k][r - (1 &lt;&lt; k) + 1];
+
+        return betterIndex(a, b);
+    }
+
+    int lca(int u, int v) const {
+        int l = first[u];
+        int r = first[v];
+
+        if (l &gt; r) {
+            swap(l, r);
+        }
+
+        return euler[rmqIndex(l, r)];
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    EulerRMQLCA solver(n);
+
+    for (int child = 1; child &lt; n; child++) {
+        int parent;
+        cin &gt;&gt; parent;
+
+        solver.addEdge(parent, child);
+    }
+
+    solver.build(0);
+
+    while (q--) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+
+        cout &lt;&lt; solver.lca(u, v) &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">Euler Tour: O(n)</span>
+      <span class="chip">Sparse table: O(n log n)</span>
+      <span class="chip">Each query: O(1)</span>
+      <span class="chip">Memory: O(n log n)</span>
+    </div>
+  </section>
+  <!-- ============= PROBLEM 4 ============= -->
+  <section class="card" id="problem4">
+    <h2>P4 — SPOJ QTREE2</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-QTREE2" target="_blank">https://vjudge.net/problem/SPOJ-QTREE2</a></p>
+
+    <h3>Problem story</h3>
+    <p>You are given a weighted tree. The supported queries are <code>DIST u v</code> — return the weighted distance from <code>u</code> to <code>v</code> — and <code>KTH u v k</code> — return the <code>k</code>-th node on the path from <code>u</code> to <code>v</code>. The terminator is <code>DONE</code>.</p>
+
+    <p class="note"><b>Indexing note for this judge:</b> SPOJ QTREE2 uses <code>k = 1</code> meaning <code>u</code> itself. Our internal convention is <code>k = 0</code> meaning <code>u</code>. So we apply <code>--k</code> immediately on input.</p>
+
+    <h3>Abstraction</h3>
+    <p>Two operations on the binary lifting structure: weighted distance and k-th node on path. Both are directly implemented in the master <code>TreeLCA</code> template.</p>
+
+    <h3>Why binary lifting fits</h3>
+    <p>Queries are online and interleaved; both query types reduce to one LCA plus one <code>kthAncestor</code>. Since there are no <i>updates</i> in this problem — we never modify the tree during queries — binary lifting is sufficient and there is no need for a path-decomposition data structure.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct TreeLCA {
+    int n;
+    int LOG;
+    int timer;
+
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj;
+    vector&lt;vector&lt;int&gt;&gt; up;
+
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; tin;
+    vector&lt;int&gt; tout;
+
+    vector&lt;long long&gt; distRoot;
+
+    TreeLCA(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        LOG = 1;
+        while ((1 &lt;&lt; LOG) &lt;= max(1, n)) {
+            LOG++;
+        }
+
+        timer = 0;
+
+        adj.assign(n, {});
+        up.assign(n, vector&lt;int&gt;(LOG, 0));
+        depth.assign(n, 0);
+        tin.assign(n, 0);
+        tout.assign(n, 0);
+        distRoot.assign(n, 0);
+    }
+
+    void addEdge(int u, int v, long long w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    void dfs(int u, int p) {
+        tin[u] = timer++;
+
+        up[u][0] = p;
+
+        for (int j = 1; j &lt; LOG; j++) {
+            up[u][j] = up[up[u][j - 1]][j - 1];
+        }
+
+        for (auto [v, w] : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            depth[v] = depth[u] + 1;
+            distRoot[v] = distRoot[u] + w;
+
+            dfs(v, u);
+        }
+
+        tout[u] = timer - 1;
+    }
+
+    void build(int root = 0) {
+        timer = 0;
+        depth[root] = 0;
+        distRoot[root] = 0;
+        dfs(root, root);
+    }
+
+    bool isAncestor(int u, int v) const {
+        return tin[u] &lt;= tin[v] &amp;&amp; tout[v] &lt;= tout[u];
+    }
+
+    int kthAncestor(int u, int k) const {
+        if (k &lt; 0 || k &gt; depth[u]) {
+            return -1;
+        }
+
+        for (int j = 0; j &lt; LOG; j++) {
+            if (k &amp; (1 &lt;&lt; j)) {
+                u = up[u][j];
+            }
+        }
+
+        return u;
+    }
+
+    int lca(int u, int v) const {
+        if (isAncestor(u, v)) {
+            return u;
+        }
+
+        if (isAncestor(v, u)) {
+            return v;
+        }
+
+        for (int j = LOG - 1; j &gt;= 0; j--) {
+            if (!isAncestor(up[u][j], v)) {
+                u = up[u][j];
+            }
+        }
+
+        return up[u][0];
+    }
+
+    long long distWeight(int u, int v) const {
+        int w = lca(u, v);
+        return distRoot[u] + distRoot[v] - 2LL * distRoot[w];
+    }
+
+    int kthNodeOnPath(int u, int v, int k) const {
+        int w = lca(u, v);
+
+        int upLen = depth[u] - depth[w];
+        int downLen = depth[v] - depth[w];
+        int totalLen = upLen + downLen;
+
+        if (k &lt; 0 || k &gt; totalLen) {
+            return -1;
+        }
+
+        if (k &lt;= upLen) {
+            return kthAncestor(u, k);
+        }
+
+        return kthAncestor(v, totalLen - k);
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int tc;
+    cin &gt;&gt; tc;
+
+    while (tc--) {
+        int n;
+        cin &gt;&gt; n;
+
+        TreeLCA solver(n);
+
+        for (int i = 0; i &lt; n - 1; i++) {
+            int u, v;
+            long long w;
+            cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+
+            --u;
+            --v;
+
+            solver.addEdge(u, v, w);
+        }
+
+        solver.build(0);
+
+        string command;
+
+        while (cin &gt;&gt; command) {
+            if (command == "DONE") {
+                break;
+            }
+
+            if (command == "DIST") {
+                int u, v;
+                cin &gt;&gt; u &gt;&gt; v;
+
+                --u;
+                --v;
+
+                cout &lt;&lt; solver.distWeight(u, v) &lt;&lt; '\n';
+            } else {
+                int u, v, k;
+                cin &gt;&gt; u &gt;&gt; v &gt;&gt; k;
+
+                --u;
+                --v;
+                --k;
+
+                cout &lt;&lt; solver.kthNodeOnPath(u, v, k) + 1 &lt;&lt; '\n';
+            }
+        }
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">Preprocessing: O(n log n)</span>
+      <span class="chip">DIST: O(log n)</span>
+      <span class="chip">KTH: O(log n)</span>
+      <span class="chip">Memory: O(n log n)</span>
+    </div>
+  </section>
+
+  <!-- ============= PROBLEM 5 ============= -->
+  <section class="card" id="problem5">
+    <h2>P5 — HDU 2586 "How far away?" (Tarjan Offline)</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/HDU-2586" target="_blank">https://vjudge.net/problem/HDU-2586</a></p>
+
+    <h3>Problem story</h3>
+    <p>Given a weighted tree (a "village road network") and many distance queries between pairs of houses, answer all of them.</p>
+
+    <h3>Abstraction</h3>
+    <p>All queries are listed before processing. This is the canonical setting for Tarjan offline LCA: do one DFS, maintain a DSU, answer each query at the moment DFS sees its <i>second</i> endpoint.</p>
+
+    <h3>Why Tarjan fits</h3>
+    <p>Tarjan's amortized <code>O((n + q) · α(n))</code> beats binary lifting's <code>O((n + q) log n)</code> in both speed and code length for offline batches. Distance is recovered with <code>distRoot[u] + distRoot[v] − 2·distRoot[LCA]</code>, computed on the fly inside the DFS.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct DSU {
+    vector&lt;int&gt; parent;
+    vector&lt;int&gt; sz;
+
+    DSU(int n = 0) {
+        init(n);
+    }
+
+    void init(int n) {
+        parent.resize(n);
+        sz.assign(n, 1);
+
+        iota(parent.begin(), parent.end(), 0);
+    }
+
+    int find(int u) {
+        if (parent[u] == u) {
+            return u;
+        }
+
+        return parent[u] = find(parent[u]);
+    }
+
+    void unite(int u, int v) {
+        u = find(u);
+        v = find(v);
+
+        if (u == v) {
+            return;
+        }
+
+        if (sz[u] &lt; sz[v]) {
+            swap(u, v);
+        }
+
+        parent[v] = u;
+        sz[u] += sz[v];
+    }
+};
+
+struct TarjanOfflineDistance {
+    int n;
+
+    vector&lt;vector&lt;pair&lt;int, long long&gt;&gt;&gt; adj;
+    vector&lt;vector&lt;pair&lt;int, int&gt;&gt;&gt; queries;
+
+    vector&lt;int&gt; ancestor;
+    vector&lt;int&gt; visited;
+    vector&lt;long long&gt; distRoot;
+    vector&lt;long long&gt; answer;
+
+    DSU dsu;
+
+    TarjanOfflineDistance(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        adj.assign(n, {});
+        queries.assign(n, {});
+
+        ancestor.assign(n, 0);
+        visited.assign(n, 0);
+        distRoot.assign(n, 0);
+
+        dsu.init(n);
+    }
+
+    void addEdge(int u, int v, long long w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+
+    void addQuery(int id, int u, int v) {
+        queries[u].push_back({v, id});
+        queries[v].push_back({u, id});
+    }
+
+    void dfs(int u, int p) {
+        ancestor[dsu.find(u)] = u;
+        visited[u] = 1;
+
+        for (auto [v, w] : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            distRoot[v] = distRoot[u] + w;
+
+            dfs(v, u);
+
+            dsu.unite(u, v);
+            ancestor[dsu.find(u)] = u;
+        }
+
+        for (auto [v, id] : queries[u]) {
+            if (visited[v]) {
+                int w = ancestor[dsu.find(v)];
+                answer[id] = distRoot[u] + distRoot[v] - 2LL * distRoot[w];
+            }
+        }
+    }
+
+    vector&lt;long long&gt; solve(int root, int queryCount) {
+        answer.assign(queryCount, 0);
+
+        distRoot[root] = 0;
+        dfs(root, root);
+
+        return answer;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int tc;
+    cin &gt;&gt; tc;
+
+    while (tc--) {
+        int n, q;
+        cin &gt;&gt; n &gt;&gt; q;
+
+        TarjanOfflineDistance solver(n);
+
+        for (int i = 0; i &lt; n - 1; i++) {
+            int u, v;
+            long long w;
+            cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+
+            --u;
+            --v;
+
+            solver.addEdge(u, v, w);
+        }
+
+        for (int id = 0; id &lt; q; id++) {
+            int u, v;
+            cin &gt;&gt; u &gt;&gt; v;
+
+            --u;
+            --v;
+
+            solver.addQuery(id, u, v);
+        }
+
+        vector&lt;long long&gt; answer = solver.solve(0, q);
+
+        for (long long x : answer) {
+            cout &lt;&lt; x &lt;&lt; '\n';
+        }
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">Total: O((n + q) · α(n))</span>
+      <span class="chip">Memory: O(n + q)</span>
+    </div>
+  </section>
+
+  <!-- ============= PROBLEM 6 ============= -->
+  <section class="card" id="problem6">
+    <h2>P6 — SPOJ COT (k-th value on path)</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-COT" target="_blank">https://vjudge.net/problem/SPOJ-COT</a></p>
+
+    <h3>Problem story</h3>
+    <p>Each node of a rooted tree has a value. For a query <code>(u, v, k)</code>, find the <code>k</code>-th smallest value among the values on the path from <code>u</code> to <code>v</code>.</p>
+
+    <h3>Abstraction</h3>
+    <p>Decompose the multiset of values on path <code>u → v</code> using <i>persistent</i> segment trees indexed by node. For each node <code>x</code>, build version <code>rootVersion[x]</code> by taking <code>rootVersion[parent[x]]</code> and adding <code>value[x]</code>. Then for any pair:</p>
+    <div class="formula">values(u → v) = rootVersion[u] + rootVersion[v] − rootVersion[LCA] − rootVersion[parent[LCA]]</div>
+    <p>The subtraction by <code>parent[LCA]</code> instead of by <code>LCA</code> itself is what keeps the LCA's own value counted exactly once instead of twice or zero times.</p>
+
+    <h3>Why LCA + persistent seg tree fits</h3>
+    <p>We need three things: (a) the LCA of <code>u</code> and <code>v</code>, (b) the multiset of values on each root-to-node path, and (c) a fast way to walk the segment tree four versions in parallel to do a k-th-smallest descent. Binary lifting answers (a), a persistent segment tree built during a DFS provides (b), and (c) is the classic "walk four versions in lockstep" k-th smallest trick.</p>
+
+    <details>
+      <summary>Full solution <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct BinaryLifting {
+    int n;
+    int LOG;
+    int timer;
+
+    vector&lt;vector&lt;int&gt;&gt; adj;
+    vector&lt;vector&lt;int&gt;&gt; up;
+
+    vector&lt;int&gt; depth;
+    vector&lt;int&gt; tin;
+    vector&lt;int&gt; tout;
+    vector&lt;int&gt; parent;
+
+    BinaryLifting(int n = 0) {
+        init(n);
+    }
+
+    void init(int n_) {
+        n = n_;
+
+        LOG = 1;
+        while ((1 &lt;&lt; LOG) &lt;= max(1, n)) {
+            LOG++;
+        }
+
+        timer = 0;
+
+        adj.assign(n, {});
+        up.assign(n, vector&lt;int&gt;(LOG, 0));
+
+        depth.assign(n, 0);
+        tin.assign(n, 0);
+        tout.assign(n, 0);
+        parent.assign(n, -1);
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    void dfs(int u, int p) {
+        tin[u] = timer++;
+
+        parent[u] = (u == p ? -1 : p);
+        up[u][0] = p;
+
+        for (int j = 1; j &lt; LOG; j++) {
+            up[u][j] = up[up[u][j - 1]][j - 1];
+        }
+
+        for (int v : adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            depth[v] = depth[u] + 1;
+            dfs(v, u);
+        }
+
+        tout[u] = timer - 1;
+    }
+
+    void build(int root = 0) {
+        timer = 0;
+        depth[root] = 0;
+        dfs(root, root);
+    }
+
+    bool isAncestor(int u, int v) const {
+        return tin[u] &lt;= tin[v] &amp;&amp; tout[v] &lt;= tout[u];
+    }
+
+    int lca(int u, int v) const {
+        if (isAncestor(u, v)) {
+            return u;
+        }
+
+        if (isAncestor(v, u)) {
+            return v;
+        }
+
+        for (int j = LOG - 1; j &gt;= 0; j--) {
+            if (!isAncestor(up[u][j], v)) {
+                u = up[u][j];
+            }
+        }
+
+        return up[u][0];
+    }
+};
+
+struct PersistentSegmentTree {
+    struct Node {
+        int left = 0;
+        int right = 0;
+        int sum = 0;
+    };
+
+    vector&lt;Node&gt; tree;
+
+    PersistentSegmentTree(int maxNodes = 1) {
+        tree.reserve(maxNodes);
+        tree.push_back(Node());
+    }
+
+    int update(int old, int l, int r, int pos) {
+        int cur = (int)tree.size();
+
+        tree.push_back(tree[old]);
+        tree[cur].sum++;
+
+        if (l != r) {
+            int mid = (l + r) / 2;
+
+            if (pos &lt;= mid) {
+                tree[cur].left = update(tree[old].left, l, mid, pos);
+            } else {
+                tree[cur].right = update(tree[old].right, mid + 1, r, pos);
+            }
+        }
+
+        return cur;
+    }
+
+    int kth(int a, int b, int c, int d, int l, int r, int k) const {
+        if (l == r) {
+            return l;
+        }
+
+        int leftCount =
+            tree[tree[a].left].sum +
+            tree[tree[b].left].sum -
+            tree[tree[c].left].sum -
+            tree[tree[d].left].sum;
+
+        int mid = (l + r) / 2;
+
+        if (k &lt;= leftCount) {
+            return kth(
+                tree[a].left,
+                tree[b].left,
+                tree[c].left,
+                tree[d].left,
+                l,
+                mid,
+                k
+            );
+        }
+
+        return kth(
+            tree[a].right,
+            tree[b].right,
+            tree[c].right,
+            tree[d].right,
+            mid + 1,
+            r,
+            k - leftCount
+        );
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;int&gt; value(n);
+    vector&lt;int&gt; compressed;
+
+    compressed.reserve(n);
+
+    for (int i = 0; i &lt; n; i++) {
+        cin &gt;&gt; value[i];
+        compressed.push_back(value[i]);
+    }
+
+    sort(compressed.begin(), compressed.end());
+    compressed.erase(unique(compressed.begin(), compressed.end()), compressed.end());
+
+    BinaryLifting lca(n);
+
+    for (int i = 0; i &lt; n - 1; i++) {
+        int u, v;
+        cin &gt;&gt; u &gt;&gt; v;
+
+        --u;
+        --v;
+
+        lca.addEdge(u, v);
+    }
+
+    lca.build(0);
+
+    PersistentSegmentTree pst(n * 20 + 5);
+    vector&lt;int&gt; version(n, 0);
+
+    function&lt;void(int, int)&gt; buildVersions = [&amp;](int u, int p) {
+        int id = (int)(
+            lower_bound(compressed.begin(), compressed.end(), value[u]) -
+            compressed.begin()
+        );
+
+        int parentVersion = (p == -1 ? 0 : version[p]);
+
+        version[u] = pst.update(
+            parentVersion,
+            0,
+            (int)compressed.size() - 1,
+            id
+        );
+
+        for (int v : lca.adj[u]) {
+            if (v == p) {
+                continue;
+            }
+
+            buildVersions(v, u);
+        }
+    };
+
+    buildVersions(0, -1);
+
+    while (q--) {
+        int u, v, k;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; k;
+
+        --u;
+        --v;
+
+        int w = lca.lca(u, v);
+        int pw = lca.parent[w];
+
+        int parentVersionOfLca = (pw == -1 ? 0 : version[pw]);
+
+        int id = pst.kth(
+            version[u],
+            version[v],
+            version[w],
+            parentVersionOfLca,
+            0,
+            (int)compressed.size() - 1,
+            k
+        );
+
+        cout &lt;&lt; compressed[id] &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">LCA preprocessing: O(n log n)</span>
+      <span class="chip">Persistent build: O(n log V)</span>
+      <span class="chip">Each query: O(log n + log V)</span>
+      <span class="chip">Memory: O(n log n + n log V)</span>
+    </div>
+  </section>
+  <!-- =========================================================
+       SECTION 24 — FINAL SUMMARY
+       ========================================================= -->
+  <section class="card" id="summary">
+    <h2>🎯 24. Final Mental Model</h2>
+    <p>Now that we have walked the whole landscape, here is the one-screen recap that should stay in working memory during a contest.</p>
+
+    <h3>Binary lifting — the workhorse</h3>
+    <p>A DFS from the root computes <code>parent</code>, <code>depth</code>, <code>distRoot</code>, <code>tin</code>, and <code>tout</code>. Inside that same DFS we fill the table <code>up[u][j]</code> using the doubling recurrence. With that table in hand, every classical tree query — LCA, distance, k-th ancestor, k-th node on path, ancestor test — costs <code>O(log n)</code> or <code>O(1)</code>. This is the right default for almost every contest problem that mentions "tree" and "queries" in the same sentence.</p>
+
+    <h3>Subtree flattening — the bridge to data structures</h3>
+    <p>Whenever the question is about a <i>subtree</i> rather than a path, lay each node down in the flat DFS-order array at position <code>tin[u]</code>. Every subtree becomes a contiguous range <code>[tin[u], tout[u]]</code>, and every "subtree question" becomes an "array range question". From there, Fenwick trees, segment trees, prefix sums, and lazy propagation all become available.</p>
+
+    <h3>Euler Tour + RMQ — when LCA is the whole problem</h3>
+    <p>If the only query is LCA, and there are very many of them, build the full Euler Tour (<code>2n − 1</code> entries) and a sparse table over the depth array. Each query is then <code>O(1)</code> — two reads from the sparse table and one from the Euler array. The preprocessing cost <code>O(n log n)</code> is the same as binary lifting, but the per-query cost beats it.</p>
+
+    <h3>Tarjan offline LCA — when all queries are known in advance</h3>
+    <p>For batches of queries available before processing starts, a single DFS plus a DSU answers each in amortized <code>O(α(n))</code>. The trick is that, while DFS is at node <code>u</code>, every previously-visited subtree is collapsed in the DSU under the node DFS would have to climb back to in order to reach it. When DFS sees a stored query <code>(u, v)</code> with <code>v</code> already visited, the LCA is simply the DSU representative's stored <code>ancestor</code> value.</p>
+
+    <h3>How the four techniques compose</h3>
+    <p>These four ideas are not mutually exclusive. The persistent-segment-tree solution to SPOJ COT, for example, uses binary lifting to find the LCA and then walks four persistent versions in parallel to extract a k-th value on the path. Many advanced problems combine flattening with binary lifting (e.g. subtree sum plus path distance) — the field is built by composing these pieces, not by choosing among them.</p>
+
+    <div class="formula">DFS gives us the timestamps. Doubling gives us the jumps. Flattening gives us the ranges. Tarjan amortizes the batches.</div>
+  </section>
+  <!-- =========================================================
+       SECTION 25 — RUNTIME VALIDATION CHECKLIST
+       ========================================================= -->
+  <section class="card" id="validation">
+    <h2>✅ 25. Runtime Validation Checklist</h2>
+    <p>Before declaring this tutorial finished, walk through the following checks in the live browser. Every item below corresponds to a behavior that real students will rely on, and skipping any one of them is a known way for the projector mode to silently break for someone in the back row.</p>
+
+    <h3>25.1 Theme</h3>
+    <p>The 🌙 switch at the top right should toggle between light and dark. Reload the page after toggling; the chosen theme must persist (via <code>localStorage</code> under the key <code>treequeries_theme</code>). If the browser is set to system dark mode and no preference is stored yet, the page should load in dark mode automatically.</p>
+
+    <h3>25.2 Sidebar</h3>
+    <p>The hamburger button in the top-left should open and close the sidebar with a smooth slide animation. On narrow screens (under 1400px wide), the sidebar should default to closed and overlay the content when opened. Pressing the Escape key while the sidebar is open should dismiss it. Clicking on the dimmed overlay area outside the sidebar should also dismiss it. The hamburger icon should animate into an X when the sidebar is open and back to three bars when closed.</p>
+
+    <h3>25.3 Navigation</h3>
+    <p>Clicking any sidebar link should scroll smoothly to the matching section. As you scroll down the content, the active section's sidebar link should highlight automatically. All section IDs referenced in the sidebar must exist in the document; there should be no broken anchors.</p>
+
+    <h3>25.4 Interactive tracers</h3>
+    <p>The DFS tracer in section 4 should let you click Next Step and watch <code>tin</code> and <code>tout</code> values get assigned as DFS walks the sample tree. After the traversal completes, clicking any node label below the tracer should highlight that subtree's slice in the flat array. The binary-lifting kth-ancestor tracer in section 8 should accept a node and a value of <code>k</code>, show the bits of <code>k</code>, and fire them one at a time while the corresponding lifting jumps are visualized on the tree. The LCA tracer in section 8b should let you pick two nodes and animate the lifting loop. The subtree-flattening tracer in section 15 should let you click any node and immediately highlight the matching slice in the flat array along with its sum. The Euler-Tour RMQ tracer in section 16 should let you pick two nodes and visualize the window in the Euler array along with the minimum-depth cell that identifies the LCA.</p>
+
+    <h3>25.5 Code samples</h3>
+    <p>Every C++ code block should be visible without horizontal clipping at projector resolutions. Indentation should be preserved. Comments and operators should render correctly (no stray HTML entities like <code>&amp;lt;</code> showing through). The dark code background should remain readable in both themes.</p>
+
+    <h3>25.6 External links</h3>
+    <p>All six VJudge / Yosupo problem links should open in new tabs. The two email links in the sidebar footer and at the bottom of the page should open the local mail client (no Cloudflare obfuscation; plain <code>mailto:</code>).</p>
+
+    <h3>25.7 Console hygiene</h3>
+    <p>Open the browser console and reload. There should be no JavaScript errors. There should be no warnings about duplicate element IDs. There should be no 404s for missing assets — this tutorial is fully self-contained.</p>
+
+    <h3>25.8 Cross-browser / cross-device</h3>
+    <p>Open the page in Chrome, Firefox, and Safari. The layout should be visually identical in all three. On a 1920×1080 projector, the sidebar and the content should both be visible side-by-side with no horizontal scrollbar at the document level.</p>
+  </section>
+  <div class="tooltip" id="tooltip"></div>
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Tree Queries: Ancestors, Paths, and Subtrees</div>
+    <div class="footer-copy">Prepared by The Coach (Dr. Wahab) &amp; Ashraf · Binary Lifting · Euler Tour · Tarjan Offline</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+function make(tag,attrs={},html=''){
+  const el=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  if(html)el.innerHTML=html;
+  return el;
+}
+function makeSVG(tag,attrs={}){
+  const el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+function getVar(name){return getComputedStyle(document.body).getPropertyValue(name).trim();}
+
+// ============================================================
+// THEME TOGGLE (with system-dark fallback, localStorage persistence)
+// ============================================================
+(function(){
+  const saved=localStorage.getItem('treequeries_theme');
+  if(saved){
+    document.body.setAttribute('data-theme',saved);
+  } else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme','dark');
+  }
+  $('#themeSwitch').onclick=()=>{
+    const next=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
+    document.body.setAttribute('data-theme',next);
+    localStorage.setItem('treequeries_theme',next);
+    // notify themed canvases to redraw
+    document.dispatchEvent(new Event('treequeries_theme_change'));
+  };
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+// ============================================================
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (window.innerWidth > 1400) {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      } else {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+      setSidebar(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1400) {
+      setSidebar(true);
+    } else {
+      setSidebar(false);
+    }
+  });
+
+  setSidebar(open);
+})();
+
+// ============================================================
+// SCROLL NAV HIGHLIGHT
+// ============================================================
+(function(){
+  const sections=$$('section[id]');
+  const navLinks=$$('.nav a[href^="#"]');
+  function updateNav(){
+    let cur='';
+    sections.forEach(s=>{ if(s.getBoundingClientRect().top<180) cur=s.id; });
+    navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+  }
+  $('.content').addEventListener('scroll',updateNav);
+  updateNav();
+})();
+
+// ============================================================
+// COMMON SVG-DRAWING UTILITIES FOR TREES
+// ============================================================
+function drawTreeEdges(svg, edges, pos, opts={}){
+  const stroke = opts.stroke || 'var(--border)';
+  const sw = opts.sw || 3;
+  edges.forEach(([u,v])=>{
+    const [x1,y1]=pos[u],[x2,y2]=pos[v];
+    const line=makeSVG('line',{x1,y1,x2,y2,stroke,'stroke-width':sw,'stroke-linecap':'round'});
+    svg.appendChild(line);
+  });
+}
+function drawTreeNode(svg, x, y, label, opts={}){
+  const r = opts.r || 26;
+  const fill = opts.fill || 'var(--panel2)';
+  const stroke = opts.stroke || 'var(--border)';
+  const sw = opts.sw || 3;
+  const circle = makeSVG('circle',{cx:x,cy:y,r,fill,stroke,'stroke-width':sw,class:'nodeCircle'});
+  if(opts.onclick) circle.onclick = opts.onclick;
+  if(opts.onclick) circle.style.cursor='pointer';
+  svg.appendChild(circle);
+  const text = makeSVG('text',{x,y:y+8,'text-anchor':'middle','font-size':'22','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+  text.textContent=label;
+  svg.appendChild(text);
+  if(opts.sublabel){
+    const sub = makeSVG('text',{x,y:y+r+18,'text-anchor':'middle','font-size':'16','font-weight':'800',fill:'var(--muted)','pointer-events':'none'});
+    sub.textContent=opts.sublabel;
+    svg.appendChild(sub);
+  }
+}
+
+// ============================================================
+// 1) DFS TRACER (Section 4)
+//    Tree: 0-{1,2,5}, 1-{3,4}, 5-{6}
+// ============================================================
+(function(){
+  const adj={0:[1,2,5],1:[3,4],2:[],3:[],4:[],5:[6],6:[]};
+  const pos={0:[320,60],1:[170,180],2:[320,180],5:[470,180],3:[90,300],4:[250,300],6:[470,300]};
+  const edges=[[0,1],[0,2],[0,5],[1,3],[1,4],[5,6]];
+  const N=7;
+
+  // Build DFS frame sequence
+  function buildFrames(){
+    const frames=[];
+    const tin=new Array(N).fill(-1), tout=new Array(N).fill(-1);
+    const stack=[];
+    const flat=[];
+    let timer=0;
+
+    function snap(label, current, justEntered, justExited){
+      frames.push({
+        tin:tin.slice(), tout:tout.slice(),
+        stack:stack.slice(), flat:flat.slice(),
+        current, justEntered, justExited, label
+      });
+    }
+
+    snap('Start: root = 0', -1, -1, -1);
+
+    function dfs(u){
+      tin[u]=timer; flat.push(u); timer++;
+      stack.push(u);
+      snap(`Enter ${u} · tin[${u}]=${tin[u]} · push to flat[]`, u, u, -1);
+      for(const v of adj[u]){
+        snap(`At ${u}: about to visit child ${v}`, u, -1, -1);
+        dfs(v);
+        snap(`Back at ${u} after subtree of ${v}`, u, -1, -1);
+      }
+      tout[u]=timer-1;
+      snap(`Leave ${u} · tout[${u}]=${tout[u]} · close subtree interval [${tin[u]}..${tout[u]}]`, u, -1, u);
+      stack.pop();
+    }
+    dfs(0);
+    snap('DFS complete. Click any node below to highlight its subtree slice.', -1, -1, -1);
+    return frames;
+  }
+  const frames = buildFrames();
+  let step = 0;
+  let auto = null;
+  let pickedSubtreeNode = -1;
+
+  function render(){
+    const f = frames[step];
+    const svg = $('#dfsSvg');
+    clearEl(svg);
+
+    // edges
+    edges.forEach(([u,v])=>{
+      const [x1,y1]=pos[u],[x2,y2]=pos[v];
+      const line=makeSVG('line',{x1,y1,x2,y2,stroke:'var(--border)','stroke-width':4,'stroke-linecap':'round'});
+      svg.appendChild(line);
+    });
+
+    // nodes
+    for(let u=0;u<N;u++){
+      const [x,y]=pos[u];
+      let fill='var(--panel2)', stroke='var(--border)', sw=3;
+      if(u===f.current){ fill='rgba(37,99,235,.30)'; stroke='var(--accent2)'; sw=5; }
+      else if(f.tout[u]>=0){ fill='rgba(15,118,110,.18)'; stroke='var(--good)'; sw=4; }
+      else if(f.tin[u]>=0){ fill='rgba(37,99,235,.10)'; stroke='var(--accent)'; sw=3; }
+      // subtree highlight overlay
+      if(pickedSubtreeNode>=0 && step===frames.length-1){
+        const tinPick=f.tin[pickedSubtreeNode], toutPick=f.tout[pickedSubtreeNode];
+        if(f.tin[u]>=tinPick && f.tin[u]<=toutPick){
+          fill='rgba(15,118,110,.35)'; stroke='var(--good)'; sw=5;
+        }
+        if(u===pickedSubtreeNode){ fill='rgba(37,99,235,.30)'; stroke='var(--accent2)'; sw=6; }
+      }
+      const c = makeSVG('circle',{cx:x,cy:y,r:26,fill,stroke,'stroke-width':sw});
+      const t = makeSVG('text',{x,y:y+8,'text-anchor':'middle','font-size':'22','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=u;
+      svg.appendChild(c); svg.appendChild(t);
+      // tin/tout badge
+      if(f.tin[u]>=0){
+        const badge=makeSVG('text',{x,y:y-32,'text-anchor':'middle','font-size':'14','font-weight':'900',fill:'var(--accent2)'});
+        badge.textContent=`tin=${f.tin[u]}`;
+        svg.appendChild(badge);
+      }
+      if(f.tout[u]>=0){
+        const badge=makeSVG('text',{x:x+28,y:y+28,'text-anchor':'start','font-size':'14','font-weight':'900',fill:'var(--good)'});
+        badge.textContent=`tout=${f.tout[u]}`;
+        svg.appendChild(badge);
+      }
+    }
+
+    // flat
+    const flatBox=$('#dfsFlat'); clearEl(flatBox);
+    if(f.flat.length===0){
+      flatBox.appendChild(make('span',{class:'note',style:'padding:8px;'},'(empty — DFS not started)'));
+    } else {
+      f.flat.forEach((node,idx)=>{
+        let cls='flatCell';
+        if(pickedSubtreeNode>=0 && step===frames.length-1){
+          const tinPick=f.tin[pickedSubtreeNode], toutPick=f.tout[pickedSubtreeNode];
+          if(idx>=tinPick && idx<=toutPick) cls='flatCell inRange';
+        }
+        const cell=make('div',{class:cls});
+        cell.appendChild(make('div',{class:'idx'},`tin=${idx}`));
+        cell.appendChild(make('div',{},`${node}`));
+        flatBox.appendChild(cell);
+      });
+    }
+
+    // stack
+    const stackBox=$('#dfsStack'); clearEl(stackBox);
+    stackBox.textContent=f.stack.length?`[${f.stack.join(' → ')}]`:'(empty)';
+
+    // tin/tout table
+    const tableBox=$('#dfsTable'); clearEl(tableBox);
+    const lines=[];
+    for(let u=0;u<N;u++){
+      const ti=f.tin[u]>=0?f.tin[u]:'-';
+      const to=f.tout[u]>=0?f.tout[u]:'-';
+      lines.push(`node ${u}: tin=${ti}, tout=${to}`);
+    }
+    tableBox.innerHTML=lines.join('<br>');
+
+    // status
+    $('#dfsStatus').textContent=f.label;
+    $('#dfsStepLabel').textContent=`Step ${step+1} / ${frames.length}`;
+  }
+
+  function reset(){ step=0; pickedSubtreeNode=-1; if(auto){clearInterval(auto);auto=null;$('#dfsAuto').classList.remove('active');} render(); }
+  function next(){ if(step<frames.length-1){step++; render();} }
+  $('#dfsReset').onclick=reset;
+  $('#dfsNext').onclick=next;
+  $('#dfsAuto').onclick=function(){
+    if(auto){ clearInterval(auto); auto=null; this.classList.remove('active'); }
+    else { this.classList.add('active'); auto=setInterval(()=>{ if(step>=frames.length-1){clearInterval(auto);auto=null;$('#dfsAuto').classList.remove('active');}else{next();} },700); }
+  };
+
+  // node picker for subtree highlight
+  const picker=$('#dfsNodePicker');
+  for(let u=0;u<N;u++){
+    const b=make('button',{class:'miniBtn'},`node ${u}`);
+    b.onclick=()=>{
+      // jump to final frame so the subtree is meaningful
+      step=frames.length-1;
+      pickedSubtreeNode=u;
+      render();
+    };
+    picker.appendChild(b);
+  }
+
+  render();
+})();
+
+// ============================================================
+// 2) BINARY LIFTING kth-ANCESTOR TRACER (Section 8)
+//    Deep tree: 0 children {1,2,3}, 1->{4,5}, 3->{6}, 4->{7},
+//    6->{8}, 7->{9}, 8->{10}, 9->{11}
+// ============================================================
+(function(){
+  const adj={0:[1,2,3],1:[4,5],2:[],3:[6],4:[7],5:[],6:[8],7:[9],8:[10],9:[11],10:[],11:[]};
+  const pos={
+    0:[320,40],
+    1:[140,120], 2:[320,120], 3:[500,120],
+    4:[60,200],  5:[220,200], 6:[500,200],
+    7:[60,275],  8:[500,275],
+    9:[60,345],  10:[500,345],
+    11:[60,420]
+  };
+  const edges=[];
+  for(const [u,vs] of Object.entries(adj)){
+    const ui=+u;
+    for(const v of vs) edges.push([ui,v]);
+  }
+  const N=12;
+  // Build parent + depth + lifting table
+  const parent=new Array(N).fill(0);
+  const depth=new Array(N).fill(0);
+  function buildParents(){
+    function dfs(u,p,d){ parent[u]=p; depth[u]=d; for(const v of adj[u]||[]) dfs(v,u,d+1); }
+    dfs(0,0,0);
+  }
+  buildParents();
+  const LOG=5; // depth max is 5, but we need 5 bits to express k up to depth
+  const up=[];
+  for(let u=0;u<N;u++){
+    up.push(new Array(LOG));
+    up[u][0]=parent[u];
+  }
+  for(let j=1;j<LOG;j++) for(let u=0;u<N;u++) up[u][j]=up[up[u][j-1]][j-1];
+
+  let startU=11, K=5;
+  let stepIdx=0; // 0 = initial, 1..LOG = after processing bit j
+  let auto=null;
+  const path=[]; // trail of positions
+
+  function rebuildPath(){
+    path.length=0;
+    path.push(startU);
+    let cur=startU;
+    for(let j=0;j<LOG;j++){
+      if((K>>j)&1){
+        cur=up[cur][j];
+        path.push(cur);
+      }
+    }
+  }
+  function currentPos(){
+    // After stepIdx bits processed: start, then apply bits 0..stepIdx-1
+    let cur=startU;
+    let trace=[startU];
+    let bitsFired=[];
+    for(let j=0;j<stepIdx && j<LOG;j++){
+      if((K>>j)&1){ cur=up[cur][j]; trace.push(cur); bitsFired.push(j); }
+    }
+    return {cur, trace, bitsFired};
+  }
+
+  function render(){
+    const svg=$('#liftSvg'); clearEl(svg);
+    const {cur, trace, bitsFired} = currentPos();
+    // edges
+    edges.forEach(([u,v])=>{
+      const [x1,y1]=pos[u],[x2,y2]=pos[v];
+      let stroke='var(--border)', sw=3;
+      // edges along trace get highlight
+      for(let i=0;i<trace.length-1;i++){
+        // edge from trace[i] up to trace[i+1] — covers multiple tree edges
+        // We don't mark per-edge specifically; just neutral edges and mark nodes
+      }
+      const line=makeSVG('line',{x1,y1,x2,y2,stroke,'stroke-width':sw,'stroke-linecap':'round'});
+      svg.appendChild(line);
+    });
+    // jump arrows for fired bits
+    trace.forEach((node,i)=>{
+      if(i===0) return;
+      const from=trace[i-1], to=node;
+      const [x1,y1]=pos[from], [x2,y2]=pos[to];
+      const arrow=makeSVG('path',{d:`M ${x1} ${y1} Q ${(x1+x2)/2 - 60} ${(y1+y2)/2} ${x2} ${y2}`,
+        fill:'none', stroke:'rgba(124,58,237,.8)','stroke-width':5,'stroke-dasharray':'8,4','marker-end':'url(#liftArrow)'});
+      svg.appendChild(arrow);
+    });
+    // defs / arrow marker
+    const defs=makeSVG('defs');
+    const marker=makeSVG('marker',{id:'liftArrow',markerWidth:'10',markerHeight:'7',refX:'9',refY:'3.5',orient:'auto'});
+    const poly=makeSVG('polygon',{points:'0 0, 10 3.5, 0 7',fill:'rgba(124,58,237,.9)'});
+    marker.appendChild(poly); defs.appendChild(marker); svg.appendChild(defs);
+    // nodes
+    for(let u=0;u<N;u++){
+      const [x,y]=pos[u];
+      let fill='var(--panel2)', stroke='var(--border)', sw=3;
+      if(u===startU){ fill='rgba(37,99,235,.30)'; stroke='var(--accent2)'; sw=5; }
+      if(u===cur && stepIdx>0 && stepIdx<=LOG){ fill='rgba(180,83,9,.25)'; stroke='var(--warn)'; sw=5; }
+      if(u===cur && stepIdx>=LOG){ fill='rgba(15,118,110,.30)'; stroke='var(--good)'; sw=6; }
+      const c=makeSVG('circle',{cx:x,cy:y,r:22,fill,stroke,'stroke-width':sw});
+      const t=makeSVG('text',{x,y:y+7,'text-anchor':'middle','font-size':'18','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=u;
+      svg.appendChild(c); svg.appendChild(t);
+    }
+
+    // bits display
+    const bitsBox=$('#liftBits'); clearEl(bitsBox);
+    const bin=K.toString(2).padStart(LOG,'0');
+    // show high to low
+    for(let j=LOG-1;j>=0;j--){
+      const div=make('span',{class:'liftBit'});
+      div.textContent=bin[LOG-1-j];
+      const on=(K>>j)&1;
+      if(on) div.classList.add('on');
+      if(bitsFired.includes(j)) div.classList.add('fired');
+      const lab=make('div',{style:'font-size:11px;color:var(--muted);font-weight:800;text-align:center;'},`2^${j}`);
+      const wrap=make('div',{style:'display:inline-flex;flex-direction:column;align-items:center;gap:2px;'});
+      wrap.appendChild(div); wrap.appendChild(lab);
+      bitsBox.appendChild(wrap);
+    }
+
+    // status
+    if(stepIdx===0){
+      $('#liftStatus').textContent=`Start at node ${startU} (depth ${depth[startU]}). Target: climb ${K} edges. k = ${K} = ${bin}₂.`;
+    } else if(stepIdx>=LOG){
+      $('#liftStatus').innerHTML=`<b style="color:var(--good)">Done.</b> The ${K}th ancestor of ${startU} is <b>node ${cur}</b> (depth ${depth[cur]}).`;
+    } else {
+      const j=stepIdx-1;
+      const fired=(K>>j)&1;
+      if(fired){
+        $('#liftStatus').textContent=`Bit 2^${j} = 1 → jump up[${trace[trace.length-2]}][${j}] = ${cur}.`;
+      } else {
+        $('#liftStatus').textContent=`Bit 2^${j} = 0 → skip.`;
+      }
+    }
+  }
+
+  function rebuildPickers(){
+    const np=$('#liftNodePicker'); clearEl(np);
+    for(let u=0;u<N;u++){
+      const b=make('button',{class:'miniBtn'+(u===startU?' active':'')},`${u}`);
+      b.onclick=()=>{ startU=u; K=Math.min(K, depth[u]); stepIdx=0; rebuildPath(); rebuildPickers(); render(); };
+      np.appendChild(b);
+    }
+    const kp=$('#liftKPicker'); clearEl(kp);
+    const maxK=Math.min(11, depth[startU]);
+    for(let k=0;k<=maxK;k++){
+      const b=make('button',{class:'miniBtn'+(k===K?' active':'')},`${k}`);
+      b.onclick=()=>{ K=k; stepIdx=0; rebuildPath(); rebuildPickers(); render(); };
+      kp.appendChild(b);
+    }
+  }
+
+  function reset(){ stepIdx=0; if(auto){clearInterval(auto);auto=null;$('#liftAuto').classList.remove('active');} render(); }
+  function next(){ if(stepIdx<LOG){ stepIdx++; render(); } }
+  $('#liftReset').onclick=reset;
+  $('#liftStep').onclick=next;
+  $('#liftAuto').onclick=function(){
+    if(auto){clearInterval(auto);auto=null;this.classList.remove('active');}
+    else{this.classList.add('active'); auto=setInterval(()=>{if(stepIdx>=LOG){clearInterval(auto);auto=null;$('#liftAuto').classList.remove('active');}else{next();}},700);}
+  };
+
+  rebuildPath();
+  rebuildPickers();
+  render();
+})();
+
+// ============================================================
+// 3) LCA TRACER (Section 8b) — same deep tree
+// ============================================================
+(function(){
+  const adj={0:[1,2,3],1:[4,5],2:[],3:[6],4:[7],5:[],6:[8],7:[9],8:[10],9:[11],10:[],11:[]};
+  const pos={
+    0:[320,40],
+    1:[140,120], 2:[320,120], 3:[500,120],
+    4:[60,200],  5:[220,200], 6:[500,200],
+    7:[60,275],  8:[500,275],
+    9:[60,345],  10:[500,345],
+    11:[60,420]
+  };
+  const edges=[];
+  for(const [u,vs] of Object.entries(adj)){
+    const ui=+u; for(const v of vs) edges.push([ui,v]);
+  }
+  const N=12;
+  const parent=new Array(N).fill(0), depth=new Array(N).fill(0);
+  const tin=new Array(N).fill(0), tout=new Array(N).fill(0);
+  let timer=0;
+  function dfs(u,p,d){
+    parent[u]=p; depth[u]=d; tin[u]=timer++;
+    for(const v of adj[u]||[]) dfs(v,u,d+1);
+    tout[u]=timer-1;
+  }
+  dfs(0,0,0);
+  const LOG=5;
+  const up=[];
+  for(let u=0;u<N;u++){ up.push(new Array(LOG)); up[u][0]=parent[u]; }
+  for(let j=1;j<LOG;j++) for(let u=0;u<N;u++) up[u][j]=up[up[u][j-1]][j-1];
+
+  function isAnc(u,v){ return tin[u]<=tin[v] && tout[v]<=tout[u]; }
+  function lcaFn(u,v){
+    if(isAnc(u,v)) return u;
+    if(isAnc(v,u)) return v;
+    for(let j=LOG-1;j>=0;j--){
+      if(!isAnc(up[u][j],v)) u=up[u][j];
+    }
+    return up[u][0];
+  }
+
+  let pickU=11, pickV=10;
+  let stepIdx=0; // 0=initial, then LOG bits high-to-low, then final reveal
+  let auto=null;
+
+  function currentState(){
+    // Apply the lift loop for the first stepIdx-1 bits (we sweep high-to-low)
+    let u=pickU, v=pickV;
+    let firedBits=[];
+    let trail=[u];
+    if(isAnc(u,v)){
+      return {finished:true, ancestor:u, trail:[u], firedBits:[], u, v, mode:'u-ancestor'};
+    }
+    if(isAnc(v,u)){
+      return {finished:true, ancestor:v, trail:[v], firedBits:[], u, v, mode:'v-ancestor'};
+    }
+    // Sweep bits high to low; process stepIdx of them
+    for(let step=0;step<stepIdx && step<LOG;step++){
+      const j=LOG-1-step;
+      if(!isAnc(up[u][j],v)){
+        u=up[u][j];
+        firedBits.push(j);
+        trail.push(u);
+      }
+    }
+    let answer=-1;
+    if(stepIdx>=LOG) answer=up[u][0];
+    return {finished:stepIdx>=LOG, ancestor:answer, trail, firedBits, u, v, mode:'normal', currentU:u};
+  }
+
+  function render(){
+    const svg=$('#lcaSvg'); clearEl(svg);
+    const st=currentState();
+    // edges
+    edges.forEach(([u,v])=>{
+      const [x1,y1]=pos[u],[x2,y2]=pos[v];
+      const line=makeSVG('line',{x1,y1,x2,y2,stroke:'var(--border)','stroke-width':3,'stroke-linecap':'round'});
+      svg.appendChild(line);
+    });
+    // nodes
+    for(let u=0;u<N;u++){
+      const [x,y]=pos[u];
+      let fill='var(--panel2)', stroke='var(--border)', sw=3;
+      if(u===pickV){ fill='rgba(185,28,28,.25)'; stroke='var(--bad)'; sw=5; }
+      if(st.trail.includes(u) && u!==pickV){ fill='rgba(37,99,235,.18)'; stroke='var(--accent)'; sw=4; }
+      if(u===st.currentU && !st.finished){ fill='rgba(37,99,235,.40)'; stroke='var(--accent2)'; sw=6; }
+      if(st.finished && u===st.ancestor){ fill='rgba(124,58,237,.35)'; stroke='#7c3aed'; sw=7; }
+      const c=makeSVG('circle',{cx:x,cy:y,r:22,fill,stroke,'stroke-width':sw});
+      const t=makeSVG('text',{x,y:y+7,'text-anchor':'middle','font-size':'18','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=u;
+      svg.appendChild(c); svg.appendChild(t);
+    }
+
+    // bits display
+    const bitsBox=$('#lcaBits'); clearEl(bitsBox);
+    for(let step=0;step<LOG;step++){
+      const j=LOG-1-step;
+      const div=make('span',{class:'liftBit'});
+      div.textContent=`2^${j}`;
+      if(st.firedBits.includes(j)) div.classList.add('fired');
+      else if(step<stepIdx) div.classList.add('on');
+      bitsBox.appendChild(div);
+    }
+
+    // status
+    if(st.mode==='u-ancestor'){
+      $('#lcaStatus').innerHTML=`<b style="color:#7c3aed">LCA = u = ${pickU}</b> (u is already an ancestor of v).`;
+    } else if(st.mode==='v-ancestor'){
+      $('#lcaStatus').innerHTML=`<b style="color:#7c3aed">LCA = v = ${pickV}</b> (v is an ancestor of u).`;
+    } else if(stepIdx===0){
+      $('#lcaStatus').textContent=`Initial: u=${pickU} (depth ${depth[pickU]}), v=${pickV} (depth ${depth[pickV]}). Neither is an ancestor of the other; begin the high→low sweep.`;
+    } else if(!st.finished){
+      const j=LOG-stepIdx;
+      const justFired=st.firedBits[st.firedBits.length-1]===j;
+      $('#lcaStatus').textContent=justFired
+        ? `Bit 2^${j}: up[u][${j}] is NOT an ancestor of v → JUMP. u is now ${st.currentU}.`
+        : `Bit 2^${j}: up[u][${j}] IS an ancestor of v → skip. u stays ${st.currentU}.`;
+    } else {
+      $('#lcaStatus').innerHTML=`<b style="color:#7c3aed">Final step:</b> u = ${st.currentU}, return up[u][0] = <b>${st.ancestor}</b> = LCA(${pickU}, ${pickV}).`;
+    }
+  }
+
+  function rebuildPickers(){
+    const upk=$('#lcaUPicker'); clearEl(upk);
+    for(let u=0;u<N;u++){
+      const b=make('button',{class:'miniBtn'+(u===pickU?' active':'')},`${u}`);
+      b.onclick=()=>{ pickU=u; stepIdx=0; rebuildPickers(); render(); };
+      upk.appendChild(b);
+    }
+    const vpk=$('#lcaVPicker'); clearEl(vpk);
+    for(let v=0;v<N;v++){
+      const b=make('button',{class:'miniBtn'+(v===pickV?' active':'')},`${v}`);
+      b.onclick=()=>{ pickV=v; stepIdx=0; rebuildPickers(); render(); };
+      vpk.appendChild(b);
+    }
+  }
+
+  function reset(){ stepIdx=0; if(auto){clearInterval(auto);auto=null;$('#lcaAuto').classList.remove('active');} render(); }
+  function next(){
+    const st=currentState();
+    if(st.mode!=='normal'){ return; }
+    if(stepIdx<LOG){ stepIdx++; render(); }
+    else if(stepIdx===LOG){ stepIdx++; render(); }
+  }
+  $('#lcaReset').onclick=reset;
+  $('#lcaStep').onclick=next;
+  $('#lcaAuto').onclick=function(){
+    if(auto){clearInterval(auto);auto=null;this.classList.remove('active');}
+    else{this.classList.add('active'); auto=setInterval(()=>{
+      if(stepIdx>LOG){clearInterval(auto);auto=null;$('#lcaAuto').classList.remove('active');}
+      else next();
+    },800);}
+  };
+  rebuildPickers();
+  render();
+})();
+
+// ============================================================
+// 4) SUBTREE FLATTENING TRACER (Section 15)
+//    Tree: 0(5)-{1(3),2(7)}, 1-{3(2),4(8)}, 2-{5(4)}
+// ============================================================
+(function(){
+  const adj={0:[1,2],1:[3,4],2:[5],3:[],4:[],5:[]};
+  const pos={0:[320,60],1:[180,200],2:[460,200],3:[80,320],4:[280,320],5:[460,320]};
+  const value={0:5,1:3,2:7,3:2,4:8,5:4};
+  const N=6;
+  const tin=new Array(N), tout=new Array(N);
+  const flat=[]; let timer=0;
+  function dfs(u){ tin[u]=timer++; flat.push(u); for(const v of adj[u]) dfs(v); tout[u]=timer-1; }
+  dfs(0);
+
+  let pickedNode=-1;
+
+  function render(){
+    const svg=$('#flatSvg'); clearEl(svg);
+    // edges
+    for(const [u,vs] of Object.entries(adj)){
+      const ui=+u;
+      for(const v of vs){
+        const line=makeSVG('line',{x1:pos[ui][0],y1:pos[ui][1],x2:pos[v][0],y2:pos[v][1],stroke:'var(--border)','stroke-width':3,'stroke-linecap':'round'});
+        svg.appendChild(line);
+      }
+    }
+    // nodes
+    for(let u=0;u<N;u++){
+      const [x,y]=pos[u];
+      let fill='var(--panel2)', stroke='var(--border)', sw=3;
+      if(pickedNode>=0){
+        if(tin[u]>=tin[pickedNode] && tin[u]<=tout[pickedNode]){
+          fill='rgba(15,118,110,.20)'; stroke='var(--good)'; sw=4;
+        }
+        if(u===pickedNode){ fill='rgba(37,99,235,.35)'; stroke='var(--accent2)'; sw=6; }
+      }
+      const c=makeSVG('circle',{cx:x,cy:y,r:30,fill,stroke,'stroke-width':sw,style:'cursor:pointer'});
+      c.onclick=()=>{ pickedNode=u; render(); };
+      const t=makeSVG('text',{x,y:y+6,'text-anchor':'middle','font-size':'22','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=u;
+      const val=makeSVG('text',{x,y:y-44,'text-anchor':'middle','font-size':'16','font-weight':'900',fill:'var(--accent2)','pointer-events':'none'});
+      val.textContent=`val=${value[u]}`;
+      svg.appendChild(c); svg.appendChild(t); svg.appendChild(val);
+    }
+
+    // flat array
+    const fb=$('#flatArr'); clearEl(fb);
+    flat.forEach((node,idx)=>{
+      let cls='flatCell';
+      if(pickedNode>=0 && idx>=tin[pickedNode] && idx<=tout[pickedNode]) cls+=' inRange';
+      const cell=make('div',{class:cls});
+      cell.appendChild(make('div',{class:'idx'},`tin=${idx}`));
+      cell.appendChild(make('div',{},`${value[node]}`));
+      cell.appendChild(make('div',{class:'idx',style:'margin-top:2px;color:var(--muted);'},`node ${node}`));
+      fb.appendChild(cell);
+    });
+
+    if(pickedNode>=0){
+      $('#flatPick').textContent=`node ${pickedNode}  (value ${value[pickedNode]}, depth ${depthOf(pickedNode)})`;
+      $('#flatInterval').textContent=`[tin=${tin[pickedNode]}, tout=${tout[pickedNode]}]`;
+      let sum=0;
+      for(let i=tin[pickedNode];i<=tout[pickedNode];i++) sum+=value[flat[i]];
+      $('#flatSum').textContent=`${sum}`;
+    } else {
+      $('#flatPick').textContent='(click a node)';
+      $('#flatInterval').textContent='—';
+      $('#flatSum').textContent='—';
+    }
+  }
+  function depthOf(u){
+    let d=0, cur=u;
+    while(cur!==0){
+      for(const [p,vs] of Object.entries(adj)){
+        if(vs.includes(cur)){ cur=+p; d++; break; }
+      }
+    }
+    return d;
+  }
+  render();
+})();
+
+// ============================================================
+// 5) EULER TOUR + RMQ LCA TRACER (Section 16)
+//    Same tree as flattening: 0-{1,2}, 1-{3,4}, 2-{5}
+// ============================================================
+(function(){
+  const adj={0:[1,2],1:[3,4],2:[5],3:[],4:[],5:[]};
+  const pos={0:[320,60],1:[180,200],2:[460,200],3:[80,320],4:[280,320],5:[460,320]};
+  const N=6;
+  const first=new Array(N).fill(-1);
+  const euler=[], eulerDepth=[];
+  function dfs(u,d){
+    if(first[u]===-1) first[u]=euler.length;
+    euler.push(u); eulerDepth.push(d);
+    for(const v of adj[u]){
+      dfs(v,d+1);
+      euler.push(u); eulerDepth.push(d);
+    }
+  }
+  dfs(0,0);
+
+  let pU=3, pV=5;
+
+  function render(){
+    const svg=$('#rmqSvg'); clearEl(svg);
+    // window
+    let l=first[pU], r=first[pV];
+    if(l>r) [l,r]=[r,l];
+    // find min depth index in [l,r]
+    let bestI=l;
+    for(let i=l;i<=r;i++) if(eulerDepth[i]<eulerDepth[bestI]) bestI=i;
+    const lcaNode = euler[bestI];
+
+    // edges
+    for(const [u,vs] of Object.entries(adj)){
+      const ui=+u;
+      for(const v of vs){
+        const line=makeSVG('line',{x1:pos[ui][0],y1:pos[ui][1],x2:pos[v][0],y2:pos[v][1],stroke:'var(--border)','stroke-width':3,'stroke-linecap':'round'});
+        svg.appendChild(line);
+      }
+    }
+    // nodes
+    for(let u=0;u<N;u++){
+      const [x,y]=pos[u];
+      let fill='var(--panel2)', stroke='var(--border)', sw=3;
+      if(u===pU){ fill='rgba(37,99,235,.30)'; stroke='var(--accent2)'; sw=5; }
+      if(u===pV){ fill='rgba(185,28,28,.25)'; stroke='var(--bad)'; sw=5; }
+      if(u===lcaNode){ fill='rgba(124,58,237,.35)'; stroke='#7c3aed'; sw=6; }
+      const c=makeSVG('circle',{cx:x,cy:y,r:30,fill,stroke,'stroke-width':sw});
+      const t=makeSVG('text',{x,y:y+8,'text-anchor':'middle','font-size':'22','font-weight':'950',fill:'var(--text)','pointer-events':'none'});
+      t.textContent=u;
+      svg.appendChild(c); svg.appendChild(t);
+    }
+
+    // euler array
+    const eb=$('#rmqEuler'); clearEl(eb);
+    euler.forEach((node,idx)=>{
+      let cls='flatCell';
+      if(idx>=l && idx<=r) cls+=' inRange';
+      if(idx===bestI) cls+=' minPick';
+      const cell=make('div',{class:cls});
+      cell.appendChild(make('div',{class:'idx'},`${idx}`));
+      cell.appendChild(make('div',{},`${node}`));
+      eb.appendChild(cell);
+    });
+    // depth array
+    const db=$('#rmqDepth'); clearEl(db);
+    eulerDepth.forEach((d,idx)=>{
+      let cls='flatCell';
+      if(idx>=l && idx<=r) cls+=' inRange';
+      if(idx===bestI) cls+=' minPick';
+      const cell=make('div',{class:cls});
+      cell.appendChild(make('div',{class:'idx'},`${idx}`));
+      cell.appendChild(make('div',{},`${d}`));
+      db.appendChild(cell);
+    });
+    // text fields
+    $('#rmqWindow').textContent=`[${l} .. ${r}]   (first[${pU}]=${first[pU]}, first[${pV}]=${first[pV]})`;
+    $('#rmqAns').textContent=`node ${lcaNode}  (min depth = ${eulerDepth[bestI]})`;
+  }
+
+  function rebuildPickers(){
+    const up=$('#rmqUPick'); clearEl(up);
+    for(let u=0;u<N;u++){
+      const b=make('button',{class:'miniBtn'+(u===pU?' active':'')},`${u}`);
+      b.onclick=()=>{ pU=u; rebuildPickers(); render(); };
+      up.appendChild(b);
+    }
+    const vp=$('#rmqVPick'); clearEl(vp);
+    for(let v=0;v<N;v++){
+      const b=make('button',{class:'miniBtn'+(v===pV?' active':'')},`${v}`);
+      b.onclick=()=>{ pV=v; rebuildPickers(); render(); };
+      vp.appendChild(b);
+    }
+  }
+  rebuildPickers();
+  render();
+})();
+</script>
+</body>
+</html>

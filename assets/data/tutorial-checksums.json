@@ -1,0 +1,578 @@
+[
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/26-stl-valarray.html",
+    "originalFileName": "26-stl-valarray.html",
+    "finalPath": "tutorials/data-structures/26-stl-valarray.html",
+    "category": "Data Structures",
+    "sha256": "d9dbb84ed5485cc41c9b97457174705e8e10cb821196226dc03a98dceec7554d",
+    "bytes": 86346
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/27-pbds.html",
+    "originalFileName": "27-pbds.html",
+    "finalPath": "tutorials/data-structures/27-pbds.html",
+    "category": "Data Structures",
+    "sha256": "a09d8c4a839043b168137fd3ae5ca3f48ee1e65a999ff8b9896705130ae19d85",
+    "bytes": 65158
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/28-monotonic-stack-deque.html",
+    "originalFileName": "28-monotonic-stack-deque.html",
+    "finalPath": "tutorials/data-structures/28-monotonic-stack-deque.html",
+    "category": "Data Structures",
+    "sha256": "d5f24ae1565fe089c59b9ab35ca2edbde94d38b9530cd8cb906dd2d8b9c9ee94",
+    "bytes": 143510
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/29-fenwick-bit.html",
+    "originalFileName": "29-fenwick-bit.html",
+    "finalPath": "tutorials/data-structures/29-fenwick-bit.html",
+    "category": "Data Structures",
+    "sha256": "9f70ce8b0b6ef7a278624e1a9bdcf82f3f0aef7d248b19abd0e08f5a22409bec",
+    "bytes": 112846
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/30-segtree-recursive.html",
+    "originalFileName": "30-segtree-recursive.html",
+    "finalPath": "tutorials/data-structures/30-segtree-recursive.html",
+    "category": "Data Structures",
+    "sha256": "2c7226d180d169d69503a0c0cceaa426b5206f61fe8be82711f35dc2c6907fc9",
+    "bytes": 77447
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/31-segtree-composite.html",
+    "originalFileName": "31-segtree-composite.html",
+    "finalPath": "tutorials/data-structures/31-segtree-composite.html",
+    "category": "Data Structures",
+    "sha256": "7e09791d9aa848b47ba125612fb7cf0a23fc8d20363e9d77e9577e07978e2a7c",
+    "bytes": 59872
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/32-segtree-iterative.html",
+    "originalFileName": "32-segtree-iterative.html",
+    "finalPath": "tutorials/data-structures/32-segtree-iterative.html",
+    "category": "Data Structures",
+    "sha256": "f3cf53c8a04cf36b311369dfe7c1583ebc25f10496d6b7a1e8751b0ada702857",
+    "bytes": 71667
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/33-segtree-lazy.html",
+    "originalFileName": "33-segtree-lazy.html",
+    "finalPath": "tutorials/data-structures/33-segtree-lazy.html",
+    "category": "Data Structures",
+    "sha256": "e711fc257df7134c8c9c1beae1d969581d0237cca9ff1e65ed9c61ec5addd519",
+    "bytes": 73979
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/34-segtree-persistent.html",
+    "originalFileName": "34-segtree-persistent.html",
+    "finalPath": "tutorials/data-structures/34-segtree-persistent.html",
+    "category": "Data Structures",
+    "sha256": "228d1ec6a2aa59ff4d174137b3c39bc7425f157eb8155ba1a8a56b5b5b33a0fe",
+    "bytes": 74393
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/35-segtree-mergesort.html",
+    "originalFileName": "35-segtree-mergesort.html",
+    "finalPath": "tutorials/data-structures/35-segtree-mergesort.html",
+    "category": "Data Structures",
+    "sha256": "53e6abd7dc0803e54a72f797b574629da4ee23bddd462203a99654db445dfd1f",
+    "bytes": 66763
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/36-segtree-dynamic.html",
+    "originalFileName": "36-segtree-dynamic.html",
+    "finalPath": "tutorials/data-structures/36-segtree-dynamic.html",
+    "category": "Data Structures",
+    "sha256": "27d27c19b0fd49936630079df21252341c434bc78e75922116cf05b8a45e2cd4",
+    "bytes": 70054
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/37-segtree-beats.html",
+    "originalFileName": "37-segtree-beats.html",
+    "finalPath": "tutorials/data-structures/37-segtree-beats.html",
+    "category": "Data Structures",
+    "sha256": "770d7c19276e096b271b5a0150ad31f10a1b6e288945e12f862e630f388d9906",
+    "bytes": 74141
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/38-segtree-merging.html",
+    "originalFileName": "38-segtree-merging.html",
+    "finalPath": "tutorials/data-structures/38-segtree-merging.html",
+    "category": "Data Structures",
+    "sha256": "771ca950e7fceea635ad17282e89a406c893ccc1a0ae8603c7fc8198e786332f",
+    "bytes": 70957
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/39-segtree-xor.html",
+    "originalFileName": "39-segtree-xor.html",
+    "finalPath": "tutorials/data-structures/39-segtree-xor.html",
+    "category": "Data Structures",
+    "sha256": "001b4907d0d49fa98542577a60ef63d2b9e5f57f7dc73bf249e3396be499b99a",
+    "bytes": 67060
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/40-segtree-persistent-lazy.html",
+    "originalFileName": "40-segtree-persistent-lazy.html",
+    "finalPath": "tutorials/data-structures/40-segtree-persistent-lazy.html",
+    "category": "Data Structures",
+    "sha256": "6194dd091c57fcdb29dda34beeec320efe5a994ceecc09249ce4d2a50ce10083",
+    "bytes": 76031
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/41-segtree-2d.html",
+    "originalFileName": "41-segtree-2d.html",
+    "finalPath": "tutorials/data-structures/41-segtree-2d.html",
+    "category": "Data Structures",
+    "sha256": "de6667fea8cb33f0e03ae6eed9424f50b3d8c6d2a4433cb6c7d7652214dfcc79",
+    "bytes": 68203
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/42-segtree-2d-dynamic.html",
+    "originalFileName": "42-segtree-2d-dynamic.html",
+    "finalPath": "tutorials/data-structures/42-segtree-2d-dynamic.html",
+    "category": "Data Structures",
+    "sha256": "6fb49455de175e8a5bf56852236127ea4bcf8d9dda3b58a79e84b503098292cd",
+    "bytes": 80382
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/43-tree-queries.html",
+    "originalFileName": "43-tree-queries.html",
+    "finalPath": "tutorials/data-structures/43-tree-queries.html",
+    "category": "Data Structures",
+    "sha256": "a1085a93fa09f2eba842df2494af9e8256e57645c6ff283ec87f5c663c240505",
+    "bytes": 163578
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/44-sparse-table.html",
+    "originalFileName": "44-sparse-table.html",
+    "finalPath": "tutorials/data-structures/44-sparse-table.html",
+    "category": "Data Structures",
+    "sha256": "a1813f69b1f30aa601004a6a3cc2dd878dfdf0862f6cf122d8f2f482247edc13",
+    "bytes": 139420
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/45-sqrt-decomposition.html",
+    "originalFileName": "45-sqrt-decomposition.html",
+    "finalPath": "tutorials/data-structures/45-sqrt-decomposition.html",
+    "category": "Data Structures",
+    "sha256": "704dcd4947422c2498180ac236262a71afb4078f89a88f6c4aa3707f3136209b",
+    "bytes": 91082
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/46-mo-classic.html",
+    "originalFileName": "46-mo-classic.html",
+    "finalPath": "tutorials/data-structures/46-mo-classic.html",
+    "category": "Data Structures",
+    "sha256": "5a51a5c2c9c1f063b01297ffb4e5e1487fab749f4c8ced56e6907669f4d4e4f3",
+    "bytes": 98979
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/47-mo-on-tree.html",
+    "originalFileName": "47-mo-on-tree.html",
+    "finalPath": "tutorials/data-structures/47-mo-on-tree.html",
+    "category": "Data Structures",
+    "sha256": "3aca53573e48673d8faa245cdf8793d509e9ab67e441dbb05d45ccd83bd5d033",
+    "bytes": 94802
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/48-mo-with-updates.html",
+    "originalFileName": "48-mo-with-updates.html",
+    "finalPath": "tutorials/data-structures/48-mo-with-updates.html",
+    "category": "Data Structures",
+    "sha256": "bda1a220fcc1659ff324a0cc2de176cf032e396bfe682f36080727b6b7a03283",
+    "bytes": 67369
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/49-mo-other-variants.html",
+    "originalFileName": "49-mo-other-variants.html",
+    "finalPath": "tutorials/data-structures/49-mo-other-variants.html",
+    "category": "Data Structures",
+    "sha256": "6c542e077e744ed5a44f62d94ba22a451b1a774fee8f961493fdb8c42c05eb5c",
+    "bytes": 75948
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/50-bst-bbst-avl-rb.html",
+    "originalFileName": "50-bst-bbst-avl-rb.html",
+    "finalPath": "tutorials/data-structures/50-bst-bbst-avl-rb.html",
+    "category": "Data Structures",
+    "sha256": "d17b102207a23611784a8c0076b51595781add80faa75a6f7ecfb3238a00fd81",
+    "bytes": 88963
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/51-key-treap.html",
+    "originalFileName": "51-key-treap.html",
+    "finalPath": "tutorials/data-structures/51-key-treap.html",
+    "category": "Data Structures",
+    "sha256": "6f5954dd6d84bb92a14dbf87f5c1730476bce35ec0c855fab9879ff9152bd23d",
+    "bytes": 90015
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/52-implicit-treap.html",
+    "originalFileName": "52-implicit-treap.html",
+    "finalPath": "tutorials/data-structures/52-implicit-treap.html",
+    "category": "Data Structures",
+    "sha256": "66850eb12f8bdd5cd0eff007bd9821eb50afc59d190b952a266967038cef2382",
+    "bytes": 87461
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/53-persistent-treap.html",
+    "originalFileName": "53-persistent-treap.html",
+    "finalPath": "tutorials/data-structures/53-persistent-treap.html",
+    "category": "Data Structures",
+    "sha256": "453aa43b0420cbfc3193b2c12d9952fbac45cec5a60b7aa4bea3f820fe8952f2",
+    "bytes": 81165
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/54-splay-tree.html",
+    "originalFileName": "54-splay-tree.html",
+    "finalPath": "tutorials/data-structures/54-splay-tree.html",
+    "category": "Data Structures",
+    "sha256": "373bc436742ecf958d8bce67156e75030639a74f45ccfde162ea0f5431b927d6",
+    "bytes": 118321
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Data Structures/done/25-stl-cpp.html",
+    "originalFileName": "25-stl-cpp.html",
+    "finalPath": "tutorials/data-structures/25-stl-cpp.html",
+    "category": "Data Structures",
+    "sha256": "ba8aea16cfa372400f5ae9547a29653501beb529b71ebee3e3e65917a7caceda",
+    "bytes": 161744
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/55-distance-comparison-tasks.html",
+    "originalFileName": "55-distance-comparison-tasks.html",
+    "finalPath": "tutorials/geometry/55-distance-comparison-tasks.html",
+    "category": "Geometry",
+    "sha256": "8b3f173312d653ab1463499c8e7b5abcf0a55550fc4a793b7bb66ce2ba02d102",
+    "bytes": 91563
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/56-point-location-orientation.html",
+    "originalFileName": "56-point-location-orientation.html",
+    "finalPath": "tutorials/geometry/56-point-location-orientation.html",
+    "category": "Geometry",
+    "sha256": "3323a57047de5bd53b918acdfa4796b2afd763d2438a5e0be5bb4ff4c7919c22",
+    "bytes": 101682
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/57-line-conversion-point-on-segment.html",
+    "originalFileName": "57-line-conversion-point-on-segment.html",
+    "finalPath": "tutorials/geometry/57-line-conversion-point-on-segment.html",
+    "category": "Geometry",
+    "sha256": "87766f38e88fd9df762932b57b0b5ffe12279f322d99d6acb5f8cdd3c521a351",
+    "bytes": 88310
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/58-segment-intersection.html",
+    "originalFileName": "58-segment-intersection.html",
+    "finalPath": "tutorials/geometry/58-segment-intersection.html",
+    "category": "Geometry",
+    "sha256": "05a212754fd1622da49f021c329973a62393217fc916bc22be44f342a00bfb66",
+    "bytes": 92045
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/59-triangle-construction.html",
+    "originalFileName": "59-triangle-construction.html",
+    "finalPath": "tutorials/geometry/59-triangle-construction.html",
+    "category": "Geometry",
+    "sha256": "9a6922aab28ae48c68dc1e4dc34f3af2b985bd97176ff0fddc829b7d5d77c141",
+    "bytes": 95495
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/60-circle-intersection-tangents.html",
+    "originalFileName": "60-circle-intersection-tangents.html",
+    "finalPath": "tutorials/geometry/60-circle-intersection-tangents.html",
+    "category": "Geometry",
+    "sha256": "2185bf2f4dc957d35784773f24e34185c2f50b1ed1a0b773085f330841926af3",
+    "bytes": 116676
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/61-circle-cover-ellipse-utilities.html",
+    "originalFileName": "61-circle-cover-ellipse-utilities.html",
+    "finalPath": "tutorials/geometry/61-circle-cover-ellipse-utilities.html",
+    "category": "Geometry",
+    "sha256": "1e700caa3cd9756c2cfacc56b1e048ef2ca51ce7567f4807c75168d965b961b7",
+    "bytes": 114465
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/62-picks-theorem-problems.html",
+    "originalFileName": "62-picks-theorem-problems.html",
+    "finalPath": "tutorials/geometry/62-picks-theorem-problems.html",
+    "category": "Geometry",
+    "sha256": "3ba5f163b62d3accf67c263e02e86882d35c210d794bf54ab3ddac4e0480fc65",
+    "bytes": 81492
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/63-polygon-cut-convex-hull.html",
+    "originalFileName": "63-polygon-cut-convex-hull.html",
+    "finalPath": "tutorials/geometry/63-polygon-cut-convex-hull.html",
+    "category": "Geometry",
+    "sha256": "d9aa440c36d2bbab8a79c1f0337364560b96ff18cf6876d57fe3163cce651b3c",
+    "bytes": 103415
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Geometry/64-closest-pair-mixed-geometry.html",
+    "originalFileName": "64-closest-pair-mixed-geometry.html",
+    "finalPath": "tutorials/geometry/64-closest-pair-mixed-geometry.html",
+    "category": "Geometry",
+    "sha256": "4d89d4ed0097498edeecf5e380378dce592366d54c2e1784bb1beefa49c046d2",
+    "bytes": 98000
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/01-graph-intro.html",
+    "originalFileName": "01-graph-intro.html",
+    "finalPath": "tutorials/graphs/01-graph-intro.html",
+    "category": "Graphs",
+    "sha256": "c595ab175409d56c6eb81753da742903cb77c9fe7e1eaab5ed632a7386278590",
+    "bytes": 223630
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/02-graph-classification.html",
+    "originalFileName": "02-graph-classification.html",
+    "finalPath": "tutorials/graphs/02-graph-classification.html",
+    "category": "Graphs",
+    "sha256": "74e17dbdbf1766b46200a92d35847f9a437db8858f729befaf612f08b739390b",
+    "bytes": 221285
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/03-graph-terminology.html",
+    "originalFileName": "03-graph-terminology.html",
+    "finalPath": "tutorials/graphs/03-graph-terminology.html",
+    "category": "Graphs",
+    "sha256": "1888e5bf3ea28d019614d669ef7555b5091c859d6b52f398ceb153ca4f1c2853",
+    "bytes": 217874
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/04-graph-data-structures.html",
+    "originalFileName": "04-graph-data-structures.html",
+    "finalPath": "tutorials/graphs/04-graph-data-structures.html",
+    "category": "Graphs",
+    "sha256": "cf76b91f79f6cac1ddb742fc87879105e5f269e4a9cb49ef94a564472fa46641",
+    "bytes": 261614
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/05-sp-intro.html",
+    "originalFileName": "05-sp-intro.html",
+    "finalPath": "tutorials/graphs/05-sp-intro.html",
+    "category": "Graphs",
+    "sha256": "228d389bd514b95c3b6914da84992689ff6e1a95249da195c7228a18666a036d",
+    "bytes": 97711
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/06-bfs.html",
+    "originalFileName": "06-bfs.html",
+    "finalPath": "tutorials/graphs/06-bfs.html",
+    "category": "Graphs",
+    "sha256": "7990c2ca74e515523ad457ffaf429641b1f63c310b67abd1967b3bc1cc516417",
+    "bytes": 248525
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/07-dfs.html",
+    "originalFileName": "07-dfs.html",
+    "finalPath": "tutorials/graphs/07-dfs.html",
+    "category": "Graphs",
+    "sha256": "2330d34c9db400901b87886f61a97bd1812b5f0d03a5d0770a5b288e511c9a50",
+    "bytes": 204088
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/08-dijkstra.html",
+    "originalFileName": "08-dijkstra.html",
+    "finalPath": "tutorials/graphs/08-dijkstra.html",
+    "category": "Graphs",
+    "sha256": "98e82743cd75506791ae4028696393090da9d469755fd6892b516ffadc7a34b1",
+    "bytes": 118083
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/09-bellman-ford-spfa.html",
+    "originalFileName": "09-bellman-ford-spfa.html",
+    "finalPath": "tutorials/graphs/09-bellman-ford-spfa.html",
+    "category": "Graphs",
+    "sha256": "483eae3e5d23105653d83b5c4d96c6c8b355000518c580245a0532b1ad2c8847",
+    "bytes": 158269
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/10-floyd-johnson-apsp.html",
+    "originalFileName": "10-floyd-johnson-apsp.html",
+    "finalPath": "tutorials/graphs/10-floyd-johnson-apsp.html",
+    "category": "Graphs",
+    "sha256": "931f80fb901c92a106dec714e60d7c2f9b8876f35ac29d186ee3efa02afa8259",
+    "bytes": 374925
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/11-dsu.html",
+    "originalFileName": "11-dsu.html",
+    "finalPath": "tutorials/graphs/11-dsu.html",
+    "category": "Graphs",
+    "sha256": "04fb1796f2828b4ead70e5ff1a79b80acfd7a4db12d7ac51ae0f5fd92880c14b",
+    "bytes": 410568
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/12-dsu-complexity.html",
+    "originalFileName": "12-dsu-complexity.html",
+    "finalPath": "tutorials/graphs/12-dsu-complexity.html",
+    "category": "Graphs",
+    "sha256": "e7eb78cbe2cbebc4ea7eb0bf195a125534d8fba33382f9f674ffaf61c47cb4e1",
+    "bytes": 136380
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/13-mst-prim-kruskal.html",
+    "originalFileName": "13-mst-prim-kruskal.html",
+    "finalPath": "tutorials/graphs/13-mst-prim-kruskal.html",
+    "category": "Graphs",
+    "sha256": "d5ec11606ebf1279df1de64b5b6e782700b2b45660a7945a56d6a5e2ba3c04ae",
+    "bytes": 179792
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/14-euler-path.html",
+    "originalFileName": "14-euler-path.html",
+    "finalPath": "tutorials/graphs/14-euler-path.html",
+    "category": "Graphs",
+    "sha256": "777137cf7b12ec4aeba343e17669cbc22a700937ee1806ef74a990c3040620eb",
+    "bytes": 72924
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/15-scc-tarjan-2sat.html",
+    "originalFileName": "15-scc-tarjan-2sat.html",
+    "finalPath": "tutorials/graphs/15-scc-tarjan-2sat.html",
+    "category": "Graphs",
+    "sha256": "954f747eb25ad008cf297b3ec05cd7829d0a6ff8bf597df38eacaa5f1eab97df",
+    "bytes": 143781
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/16-lowlink-bridges-ap.html",
+    "originalFileName": "16-lowlink-bridges-ap.html",
+    "finalPath": "tutorials/graphs/16-lowlink-bridges-ap.html",
+    "category": "Graphs",
+    "sha256": "8a13cc38c24c4a8d537bc4432ad97f7e04d31e3c44a48cb870e5413d55b6c89c",
+    "bytes": 117979
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Graphs/done/17-graph-misc.html",
+    "originalFileName": "17-graph-misc.html",
+    "finalPath": "tutorials/graphs/17-graph-misc.html",
+    "category": "Graphs",
+    "sha256": "2110c54ec5d93e843547ff26b59720a4f2ee670b93695faef833ac8e0d5e153a",
+    "bytes": 245151
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/22-dp-hirschberg.html",
+    "originalFileName": "22-dp-hirschberg.html",
+    "finalPath": "tutorials/paradigms/22-dp-hirschberg.html",
+    "category": "Paradigms",
+    "sha256": "c88a3cdeb727747f7c01f85f235fed396eb7174577848214b1db4d1396750b0e",
+    "bytes": 108674
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/18-greedy-adhoc.html",
+    "originalFileName": "18-greedy-adhoc.html",
+    "finalPath": "tutorials/paradigms/18-greedy-adhoc.html",
+    "category": "Paradigms",
+    "sha256": "a6d885b551c55276c88ea1f8de096d6083ebcdc1dd2eb3112278ff185768febd",
+    "bytes": 145300
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/19-backtracking.html",
+    "originalFileName": "19-backtracking.html",
+    "finalPath": "tutorials/paradigms/19-backtracking.html",
+    "category": "Paradigms",
+    "sha256": "7768e26255b594b7b64ddd10ca41217576f15edbb837c794cd5b721b27bf9860",
+    "bytes": 245655
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/20-dp.html",
+    "originalFileName": "20-dp.html",
+    "finalPath": "tutorials/paradigms/20-dp.html",
+    "category": "Paradigms",
+    "sha256": "f309c38b0e92596db5959cf1aa6cb6e9b44b4c861e6acd56a7c33d7b524b8e77",
+    "bytes": 238802
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/21-dp-advanced.html",
+    "originalFileName": "21-dp-advanced.html",
+    "finalPath": "tutorials/paradigms/21-dp-advanced.html",
+    "category": "Paradigms",
+    "sha256": "b87ce1c7db334ceccee5f312674f4039948d4a5d0b5bfef97de9656420df5017",
+    "bytes": 199973
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/23-divide-conquer.html",
+    "originalFileName": "23-divide-conquer.html",
+    "finalPath": "tutorials/paradigms/23-divide-conquer.html",
+    "category": "Paradigms",
+    "sha256": "22d2077101557115293f4ea3cb1129678d03af95ebd012c9cff952a62920c880",
+    "bytes": 156424
+  },
+  {
+    "sourceZip": "/Users/cewatlac/Downloads/HTML.zip",
+    "originalPath": "Paradigms/done/24-binary-ternary-search.html",
+    "originalFileName": "24-binary-ternary-search.html",
+    "finalPath": "tutorials/paradigms/24-binary-ternary-search.html",
+    "category": "Paradigms",
+    "sha256": "cc3f6542866906ce45b4bc72559b118ecf1aec87b5967c591f2371d9796d85f1",
+    "bytes": 135700
+  }
+]

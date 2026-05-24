@@ -1,0 +1,1522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — Splay Tree (Self-Adjusting BST)</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --link:#1d4ed8;
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --node-blue:#2563eb; --node-green:#0f766e; --node-amber:#b45309; --node-red:#b91c1c; --node-purple:#7c3aed;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --link:#93c5fd;
+      --node-blue:#4f8cff; --node-green:#34d399; --node-amber:#fbbf24; --node-red:#fb7185; --node-purple:#a78bfa;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;cursor:pointer;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";float:right;font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:17px;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;white-space:pre;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .goodRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--good);border-radius:0 var(--radius) var(--radius) 0;background:rgba(15,118,110,.08);}
+    .gLabel{font-weight:950;font-size:24px;color:var(--good);margin-bottom:6px;}
+    .gDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .plink{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:8px 12px;border-radius:12px;font-weight:900;font-size:18px;color:var(--accent2);margin-top:6px;}
+    .stepper{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;margin:18px 0;box-shadow:var(--shadow);}
+    .stepper-title{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:10px;}
+    .stepper-svg{width:100%;height:auto;display:block;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+    .stepper-desc{margin-top:14px;padding:14px 18px;background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;font-weight:800;font-size:21px;line-height:1.4;color:var(--text);min-height:70px;}
+    .stepper-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+    .stepper-btn{padding:10px 18px;border-radius:12px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:18px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .stepper-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(37,99,235,.08);}
+    .stepper-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .stepper-btn.primary{background:var(--accent2);color:white;border-color:var(--accent2);}
+    .stepper-btn.primary:hover:not(:disabled){background:var(--accent);}
+    .stepper-counter{font-weight:900;font-size:20px;color:var(--muted);min-width:120px;text-align:center;}
+    .tree-edge{stroke:var(--muted);stroke-width:2.5;fill:none;transition:all .35s ease;}
+    .tree-edge.path{stroke:var(--accent2);stroke-width:5;}
+    .tree-edge.new{stroke:var(--good);stroke-width:5;}
+    .tree-edge.faded{stroke:var(--border);stroke-width:2;opacity:.4;}
+    .tree-edge.shared{stroke:var(--node-purple);stroke-width:4;stroke-dasharray:6,4;}
+    .tree-node circle{stroke:var(--panel);stroke-width:3;transition:all .35s ease;}
+    .tree-node text{fill:white;text-anchor:middle;font-family:system-ui,sans-serif;font-weight:900;dominant-baseline:central;}
+    .tree-node.highlight circle{stroke:var(--accent2);stroke-width:6;}
+    .tree-node.target circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.doomed circle{stroke:var(--bad);stroke-width:6;stroke-dasharray:5,3;}
+    .tree-node.new-node circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.faded{opacity:.5;}
+    .tree-label{fill:var(--text);text-anchor:middle;font-weight:800;font-size:18px;font-family:system-ui,sans-serif;}
+    .tree-caption{fill:var(--muted);text-anchor:middle;font-weight:750;font-size:14px;font-family:system-ui,sans-serif;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle"><span></span><span></span><span></span></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Splay Tree (Self-Adjusting BST)</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundations</div>
+    <a class="navlink active" onclick="navTo('problem')">01 · Problem Definition<small>Self-adjusting ordered set</small></a>
+    <a class="navlink" onclick="navTo('intuition')">02 · Intuition from Scratch<small>Access then splay to root</small></a>
+    <a class="navlink" onclick="navTo('visual')">03 · Visual Mental Model<small>Three splay patterns</small></a>
+    <a class="navlink" onclick="navTo('formal')">04 · Formal Abstraction<small>No fixed balance condition</small></a>
+    <a class="navlink" onclick="navTo('observations')">05 · Key Observations<small>Why zig-zig is special</small></a>
+    <div class="groupTitle">Algorithm</div>
+    <a class="navlink" onclick="navTo('algorithm')">06 · Algorithm<small>zig / zig-zig / zig-zag</small></a>
+    <a class="navlink" onclick="navTo('invariants')">07 · Invariants<small>State / transition / termination</small></a>
+    <a class="navlink" onclick="navTo('proof')">08 · Proof &amp; Potential Method<small>Telescoping, Access Lemma</small></a>
+    <a class="navlink" onclick="navTo('complexity')">09 · Complexity<small>Amortized O(log n)</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a class="navlink" onclick="navTo('philosophy')">10 · Template Philosophy<small>rotate(child) style</small></a>
+    <a class="navlink" onclick="navTo('master')">11 · Master Templates<small>Key and implicit</small></a>
+    <a class="navlink" onclick="navTo('lineByLine')">12 · Line-by-Line<small>Code walkthrough</small></a>
+    <div class="groupTitle">Mastery</div>
+    <a class="navlink" onclick="navTo('edges')">13 · Edge Cases<small>Audit</small></a>
+    <a class="navlink" onclick="navTo('pitfalls')">14 · Common Pitfalls<small>Wrong zig-zig order</small></a>
+    <a class="navlink" onclick="navTo('decision')">15 · Decision Guide<small>When splay fits</small></a>
+    <a class="navlink" onclick="navTo('variants')">16 · Variants<small>Link-cut, finger, top-tree</small></a>
+    <a class="navlink" onclick="navTo('problems')">17 · Problem Set<small>VJudge-ready</small></a>
+    <a class="navlink" onclick="navTo('summary')">18 · Final Summary<small>One-page recap</small></a>
+    <a class="navlink" onclick="navTo('contact')">19 · Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">
+      Coach Academy<br>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br>© 2026 All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>Splay Tree (Self-Adjusting BST)</h1>
+      <div class="subtitle">A binary search tree with one rule: every accessed node is rotated up to the root. No height bookkeeping, no random priorities, no color bits — and yet the average cost over any long sequence of operations is O(log n) per operation. This tutorial builds the splay tree from zero, proves the amortized bound from first principles using the potential method (telescoping sums and all), and ships two production templates: key splay with frequency-counted duplicates, and implicit splay with split/merge over sequences.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill">Theme<div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div></div>
+    </div>
+  </div>
+
+  <div id="sec-problem" class="section">
+  <section id="problem" class="card scroll-reveal">
+    <h2>📌 01 · Problem Definition</h2>
+    <p class="note">Maintain a dynamic ordered structure that supports the full menu of ordered-set operations — insertion, deletion, membership, k-th smallest, rank-of-value, predecessor, successor — and additionally adapts its shape to the access pattern: frequently used elements should become cheap to reach, and recently used elements should become cheaper to reach again. The structure must guarantee O(log n) per operation in an amortized sense, meaning that any sequence of m operations on a tree of n nodes runs in O((n + m) log n) total time, even though individual operations may take longer.</p>
+    <p class="note">This is a strictly more ambitious goal than the balanced BSTs of tutorial 26 or the treap of tutorial 27. A balanced BST guarantees O(log n) worst case for every single operation but does not exploit access patterns; a freshly accessed node sits at exactly the same depth as the previously accessed one. A splay tree gives up the per-operation worst-case bound in exchange for self-adaptation: it actively restructures itself on every access so that hot elements migrate toward the root. The amortized bound replaces the worst-case bound, and the constants remain small enough to be competitive in practice.</p>
+  </section>
+  </div>
+
+  <div id="sec-intuition" class="section">
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 02 · Intuition from Scratch</h2>
+    <p class="note">Tutorial 26 explained that a BST stores its keys so that an inorder traversal reads them in sorted order, that every operation walks one root-to-leaf path of length O(h), and that a rotation is a local rewiring that preserves the inorder. We start from those facts and ask a slightly different question. Suppose we just spent O(h) time finding a node deep in the tree. Is there any way to repay that work, so that future searches for the same node are cheaper? The splay tree's answer is yes: after every access, rotate the accessed node all the way up to the root. The next search for the same value finds it immediately, at depth zero, and the access costs O(1).</p>
+
+    <h3>The one rule</h3>
+    <p class="note">Whenever a search, an insertion, or a deletion touches a node x, we follow up by repeatedly rotating x up the tree until x is the root. The sequence of rotations is called <em>splaying x</em>. The splay tree has no other bookkeeping: no balance factor like AVL, no color bit like Red-Black, no random priority like the treap. It chooses its shape purely as a side effect of past access patterns.</p>
+
+    <h3>Why the obvious approach is wrong</h3>
+    <p class="note">A first guess might be: just keep doing single rotations to bring x up one level at a time, the way a treap rotates a fresh leaf up its access path. That works in the sense that x reaches the root, but it does not buy us anything new. The chain on the access path stays a chain after a sequence of single rotations, just with a different leaf at the top. The splay tree's special insight is that the way you rotate matters as much as the fact that you rotate. There are three rotation patterns — zig, zig-zig, and zig-zag — and one of them, zig-zig, actively shortens the chain. We will see in section 6 exactly how this works and in section 8 why this shortening is what makes the amortized bound go through.</p>
+
+    <h3>Why this is worth learning even when treaps exist</h3>
+    <p class="note">Treaps already give us a beautifully simple expected O(log n) per operation. Why bother with splay trees? Three reasons. First, splay trees are deterministic; their guarantee does not depend on a random source, which matters in adversarial or reproducible settings. Second, splay trees exhibit working-set behavior: if the workload has only k hot elements at a time, splay accesses cost O(log k) on average rather than O(log n). Third, the splay machinery generalises into link-cut trees and top trees, which are the standard structures for dynamic-tree problems; learning splay trees here is a prerequisite for those later topics.</p>
+  </section>
+  </div>
+
+  <div id="sec-visual" class="section">
+  <section id="visual" class="card scroll-reveal">
+    <h2>🎨 03 · Visual Mental Model</h2>
+    <p class="note">When we splay a node x, three local patterns can occur depending on where x sits relative to its parent and grandparent. The pattern is named after the shape that x, p, and g form in the tree: zig when x has a parent but no grandparent (so the splay step is a single rotation), zig-zig when x and p are children on the <em>same</em> side of their parents (both left, or both right), and zig-zag when x and p are children on <em>opposite</em> sides. Each pattern moves x exactly two levels up, except zig which moves x one level up to the root because x already had no grandparent.</p>
+
+    <div class="stepper" id="splay-trace">
+      <div class="stepper-title">Splaying a deep leaf brings it to the root through a sequence of two-level lifts</div>
+      <svg class="stepper-svg" viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <p class="note">The stepper above shows the splay of the deepest leaf of a chain. Notice that after the splay, the tree is no longer a chain: the path that x walked up has been folded in on itself, and roughly half the nodes are now significantly shallower. This is the self-adjustment effect. Future searches into the affected region will be cheaper, paying back the cost of this particular splay. Section 8 quantifies this payback formally using a potential function.</p>
+  </section>
+  </div>
+
+  <div id="sec-formal" class="section">
+  <section id="formal" class="card scroll-reveal">
+    <h2>📐 04 · Formal Abstraction</h2>
+
+    <h3>What the splay tree keeps and what it deliberately drops</h3>
+    <p class="note">A splay tree is a binary search tree, full stop. Every node has a key (or, for the implicit variant, an implicit position), two children, and a parent pointer, and the BST invariant holds at every quiescent moment between operations. The structure does <em>not</em> maintain a height field, a balance factor, a color bit, or a priority. Drop all of those from your mental model — they belong to AVL, Red-Black, and the treap respectively, not to the splay tree. The shape of the splay tree at any moment is whatever the access history has produced; there is no shape we are trying to enforce.</p>
+
+    <h3>The two splay tree invariants</h3>
+    <div class="formula">BST invariant:    For every node u,
+                  every node v in subtree(u-&gt;ch[L]) has v.key &lt; u.key
+                  every node v in subtree(u-&gt;ch[R]) has v.key &gt; u.key
+
+Size invariant:   For every node u,
+                  u.sz = sz(u-&gt;ch[L]) + (frq if multiset else 1) + sz(u-&gt;ch[R])</div>
+
+    <p class="note">In the key-splay multiset version the per-node count is <code>frq</code>, so the size field aggregates frequencies rather than distinct node counts; this is exactly the same convention as the key treap of tutorial 27. In the implicit-splay sequence version, there are no duplicate keys to merge, so the size field counts nodes one per node and <code>frq</code> is absent.</p>
+
+    <h3>The parent invariant</h3>
+    <p class="note">Splay trees rely heavily on parent pointers. Every non-root node must point at its parent, and every root must have its parent set to the sentinel (<code>EMPTY</code> in Template A, <code>E</code> in Template B). The rotation primitive and the splay loop both inspect parent pointers to choose which case to apply, so a broken parent pointer is one of the easiest ways to corrupt a splay tree. Section 14 makes this explicit as pitfall number two.</p>
+
+    <h3>What we deliberately do not require</h3>
+    <p class="note">There is no requirement that the tree be balanced. Right after inserting <code>1, 2, 3, 4, 5</code> in sorted order, a treap would produce a roughly balanced tree (because the priorities scrambled the order), but a splay tree may briefly look like a chain. The chain disappears the moment we splay any node back to the root, but in between operations we cannot assume any height bound. The amortized analysis in section 8 will tolerate occasional bad shapes by charging their cleanup against subsequent cheap operations.</p>
+  </section>
+  </div>
+
+  <div id="sec-observations" class="section">
+  <section id="observations" class="card scroll-reveal">
+    <h2>🔍 05 · Key Observations</h2>
+    <div class="goodRow"><div class="gLabel">Splay is the only mutator of shape</div><div class="gDesc">Insert, erase, find, count, kth, order_of_key — every public operation ends by splaying some node to the root. There is no rebalance routine that runs separately from splay. The whole correctness story is just BST descent plus splay.</div></div>
+    <div class="goodRow"><div class="gLabel">Zig-zig is the magic step</div><div class="gDesc">Of the three splay patterns, zig-zig is the one that bends the access path. Doing two zigs in a row (instead of one zig-zig) would also move x up by two levels, but it would leave the chain shape intact. Zig-zig rotates the parent first and then x, which compresses the access path into a more balanced shape.</div></div>
+    <div class="goodRow"><div class="gLabel">Splaying preserves inorder</div><div class="gDesc">A splay operation is a sequence of rotations, and a rotation preserves inorder (tutorial 26 proved this). So splaying preserves the BST invariant globally even though it changes which node sits at the root.</div></div>
+    <div class="goodRow"><div class="gLabel">Insert ends with splay; erase ends with splay-then-join</div><div class="gDesc">Insert finds the BST leaf position, attaches a new node, then splays the new node to the root. Erase finds the doomed node, splays it to the root (so its left and right subtrees become exposed as the only two subtrees of the root), removes the root, and joins the two subtrees by splaying the maximum of the left subtree and attaching the right subtree to it.</div></div>
+    <div class="warnRow"><div class="wLabel">A single operation can be slow</div><div class="wDesc">If we splay a deep node, the splay itself walks O(h) levels and so may cost O(h) which can be as bad as O(n) in the worst case. The amortized guarantee says this expensive splay is paid for by subsequent cheap operations, but the per-operation worst case is genuinely linear.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-algorithm" class="section">
+  <section id="algorithm" class="card scroll-reveal">
+    <h2>⚙️ 06 · Algorithm</h2>
+
+    <p class="note">The splay routine takes a single argument: the node <code>x</code> we want to lift to the root. We repeat one of three local cases until <code>x</code> reaches the root. Each case is named by the relationship between <code>x</code>, its parent <code>p</code>, and its grandparent <code>g</code>. We will describe each case once in detail, then trust the symmetry to handle the mirror.</p>
+
+    <h3>Zig: when x's parent is the root</h3>
+    <p class="note">If <code>p</code> is the root, there is no grandparent. The splay step is a single rotation that brings <code>x</code> up over <code>p</code>. After the rotation, <code>x</code> is the new root and <code>p</code> is one of <code>x</code>'s children — left if <code>x</code> was originally the right child, right if <code>x</code> was originally the left child. Zig only fires as the <em>last</em> step of a splay, because once it has run, <code>x</code> has no parent and the splay loop terminates. It executes at most once per splay operation.</p>
+
+    <div class="stepper" id="splay-zig">
+      <div class="stepper-title">Zig: a single rotation when the parent is the root</div>
+      <svg class="stepper-svg" viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Zig-zig: when x and p are children on the same side</h3>
+    <p class="note">If <code>x</code> is a left child of <code>p</code> and <code>p</code> is a left child of <code>g</code> — or the mirror image with both right children — the splay step is two rotations performed in a specific order: <em>first rotate <code>p</code> over <code>g</code>, then rotate <code>x</code> over <code>p</code></em>. After both rotations, <code>x</code> sits where <code>g</code> used to be, <code>p</code> is one of <code>x</code>'s children, and <code>g</code> is one of <code>p</code>'s grandchildren. The ordering of the two rotations is critical: rotating <code>x</code> twice in a row instead would also move <code>x</code> up two levels, but it would not bend the access path the way zig-zig does. Section 8 will show that this bend is precisely what makes the amortized analysis work.</p>
+
+    <div class="stepper" id="splay-zigzig">
+      <div class="stepper-title">Zig-zig: rotate p first, then x — the order matters</div>
+      <svg class="stepper-svg" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Zig-zag: when x and p are children on opposite sides</h3>
+    <p class="note">If <code>x</code> is a right child of <code>p</code> but <code>p</code> is a left child of <code>g</code> — or the mirror image — the splay step is two rotations performed in the opposite order from zig-zig: <em>rotate <code>x</code> twice in a row</em>. The first rotation lifts <code>x</code> over <code>p</code>; <code>x</code> now sits directly under <code>g</code>, on the same side <code>p</code> used to occupy. The second rotation lifts <code>x</code> over <code>g</code>. The final configuration has <code>x</code> at the position <code>g</code> used to occupy, with <code>p</code> and <code>g</code> as its two children.</p>
+
+    <div class="stepper" id="splay-zigzag">
+      <div class="stepper-title">Zig-zag: two consecutive rotations of x — also called a double rotation</div>
+      <svg class="stepper-svg" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>The full splay loop in pseudocode</h3>
+    <div class="formula">splay(x):
+  while x is not the root:
+      p = parent(x)
+      g = parent(p)
+      if g is null:                   # zig
+          rotate(x)
+      else if dir(p, x) == dir(g, p): # zig-zig (same side)
+          rotate(p)
+          rotate(x)
+      else:                           # zig-zag (opposite sides)
+          rotate(x)
+          rotate(x)</div>
+
+    <h3>How public operations end with splay</h3>
+    <p class="note">Every public operation in the splay tree concludes by calling <code>splay</code> on a node that the operation has just visited. Insert splays the freshly inserted (or freshly bumped) node. Erase splays the doomed node to the root before removing it, then splays the maximum of the left subtree as part of joining the two surviving pieces. Find splays the matching node if one exists, or the last node touched during the descent if not. kth and order_of_key splay the located node on the way back. This splay-after-every-touch discipline is what activates the amortized guarantee; skipping splay on any path lets the chain re-emerge and breaks the bound.</p>
+  </section>
+  </div>
+
+  <div id="sec-invariants" class="section">
+  <section id="invariants" class="card scroll-reveal">
+    <h2>📊 07 · Invariants and Transitions</h2>
+
+    <h3>State invariants between operations</h3>
+    <p class="note">Between public operations, the splay tree maintains the two invariants of section 4: the BST invariant on values and the size invariant on subtree sizes. Additionally, every non-root node points at its true parent and every root points at the sentinel (<code>EMPTY</code> in Template A, <code>E</code> in Template B). There is no third invariant about balance, height, or color — the tree's shape is whatever the access history has produced.</p>
+
+    <h3>Transition: a single rotation</h3>
+    <p class="note">The rotation primitive is identical to the rotation in tutorials 26 and 27. It rewires three child pointers and three parent pointers, plus possibly updates the root pointer if the rotation happens at the top of the tree. After rotation, the BST invariant still holds because rotation preserves inorder, and the size invariant is restored locally by calling <code>pull</code> on the two affected nodes in the correct order: pull the node that descended first, then pull the node that rose. Routing every rotation through a single <code>link(p, c, dir)</code> helper that calls <code>pull</code> automatically eliminates a whole category of bugs.</p>
+
+    <h3>Transition: one splay step</h3>
+    <p class="note">A splay step is one of zig, zig-zig, or zig-zag. Zig is one rotation; zig-zig and zig-zag are two rotations each. Each splay step strictly decreases the depth of <code>x</code> — by one if it was zig, by two otherwise — so the splay loop terminates after at most O(h) steps where h is the depth of <code>x</code> at the moment splay was called.</p>
+
+    <h3>Termination</h3>
+    <p class="note">The splay loop's stopping condition is <code>x</code> is the root, which happens once the depth of <code>x</code> drops to zero. Because every splay step reduces the depth of <code>x</code> by at least one, the loop terminates after a finite number of iterations. The total number of rotations performed during a single splay is at most the original depth of <code>x</code>, and after termination, every node on the original access path has been re-arranged in the way the three local cases prescribe.</p>
+  </section>
+  </div>
+
+  <div id="sec-proof" class="section">
+  <section id="proof" class="card scroll-reveal">
+    <h2>📜 08 · Proof of Correctness and the Potential Method</h2>
+
+    <p class="note">Correctness of splay-tree operations follows from two facts we already proved or assumed in tutorial 26: every rotation preserves the inorder of the subtree it acts on, and a BST's inorder is the sorted order of its keys. The splay loop is a sequence of rotations, so it preserves inorder and therefore the BST invariant. Insert, erase, find, kth, and order_of_key are all standard BST operations followed by a splay; the BST part places or finds the node correctly, and the splay does not break that correctness because it does not change the inorder. The interesting question is not whether splay trees are correct — they obviously are — but whether they are <em>efficient</em>. That is what the rest of this section addresses.</p>
+
+    <h3>Why one operation is not enough to look at</h3>
+    <p class="note">A single splay can be expensive. Consider a tree that has degenerated into a left-leaning chain of n nodes, and suppose we splay the deepest leaf. The leaf's depth is n − 1, so the splay loop performs roughly n − 1 rotations and the operation costs Θ(n). There is no way to argue this single operation is cheap; it really is linear. The honest claim about splay trees is not "every operation costs O(log n)" but rather "any sequence of m operations on n nodes costs O((n + m) log n) total". To prove that, we need a tool that lets us aggregate the cost over a long sequence of operations and average across them. That tool is the potential method.</p>
+
+    <h3>Step 1 — Telescoping sums, the prerequisite</h3>
+    <p class="note">Before we can use the potential method, we need one tiny piece of algebra: the telescoping sum. The idea is that if you take a sum of differences of consecutive terms, almost everything cancels and only the endpoints survive. Concretely, suppose we have a sequence of numbers <code>Φ_0, Φ_1, Φ_2, ..., Φ_m</code>. Look at the sum of consecutive differences:</p>
+
+    <div class="formula">(Φ_1 - Φ_0) + (Φ_2 - Φ_1) + (Φ_3 - Φ_2) + ... + (Φ_m - Φ_{m-1})</div>
+
+    <p class="note">Now group the terms differently. The <code>+Φ_1</code> inside the first parenthesis cancels with the <code>-Φ_1</code> inside the second parenthesis. The <code>+Φ_2</code> inside the second parenthesis cancels with the <code>-Φ_2</code> inside the third. This cancellation continues all the way down, and only two terms survive: the <code>-Φ_0</code> from the first parenthesis and the <code>+Φ_m</code> from the last one. The whole sum equals <code>Φ_m − Φ_0</code>. That is the entire content of a telescoping sum: a sum of consecutive differences collapses to "final minus initial", and everything in between disappears.</p>
+
+    <h3>Step 2 — The potential method recipe</h3>
+    <p class="note">Pick any non-negative real-valued function Φ defined on the states of the data structure. Φ is called the <em>potential</em>. For our splay tree, Φ will eventually be a sum over all the nodes of a quantity called the node's rank, but for the moment treat Φ as a black box that maps "current tree" to a non-negative number.</p>
+
+    <p class="note">Now define the <em>amortized cost</em> of an operation as follows. If the operation has actual cost <code>c_i</code> (measured in rotations, or any other concrete unit) and changes the potential from <code>Φ_{i-1}</code> before the operation to <code>Φ_i</code> after, then the amortized cost is defined to be</p>
+
+    <div class="formula">a_i = c_i + Φ_i - Φ_{i-1}.</div>
+
+    <p class="note">Read this as: the amortized cost is the actual cost plus the change in potential. If an operation makes the tree "worse" (potential goes up), its amortized cost is larger than its actual cost; if it makes the tree "better" (potential goes down), its amortized cost is smaller than its actual cost, possibly even negative. The amortized cost is an accounting device, not a physical measurement.</p>
+
+    <h3>Step 3 — Summing the amortized costs and letting the sum telescope</h3>
+    <p class="note">Sum the amortized costs over a sequence of m operations:</p>
+
+    <div class="formula">Σ_{i=1..m} a_i = Σ_{i=1..m} (c_i + Φ_i - Φ_{i-1})
+              = Σ_{i=1..m} c_i  +  Σ_{i=1..m} (Φ_i - Φ_{i-1})
+              = Σ_{i=1..m} c_i  +  (Φ_m - Φ_0)         (the inner sum telescopes!)</div>
+
+    <p class="note">Rearrange:</p>
+
+    <div class="formula">Σ_{i=1..m} c_i = Σ_{i=1..m} a_i + Φ_0 - Φ_m.</div>
+
+    <p class="note">If the initial potential <code>Φ_0</code> is zero and the final potential <code>Φ_m</code> is non-negative — and we chose Φ to always be non-negative, so <code>Φ_m ≥ 0</code> automatically — then <code>Φ_0 − Φ_m ≤ 0</code>, and we get the inequality</p>
+
+    <div class="formula">Σ_{i=1..m} c_i ≤ Σ_{i=1..m} a_i.</div>
+
+    <p class="note">Read this aloud: the total <em>actual</em> cost over the whole sequence is at most the total <em>amortized</em> cost. So if we can prove that every amortized cost is at most O(log n), then the total cost is at most m · O(log n) = O(m log n), and we have our amortized bound for free. The telescoping is what made it work: the bookkeeping terms Φ all cancelled in pairs, leaving only the endpoints.</p>
+
+    <h3>Step 4 — The right potential function for splay trees</h3>
+    <p class="note">We now choose Φ. For each node x in the tree, define</p>
+
+    <div class="formula">s(x) = size of the subtree rooted at x (counting frq for multisets)
+r(x) = floor or real-valued log_2 (s(x))                  (call r(x) the "rank" of x)</div>
+
+    <p class="note">The rank is a logarithm of the subtree size. A node whose subtree is large has high rank; a leaf has rank 0. Define the potential of the whole tree as the sum of ranks:</p>
+
+    <div class="formula">Φ(tree) = Σ_{x in tree} r(x).</div>
+
+    <p class="note">This Φ is non-negative because every <code>r(x)</code> is non-negative (subtree sizes are at least 1, so logarithms are at least 0). And the initial tree (with zero nodes) has Φ = 0. So the prerequisites for the telescoping argument hold: <code>Φ_0 = 0</code> and <code>Φ_m ≥ 0</code>.</p>
+
+    <h3>Step 5 — The Access Lemma</h3>
+    <p class="note">The central claim about splay trees is the Access Lemma, which bounds the amortized cost of a single splay operation by 3 times the change in the rank of the splayed node, plus a constant:</p>
+
+    <div class="formula">Access Lemma.  Let x be the node being splayed, with rank r(x) before the splay,
+              and let r(root) be the rank of the root before the splay. Then
+              amortized cost of splay(x) ≤ 3 · (r(root) - r(x)) + 1.</div>
+
+    <p class="note">Since <code>r(root) ≤ log_2(n)</code> (the root's subtree size is at most n) and <code>r(x) ≥ 0</code>, the right-hand side is at most <code>3 log_2(n) + 1</code>, which is O(log n). Combined with the telescoping argument from step 3, this gives the amortized bound</p>
+
+    <div class="formula">Σ_{i=1..m} c_i ≤ Σ_{i=1..m} a_i ≤ Σ_{i=1..m} O(log n) = O(m log n).</div>
+
+    <h3>Step 6 — Why each splay step pays for itself</h3>
+    <p class="note">The Access Lemma is proved one splay step at a time. For each step (zig, zig-zig, or zig-zag), we measure the actual cost (one rotation for zig, two rotations for the others) and the change in Φ caused by the step, and we check that the amortized cost is bounded by <code>3 · (r'(x) − r(x)) + (small correction)</code>, where <code>r'(x)</code> is the rank of <code>x</code> after the step and <code>r(x)</code> is its rank before. Summing over all the splay steps gives a telescoping sum on the rank of <code>x</code>: each step's <code>r(x) after</code> cancels with the next step's <code>r(x) before</code>, and only the very first rank <code>r(x)</code> and the very last rank <code>r(root)</code> survive. The constant +1 correction appears only on the final zig step, contributing a single +1 to the total.</p>
+
+    <p class="note">The reason zig-zig is "the magic step" is precisely this per-step argument. A naive analysis of zig-zig that did not exploit its specific rotation order would charge two rotations to the amortized cost without any compensating drop in Φ, and the argument would fail. The zig-zig pattern's careful re-arrangement reduces the rank of the parent and grandparent by exactly enough to absorb the cost of the second rotation. Two consecutive zigs do not have this property; they would move <code>x</code> up but leave the path unfolded, and the amortized analysis would not go through. The Access Lemma is the precise technical reason the textbook insists on the zig-zig ordering.</p>
+
+    <h3>Putting it all together</h3>
+    <p class="note">The splay tree's amortized O(log n) per operation is the conclusion of a four-step chain: (1) every splay is a sequence of zig, zig-zig, and zig-zag steps; (2) each step's amortized cost telescopes against the rank of <code>x</code>, leaving only the first and last terms; (3) the surviving terms sum to at most <code>3 r(root) + 1 = O(log n)</code> by the Access Lemma; (4) the total actual cost over m operations is bounded by the total amortized cost, which is at most m · O(log n) = O(m log n) by the telescoping identity in step 3. Each link in the chain is tight; weakening any of them breaks the bound.</p>
+  </section>
+  </div>
+
+  <div id="sec-complexity" class="section">
+  <section id="complexity" class="card scroll-reveal">
+    <h2>⏱️ 09 · Complexity Analysis</h2>
+
+    <p class="note">The Access Lemma gives us amortized O(log n) per public operation. Insert, erase, find, count, kth, and order_of_key each consist of a constant number of BST descents plus one or two splays, and each descent walks the same path the splay will then climb. The descent cost is paid for by the splay's amortized bound; the descent and the splay together still cost amortized O(log n).</p>
+
+    <table>
+      <tr><th>Operation</th><th>Worst case</th><th>Amortized</th><th>Notes</th></tr>
+      <tr><td>insert(x)</td><td>O(n)</td><td>O(log n)</td><td>BST descent, attach leaf, splay leaf to root</td></tr>
+      <tr><td>eraseOne(x)</td><td>O(n)</td><td>O(log n)</td><td>splay x to root, remove root, join subtrees</td></tr>
+      <tr><td>contains(x), count(x)</td><td>O(n)</td><td>O(log n)</td><td>splay the matching node or the last visited node</td></tr>
+      <tr><td>kth(k)</td><td>O(n)</td><td>O(log n)</td><td>size-driven descent then splay</td></tr>
+      <tr><td>order_of_key(x)</td><td>O(n)</td><td>O(log n)</td><td>BST descent accumulating then splay last touched</td></tr>
+      <tr><td>first_ge(x), last_le(x)</td><td>O(n)</td><td>O(log n)</td><td>BST descent remembering best candidate, then splay it</td></tr>
+      <tr><td>split, join</td><td>O(n)</td><td>O(log n)</td><td>splay-based; see section 11</td></tr>
+      <tr><td>memory</td><td>O(n)</td><td>O(n)</td><td>one node per element plus the sentinel</td></tr>
+    </table>
+
+    <h3>The working-set bound</h3>
+    <p class="note">Beyond the basic amortized O(log n), splay trees enjoy a stronger guarantee called the working-set bound. If at the time of an access the target node has been one of the last k distinct nodes accessed, the amortized cost of that access is O(log k) rather than O(log n). This means that if your workload has a hot working set of size k, splay trees automatically run as fast as if you had a balanced tree of size k, regardless of how many other elements the structure contains. No other balanced BST gives this for free.</p>
+
+    <h3>The static-optimality bound</h3>
+    <p class="note">A second remarkable property: on any fixed sequence of access requests, splay trees are within a constant factor of the cost achieved by the <em>best possible static BST</em> for that sequence — the BST you would build if you knew the access frequencies in advance and chose the tree shape to minimise expected access cost. So splay trees are, up to constants, never worse than the best offline static structure, even though they have no advance knowledge of the access distribution. Splay trees achieve this without storing any frequencies or hint information; the self-adjustment is the entire mechanism.</p>
+
+    <h3>The dynamic-optimality conjecture</h3>
+    <p class="note">There is a famous open conjecture, due to Sleator and Tarjan, that splay trees are within a constant factor of the cost achieved by the <em>best possible dynamic BST algorithm</em> for any sequence — including algorithms that may rotate arbitrarily between accesses based on the access history. This is the Dynamic Optimality Conjecture, and it has been open since 1985. It is not needed for any of the bounds we use in practice; it is mentioned here because it explains why splay trees remain an active topic of theoretical research decades after their invention.</p>
+  </section>
+  </div>
+
+  <div id="sec-philosophy" class="section">
+  <section id="philosophy" class="card scroll-reveal">
+    <h2>🧱 10 · Template Philosophy</h2>
+
+    <p class="note">Both splay templates in this tutorial share four design choices that match the rest of the Coach Academy treap family.</p>
+
+    <h3>Choice 1: rotate(child), not rotate(parent, direction)</h3>
+    <p class="note">The rotation primitive takes the child that should rise, recovers its parent from the child's parent pointer, and recovers the direction from which slot of the parent the child occupies. This is the same convention as the key treap of tutorial 27, and it eliminates the bug class where the caller passes the wrong direction. The rotate function itself must remember to save the grandparent direction <code>pdir = getDir(g, p)</code> before any rewiring happens, because once the rotation runs, <code>p</code> is no longer a child of <code>g</code> and that direction can no longer be recovered.</p>
+
+    <h3>Choice 2: a sentinel node makes missing children safe to read</h3>
+    <p class="note">The key-splay multiset version uses an <code>EMPTY</code> sentinel, and the implicit-splay sequence version uses the same idea with a sentinel named <code>E</code>. In both templates, the sentinel has size zero (and frequency zero where <code>frq</code> exists), its children point at itself, and its parent points at itself. As a result, reads like <code>u-&gt;ch[L]-&gt;sz</code> are always safe and return zero on missing children, and the size formula composes correctly without null checks. Template B additionally stores parent pointers and a lazy <code>rev</code> flag on real nodes; the sentinel <code>E</code> acts as the zero-size missing child everywhere a child slot might be empty.</p>
+
+    <h3>Choice 3: link(p, c, dir) is the only mutator of child pointers</h3>
+    <p class="note">Every place that would write <code>p-&gt;ch[dir] = c</code> goes through <code>link</code> instead. The helper sets the child slot, sets <code>c</code>'s parent to <code>p</code> if <code>c</code> is not the sentinel, and calls <code>pull(p)</code> to refresh the subtree size. Routing all writes through one helper means subtree sizes and parent pointers stay correct by construction; the rotation function becomes three <code>link</code> calls plus a root-update branch.</p>
+
+    <h3>Choice 4: splay-after-every-touch is non-negotiable</h3>
+    <p class="note">Every public method ends by calling <code>splay</code> on a node it has just inspected. If you write a new method that does a BST descent, end it with a splay; otherwise the amortized bound silently breaks. The line-by-line walkthrough in section 12 calls out the splay site of each method.</p>
+  </section>
+  </div>
+
+  <div id="sec-master" class="section">
+  <section id="master" class="card scroll-reveal">
+    <h2>🎯 11 · Master Templates — Ready to Submit</h2>
+
+    <p class="note">Two production templates are provided below, each in the same Coach Academy style used by tutorials 27, 28, and 29. Template A is a true key splay multiset with <code>frq</code>, the splay analogue of the key treap from tutorial 27. Template B is a true implicit splay sequence with split and merge, the splay analogue of the implicit treap from tutorial 28. Pick whichever matches your problem; the two are separate in code.</p>
+
+    <h3>Template A — Key Splay Multiset with frq</h3>
+    <p class="note">Around 250 lines. Supports insert, eraseOne, contains, count, kth, order_of_key, first_ge, last_le, split_less, join, and a debug pretty-printer. The kth indexing convention is 0-based: <code>kth(0)</code> returns the smallest occurrence, <code>kth(size − 1)</code> the largest.</p>
+    <pre><code><span class="c">// Key Splay Tree Multiset with frq &mdash; rotate(child) style</span>
+<span class="k">#include</span> <span class="s">&lt;bits/stdc++.h&gt;</span>
+<span class="k">using namespace</span> std;
+<span class="k">enum</span> { L = 0, R = 1 };
+
+<span class="k">struct</span> Node {
+    <span class="k">long long</span> v;
+    <span class="k">int</span> sz, frq;
+    Node *p, *ch[2];
+
+    Node() : v(0), sz(0), frq(0), p(<span class="k">this</span>), ch{<span class="k">this</span>, <span class="k">this</span>} {}
+    Node(<span class="k">long long</span> _v, Node* EMPTY)
+        : v(_v), sz(1), frq(1), p(EMPTY), ch{EMPTY, EMPTY} {}
+
+    <span class="k">void</span> push() {} <span class="c">// no lazy in the key splay; kept for symmetry with implicit</span>
+    <span class="k">void</span> pull() { sz = ch[L]-&gt;sz + frq + ch[R]-&gt;sz; }
+};
+
+Node* EMPTY = <span class="k">new</span> Node();
+
+<span class="k">int</span> getDir(Node* p, Node* c) { <span class="k">return</span> p-&gt;ch[R] == c ? R : L; }
+
+<span class="k">void</span> link(Node* p, Node* c, <span class="k">int</span> dir) {
+    <span class="k">if</span> (c != EMPTY) c-&gt;p = p;
+    <span class="k">if</span> (p != EMPTY) { p-&gt;ch[dir] = c; p-&gt;pull(); }
+}
+
+<span class="k">struct</span> SplayTree {
+    Node* root;
+    SplayTree() : root(EMPTY) {}
+
+    <span class="k">int</span> size() <span class="k">const</span> { <span class="k">return</span> root-&gt;sz; }
+
+    <span class="k">void</span> setRoot(Node* u) {
+        root = u;
+        <span class="k">if</span> (root != EMPTY) root-&gt;p = EMPTY;
+    }
+
+    <span class="c">// rotate child c above its parent; save grandparent direction first.</span>
+    <span class="k">void</span> rotate(Node* c) {
+        Node* p = c-&gt;p;
+        Node* g = p-&gt;p;
+        <span class="k">int</span> d = getDir(p, c);
+        <span class="k">int</span> gd = (g == EMPTY ? L : getDir(g, p)); <span class="c">// save BEFORE any rewiring</span>
+        p-&gt;push(); c-&gt;push();
+        Node* middle = c-&gt;ch[d ^ 1];
+        link(p, middle, d);
+        link(c, p, d ^ 1);
+        <span class="k">if</span> (g == EMPTY) setRoot(c);
+        <span class="k">else</span> link(g, c, gd);
+    }
+
+    <span class="c">// splay x up to the goal (default: root).</span>
+    <span class="k">void</span> splay(Node* x, Node* goal = <span class="k">nullptr</span>) {
+        <span class="k">if</span> (x == EMPTY) <span class="k">return</span>;
+        <span class="k">if</span> (goal == <span class="k">nullptr</span>) goal = EMPTY;
+        <span class="k">while</span> (x-&gt;p != goal) {
+            Node* p = x-&gt;p;
+            Node* g = p-&gt;p;
+            <span class="k">if</span> (g == goal) rotate(x);                   <span class="c">// zig</span>
+            <span class="k">else if</span> (getDir(p, x) == getDir(g, p)) { <span class="c">// zig-zig: rotate p FIRST</span>
+                rotate(p); rotate(x);
+            } <span class="k">else</span> {                                 <span class="c">// zig-zag: rotate x twice</span>
+                rotate(x); rotate(x);
+            }
+        }
+        <span class="k">if</span> (goal == EMPTY) setRoot(x);
+    }
+
+    Node* findNode(<span class="k">long long</span> x, <span class="k">bool</span> splayLast = <span class="k">true</span>) {
+        Node *u = root, *last = EMPTY;
+        <span class="k">while</span> (u != EMPTY) {
+            last = u;
+            <span class="k">if</span> (x == u-&gt;v) { splay(u); <span class="k">return</span> u; }
+            u = u-&gt;ch[u-&gt;v &lt; x];
+        }
+        <span class="k">if</span> (splayLast &amp;&amp; last != EMPTY) splay(last);
+        <span class="k">return</span> EMPTY;
+    }
+
+    <span class="k">bool</span> contains(<span class="k">long long</span> x) { <span class="k">return</span> findNode(x) != EMPTY; }
+
+    <span class="k">int</span> count(<span class="k">long long</span> x) {
+        Node* u = findNode(x);
+        <span class="k">return</span> (u == EMPTY ? 0 : u-&gt;frq);
+    }
+
+    <span class="k">void</span> insert(<span class="k">long long</span> x) {
+        <span class="k">if</span> (root == EMPTY) { setRoot(<span class="k">new</span> Node(x, EMPTY)); <span class="k">return</span>; }
+        Node *u = root, *par = EMPTY;
+        <span class="k">while</span> (u != EMPTY) {
+            par = u;
+            <span class="k">if</span> (x == u-&gt;v) { ++u-&gt;frq; u-&gt;pull(); splay(u); <span class="k">return</span>; }
+            u = u-&gt;ch[u-&gt;v &lt; x];
+        }
+        Node* nw = <span class="k">new</span> Node(x, EMPTY);
+        link(par, nw, par-&gt;v &lt; x);
+        splay(nw);
+    }
+
+    Node* maximum(Node* u) <span class="k">const</span> { <span class="k">while</span> (u-&gt;ch[R] != EMPTY) u = u-&gt;ch[R]; <span class="k">return</span> u; }
+    Node* minimum(Node* u) <span class="k">const</span> { <span class="k">while</span> (u-&gt;ch[L] != EMPTY) u = u-&gt;ch[L]; <span class="k">return</span> u; }
+
+    <span class="c">// Join two splay trees a and b where every key in a is strictly less than every key in b.</span>
+    Node* join(Node* a, Node* b) {
+        <span class="k">if</span> (a == EMPTY) { <span class="k">if</span> (b != EMPTY) b-&gt;p = EMPTY; <span class="k">return</span> b; }
+        <span class="k">if</span> (b == EMPTY) { a-&gt;p = EMPTY; <span class="k">return</span> a; }
+        setRoot(a);
+        splay(maximum(root)); <span class="c">// after this, root has no right child</span>
+        link(root, b, R);
+        <span class="k">return</span> root;
+    }
+
+    <span class="k">void</span> eraseOne(<span class="k">long long</span> x) {
+        Node* u = findNode(x);
+        <span class="k">if</span> (u == EMPTY) <span class="k">return</span>;
+        <span class="k">if</span> (u-&gt;frq &gt; 1) { --u-&gt;frq; u-&gt;pull(); <span class="k">return</span>; }
+        <span class="c">// u is at root (findNode splayed it); detach its two children and join them.</span>
+        Node *leftTree = u-&gt;ch[L], *rightTree = u-&gt;ch[R];
+        <span class="k">if</span> (leftTree != EMPTY) leftTree-&gt;p = EMPTY;
+        <span class="k">if</span> (rightTree != EMPTY) rightTree-&gt;p = EMPTY;
+        u-&gt;ch[L] = u-&gt;ch[R] = EMPTY;
+        <span class="k">delete</span> u;
+        setRoot(join(leftTree, rightTree));
+    }
+
+    Node* kthNode(<span class="k">int</span> k) {
+        <span class="k">if</span> (k &lt; 0 || k &gt;= size()) <span class="k">return</span> EMPTY;
+        Node* u = root;
+        <span class="k">while</span> (u != EMPTY) {
+            u-&gt;push();
+            <span class="k">int</span> leftSize = u-&gt;ch[L]-&gt;sz;
+            <span class="k">if</span> (k &lt; leftSize) u = u-&gt;ch[L];
+            <span class="k">else if</span> (k &lt; leftSize + u-&gt;frq) { splay(u); <span class="k">return</span> u; }
+            <span class="k">else</span> { k -= leftSize + u-&gt;frq; u = u-&gt;ch[R]; }
+        }
+        <span class="k">return</span> EMPTY;
+    }
+
+    <span class="k">long long</span> kth(<span class="k">int</span> k) {
+        Node* u = kthNode(k);
+        <span class="k">return</span> (u == EMPTY ? LLONG_MIN : u-&gt;v);
+    }
+
+    <span class="k">int</span> order_of_key(<span class="k">long long</span> x) {
+        Node *u = root, *last = EMPTY;
+        <span class="k">int</span> ans = 0;
+        <span class="k">while</span> (u != EMPTY) {
+            last = u;
+            <span class="k">if</span> (x &lt;= u-&gt;v) u = u-&gt;ch[L];
+            <span class="k">else</span> { ans += u-&gt;ch[L]-&gt;sz + u-&gt;frq; u = u-&gt;ch[R]; }
+        }
+        <span class="c">// Splay the last touched node to preserve the splay-after-every-touch discipline.</span>
+        <span class="k">if</span> (last != EMPTY) splay(last);
+        <span class="k">return</span> ans;
+    }
+
+    <span class="k">long long</span> first_ge(<span class="k">long long</span> x) {
+        Node *u = root, *ans = EMPTY, *last = EMPTY;
+        <span class="k">while</span> (u != EMPTY) {
+            last = u;
+            <span class="k">if</span> (u-&gt;v &gt;= x) { ans = u; u = u-&gt;ch[L]; }
+            <span class="k">else</span> u = u-&gt;ch[R];
+        }
+        <span class="c">// Splay the candidate if one was found, otherwise splay the last touched node</span>
+        <span class="c">// so failed boundary searches still obey the splay-after-every-touch rule.</span>
+        Node* touch = (ans != EMPTY ? ans : last);
+        <span class="k">if</span> (touch != EMPTY) splay(touch);
+        <span class="k">return</span> (ans == EMPTY ? LLONG_MAX : ans-&gt;v);
+    }
+
+    <span class="k">long long</span> last_le(<span class="k">long long</span> x) {
+        Node *u = root, *ans = EMPTY, *last = EMPTY;
+        <span class="k">while</span> (u != EMPTY) {
+            last = u;
+            <span class="k">if</span> (u-&gt;v &lt;= x) { ans = u; u = u-&gt;ch[R]; }
+            <span class="k">else</span> u = u-&gt;ch[L];
+        }
+        <span class="c">// Splay the candidate if one was found, otherwise splay the last touched node</span>
+        <span class="c">// so failed boundary searches still obey the splay-after-every-touch rule.</span>
+        Node* touch = (ans != EMPTY ? ans : last);
+        <span class="k">if</span> (touch != EMPTY) splay(touch);
+        <span class="k">return</span> (ans == EMPTY ? LLONG_MIN : ans-&gt;v);
+    }
+
+    <span class="c">// Split into (values &lt; x) and (values &gt;= x). The current tree is consumed.</span>
+    pair&lt;Node*, Node*&gt; split_less(<span class="k">long long</span> x) {
+        <span class="k">if</span> (root == EMPTY) <span class="k">return</span> {EMPTY, EMPTY};
+        <span class="k">long long</span> ge = first_ge(x);
+        <span class="k">if</span> (ge == LLONG_MAX) {
+            Node* left = root; setRoot(EMPTY);
+            <span class="k">return</span> {left, EMPTY};
+        }
+        <span class="c">// after first_ge, the smallest value &gt;= x is at the root.</span>
+        Node* right = root;
+        Node* left = right-&gt;ch[L];
+        <span class="k">if</span> (left != EMPTY) left-&gt;p = EMPTY;
+        link(right, EMPTY, L);
+        setRoot(EMPTY);
+        <span class="k">return</span> {left, right};
+    }
+
+    <span class="k">void</span> inorder(Node* u, vector&lt;<span class="k">long long</span>&gt;&amp; a) <span class="k">const</span> {
+        <span class="k">if</span> (u == EMPTY) <span class="k">return</span>;
+        inorder(u-&gt;ch[L], a);
+        <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; u-&gt;frq; ++i) a.push_back(u-&gt;v);
+        inorder(u-&gt;ch[R], a);
+    }
+    vector&lt;<span class="k">long long</span>&gt; to_vector() <span class="k">const</span> {
+        vector&lt;<span class="k">long long</span>&gt; a; inorder(root, a); <span class="k">return</span> a;
+    }
+};</code></pre>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h3>Template B — Implicit Splay Tree with Split / Merge and Lazy Reverse</h3>
+    <p class="note">Around 280 lines. The same algorithmic chassis as Template A, but with three differences: no <code>frq</code> field (each sequence position is its own node), no value-keyed BST descent (positions are derived from subtree sizes), and a lazy <code>rev</code> flag for range reverse. The public API is built around <code>split</code> and <code>merge</code> primitives implemented in terms of splay, matching the implicit-treap convention from tutorial 28.</p>
+    <pre><code><span class="c">// Implicit Splay Tree: sequence with split/merge/reverse via splay</span>
+<span class="k">#include</span> <span class="s">&lt;bits/stdc++.h&gt;</span>
+<span class="k">using namespace</span> std;
+<span class="k">enum</span> { L = 0, R = 1 };
+
+<span class="k">struct</span> Node {
+    <span class="k">long long</span> v, sum;
+    <span class="k">int</span> sz;
+    <span class="k">bool</span> rev;
+    Node *p, *ch[2];
+    Node() : v(0), sum(0), sz(0), rev(<span class="k">false</span>), p(<span class="k">this</span>), ch{<span class="k">this</span>, <span class="k">this</span>} {}
+    Node(<span class="k">long long</span> _v, Node* E)
+        : v(_v), sum(_v), sz(1), rev(<span class="k">false</span>), p(E), ch{E, E} {}
+
+    <span class="k">void</span> applyRev() {
+        <span class="k">if</span> (sz == 0) <span class="k">return</span>;
+        swap(ch[L], ch[R]);
+        rev ^= 1;
+    }
+    <span class="k">void</span> push() {
+        <span class="k">if</span> (!rev) <span class="k">return</span>;
+        ch[L]-&gt;applyRev();
+        ch[R]-&gt;applyRev();
+        rev = <span class="k">false</span>;
+    }
+    <span class="k">void</span> pull() {
+        sz = ch[L]-&gt;sz + 1 + ch[R]-&gt;sz;
+        sum = ch[L]-&gt;sum + v + ch[R]-&gt;sum;
+    }
+};
+
+Node* E = <span class="k">new</span> Node();
+
+<span class="k">int</span> getDir(Node* p, Node* c) { <span class="k">return</span> p-&gt;ch[R] == c ? R : L; }
+
+<span class="k">void</span> link(Node* p, Node* c, <span class="k">int</span> dir) {
+    <span class="k">if</span> (c != E) c-&gt;p = p;
+    <span class="k">if</span> (p != E) { p-&gt;ch[dir] = c; p-&gt;pull(); }
+}
+
+<span class="k">struct</span> ImplicitSplay {
+    Node* root;
+    ImplicitSplay() : root(E) {}
+
+    <span class="k">int</span> size() <span class="k">const</span> { <span class="k">return</span> root-&gt;sz; }
+
+    <span class="k">void</span> setRoot(Node* u) {
+        root = u;
+        <span class="k">if</span> (root != E) root-&gt;p = E;
+    }
+
+    <span class="k">void</span> rotate(Node* c) {
+        Node* p = c-&gt;p;
+        Node* g = p-&gt;p;
+        <span class="k">int</span> d = getDir(p, c);
+        <span class="k">int</span> gd = (g == E ? L : getDir(g, p));
+        p-&gt;push(); c-&gt;push();
+        Node* middle = c-&gt;ch[d ^ 1];
+        link(p, middle, d);
+        link(c, p, d ^ 1);
+        <span class="k">if</span> (g == E) setRoot(c);
+        <span class="k">else</span> link(g, c, gd);
+    }
+
+    <span class="c">// Push the lazy flag down from the root toward x before splaying x,</span>
+    <span class="c">// so descent decisions in rotate() are based on the post-push layout.</span>
+    <span class="k">void</span> pushFromRoot(Node* x) {
+        <span class="k">if</span> (x == E) <span class="k">return</span>;
+        pushFromRoot(x-&gt;p);
+        x-&gt;push();
+    }
+
+    <span class="k">void</span> splay(Node* x, Node* goal = <span class="k">nullptr</span>) {
+        <span class="k">if</span> (x == E) <span class="k">return</span>;
+        <span class="k">if</span> (goal == <span class="k">nullptr</span>) goal = E;
+        pushFromRoot(x);
+        <span class="k">while</span> (x-&gt;p != goal) {
+            Node* p = x-&gt;p;
+            Node* g = p-&gt;p;
+            <span class="k">if</span> (g == goal) rotate(x);
+            <span class="k">else if</span> (getDir(p, x) == getDir(g, p)) { rotate(p); rotate(x); }
+            <span class="k">else</span> { rotate(x); rotate(x); }
+        }
+        <span class="k">if</span> (goal == E) setRoot(x);
+    }
+
+    <span class="c">// Splay the node at position k (0-indexed) to the root.</span>
+    Node* kthNode(<span class="k">int</span> k) {
+        <span class="k">if</span> (k &lt; 0 || k &gt;= size()) <span class="k">return</span> E;
+        Node* u = root;
+        <span class="k">while</span> (u != E) {
+            u-&gt;push();
+            <span class="k">int</span> leftSize = u-&gt;ch[L]-&gt;sz;
+            <span class="k">if</span> (k &lt; leftSize) u = u-&gt;ch[L];
+            <span class="k">else if</span> (k == leftSize) { splay(u); <span class="k">return</span> u; }
+            <span class="k">else</span> { k -= leftSize + 1; u = u-&gt;ch[R]; }
+        }
+        <span class="k">return</span> E;
+    }
+
+    <span class="c">// Merge two implicit-splay trees: every position in a comes before every position in b.</span>
+    Node* merge(Node* a, Node* b) {
+        <span class="k">if</span> (a == E) { <span class="k">if</span> (b != E) b-&gt;p = E; <span class="k">return</span> b; }
+        <span class="k">if</span> (b == E) { a-&gt;p = E; <span class="k">return</span> a; }
+        <span class="c">// Splay a's rightmost node to the root, then attach b as its right subtree.</span>
+        setRoot(a);
+        Node* mx = a;
+        mx-&gt;push();
+        <span class="k">while</span> (mx-&gt;ch[R] != E) { mx = mx-&gt;ch[R]; mx-&gt;push(); }
+        splay(mx);
+        link(root, b, R);
+        <span class="k">return</span> root;
+    }
+
+    <span class="c">// Split into (first leftSize elements, remaining elements). The input is consumed.</span>
+    pair&lt;Node*, Node*&gt; split(Node* u, <span class="k">int</span> leftSize) {
+        <span class="k">if</span> (u == E) <span class="k">return</span> {E, E};
+        setRoot(u);
+        <span class="k">if</span> (leftSize == 0) {
+            Node* right = root; right-&gt;p = E; root = E;
+            <span class="k">return</span> {E, right};
+        }
+        <span class="k">if</span> (leftSize &gt;= root-&gt;sz) {
+            Node* left = root; left-&gt;p = E; root = E;
+            <span class="k">return</span> {left, E};
+        }
+        <span class="c">// Splay the (leftSize-1)-th node, detach its right subtree.</span>
+        Node* x = kthNode(leftSize - 1);
+        Node* right = x-&gt;ch[R];
+        <span class="k">if</span> (right != E) right-&gt;p = E;
+        link(x, E, R);
+        Node* left = x; left-&gt;p = E;
+        <span class="k">return</span> {left, right};
+    }
+
+    <span class="k">void</span> build(<span class="k">const</span> vector&lt;<span class="k">long long</span>&gt;&amp; a) {
+        root = E;
+        <span class="k">for</span> (<span class="k">long long</span> x : a) root = merge(root, <span class="k">new</span> Node(x, E));
+    }
+
+    <span class="k">void</span> insert(<span class="k">int</span> pos, <span class="k">long long</span> x) {
+        <span class="k">auto</span> [a, b] = split(root, pos);
+        root = merge(merge(a, <span class="k">new</span> Node(x, E)), b);
+        setRoot(root);
+    }
+
+    <span class="k">void</span> erase(<span class="k">int</span> pos) {
+        <span class="k">auto</span> [a, b] = split(root, pos);
+        <span class="k">auto</span> [mid, c] = split(b, 1);
+        <span class="k">if</span> (mid != E) <span class="k">delete</span> mid;
+        root = merge(a, c);
+        setRoot(root);
+    }
+
+    <span class="k">void</span> reverseRange(<span class="k">int</span> l, <span class="k">int</span> r) {
+        <span class="k">if</span> (l &gt; r) <span class="k">return</span>;
+        <span class="k">auto</span> [a, b] = split(root, r + 1);
+        <span class="k">auto</span> [c, d] = split(a, l);
+        d-&gt;applyRev();
+        root = merge(merge(c, d), b);
+        setRoot(root);
+    }
+
+    <span class="k">long long</span> rangeSum(<span class="k">int</span> l, <span class="k">int</span> r) {
+        <span class="k">if</span> (l &gt; r) <span class="k">return</span> 0;
+        <span class="k">auto</span> [a, b] = split(root, r + 1);
+        <span class="k">auto</span> [c, d] = split(a, l);
+        <span class="k">long long</span> ans = d-&gt;sum;
+        root = merge(merge(c, d), b);
+        setRoot(root);
+        <span class="k">return</span> ans;
+    }
+
+    <span class="k">long long</span> get(<span class="k">int</span> pos) {
+        Node* u = kthNode(pos);
+        <span class="k">return</span> (u == E ? 0 : u-&gt;v);
+    }
+
+    <span class="k">void</span> inorder(Node* u, vector&lt;<span class="k">long long</span>&gt;&amp; a) {
+        <span class="k">if</span> (u == E) <span class="k">return</span>;
+        u-&gt;push();
+        inorder(u-&gt;ch[L], a);
+        a.push_back(u-&gt;v);
+        inorder(u-&gt;ch[R], a);
+    }
+    vector&lt;<span class="k">long long</span>&gt; to_vector() {
+        vector&lt;<span class="k">long long</span>&gt; a; inorder(root, a); <span class="k">return</span> a;
+    }
+};</code></pre>
+  </section>
+  </div>
+
+  <div id="sec-lineByLine" class="section">
+  <section id="lineByLine" class="card scroll-reveal">
+    <h2>📝 12 · Line-by-Line Walkthrough</h2>
+
+    <p class="note">The two templates share a common chassis. We walk through Template A in detail; the differences in Template B (no <code>frq</code>, lazy reverse, push-from-root before splay) are described where they diverge.</p>
+
+    <h3>Node struct, EMPTY sentinel, helper functions</h3>
+    <p class="note">The <code>Node</code> struct carries six fields: the key <code>v</code>, the subtree size <code>sz</code>, the frequency <code>frq</code> for multiset duplicates, the parent pointer <code>p</code>, and the two child pointers in <code>ch[2]</code>. The default constructor produces the <code>EMPTY</code> sentinel, whose parent and children point at itself and whose <code>sz</code>, <code>frq</code> are zero. Reads like <code>u-&gt;ch[L]-&gt;sz</code> always return zero on a missing child, so the size formula composes correctly without null checks. The <code>getDir</code> function recovers whether a child sits in the left or right slot of its parent, and <code>link</code> performs the only child-pointer write in the entire class: it sets the slot, sets the child's parent, and calls <code>pull</code>.</p>
+
+    <h3>rotate(c) with the saved gd</h3>
+    <p class="note">The rotate function takes the child that should rise. It reads <code>p = c-&gt;p</code> and <code>g = p-&gt;p</code>, computes <code>d = getDir(p, c)</code> for the direction of <code>c</code> under <code>p</code>, and then — critically — saves <code>gd = getDir(g, p)</code> before any rewiring happens. The save is essential because the second <code>link</code> call below moves <code>p</code> to become a child of <code>c</code>, so after that point <code>p</code> is no longer a child of <code>g</code> and reading the direction would return the wrong slot. The three rewiring calls perform the standard rotation: <code>c</code>'s opposite-side child moves to become <code>p</code>'s same-side child, <code>p</code> becomes <code>c</code>'s opposite-side child, and <code>c</code> takes <code>p</code>'s old slot under <code>g</code> using the saved <code>gd</code>. If there was no grandparent, <code>c</code> becomes the new root via <code>setRoot</code>.</p>
+
+    <h3>splay(x, goal) and the three cases</h3>
+    <p class="note">The splay function lifts <code>x</code> until its parent equals the goal (or the sentinel <code>EMPTY</code> if no goal was specified, meaning lift all the way to the root). Inside the loop, the parent and grandparent are inspected to choose one of the three cases. Zig fires when the grandparent equals the goal — only one rotation away from termination. Zig-zig fires when <code>x</code> and its parent are on the same side; the rotation order is <em>parent first, then x</em>, and skipping this order silently breaks the amortized bound (see pitfall 4 of section 14). Zig-zag fires when they are on opposite sides; the order is <em>x twice</em>. The implicit-splay template adds one extra step at the top: <code>pushFromRoot(x)</code> walks up from <code>x</code> to the root and pushes lazy flags down on every ancestor, ensuring that subsequent rotations work on the post-push layout rather than a stale one.</p>
+
+    <h3>findNode, insert, eraseOne</h3>
+    <p class="note">The find descent walks down the BST. If it finds a matching node, it splays the matching node to the root and returns it. If it walks off the tree, it splays the last node it touched, then returns <code>EMPTY</code>. Splaying the last touched node is the trick that activates the amortized bound on unsuccessful searches; without it, repeated failed lookups for nearby missing values would accumulate cost without rebalancing. Insert either bumps <code>frq</code> on an existing node and splays it, or attaches a fresh leaf via <code>link</code> and splays the new leaf. EraseOne splays the doomed node to the root, then either decrements <code>frq</code> (if it was greater than one) or removes the root entirely and joins the two surviving subtrees through the <code>join</code> primitive.</p>
+
+    <h3>join(a, b)</h3>
+    <p class="note">The join primitive assumes every key in <code>a</code> is strictly less than every key in <code>b</code>. The strategy: temporarily make <code>a</code> the root, splay the maximum of <code>a</code> up to the top — which leaves <code>a</code>'s new root with no right child by virtue of being the maximum — and then link <code>b</code> as the right child of that new root. The cost of finding the maximum is bounded by the amortized cost of the splay it triggers, so the whole join is amortized O(log n).</p>
+
+    <h3>kth, order_of_key, first_ge, last_le, split_less</h3>
+    <p class="note">kth descends from the root, using subtree sizes to decide whether the desired rank lies in the left subtree, at the current node (matching the run of <code>frq</code> occurrences), or in the right subtree. Once found, the matching node is splayed to the root. order_of_key descends accumulating the count of strictly-less-than occurrences by adding <code>sz(left) + frq</code> every time the descent moves right; it remembers the last non-<code>EMPTY</code> node it touched, and after the rank is computed it splays that node to the root to preserve the splay-after-every-touch discipline (which is why <code>order_of_key</code> is not <code>const</code>). The rank is captured before splaying so the answer is unaffected by the rotations that follow. first_ge and last_le remember the most recent candidate that satisfies the inequality; if such a candidate exists, they splay it, otherwise they splay the last touched node so failed boundary searches still obey the splay-after-every-touch rule. split_less locates the smallest value not less than <code>x</code>, splays it to the root, detaches its left subtree, and returns the two halves; if no such value exists, the entire tree goes to the left half and the right half is empty.</p>
+
+    <h3>What Template B changes</h3>
+    <p class="note">Template B drops <code>frq</code> (each sequence position is one node), uses subtree sizes alone to derive position-keyed descent, and adds the lazy <code>rev</code> flag. The crucial difference for correctness is the <code>pushFromRoot</code> call at the top of splay: when a lazy reverse is pending on some ancestor of <code>x</code>, that ancestor's child pointers are swapped lazily, and splay's rotation cases would read the swapped layout incorrectly unless the lazy is pushed down first. The split and merge primitives are also reformulated in terms of splay rather than the recursive-descent style of the implicit treap: split splays the boundary element to the root and detaches its right subtree, merge splays a's maximum to the top and links b as its right child.</p>
+  </section>
+  </div>
+
+  <div id="sec-edges" class="section">
+  <section id="edges" class="card scroll-reveal">
+    <h2>🧩 13 · Edge Cases (Centralized Audit)</h2>
+
+    <p class="note">A consolidated checklist of boundary conditions every splay-tree implementation must handle. Most splay bugs trace back to violating one of these. The checks below are written for Template A unless noted; Template B has analogous concerns wherever the operation exists.</p>
+
+    <ul class="checklist">
+      <li><b>Empty tree.</b> root equals <code>EMPTY</code>. Insert into empty creates the first node and sets it as root without calling splay (splay on a node that is already the root would be a no-op anyway). Find, kth, order_of_key all terminate immediately with their empty-case results.</li>
+      <li><b>Insert into empty.</b> Special-cased at the top of insert. The new node becomes the root and the function returns; calling splay on the only node in the tree is unnecessary work.</li>
+      <li><b>Insert a duplicate.</b> The descent finds the matching node, bumps its <code>frq</code>, calls <code>pull</code> on it, then splays it. The tree shape changes via the splay but no new node is allocated.</li>
+      <li><b>Erase a value that is absent.</b> findNode walks off the tree and splays the last touched node. eraseOne returns immediately without modifying anything further. The splay-the-last-touched-node behavior is essential for the amortized bound on failed accesses.</li>
+      <li><b>Erase the root with two non-empty children.</b> After splaying the doomed node to the root, its two children become exposed. detach both, join them, set the joined result as the new root.</li>
+      <li><b>Erase the root with only one child.</b> The join primitive's empty-side branches handle this. Joining <code>EMPTY</code> with a non-empty tree returns the non-empty tree unchanged.</li>
+      <li><b>Erase the only node in the tree.</b> Both children are <code>EMPTY</code>; join returns <code>EMPTY</code>; the tree becomes empty cleanly.</li>
+      <li><b>kth with k out of range.</b> Explicit bounds check returns <code>EMPTY</code> at the top of kthNode; the wrapper kth returns <code>LLONG_MIN</code> as a sentinel.</li>
+      <li><b>order_of_key smaller than the minimum value.</b> Returns 0 (no elements strictly less than x).</li>
+      <li><b>order_of_key larger than the maximum value.</b> Returns size() (every element is strictly less than x).</li>
+      <li><b>first_ge / last_le with no candidate.</b> Returns LLONG_MAX / LLONG_MIN respectively.</li>
+      <li><b>Splay called on EMPTY.</b> Guarded at the top of the splay function; an EMPTY splay is a no-op.</li>
+      <li><b>setRoot called with EMPTY.</b> Sets root to EMPTY without trying to write EMPTY's parent (which would mutate the sentinel).</li>
+      <li><b>Implicit-splay: range with l &gt; r.</b> Both reverseRange and rangeSum guard at the top and return early.</li>
+      <li><b>Implicit-splay: lazy flag interaction with subsequent splay.</b> pushFromRoot must be called before any descent through a node with pending rev, or the rotation case decisions read the pre-push (incorrect) layout.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="sec-pitfalls" class="section">
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>🪲 14 · Common Pitfalls and Bugs</h2>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 1 — Forgetting splay after every touch</div><div class="wDesc">Every public method that descends through the tree must end with a splay on some node it visited. Skipping the splay does not cause a correctness bug — the BST invariant still holds — but it silently breaks the amortized bound and the tree may degrade into a chain over a long sequence of operations.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 2 — Broken parent pointers</div><div class="wDesc">Every non-root node must point at its true parent, and every root at <code>EMPTY</code>. The rotation primitive and the splay loop both inspect parent pointers; a stale or wrong parent corrupts the tree immediately. Routing every child-pointer write through <code>link</code> is the cleanest defense.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 3 — Reading gd after rewiring</div><div class="wDesc">In rotate, the direction of the parent under the grandparent must be saved <em>before</em> the second <code>link</code> call moves the parent under <code>c</code>. Reading <code>getDir(g, p)</code> after that point returns the wrong slot and attaches the rotated subtree to the wrong side of the grandparent — the exact bug that the corrected key-treap rotation in tutorial 27 addresses.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 4 — Wrong zig-zig order</div><div class="wDesc">In zig-zig, the parent must be rotated <em>first</em> and then <code>x</code>; doing two consecutive rotates of <code>x</code> instead is the zig-zag pattern and produces a different final shape. Both shapes preserve the BST invariant, so the correctness tests pass, but the amortized bound fails: the access path is not folded the way the Access Lemma requires, and pathological access sequences can blow up the cost.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 5 — Forgetting frq in the size formula</div><div class="wDesc">In Template A, the size formula must be <code>sz = sz(left) + frq + sz(right)</code>. Writing the BST formula <code>sz = sz(left) + 1 + sz(right)</code> silently breaks kth and order_of_key on any input containing duplicates. The implicit variant does not have <code>frq</code>, so the correct formula there is the one-per-node form.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 6 — Implicit splay: skipping pushFromRoot before splay</div><div class="wDesc">When a lazy reverse is pending on an ancestor of <code>x</code>, the ancestor's children are swapped lazily. Calling splay without first pushing the flag down from the root causes the rotation case decisions in the splay loop to read the pre-push (incorrect) layout, and the tree silently produces wrong query answers on subsequent operations.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 7 — Mutating EMPTY</div><div class="wDesc">The sentinel's six fields are part of the invariant: <code>v=0</code>, <code>sz=0</code>, <code>frq=0</code>, parent and both children pointing at itself. If a careless write accidentally sets <code>EMPTY-&gt;p</code> or one of <code>EMPTY-&gt;ch[i]</code> to a real node, every future descent through that slot misbehaves. The <code>link</code> helper guards against this by checking <code>if (c != EMPTY) c-&gt;p = p;</code> and by checking <code>if (p != EMPTY)</code> before writing the child slot.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-decision" class="section">
+  <section id="decision" class="card scroll-reveal">
+    <h2>🧭 15 · Decision Guide</h2>
+    <div class="decisionBox">
+      <h3>When the splay tree is the right tool</h3>
+      <div class="ruleBox">
+        <div><span class="cond">need self-adjustment to access patterns</span> <span class="arrow">⇒</span> splay (working-set bound)</div>
+        <div><span class="cond">need deterministic amortized O(log n)</span> <span class="arrow">⇒</span> splay (treap is expected; splay is deterministic)</div>
+        <div><span class="cond">need worst-case O(log n) per operation</span> <span class="arrow">⇒</span> AVL or Red-Black (splay is amortized only)</div>
+        <div><span class="cond">need ordered-set operations only</span> <span class="arrow">⇒</span> std::set or PBDS (shorter than rolling splay)</div>
+        <div><span class="cond">need a stepping stone to link-cut trees</span> <span class="arrow">⇒</span> splay (link-cut is built on splay)</div>
+        <div><span class="cond">need range reverse / split / merge on a sequence</span> <span class="arrow">⇒</span> implicit splay (Template B) or implicit treap (tutorial 28)</div>
+        <div><span class="cond">need historical versions</span> <span class="arrow">⇒</span> persistent treap or persistent segment tree, not this splay tutorial</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-variants" class="section">
+  <section id="variants" class="card scroll-reveal">
+    <h2>🎭 16 · Variants and Extensions</h2>
+
+    <h3>Variant A — Link-Cut Trees</h3>
+    <p class="note">The link-cut tree is a dynamic-tree data structure that maintains a forest of rooted trees under link, cut, find-root, and path-query operations, all in amortized O(log n). Its core is a collection of splay trees, one per "preferred path" in the represented forest. Splaying inside a preferred path is the basic step, and the analysis re-uses the Access Lemma. Link-cut trees are the standard solution for problems like dynamic-tree connectivity, dynamic minimum spanning forest, and the offline maximum-flow blocking step. Learning the splay tree is a prerequisite; the link-cut tree adds the preferred-path machinery on top.</p>
+
+    <h3>Variant B — Top Trees</h3>
+    <p class="note">A more general dynamic-tree structure that supports arbitrary path and subtree aggregates with O(log n) updates. Top trees use either splay trees or balanced biased trees as their internal representation. They are heavier than link-cut trees but expose a richer API; problems requiring subtree sums on dynamic trees often reach for top trees.</p>
+
+    <h3>Variant C — Finger Trees and Fingered Splay</h3>
+    <p class="note">If consecutive accesses tend to be close to each other in the inorder, a "finger" pointer that remembers the most recent access can speed things up further. A fingered splay tree splays from the finger upward toward the new access, then back down, paying only O(log d) where d is the distance between the finger and the new access. The technique earns its place in workloads with strong sequential locality.</p>
+
+    <h3>Variant D — Augmented Aggregates</h3>
+    <p class="note">Template B augments each node with a subtree <code>sum</code>; the technique generalises to any commutative-associative aggregate. Add a field to <code>Node</code>, update <code>pull</code> to combine the children's aggregates and the current node's value, and every range-query routine continues to work. For non-commutative aggregates, the <code>applyRev</code> routine must also flip the aggregate's internal ordering, mirroring the implicit-treap convention from tutorial 28.</p>
+
+    <h3>Variant E — Top-down Splay</h3>
+    <p class="note">The splay implementation in this tutorial is bottom-up: we walk down the tree to find <code>x</code>, then splay <code>x</code> upward case by case. An alternative is the top-down splay, which performs rotations on the descent itself and never needs to walk back up. Top-down splay has slightly better cache behavior on some architectures and avoids the recursive stack; it is functionally equivalent. The textbook treatment in Sleator and Tarjan's original paper presents both versions.</p>
+
+    <h3>Variant F — Working-Set Specialised Splay</h3>
+    <p class="note">If you know in advance that your workload has a small hot working set, you can lean further into the working-set behavior by splaying only sometimes (every k-th access) or by using deeper-cost-amortisation tricks. These specialised variants are mostly of theoretical interest; the plain splay tree already captures most of the benefit.</p>
+  </section>
+  </div>
+
+  <div id="sec-problems" class="section">
+  <section id="problems" class="card scroll-reveal">
+    <h2>🏆 17 · Problem-Based Applications</h2>
+
+    <p class="note">Each problem below picks one of the two templates. The VJudge links open in new tabs.</p>
+
+    <details open>
+      <summary>P1 · Order Statistic Set — SPOJ ORDERSET</summary>
+      <div class="detailsBody">
+        <p>The canonical four-operation problem: insert, delete, k-th smallest, count-less-than. Template A applied directly; the multiset feature is unused because ORDERSET has distinct values, but the same code works.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ORDERSET" target="_blank" rel="noopener">VJudge — SPOJ ORDERSET</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P2 · Inversion Count — SPOJ INVCNT</summary>
+      <div class="detailsBody">
+        <p>Count the number of inversions in an array. Insert each value left-to-right; at each step, count how many already-inserted values are strictly greater than the current value by computing <code>size - order_of_key(v + 1)</code>.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-INVCNT" target="_blank" rel="noopener">VJudge — SPOJ INVCNT</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P3 · Black Box — UVA 501</summary>
+      <div class="detailsBody">
+        <p>Sequence of insertions interleaved with k-th smallest queries that advance the rank counter. Splay tree's working-set behavior shines here because the rank moves through a relatively small window. Template A.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-501" target="_blank" rel="noopener">VJudge — UVA 501</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P4 · Sequence Maintainer — SPOJ SEQ2 (CERC07S)</summary>
+      <div class="detailsBody">
+        <p>Range insert, range erase, range reverse, range assign, range add, range max-sum. Template B with the Info bundle extended for max-subarray-sum aggregation. The canonical splay-sequence problem in the SPOJ catalog.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-SEQ2" target="_blank" rel="noopener">VJudge — SPOJ SEQ2</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P5 · Reverses — SPOJ TWIST</summary>
+      <div class="detailsBody">
+        <p>Range reverse with point queries. Template B applied directly; the lazy reverse flag in the implicit splay tree handles the entire problem.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-TWIST" target="_blank" rel="noopener">VJudge — SPOJ TWIST</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P6 · Yet Another Array Queries Problem — Codeforces 863D</summary>
+      <div class="detailsBody">
+        <p>Cyclic shift on a range plus point query. Extend Template B with a <code>cyclic_shift(l, r)</code> method (split into prefix, middle, suffix, then split middle to peel off the first element, then reassemble shifted) mirroring the implicit-treap recipe from tutorial 28.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-863D" target="_blank" rel="noopener">VJudge — Codeforces 863D</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P7 · Splay-tree Cut and Paste — Codeforces Gym 100460I</summary>
+      <div class="detailsBody">
+        <p>Cut a contiguous block from a sequence and paste it elsewhere. Two splits and two merges. Template B.</p>
+        <a class="plink" href="https://vjudge.net/problem/Gym-100460I" target="_blank" rel="noopener">VJudge — Codeforces Gym 100460I</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P8 · Salary Queries — CSES 1144</summary>
+      <div class="detailsBody">
+        <p>Salaries with range count queries and point updates. Template A with order_of_key on the band endpoints.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1144" target="_blank" rel="noopener">VJudge — CSES 1144</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P9 · Dynamic Tree Sum — SPOJ DYNALCA</summary>
+      <div class="detailsBody">
+        <p>Forest under link, cut, and lowest-common-ancestor queries. Link-cut trees are the standard solution, and link-cut trees are built on splay trees. Solving DYNALCA after mastering this tutorial is a natural next step.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-DYNALCA" target="_blank" rel="noopener">VJudge — SPOJ DYNALCA</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P10 · Dynamic Tree — SPOJ DYNACON1</summary>
+      <div class="detailsBody">
+        <p>Dynamic connectivity in a forest. Another link-cut-tree problem; uses splay as a substrate.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-DYNACON1" target="_blank" rel="noopener">VJudge — SPOJ DYNACON1</a>
+      </div>
+    </details>
+  </section>
+  </div>
+
+  <div id="sec-summary" class="section">
+  <section id="summary" class="card scroll-reveal">
+    <h2>🎯 18 · Final Summary</h2>
+
+    <p class="note" style="font-size:24px"><b>One sentence:</b> a splay tree is a BST with one rule — splay every accessed node to the root — and the rule alone, executed through the zig / zig-zig / zig-zag pattern, gives amortized O(log n) per operation by way of the potential method and the Access Lemma.</p>
+
+    <h3>Five things to remember</h3>
+    <p class="note">First, splay trees keep only the BST invariant, the size invariant, and the parent invariant — no balance condition, no color, no priority. Second, the splay loop applies one of three local cases (zig, zig-zig, zig-zag) depending on the relative positions of the splayed node, its parent, and its grandparent, and zig-zig is the case whose specific rotation order makes the amortized analysis work. Third, the amortized bound comes from the potential method: pick the potential Φ to be the sum of <code>log</code>-subtree-sizes ranks, sum the amortized costs over a sequence of operations, let the inner sum telescope, and the surviving terms are bounded by O(log n) per operation. Fourth, every public method must end with a splay or the amortized bound silently breaks. Fifth, the splay tree is the foundation for link-cut trees and top trees, which is why every serious data-structures education includes it even where treaps would otherwise suffice.</p>
+
+    <h3>Mastery checklist</h3>
+    <ul class="checklist">
+      <li>I can write the rotate function with the saved <code>gd</code> from memory in under five minutes.</li>
+      <li>I can name the three splay cases and draw the before-and-after diagrams of each by hand.</li>
+      <li>I can write the splay loop without referring to the master template.</li>
+      <li>I can recite the potential method recipe: define Φ, define amortized cost, sum and telescope.</li>
+      <li>I can state the Access Lemma and explain why it implies amortized O(log n) per operation.</li>
+      <li>I can extend Template B with a new aggregate (max, gcd, hash) by adding one field and updating <code>pull</code>.</li>
+      <li>I know when to reach for splay over a treap (deterministic, working-set, stepping stone to link-cut).</li>
+    </ul>
+
+    <h3>What is next</h3>
+    <div class="tipBox">This tutorial completes the BBST family at five files: tutorial 26 covered the BST foundations and the AVL/Red-Black story, tutorials 27 through 29 covered the treap family (key, implicit, persistent), and this tutorial covers true key and implicit splay templates. The next natural step beyond splay trees is link-cut trees for dynamic-tree problems; the splay tree mechanics covered here are the substrate they build on.</div>
+  </section>
+  </div>
+
+  <div id="sec-contact" class="section">
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h2>🛠️ Runtime Validation Checklist</h2>
+    <ul class="checklist">
+      <li>Sidebar opens and closes on hamburger click; overlay dismisses on click outside.</li>
+      <li>Theme toggle switches dark and light and persists in localStorage.</li>
+      <li>Escape key closes an open sidebar on mobile widths.</li>
+      <li>Active nav link highlights as the user scrolls.</li>
+      <li>All mailto links are plain (no Cloudflare obfuscation).</li>
+      <li>All VJudge problem links open in new tabs.</li>
+      <li>No duplicate id attributes; HTML validates with no JS console errors.</li>
+      <li>Every stepper responds to Next, Prev, and Reset; SVG redraws cleanly between frames.</li>
+      <li>Scroll-reveal animations trigger on intersection; a 300 ms fallback reveals all content if IntersectionObserver does not fire.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function nodeColor(c){
+  const map = { blue:'var(--node-blue)', green:'var(--node-green)', amber:'var(--node-amber)', red:'var(--node-red)', purple:'var(--node-purple)', dark:'#1f2937', black:'#0f172a' };
+  return map[c] || map.blue;
+}
+function makeStepper(containerId, frames){
+  const root    = document.getElementById(containerId);
+  const svg     = root.querySelector('.stepper-svg');
+  const desc    = root.querySelector('.stepper-desc');
+  const counter = root.querySelector('.stepper-counter');
+  const prevBtn = root.querySelector('[data-act="prev"]');
+  const nextBtn = root.querySelector('[data-act="next"]');
+  const resetBtn= root.querySelector('[data-act="reset"]');
+  let idx = 0;
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function render(){
+    const f = frames[idx];
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    (f.edges || []).forEach(e => {
+      const a = f.nodes.find(n => n.id === e.from);
+      const b = f.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const line = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y});
+      let cls = 'tree-edge';
+      if (e.state) cls += ' ' + e.state;
+      line.setAttribute('class', cls);
+      svg.appendChild(line);
+    });
+    (f.nodes || []).forEach(n => {
+      const g = el('g', {});
+      let cls = 'tree-node';
+      if (n.state) cls += ' ' + n.state;
+      g.setAttribute('class', cls);
+      const r = n.r || 28;
+      g.appendChild(el('circle', {cx:n.x, cy:n.y, r:r, fill:nodeColor(n.color)}));
+      const labelY = n.sub ? n.y - 6 : n.y;
+      const t1 = el('text', {x:n.x, y:labelY, 'font-size':n.fs || 16});
+      t1.textContent = n.label;
+      g.appendChild(t1);
+      if (n.sub){
+        const t2 = el('text', {x:n.x, y:n.y + 10, 'font-size':11});
+        t2.textContent = n.sub;
+        g.appendChild(t2);
+      }
+      svg.appendChild(g);
+    });
+    (f.labels || []).forEach(l => {
+      const t = el('text', {x:l.x, y:l.y, 'font-size':l.fs || 18, class:l.caption ? 'tree-caption' : 'tree-label'});
+      t.textContent = l.text;
+      svg.appendChild(t);
+    });
+    desc.textContent = f.desc;
+    counter.textContent = 'Step ' + (idx + 1) + ' / ' + frames.length;
+    prevBtn.disabled  = idx === 0;
+    nextBtn.disabled  = idx === frames.length - 1;
+  }
+  prevBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < frames.length - 1) { idx++; render(); } });
+  resetBtn.addEventListener('click', () => { idx = 0; render(); });
+  render();
+}
+
+// --- Splay trace: a deep node in a left-leaning chain is splayed to the root.
+// Initial tree: 5 nodes on a left-leaning chain holding values 50, 40, 30, 20, 10
+// (so 50 is the root and 10 is the deepest left child). We splay 10 to the
+// root. Because both 10 and its parent 20 are left children of their parents,
+// the first two splay steps are zig-zigs; the very last step is a zig because
+// after two zig-zigs the parent is the root.
+const SPLAY_TRACE_FRAMES = [
+  {
+    desc: 'Starting tree: a left-leaning chain 50, 40, 30, 20, 10 (root is 50, deepest leaf is 10). We will splay 10 to the root and observe how the chain bends.',
+    nodes: [
+      {id:'a', x:520, y:60,  label:'50', color:'blue', r:26},
+      {id:'b', x:440, y:140, label:'40', color:'blue', r:26},
+      {id:'c', x:360, y:220, label:'30', color:'blue', r:26},
+      {id:'d', x:280, y:300, label:'20', color:'blue', r:26},
+      {id:'e', x:200, y:340, label:'10', color:'red', state:'target', r:26}
+    ],
+    edges: [{from:'a',to:'b'},{from:'b',to:'c'},{from:'c',to:'d'},{from:'d',to:'e'}]
+  },
+  {
+    desc: 'Step 1: zig-zig (left-left). Node 10\u2019s parent is 20, grandparent is 30, both are left children. Rotate 20 over 30 first, then rotate 10 over 20.',
+    nodes: [
+      {id:'a', x:520, y:60,  label:'50', color:'blue', r:26},
+      {id:'b', x:440, y:140, label:'40', color:'blue', r:26},
+      {id:'c', x:360, y:220, label:'30', color:'amber', state:'highlight', r:26},
+      {id:'d', x:280, y:300, label:'20', color:'amber', state:'highlight', r:26},
+      {id:'e', x:200, y:340, label:'10', color:'red', state:'target', r:26}
+    ],
+    edges: [{from:'a',to:'b'},{from:'b',to:'c',state:'path'},{from:'c',to:'d',state:'path'},{from:'d',to:'e',state:'path'}]
+  },
+  {
+    desc: 'After step 1. The chain has bent: 10 sits where 30 used to be, with 20 and 30 as its descendants on a much shorter path. The remaining chain above is 50 \u2192 40 \u2192 10.',
+    nodes: [
+      {id:'a', x:520, y:60,  label:'50', color:'blue', r:26},
+      {id:'b', x:440, y:140, label:'40', color:'blue', r:26},
+      {id:'e', x:300, y:220, label:'10', color:'green', state:'target', r:26},
+      {id:'d', x:380, y:300, label:'20', color:'blue', r:26},
+      {id:'c', x:460, y:340, label:'30', color:'blue', r:26}
+    ],
+    edges: [{from:'a',to:'b'},{from:'b',to:'e',state:'new'},{from:'e',to:'d'},{from:'d',to:'c'}]
+  },
+  {
+    desc: 'Step 2: another zig-zig. Now 10\u2019s parent is 40, grandparent is 50, both left children. Rotate 40 over 50 first, then 10 over 40. After this step the chain bends again.',
+    nodes: [
+      {id:'a', x:520, y:60,  label:'50', color:'amber', state:'highlight', r:26},
+      {id:'b', x:440, y:140, label:'40', color:'amber', state:'highlight', r:26},
+      {id:'e', x:300, y:220, label:'10', color:'red', state:'target', r:26},
+      {id:'d', x:380, y:300, label:'20', color:'blue', r:26},
+      {id:'c', x:460, y:340, label:'30', color:'blue', r:26}
+    ],
+    edges: [{from:'a',to:'b',state:'path'},{from:'b',to:'e',state:'path'},{from:'e',to:'d'},{from:'d',to:'c'}]
+  },
+  {
+    desc: 'After step 2. Node 10 is now the root, with 20 and 40 on roughly equal depths on its right side. The original chain is gone; the tree is much shallower and the work is done.',
+    nodes: [
+      {id:'e', x:380, y:80,  label:'10', color:'green', state:'target', r:26},
+      {id:'b', x:540, y:180, label:'40', color:'blue', r:26},
+      {id:'d', x:460, y:180, label:'20', color:'blue', r:26},
+      {id:'a', x:580, y:280, label:'50', color:'blue', r:26},
+      {id:'c', x:500, y:280, label:'30', color:'blue', r:26}
+    ],
+    edges: [{from:'e',to:'d',state:'new'},{from:'e',to:'b',state:'new'},{from:'b',to:'a'},{from:'b',to:'c'}],
+    labels: [{x:380, y:340, text:'Inorder: 10, 20, 30, 40, 50 (unchanged); tree depth reduced from 4 to 2', fs:16, caption:true}]
+  }
+];
+
+// --- Zig: x is a left child of the root p, no grandparent. One rotation.
+const SPLAY_ZIG_FRAMES = [
+  {
+    desc: 'Zig setup. The splayed node x has a parent p but no grandparent \u2014 so p is already the root. A single rotation will lift x over p.',
+    nodes: [
+      {id:'p', x:380, y:80,  label:'p', color:'amber', r:30},
+      {id:'x', x:260, y:190, label:'x', color:'red', state:'target', r:30},
+      {id:'A', x:180, y:280, label:'A', color:'purple', r:26},
+      {id:'B', x:340, y:280, label:'B', color:'purple', r:26},
+      {id:'C', x:460, y:190, label:'C', color:'purple', r:26}
+    ],
+    edges: [{from:'p',to:'x',state:'path'},{from:'p',to:'C'},{from:'x',to:'A'},{from:'x',to:'B'}],
+    labels: [{x:380, y:330, text:'Inorder before: A, x, B, p, C', fs:16, caption:true}]
+  },
+  {
+    desc: 'After one right rotation. Node x is the new root; p has become x\u2019s right child; the middle subtree B has moved from x\u2019s right to p\u2019s left. Inorder is preserved.',
+    nodes: [
+      {id:'x', x:280, y:80,  label:'x', color:'green', state:'target', r:30},
+      {id:'A', x:180, y:190, label:'A', color:'purple', r:26},
+      {id:'p', x:420, y:190, label:'p', color:'amber', r:30},
+      {id:'B', x:340, y:290, label:'B', color:'purple', r:26},
+      {id:'C', x:500, y:290, label:'C', color:'purple', r:26}
+    ],
+    edges: [{from:'x',to:'A'},{from:'x',to:'p',state:'new'},{from:'p',to:'B',state:'new'},{from:'p',to:'C'}],
+    labels: [{x:380, y:340, text:'Inorder after: A, x, B, p, C (unchanged)', fs:16, caption:true}]
+  }
+];
+
+
+// --- Zig-zig (left-left): x and p are both left children. Rotate p over g
+// first, then x over p. The crucial detail is the ordering.
+const SPLAY_ZIGZIG_FRAMES = [
+  {
+    desc: 'Zig-zig setup (left-left). Node x is a left child of p; p is a left child of g. The splay step performs two rotations in a specific order: rotate p over g FIRST, then rotate x over p.',
+    nodes: [
+      {id:'g', x:440, y:60,  label:'g', color:'amber', r:30},
+      {id:'p', x:320, y:160, label:'p', color:'amber', r:30},
+      {id:'x', x:200, y:260, label:'x', color:'red', state:'target', r:30},
+      {id:'A', x:120, y:340, label:'A', color:'purple', r:22},
+      {id:'B', x:260, y:340, label:'B', color:'purple', r:22},
+      {id:'C', x:380, y:260, label:'C', color:'purple', r:22},
+      {id:'D', x:520, y:160, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'g',to:'p',state:'path'},{from:'g',to:'D'},{from:'p',to:'x',state:'path'},{from:'p',to:'C'},{from:'x',to:'A'},{from:'x',to:'B'}]
+  },
+  {
+    desc: 'First rotation: rotate p over g (right rotation at g). Now p is the new local root, g is p\u2019s right child, and the subtree C moves from p\u2019s right to g\u2019s left.',
+    nodes: [
+      {id:'p', x:320, y:60,  label:'p', color:'green', state:'highlight', r:30},
+      {id:'x', x:200, y:160, label:'x', color:'red', state:'target', r:30},
+      {id:'g', x:440, y:160, label:'g', color:'amber', r:30},
+      {id:'A', x:120, y:260, label:'A', color:'purple', r:22},
+      {id:'B', x:260, y:260, label:'B', color:'purple', r:22},
+      {id:'C', x:380, y:260, label:'C', color:'purple', r:22},
+      {id:'D', x:520, y:260, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'p',to:'x',state:'path'},{from:'p',to:'g',state:'new'},{from:'x',to:'A'},{from:'x',to:'B'},{from:'g',to:'C',state:'new'},{from:'g',to:'D'}]
+  },
+  {
+    desc: 'Second rotation: rotate x over p (right rotation at p). Now x is the new local root, p is x\u2019s right child, and g hangs below p on the right. Subtree B moves from x\u2019s right to p\u2019s left.',
+    nodes: [
+      {id:'x', x:240, y:60,  label:'x', color:'green', state:'target', r:30},
+      {id:'A', x:140, y:160, label:'A', color:'purple', r:22},
+      {id:'p', x:360, y:160, label:'p', color:'amber', r:30},
+      {id:'B', x:280, y:260, label:'B', color:'purple', r:22},
+      {id:'g', x:460, y:260, label:'g', color:'amber', r:30},
+      {id:'C', x:400, y:340, label:'C', color:'purple', r:22},
+      {id:'D', x:540, y:340, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'x',to:'A'},{from:'x',to:'p',state:'new'},{from:'p',to:'B',state:'new'},{from:'p',to:'g'},{from:'g',to:'C'},{from:'g',to:'D'}],
+    labels: [{x:340, y:380, text:'Zig-zig done: x is now two levels higher; path A\u2192x\u2192p\u2192g is folded', fs:16, caption:true}]
+  }
+];
+
+// --- Zig-zag (left-right): x is a right child of p, p is a left child of g.
+// Two consecutive rotations of x.
+const SPLAY_ZIGZAG_FRAMES = [
+  {
+    desc: 'Zig-zag setup (left-right). Node x is the RIGHT child of p; but p is the LEFT child of g. Opposite directions \u2014 this is the zig-zag pattern. The splay step rotates x twice in a row.',
+    nodes: [
+      {id:'g', x:440, y:60,  label:'g', color:'amber', r:30},
+      {id:'p', x:320, y:160, label:'p', color:'amber', r:30},
+      {id:'x', x:400, y:260, label:'x', color:'red', state:'target', r:30},
+      {id:'A', x:240, y:260, label:'A', color:'purple', r:22},
+      {id:'B', x:340, y:340, label:'B', color:'purple', r:22},
+      {id:'C', x:460, y:340, label:'C', color:'purple', r:22},
+      {id:'D', x:540, y:160, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'g',to:'p',state:'path'},{from:'g',to:'D'},{from:'p',to:'A'},{from:'p',to:'x',state:'path'},{from:'x',to:'B'},{from:'x',to:'C'}]
+  },
+  {
+    desc: 'First rotation: rotate x over p (left rotation at p). Now x sits where p used to be (still as a left child of g); p has become x\u2019s left child; subtree B moves from x\u2019s left to p\u2019s right.',
+    nodes: [
+      {id:'g', x:440, y:60,  label:'g', color:'amber', r:30},
+      {id:'x', x:320, y:160, label:'x', color:'red', state:'target', r:30},
+      {id:'p', x:240, y:260, label:'p', color:'amber', r:30},
+      {id:'C', x:400, y:260, label:'C', color:'purple', r:22},
+      {id:'A', x:160, y:340, label:'A', color:'purple', r:22},
+      {id:'B', x:320, y:340, label:'B', color:'purple', r:22},
+      {id:'D', x:540, y:160, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'g',to:'x',state:'path'},{from:'g',to:'D'},{from:'x',to:'p',state:'new'},{from:'x',to:'C'},{from:'p',to:'A'},{from:'p',to:'B',state:'new'}]
+  },
+  {
+    desc: 'Second rotation: rotate x over g (right rotation at g). Now x is the new local root; p is its left child; g is its right child. Subtree C moves from x\u2019s right to g\u2019s left.',
+    nodes: [
+      {id:'x', x:340, y:60,  label:'x', color:'green', state:'target', r:30},
+      {id:'p', x:220, y:160, label:'p', color:'amber', r:30},
+      {id:'g', x:460, y:160, label:'g', color:'amber', r:30},
+      {id:'A', x:160, y:260, label:'A', color:'purple', r:22},
+      {id:'B', x:280, y:260, label:'B', color:'purple', r:22},
+      {id:'C', x:400, y:260, label:'C', color:'purple', r:22},
+      {id:'D', x:540, y:260, label:'D', color:'purple', r:22}
+    ],
+    edges: [{from:'x',to:'p',state:'new'},{from:'x',to:'g',state:'new'},{from:'p',to:'A'},{from:'p',to:'B'},{from:'g',to:'C',state:'new'},{from:'g',to:'D'}],
+    labels: [{x:340, y:320, text:'Zig-zag done: x sits where g was, with p and g as its two children', fs:16, caption:true}]
+  }
+];
+
+// ===== Page wiring =====
+const themeSwitch = document.getElementById('themeSwitch');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
+}
+applyTheme(localStorage.getItem('ca-theme') || 'light');
+themeSwitch.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('ca-theme', next);
+});
+themeSwitch.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeSwitch.click(); }
+});
+
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  if (window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay   = document.getElementById('sidebarOverlay');
+const sidebarEl        = document.getElementById('sidebar');
+
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+});
+
+const sectionIds = ['problem','intuition','visual','formal','observations','algorithm','invariants','proof','complexity','philosophy','master','lineByLine','edges','pitfalls','decision','variants','problems','summary','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector('.navlink[onclick*="\'' + id + '\'"]');
+  if (a) navLinks[id] = a;
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('revealed'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('revealed')); }, 300);
+
+function safeInit(id, frames){
+  try { makeStepper(id, frames); }
+  catch(e){ console.error('stepper init failed for ' + id, e); }
+}
+safeInit('splay-trace',  SPLAY_TRACE_FRAMES);
+safeInit('splay-zig',    SPLAY_ZIG_FRAMES);
+safeInit('splay-zigzig', SPLAY_ZIGZIG_FRAMES);
+safeInit('splay-zigzag', SPLAY_ZIGZAG_FRAMES);
+</script>
+</body>
+</html>

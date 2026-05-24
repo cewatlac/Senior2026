@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Lesson 3 — Iterative Segment Tree · Segment Tree Course</title>
+<style>
+
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:24px; --fs-sm:21px;
+    --fs-h1:50px; --fs-h2:36px; --fs-h3:28px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.4;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:380px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:20px 16px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:24px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 16px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:26px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:12px 4px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:14px 6px 8px;text-transform:uppercase;letter-spacing:.06em;font-size:16px;}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;border:2px solid transparent;font-weight:800;color:var(--text);margin:4px 4px;background:rgba(0,0,0,0);font-size:18px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:14px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:14px;border-left:3px dashed rgba(37,99,235,.35);padding-left:6px;}
+  .sub a{font-weight:700;font-size:17px;padding:8px 10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:12px 16px;border-radius:14px;font-weight:900;cursor:pointer;font-size:20px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .switch{width:60px;height:34px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 8px 18px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:31px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .card h4{margin:14px 0 8px;font-size:22px;color:var(--accent2);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:700;font-size:20px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:7px 11px;border-radius:999px;font-weight:900;font-size:16px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:16px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:18px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:14px 18px 18px;}
+  pre{margin:10px 0 0;background:var(--codebg);color:var(--codetext);border-radius:16px;padding:14px 16px;overflow:auto;border:2px solid rgba(255,255,255,.08);font-size:17px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;margin:14px 0;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:23px;}
+  .diagramTools{display:flex;gap:8px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .miniBtn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.35);color:var(--bad);}
+  svg.treeSvg{width:100%;height:auto;border-radius:16px;background:rgba(0,0,0,0);display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;overflow-x:auto;white-space:pre-wrap;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:3px solid var(--border);margin-top:10px;font-weight:800;font-size:19px;}
+  th,td{padding:10px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;text-align:left;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:44px;height:44px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:20px;height:14px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:380px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:74px;}
+  .statusPanel{border:3px solid var(--border);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:800;}
+  .statusPanel h3{margin:0 0 8px;font-size:22px;color:var(--accent2);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:16px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:18px;padding-top:14px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:13px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:1px 7px;font-size:19px;font-weight:900;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-weight:800;font-size:17px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;background:rgba(2,6,23,.04);padding:6px 10px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  [data-theme="dark"] .legend span{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;pointer-events:none;}
+  .edgeLine{transition:all .25s ease;}
+  .stepLabel{text-align:center;font-weight:900;font-size:18px;color:var(--muted);margin-top:8px;}
+  .arr{display:flex;flex-wrap:wrap;gap:6px;}
+  .arrCell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:48px;flex-direction:column;padding:4px 8px;border-radius:10px;border:2px solid var(--border);background:var(--panel);font-weight:950;font-family:ui-monospace,monospace;font-size:18px;}
+  .arrCell .idx{font-size:12px;color:var(--muted);font-weight:700;}
+  .arrCell.hl{border-color:var(--accent2);background:rgba(37,99,235,.15);box-shadow:0 4px 12px rgba(37,99,235,.18);}
+  .arrCell.upd{border-color:var(--warn);background:rgba(180,83,9,.15);color:var(--warn);}
+  .arrCell.done{border-color:var(--good);background:rgba(15,118,110,.15);color:var(--good);}
+  .kvLine{display:flex;align-items:center;gap:8px;font-family:ui-monospace,monospace;font-size:17px;margin:3px 0;}
+  .kvLine .k{font-weight:900;color:var(--accent2);min-width:80px;}
+  .kvLine .v{font-weight:700;}
+  .twoCol{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:flex-start;}
+  @media(max-width:1100px){.twoCol{grid-template-columns:1fr}}
+  .invariantBox{background:linear-gradient(180deg,rgba(15,118,110,.10),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .invariantBox h4{color:var(--good);margin:0 0 6px;font-size:21px;}
+  .pitfallBox{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .pitfallBox h4{color:var(--bad);margin:0 0 6px;font-size:21px;}
+  .proofBox{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .proofBox h4{color:var(--warn);margin:0 0 6px;font-size:21px;}
+
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🌳</div>
+    <div class="brandTitle">
+      <div class="t1">Segment Tree · L3</div>
+      <div class="t2">Iterative · O(log n) per op</div>
+      <div class="by-line">Coach Academy</div>
+    </div>
+  </div>
+  <nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem">🧩 Problem Definition<small>Same job, no recursion</small></a>
+  <a href="#intuition">💡 Intuition<small>Walk the heap by hand</small></a>
+  <a href="#mental">🌳 Visual Mental Model<small>Leaves at base−1</small></a>
+  <a href="#abstract">📐 Formal Abstraction<small>Heap indexing recap</small></a>
+  <a href="#observations">🔬 Key Observations<small>Parity = direction</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algo">⚙️ Algorithm<small>Build · Update · Query</small></a>
+  <div class="sub">
+  <a href="#trace-build">Build Tracer</a>
+  <a href="#trace-update">Point Update Tracer</a>
+  <a href="#trace-query">Range Query Tracer</a>
+  </div>
+  <a href="#invariants">🛡️ Invariants<small>Parent · Leaf · Pointer</small></a>
+  <a href="#proof">🧮 Proof of Correctness<small>Why L/R sweep works</small></a>
+  <a href="#complexity">⏱ Complexity<small>Time · space</small></a>
+  <div class="groupTitle">Implementation</div>
+  <a href="#template-philosophy">🧰 Template Philosophy<small>Same heap, no recursion</small></a>
+  <a href="#master-code">💻 Master Template<small>Full C++ code</small></a>
+  <a href="#explained">🔎 Line-by-Line<small>Every line explained</small></a>
+  <div class="groupTitle">Variants</div>
+  <a href="#variants">🎛️ Variants & Extensions<small>Min/max/GCD/XOR</small></a>
+  <div class="groupTitle">Reference</div>
+  <a href="#edges">🧯 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls">⚠️ Common Pitfalls<small>Avoid these</small></a>
+  <a href="#decision">🎯 Decision Guide<small>When to use iterative</small></a>
+  <a href="#problems">🚀 Practice Problems<small>VJudge links</small></a>
+  <a href="#summary">🏁 Final Summary<small>Wrap-up</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:42px;height:42px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;">🎓</div>
+    <div class="sf-text">
+      Coach Academy<br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+    </div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:32px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Segment Tree Course</div>
+        <h1>Lesson 3 — Iterative Segment Tree</h1>
+        <div class="subtitle">Non-Recursive · Flat Heap · L/R Pointer Sweep · Compact and Fast</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:18px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+
+    <p>We solve the <b>same</b> problem as Lesson 1 — point update and range query on an array of <code>n</code> elements — but using a <b>non-recursive</b> segment tree built on a single flat array. The reasons to learn this version:</p>
+    <div class="chips">
+      <span class="chip good">Faster constant factor (no function call overhead)</span>
+      <span class="chip good">Smaller code (≈ 25 lines)</span>
+      <span class="chip good">Cache-friendly (array sweep)</span>
+      <span class="chip">Same O(n), O(log n), O(log n) complexities</span>
+    </div>
+    <p class="note" style="margin-top:12px;">The iterative version shines when the operation is associative and simple (sum, min, max, gcd, xor, multiply). Once you need lazy propagation, persistence, dynamic coordinates, or composite nodes that depend on left/right order in a non-commutative way, the recursive version is usually clearer and safer.</p>
+
+  </section>
+
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch</h2>
+
+    <p>The recursive version processes one node by descending into both children. The iterative version flips the direction: it <b>starts at the two leaves</b> <code>l</code> and <code>r</code>, and walks <b>upward</b>, harvesting the right nodes as it climbs.</p>
+    <p>Think of the leaves as a row of array cells. The query interval <code>[l, r]</code> sits as a horizontal stripe across the bottom. As we climb, two pointers (one starting at <code>l</code>, one at <code>r</code>) move toward each other. At every level we check a simple parity rule:</p>
+    <div class="grid2">
+      <div class="invariantBox">
+        <h4>✅ Left pointer rule</h4>
+        <p>If <code>L</code> is a <b>right child</b>, its left sibling is outside our range, so we must take <code>tree[L]</code> on its own and then move past it (<code>L++</code>).</p>
+        <p>In 0-based heap indexing, right children have <b>even</b> indices, so the check is <code>(L &amp; 1) == 0</code>.</p>
+      </div>
+      <div class="invariantBox">
+        <h4>✅ Right pointer rule</h4>
+        <p>If <code>R</code> is a <b>left child</b>, its right sibling is outside our range, so we must take <code>tree[R]</code> on its own and then move past it (<code>R--</code>).</p>
+        <p>In 0-based heap indexing, left children have <b>odd</b> indices, so the check is <code>(R &amp; 1) == 1</code>.</p>
+      </div>
+    </div>
+    <p>After harvesting where needed, both pointers move to their parents: <code>L = (L−1)/2</code>, <code>R = (R−1)/2</code>. They keep climbing until <code>L &gt; R</code>.</p>
+
+  </section>
+
+  <section class="card" id="mental">
+    <h2>🌳 Visual Mental Model</h2>
+
+    <p>With <code>n = 5</code>, we round up to <code>base = 8</code>, so the tree has <code>2·base − 1 = 15</code> used nodes. Leaves start at index <code>leaf0 = base − 1 = 7</code>:</p>
+    <div class="dsBox">leaf0 = 7
+
+a[0] → tree[7]
+a[1] → tree[8]
+a[2] → tree[9]
+a[3] → tree[10]
+a[4] → tree[11]
+       tree[12], tree[13], tree[14]  ← padded leaves (identity)</div>
+    <p>So <b>array position <code>p</code> lives at tree index <code>leaf0 + p</code></b>. The internal nodes <code>tree[0..6]</code> hold the recursively merged values, exactly the same heap structure as the recursive version — only this time we never recurse into it; we just index into it.</p>
+
+  </section>
+
+  <section class="card" id="abstract">
+    <h2>📐 Formal Abstraction</h2>
+
+    <p>The tree uses the same 0-based heap indexing as Lesson 1:</p>
+    <div class="dsBox">root  = 0
+left  = 2i + 1     (always ODD)
+right = 2i + 2     (always EVEN)
+parent(i) = (i − 1) / 2     for i ≥ 1
+leaf0 = base − 1
+tree size = 2 · base</div>
+    <p>Parity is the engine of this version. Because left children are odd and right children are even, the parity of a node's index tells us whether its sibling is to its left or to its right — and that's what decides whether we have to harvest it before climbing.</p>
+    <div class="invariantBox">
+      <h4>✅ Parity rule (cheat sheet)</h4>
+      <p>Index parity ↔ direction:</p>
+      <p>• <code>i</code> odd  → <code>i</code> is a <b>left</b> child, sibling is on the right (<code>i+1</code>).</p>
+      <p>• <code>i</code> even → <code>i</code> is a <b>right</b> child, sibling is on the left (<code>i−1</code>).</p>
+    </div>
+
+  </section>
+
+  <section class="card" id="observations">
+    <h2>🔬 Key Observations</h2>
+
+    <p>Three observations make the iterative sweep work.</p>
+    <p><b>Observation 1.</b> Every internal value can be recomputed from its two children. So after writing a single leaf, we only need to walk up the path and re-merge each parent — <code>O(log n)</code> work.</p>
+    <p><b>Observation 2.</b> For a query <code>[l, r]</code>, the leaves <code>leaf0+l</code> and <code>leaf0+r</code> bracket the answer. At every level we ask: "Are my pointer's siblings inside the range?" If yes, climbing the parent already covers everything. If not, we must harvest the pointer node first and shift past it.</p>
+    <p><b>Observation 3.</b> The pointers meet after at most <code>log₂(base)</code> levels — the height of the tree — so the whole sweep is <code>O(log n)</code>.</p>
+
+  </section>
+
+  <section class="card" id="algo">
+    <h2>⚙️ Algorithm</h2>
+
+    <h3>Build (bottom-up)</h3>
+    <p>Place all <code>n</code> values at leaves <code>tree[leaf0..leaf0+n−1]</code>. Pad the rest with identity. Then sweep <code>i</code> from <code>leaf0−1</code> down to <code>0</code> and set <code>tree[i] = merge(tree[2i+1], tree[2i+2])</code>. <b>O(n)</b> total.</p>
+    <h3>Point update</h3>
+    <p>Set <code>tree[leaf0 + pos] = value</code>. Then walk up: <code>i = (i−1)/2</code> while <code>i ≥ 0</code>, re-merging from children at each step. <b>O(log n)</b>.</p>
+    <h3>Range query</h3>
+    <p>Start with <code>L = leaf0 + l</code>, <code>R = leaf0 + r</code>. Two accumulators: <code>left_answer</code> (grows by appending on the right) and <code>right_answer</code> (grows by appending on the left). While <code>L ≤ R</code>:</p>
+    <ol>
+      <li>If <code>L &amp; 1 == 0</code>, then <code>L</code> is a right child whose left sibling is outside the range — absorb <code>tree[L]</code> into <code>left_answer</code> and do <code>L++</code>.</li>
+      <li>If <code>R &amp; 1 == 1</code>, then <code>R</code> is a left child whose right sibling is outside the range — absorb <code>tree[R]</code> into <code>right_answer</code> (prepended) and do <code>R--</code>.</li>
+      <li>If <code>L &gt; R</code> after these adjustments, break.</li>
+      <li>Climb: <code>L = (L−1)/2</code>, <code>R = (R−1)/2</code>.</li>
+    </ol>
+    <p>Final answer is <code>merge(left_answer, right_answer)</code>. <b>O(log n)</b>.</p>
+
+  </section>
+
+  <section class="card" id="trace-build">
+    <h2>🧪 Tracer 1 — Bottom-Up Build</h2>
+
+    <p>The flat array <code>a</code> is <code>[2, 1, 5, 3, 4, 7, 6, 8]</code>, so <code>n = 8</code>, <code>base = 8</code>, <code>leaf0 = 7</code>. The eight leaves load directly into <code>tree[7..14]</code>. Then we sweep <code>i</code> from <code>6</code> down to <code>0</code>, each time setting <code>tree[i] = tree[2i+1] + tree[2i+2]</code>. Watch how the right-to-left, bottom-up order guarantees children are always ready before their parent is computed.</p>
+<div class="diagramWrap">
+  <div class="diagramHeader">
+    <span class="diagramTitle">Build Tracer — Bottom-Up Sum</span>
+    <div class="diagramTools"><button class="miniBtn" id="bBuildReset">↺ Reset</button>
+                <button class="miniBtn" id="bBuildPrev">‹ Prev</button>
+                <button class="miniBtn" id="bBuildNext">Next ›</button>
+                <button class="miniBtn" id="bBuildAuto">▶ Auto</button></div>
+  </div>
+  <div class="twoCol">
+        <svg class="treeSvg" id="bBuildSvg" viewBox="0 0 900 460"></svg>
+        <div>
+          <div class="statusPanel"><h3>Current Step</h3><div id="bBuildStatus">–</div></div>
+          <div class="statusPanel" style="margin-top:10px;"><h3>Flat Array tree[ ]</h3><div class="arr" id="bBuildFlat"></div></div>
+        </div>
+      </div>
+  <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.30)"></span>Current write</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Already done</span>
+        <span><span class="swatch" style="background:rgba(37,99,235,.08)"></span>Leaf</span>
+      </div>
+  <div class="stepLabel" id="bBuildStep"></div>
+</div>
+
+  </section>
+
+  <section class="card" id="trace-update">
+    <h2>🧪 Tracer 2 — Point Update (climb to root)</h2>
+
+    <p>Pick a position and a new value. The update rewrites the leaf, then walks up <code>i = (i−1)/2</code> until reaching the root, re-merging from children at every step. Notice that the iterative version only ever touches <b>one path</b>, no other nodes — that's why it's the fastest variant for pure point updates.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Point Update Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">pos
+            <input id="iuPos" type="number" min="0" max="7" value="3" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;">
+          </label>
+          <label class="pill">value
+            <input id="iuVal" type="number" value="10" style="width:70px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;">
+          </label>
+          <button class="miniBtn primary" id="iuRun">⚡ Run</button>
+          <button class="miniBtn" id="iuReset">↺ Reset</button>
+          <button class="miniBtn" id="iuPrev">‹ Prev</button>
+          <button class="miniBtn" id="iuNext">Next ›</button>
+          <button class="miniBtn" id="iuAuto">▶ Auto</button>
+        </div>
+      </div>
+      <div class="twoCol">
+        <svg class="treeSvg" id="iuSvg" viewBox="0 0 900 460"></svg>
+        <div>
+          <div class="statusPanel"><h3>Path</h3><div id="iuStatus">–</div></div>
+          <div class="statusPanel" style="margin-top:10px;"><h3>Array</h3><div class="arr" id="iuArr"></div></div>
+        </div>
+      </div>
+      <div class="stepLabel" id="iuStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="trace-query">
+    <h2>🧪 Tracer 3 — Range Query with L/R Sweep</h2>
+
+    <p>This is the marquee animation of the iterative segment tree. Two pointers <code>L</code> and <code>R</code> start at the leaves <code>leaf0+l</code> and <code>leaf0+r</code>. At every level, the parity rule decides whether each pointer has to harvest its own node before climbing. Try queries that span only the right half, only the middle, or the whole array — the harvest pattern is very different in each case.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">L/R Sweep Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">ql
+            <input id="iqL" type="number" min="0" max="7" value="2" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;">
+          </label>
+          <label class="pill">qr
+            <input id="iqR" type="number" min="0" max="7" value="6" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;">
+          </label>
+          <button class="miniBtn primary" id="iqRun">⚡ Run</button>
+          <button class="miniBtn" id="iqReset">↺ Reset</button>
+          <button class="miniBtn" id="iqPrev">‹ Prev</button>
+          <button class="miniBtn" id="iqNext">Next ›</button>
+          <button class="miniBtn" id="iqAuto">▶ Auto</button>
+        </div>
+      </div>
+      <div class="twoCol">
+        <svg class="treeSvg" id="iqSvg" viewBox="0 0 900 480"></svg>
+        <div>
+          <div class="statusPanel">
+            <h3>Pointers</h3>
+            <div class="kvLine"><span class="k">L</span><span class="v" id="iqLval">–</span></div>
+            <div class="kvLine"><span class="k">R</span><span class="v" id="iqRval">–</span></div>
+            <div class="kvLine"><span class="k">left_ans</span><span class="v" id="iqLA">0</span></div>
+            <div class="kvLine"><span class="k">right_ans</span><span class="v" id="iqRA">0</span></div>
+            <div class="kvLine"><span class="k">total</span><span class="v" id="iqTotal">0</span></div>
+          </div>
+          <div class="statusPanel" style="margin-top:10px;"><h3>Step</h3><div id="iqStatus">–</div></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.30)"></span>Pointer position</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Harvested</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.18)"></span>Climbing through</span>
+      </div>
+      <div class="stepLabel" id="iqStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="invariants">
+    <h2>🛡️ Invariants</h2>
+
+<div class="invariantBox"><h4>✅ Invariant — Leaf invariant</h4><p><code>tree[leaf0 + p]</code> always equals the current value of <code>a[p]</code> for every <code>0 ≤ p &lt; n</code>. Padded leaves <code>tree[leaf0 + n .. 2·base − 2]</code> always hold identity.</p></div><div class="invariantBox"><h4>✅ Invariant — Parent invariant</h4><p>For every internal node <code>i</code> (<code>i &lt; leaf0</code>), <code>tree[i] = merge(tree[2i+1], tree[2i+2])</code> at all times outside the middle of an update.</p></div><div class="invariantBox"><h4>✅ Invariant — Pointer-sweep invariant</h4><p>During a query, after processing level <code>k</code>, the accumulators <code>left_answer</code> and <code>right_answer</code> together contain exactly the merge of the original query interval <b>up to but not including</b> the subranges still covered by <code>[L, R]</code> at the next level.</p></div>
+  </section>
+
+  <section class="card" id="proof">
+    <h2>🧮 Proof of Correctness</h2>
+<div class="proofBox"><h4>🧮 Proof — Why the L/R sweep returns the exact range merge</h4>
+    <p>Define <code>covered(L, R)</code> as the leaves currently in the conceptual interval bounded by pointers <code>L</code> and <code>R</code> at the present level. Initially <code>L = leaf0 + l</code>, <code>R = leaf0 + r</code>, so <code>covered(L, R)</code> equals exactly the query leaves <code>[l, r]</code>.</p>
+    <p><b>Claim.</b> After each iteration of the loop, the merged contribution we have to still account for is exactly the union of <code>covered(L, R)</code> at the new level plus the leaves already accumulated in <code>left_answer ∪ right_answer</code>, with no double-counting.</p>
+    <p><b>Proof.</b> If <code>L</code> is a right child, climbing its parent would include leaves to the left of <code>L</code> that are <b>outside</b> the original query — so we must harvest <code>tree[L]</code> first (these are the leaves under <code>L</code>, all inside the query) and shift <code>L++</code> past its parent. Symmetric argument for <code>R</code> being a left child. After both adjustments, <code>L</code> and <code>R</code> are exactly the boundary children needed for the parent level. Climb is the recursive step. ∎</p>
+    <p><b>Termination.</b> Each level halves the height; after <code>log₂(base)</code> climbs, the pointers meet or cross and the loop ends.</p>
+</div>
+  </section>
+
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+
+    <table>
+      <tr><th>Operation</th><th>Time</th><th>Memory</th><th>Note</th></tr>
+      <tr><td>Build</td><td>Θ(n)</td><td>Θ(n)</td><td>One pass over <code>tree[0..leaf0]</code></td></tr>
+      <tr><td>Point update</td><td>Θ(log n)</td><td>—</td><td>Single climb</td></tr>
+      <tr><td>Range query</td><td>Θ(log n)</td><td>—</td><td>Two-pointer climb, ≤ 2·height iterations</td></tr>
+    </table>
+    <p class="note">Constant factor is roughly <b>2–4×</b> faster than the recursive version on dense inputs, thanks to better cache locality and no function-call overhead. This matters in problems where <code>n, q</code> are both <code>≥ 10⁶</code> and the operation per node is trivial.</p>
+
+  </section>
+
+  <section class="card" id="template-philosophy">
+    <h2>🧰 Core Template Philosophy</h2>
+
+    <p>This template keeps the same 0-based heap convention as Lesson 1, the same <code>base</code> rule, and the same <code>merge_values</code> hook — only the body of <code>build</code>, <code>point_set</code>, <code>query</code> changes. You can swap <b>sum ↔ min ↔ max ↔ gcd ↔ xor</b> by changing only:</p>
+    <div class="chips">
+      <span class="chip">the <code>ID</code> constant</span>
+      <span class="chip">the static <code>merge_values</code> function</span>
+    </div>
+    <p>For non-commutative merges (e.g. matrix multiplication, polynomial chains) you <b>must</b> preserve order: in the loop, <code>left_answer</code> grows on the right side and <code>right_answer</code> grows on the left side. The final return is <code>merge(left_answer, right_answer)</code> — never swap that order.</p>
+
+  </section>
+
+  <section class="card" id="master-code">
+    <h2>💻 Master Template (C++)</h2>
+
+    <p>Verbatim template from the course notes:</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct IterativeSumSegTree {
+    using T = long long;
+
+    static constexpr T ID = 0;
+
+    int n = 0;
+    int base = 1;
+    int leaf0 = 0;
+    vector&lt;T&gt; tree;
+
+    IterativeSumSegTree() {}
+
+    IterativeSumSegTree(const vector&lt;T&gt;&amp; a) {
+        init(a);
+    }
+
+    static T merge_values(T a, T b) {
+        return a + b;
+    }
+
+    void init(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+
+        base = 1;
+        while (base &lt; max(1, n)) {
+            base &lt;&lt;= 1;
+        }
+
+        leaf0 = base - 1;
+        tree.assign(2 * base, ID);
+
+        for (int i = 0; i &lt; n; i++) {
+            tree[leaf0 + i] = a[i];
+        }
+
+        for (int i = leaf0 - 1; i &gt;= 0; i--) {
+            tree[i] = merge_values(tree[2 * i + 1], tree[2 * i + 2]);
+        }
+    }
+
+    void point_set(int pos, T value) {
+        int i = leaf0 + pos;
+        tree[i] = value;
+
+        while (i &gt; 0) {
+            i = (i - 1) / 2;
+            tree[i] = merge_values(tree[2 * i + 1], tree[2 * i + 2]);
+        }
+    }
+
+    T query(int l, int r) const {
+        int L = leaf0 + l;
+        int R = leaf0 + r;
+
+        T left_answer = ID;
+        T right_answer = ID;
+
+        while (L &lt;= R) {
+            if ((L &amp; 1) == 0) {
+                left_answer = merge_values(left_answer, tree[L]);
+                L++;
+            }
+
+            if ((R &amp; 1) == 1) {
+                right_answer = merge_values(tree[R], right_answer);
+                R--;
+            }
+
+            if (L &gt; R) {
+                break;
+            }
+
+            L = (L - 1) / 2;
+            R = (R - 1) / 2;
+        }
+
+        return merge_values(left_answer, right_answer);
+    }
+};</code></pre>
+  </section>
+
+  <section class="card" id="explained">
+    <h2>🔎 Line-by-Line Explanation</h2>
+<details open>
+  <summary>init(a) — bottom-up build <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p><code>base</code> is rounded up to a power of two so every leaf has a real heap index. <code>leaf0 = base − 1</code> is the index of <code>a[0]</code>. We fill the first <code>n</code> leaf positions with input values; the remaining padded leaves keep their identity (<code>0</code>). The downward loop <code>for i = leaf0 − 1; i ≥ 0; i--</code> visits internal nodes in reverse-BFS order, so by the time we touch node <code>i</code>, both children <code>2i+1</code> and <code>2i+2</code> are already finalized. This is a key reason the build is <code>O(n)</code> with no recursion.</p>
+  </div>
+</details>
+<details open>
+  <summary>point_set(pos, value) — climb the path <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>We jump straight to the leaf at <code>leaf0 + pos</code>, overwrite it, and then move to its parent using the integer formula <code>(i − 1) / 2</code>. Each parent's value depends only on its two children, so we re-merge them and continue climbing. The loop terminates when <code>i</code> becomes 0 (we still re-merge the root) and then <code>i</code> would become <code>-1</code>; we use <code>while (i &gt; 0)</code> before the climb to keep the parent index meaningful.</p>
+  </div>
+</details>
+<details open>
+  <summary>query(l, r) — the L/R sweep <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>We position <code>L</code> and <code>R</code> at the two end leaves. Two accumulators are needed because for non-commutative merges, contributions from <code>L</code> belong on the <b>right side</b> of <code>left_answer</code> and contributions from <code>R</code> belong on the <b>left side</b> of <code>right_answer</code>. After each level's harvest, we test <code>L &gt; R</code> early to avoid a needless climb when the two pointers have already met. The final return merges the two accumulators in the unique correct order.</p>
+  </div>
+</details>
+
+  </section>
+
+  <section class="card" id="edges">
+    <h2>🧯 Edge Cases (Centralized)</h2>
+
+    <table>
+      <tr><th>Case</th><th>What happens</th><th>Why it works</th></tr>
+      <tr><td><code>n = 1</code></td><td><code>base = 1</code>, <code>leaf0 = 0</code></td><td>Tree has one node; query loop runs zero times if <code>l = r</code></td></tr>
+      <tr><td><code>n</code> not a power of 2</td><td>Padded leaves hold identity</td><td>Identity contributes nothing to the merge</td></tr>
+      <tr><td><code>query(0, n − 1)</code></td><td>Pointers meet quickly at the root or near it</td><td>Both pointers harvest their boundary on early levels then climb together</td></tr>
+      <tr><td>Single-element query</td><td><code>L = R</code> from the start; first iteration harvests <code>tree[L]</code> then either <code>L &gt; R</code> breaks or both pointers climb past each other</td><td>The parity rules + the <code>L &gt; R</code> early exit handle this without special-casing</td></tr>
+      <tr><td>Update first element</td><td><code>tree[leaf0]</code>, then climb to root</td><td>Same path-of-length-<code>log n</code></td></tr>
+      <tr><td>Update last padded slot</td><td>Don't! Iterate <code>0 ≤ pos &lt; n</code></td><td>Padded leaves are identity by contract</td></tr>
+      <tr><td>Negative values</td><td>Sum tree works; for min/max, set <code>ID</code> appropriately</td><td>Identity is operation-specific</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+<div class="pitfallBox"><h4>⚠️ Pitfall — Wrong identity for non-sum operations</h4><p>For <b>min</b>, use <code>LLONG_MAX</code> or a sentinel. For <b>max</b>, use <code>LLONG_MIN</code>. For <b>gcd</b>, use <code>0</code> (since <code>gcd(x, 0) = x</code>). For <b>xor</b>, use <code>0</code>. Using <code>0</code> as identity for min would make every query return 0.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Off-by-one on parity</h4><p>The rule for <b>0-based</b> heap is: <code>L &amp; 1 == 0</code> means <code>L</code> is a right child, <code>R &amp; 1 == 1</code> means <code>R</code> is a left child. If you copy code from a tutorial that uses <b>1-based</b> heap, the parity is inverted and the tree breaks silently.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Wrong order in final merge</h4><p>For commutative operations (sum, min, max, gcd, xor) the order doesn't matter. For non-commutative operations (matrix product, polynomial chain), the final return <b>must</b> be <code>merge(left_answer, right_answer)</code> — never the reverse.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Climbing past the root</h4><p>The update loop uses <code>while (i &gt; 0)</code> and computes <code>i = (i − 1) / 2</code> first. Don't replace it with <code>while (i &gt;= 0)</code> — when <code>i = 0</code>, <code>(0 − 1) / 2 = 0</code> in C++ (integer division truncates toward zero), which produces an infinite loop.</p></div>
+  </section>
+
+  <section class="card" id="decision">
+    <h2>🎯 Decision Guide</h2>
+
+    <table>
+      <tr><th>Symptom</th><th>Suggested choice</th><th>Reason</th></tr>
+      <tr><td>Pure point update + range query, simple operation</td><td><b>Iterative</b></td><td>Fastest constant, smallest code</td></tr>
+      <tr><td>Range update with lazy tag</td><td>Recursive lazy (Lesson 4)</td><td>Push-before-recurse needs the recursive frame</td></tr>
+      <tr><td>Persistence / kth in range</td><td>Recursive persistent (Lesson 5)</td><td>Iterative is incompatible with path copying</td></tr>
+      <tr><td>Composite node (max subarray etc.)</td><td>Recursive (Lesson 2)</td><td>Iterative also possible but the merge order discipline is error-prone</td></tr>
+      <tr><td>Huge coordinates</td><td>Dynamic sparse (Lesson 7)</td><td>Iterative needs a dense pre-allocated array</td></tr>
+    </table>
+    <h4>Quick reflex</h4>
+    <p class="note">If the problem says "no updates" → use a sparse table instead. If the problem says "point update + simple aggregate" → iterative. Anything else → start from the recursive base.</p>
+
+  </section>
+
+  <section class="card" id="variants">
+    <h2>🎛️ Variants &amp; Extensions</h2>
+
+    <p>The iterative skeleton stays identical; only the constants and the merge function change.</p>
+    <h3>Variant 1 — Range minimum</h3>
+    <div class="dsBox">static constexpr T ID = LLONG_MAX;
+static T merge_values(T a, T b) { return min(a, b); }</div>
+    <h3>Variant 2 — Range maximum</h3>
+    <div class="dsBox">static constexpr T ID = LLONG_MIN;
+static T merge_values(T a, T b) { return max(a, b); }</div>
+    <h3>Variant 3 — Range GCD</h3>
+    <div class="dsBox">static constexpr T ID = 0;
+static T merge_values(T a, T b) { return std::gcd(a, b); }</div>
+    <h3>Variant 4 — Range XOR</h3>
+    <div class="dsBox">static constexpr T ID = 0;
+static T merge_values(T a, T b) { return a ^ b; }</div>
+    <h3>Variant 5 — Range product modulo p</h3>
+    <div class="dsBox">static constexpr T ID = 1;
+static T merge_values(T a, T b) { return (long long)a * b % MOD; }</div>
+
+  </section>
+
+  <section class="card" id="problems">
+    <h2>🚀 Practice Problems (VJudge)</h2>
+
+    <table>
+      <tr><th>Level</th><th>Problem</th><th>Link</th><th>What it teaches</th></tr>
+      <tr><td>Easy</td><td>CSES — Static Range Sum Queries</td><td><a href="https://vjudge.net/problem/CSES-1646" target="_blank">CSES-1646</a></td><td>Build only, queries only — perfect first iterative segtree</td></tr>
+      <tr><td>Medium</td><td>CSES — Dynamic Range Sum Queries</td><td><a href="https://vjudge.net/problem/CSES-1648" target="_blank">CSES-1648</a></td><td>Point update + range sum, classic iterative target</td></tr>
+      <tr><td>Medium</td><td>CSES — Dynamic Range Minimum Queries</td><td><a href="https://vjudge.net/problem/CSES-1649" target="_blank">CSES-1649</a></td><td>Same with min; swap identity</td></tr>
+      <tr><td>Medium</td><td>SPOJ — RMQSQ</td><td><a href="https://vjudge.net/problem/SPOJ-RMQSQ" target="_blank">SPOJ-RMQSQ</a></td><td>Static range min</td></tr>
+      <tr><td>Medium</td><td>Codeforces 339D — XOR-XOR-XOR</td><td><a href="https://vjudge.net/problem/CodeForces-339D" target="_blank">CF-339D</a></td><td>Non-trivial merge function with iterative tree</td></tr>
+      <tr><td>Hard</td><td>SPOJ — GSS3</td><td><a href="https://vjudge.net/problem/SPOJ-GSS3" target="_blank">SPOJ-GSS3</a></td><td>Composite-node iterative tree (challenge mode)</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="summary">
+    <h2>🏁 Final Summary</h2>
+
+    <p>The iterative segment tree is the <b>same idea as Lesson 1</b>, expressed as a tight loop over a flat array. The build runs bottom-up in a single sweep, the point update climbs one path, and the range query walks two pointers upward, using parity to decide what to harvest before each climb.</p>
+    <div class="chips">
+      <span class="chip good">Smallest code</span>
+      <span class="chip good">Fastest constant factor</span>
+      <span class="chip">Best for simple associative operations</span>
+      <span class="chip warn">Awkward for lazy/persistent/dynamic</span>
+    </div>
+    <p>Once the parity rule clicks, this version becomes a 25-line reflex that's hard to write incorrectly. Use it as your default for contests that ask for point updates and a simple merge.</p>
+
+  </section>
+
+
+  <div class="page-footer">
+    <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Segment Tree Course · Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">Iterative Segment Tree · L/R Pointer Sweep · Compact and Fast</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+
+// ============================================================
+// DOM + SVG HELPERS
+// ============================================================
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function clearEl(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function makeEl(tag, attrs={}, html=''){
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if(html) el.innerHTML = html;
+  return el;
+}
+function makeSVG(tag, attrs={}){
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+function getCssVar(name){
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+// ============================================================
+// THEME TOGGLE (with localStorage persistence)
+// ============================================================
+(function(){
+  const KEY = 'segtree_theme';
+  const saved = localStorage.getItem(KEY);
+  if(saved) document.body.setAttribute('data-theme', saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme', 'dark');
+  }
+  const sw = $('#themeSwitch');
+  if(sw){
+    sw.setAttribute('role','switch');
+    sw.setAttribute('aria-checked', document.body.getAttribute('data-theme')==='dark' ? 'true':'false');
+    sw.onclick = () => {
+      const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem(KEY, next);
+      sw.setAttribute('aria-checked', next==='dark'?'true':'false');
+      // Notify any tree drawers to re-render colors
+      document.dispatchEvent(new CustomEvent('segtree:themechange'));
+    };
+  }
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+(function(){
+  const toggle = $('#sidebarToggle');
+  const sidebar = $('#sidebar');
+  const appEl = $('#app');
+  const overlay = $('#sidebarOverlay');
+  if(!toggle || !sidebar || !appEl) return;
+  let open = window.innerWidth > 1400;
+  function apply(){
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      overlay.classList.remove('show');
+      if(window.innerWidth > 1400) appEl.classList.remove('sidebar-hidden');
+    } else {
+      appEl.classList.add('sidebar-hidden');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+  }
+  if(!open) appEl.classList.add('sidebar-hidden');
+  apply();
+  toggle.setAttribute('aria-controls','sidebar');
+  toggle.onclick = () => {
+    open = !open;
+    if(open && window.innerWidth <= 1400){
+      sidebar.classList.remove('collapsed');
+      overlay.classList.add('show');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    } else {
+      apply();
+    }
+  };
+  overlay.onclick = () => {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    open = false;
+  };
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      overlay.click();
+    }
+  });
+})();
+
+// ============================================================
+// SCROLL-BASED NAV HIGHLIGHTING
+// ============================================================
+(function(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  function update(){
+    let cur = '';
+    sections.forEach(s => {
+      if(s.getBoundingClientRect().top < 200) cur = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  const contentEl = $('.content');
+  if(contentEl) contentEl.addEventListener('scroll', update);
+  update();
+})();
+
+// ============================================================
+// SEGMENT TREE LAYOUT (0-based heap indexing)
+//   left  = 2*i + 1
+//   right = 2*i + 2
+// Returns a list { x, y, r } for each node, plus tree dimensions.
+// ============================================================
+function computeSegTreeLayout(base, opts={}){
+  // base must be a power of 2. Tree has 2*base - 1 nodes.
+  const levels = Math.log2(base) + 1;
+  const W = opts.width || 880;
+  const H = opts.height || (levels * 95 + 30);
+  const radius = opts.radius || Math.max(18, Math.min(34, 280 / base));
+  const layout = [];
+  function rec(i, depth, l, r){
+    layout[i] = { i, depth, l, r };
+    if(l === r) return;
+    const left = 2*i + 1, right = left + 1;
+    const mid = l + ((r - l) >> 1);
+    rec(left, depth+1, l, mid);
+    rec(right, depth+1, mid+1, r);
+  }
+  rec(0, 0, 0, base-1);
+  // Now assign x coordinates using leaf positions
+  const leafCount = base;
+  const leafGap = (W - 40) / leafCount;
+  let leafIdx = 0;
+  function place(i){
+    const node = layout[i];
+    if(node.l === node.r){
+      node.x = 20 + leafGap * (leafIdx + 0.5);
+      leafIdx++;
+    } else {
+      const left = 2*i + 1, right = left + 1;
+      place(left); place(right);
+      node.x = (layout[left].x + layout[right].x) / 2;
+    }
+    node.y = 30 + node.depth * ((H - 60) / Math.max(1, levels - 1));
+    node.rad = radius;
+  }
+  place(0);
+  return { layout, width: W, height: H, levels, radius };
+}
+
+// ============================================================
+// SEGMENT TREE SVG DRAWER
+// Highlight categories:
+//   current      - the node we are currently processing (blue strong)
+//   visited      - already touched in this step (light blue)
+//   full         - fully covered by query (green - return)
+//   partial      - partial overlap (orange - recurse)
+//   none         - no overlap (red dashed - skip)
+//   updated      - just changed by an update (warn fill)
+//   lazyPending  - has pending lazy tag (yellow ring)
+//   cloned       - newly cloned node (purple fill)
+//   frozen       - belongs to an old persistent version (gray dashed)
+// ============================================================
+function drawSegTree(svgSel, opts){
+  const svg = (typeof svgSel === 'string') ? $(svgSel) : svgSel;
+  clearEl(svg);
+  const { base, nodes, highlights={}, queryRange=null, arrLabels=null } = opts;
+  const layoutOpts = { width: opts.width || 880, height: opts.height || 0, radius: opts.radius };
+  const L = computeSegTreeLayout(base, layoutOpts);
+  svg.setAttribute('viewBox', `0 0 ${L.width} ${L.height}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  // Draw edges first
+  L.layout.forEach(nd => {
+    if(nd.l === nd.r) return;
+    const leftI = 2*nd.i + 1, rightI = leftI + 1;
+    [leftI, rightI].forEach(child => {
+      const c = L.layout[child];
+      const lineCol = getCssVar('--border');
+      const ln = makeSVG('line', {
+        x1: nd.x, y1: nd.y, x2: c.x, y2: c.y,
+        stroke: lineCol, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+        class: 'edgeLine'
+      });
+      svg.appendChild(ln);
+    });
+  });
+
+  // Draw nodes
+  L.layout.forEach(nd => {
+    const h = highlights[nd.i] || 'idle';
+    let fill = 'var(--panel)';
+    let stroke = getCssVar('--border');
+    let sw = 3;
+    let dasharray = '';
+    switch(h){
+      case 'current':  fill = 'rgba(37,99,235,.30)'; stroke = getCssVar('--accent2'); sw = 5; break;
+      case 'visited':  fill = 'rgba(37,99,235,.10)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'full':     fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 5; break;
+      case 'partial':  fill = 'rgba(180,83,9,.18)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'none':     fill = 'rgba(185,28,28,.12)'; stroke = getCssVar('--bad'); sw = 3; dasharray='6,5'; break;
+      case 'updated':  fill = 'rgba(180,83,9,.22)'; stroke = getCssVar('--warn'); sw = 5; break;
+      case 'lazyPending': fill='rgba(180,83,9,.10)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'cloned':   fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 5; break;
+      case 'frozen':   fill = 'rgba(120,120,120,.12)'; stroke = getCssVar('--muted'); sw = 2.5; dasharray='4,4'; break;
+      case 'leaf':     fill = 'rgba(37,99,235,.08)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'kth-left': fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 4; break;
+      case 'kth-right':fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 4; break;
+    }
+    const attrs = {
+      cx: nd.x, cy: nd.y, r: nd.rad,
+      fill, stroke, 'stroke-width': sw,
+      class: 'nodeCircle'
+    };
+    if(dasharray) attrs['stroke-dasharray'] = dasharray;
+    svg.appendChild(makeSVG('circle', attrs));
+
+    // Index label (small, above)
+    const idxLab = makeSVG('text', {
+      x: nd.x, y: nd.y - nd.rad - 4,
+      'text-anchor':'middle','font-size':'11','font-weight':'700',
+      fill: getCssVar('--muted'), 'pointer-events':'none'
+    });
+    idxLab.textContent = `i=${nd.i}`;
+    svg.appendChild(idxLab);
+
+    // Interval label inside
+    const intervalLab = makeSVG('text', {
+      x: nd.x, y: nd.y - 3,
+      'text-anchor':'middle','font-size': nd.rad >= 26 ? '13' : '11', 'font-weight':'900',
+      fill: getCssVar('--text'), 'pointer-events':'none'
+    });
+    intervalLab.textContent = `[${nd.l},${nd.r}]`;
+    svg.appendChild(intervalLab);
+
+    // Node value (passed in nodes[i])
+    const v = nodes ? nodes[nd.i] : undefined;
+    if(v !== undefined && v !== null){
+      const valLab = makeSVG('text', {
+        x: nd.x, y: nd.y + 14,
+        'text-anchor':'middle','font-size': nd.rad >= 26 ? '15' : '12','font-weight':'950',
+        fill: h === 'current' ? getCssVar('--accent2') :
+              h === 'updated' ? getCssVar('--warn') :
+              h === 'full'    ? getCssVar('--good') :
+              getCssVar('--text'),
+        'pointer-events':'none'
+      });
+      valLab.textContent = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      svg.appendChild(valLab);
+    }
+  });
+
+  // Optional: query range bar at top
+  if(queryRange){
+    const [ql, qr] = queryRange;
+    const leafLayer = L.layout.filter(n => n.l === n.r);
+    if(leafLayer.length){
+      const lx = leafLayer[ql] ? leafLayer[ql].x : null;
+      const rx = leafLayer[qr] ? leafLayer[qr].x : null;
+      if(lx !== null && rx !== null){
+        const y = L.layout[L.layout.length-1].y + L.radius + 16;
+        svg.appendChild(makeSVG('line', {
+          x1: lx - L.radius, y1: y, x2: rx + L.radius, y2: y,
+          stroke: getCssVar('--accent2'), 'stroke-width': 5, 'stroke-linecap':'round'
+        }));
+        const t = makeSVG('text', {
+          x: (lx+rx)/2, y: y+20, 'text-anchor':'middle','font-size':'14','font-weight':'900',
+          fill: getCssVar('--accent2')
+        });
+        t.textContent = `query [${ql}, ${qr}]`;
+        svg.appendChild(t);
+      }
+    }
+  }
+
+  return L;
+}
+
+// ============================================================
+// HORIZONTAL ARRAY DRAWER
+// nodes: array of values; highlights: index -> class ('hl','upd','done')
+// ============================================================
+function drawArray(containerSel, values, opts={}){
+  const c = (typeof containerSel === 'string') ? $(containerSel) : containerSel;
+  if(!c) return;
+  clearEl(c);
+  c.classList.add('arr');
+  const highlights = opts.highlights || {};
+  const showIdx = opts.showIdx !== false;
+  values.forEach((v, i) => {
+    const cls = highlights[i] ? ('arrCell '+highlights[i]) : 'arrCell';
+    const cell = makeEl('div', { class: cls });
+    if(showIdx){
+      const idx = makeEl('span', { class: 'idx' });
+      idx.textContent = String(i);
+      cell.appendChild(idx);
+    }
+    const val = makeEl('span', {});
+    val.textContent = (v === null || v === undefined) ? '·' : String(v);
+    cell.appendChild(val);
+    c.appendChild(cell);
+  });
+}
+
+// ============================================================
+// COMMON STEP CONTROLLER (Reset / Prev / Next / Auto)
+// Pass: { ids:{reset,prev,next,auto,step,status}, totalFn, renderFn,
+//         interval(ms), startStep=0 }
+// ============================================================
+function makeStepController(cfg){
+  const { ids, totalFn, renderFn } = cfg;
+  let step = cfg.startStep || 0;
+  let timer = null;
+  function render(){
+    const total = totalFn();
+    if(step >= total) step = total - 1;
+    if(step < 0) step = 0;
+    renderFn(step);
+    if(ids.step){
+      const el = $(ids.step);
+      if(el) el.textContent = `Step ${step+1} / ${total}`;
+    }
+  }
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if(ids.auto){ const a = $(ids.auto); if(a) a.classList.remove('active'); }
+  }
+  function reset(){ step = 0; stopAuto(); render(); }
+  function prev(){ stopAuto(); step--; render(); }
+  function next(){ step++; render(); }
+  function autoToggle(){
+    if(timer){ stopAuto(); return; }
+    const a = $(ids.auto); if(a) a.classList.add('active');
+    timer = setInterval(() => {
+      const total = totalFn();
+      if(step >= total - 1){ stopAuto(); return; }
+      step++; render();
+    }, cfg.interval || 800);
+  }
+  if(ids.reset){ const e = $(ids.reset); if(e) e.onclick = reset; }
+  if(ids.prev) { const e = $(ids.prev);  if(e) e.onclick = prev;  }
+  if(ids.next) { const e = $(ids.next);  if(e) e.onclick = next;  }
+  if(ids.auto) { const e = $(ids.auto);  if(e) e.onclick = autoToggle; }
+  document.addEventListener('segtree:themechange', () => render());
+  render();
+  return { reset, prev, next, autoToggle, render, get step(){return step;}, set step(v){step=v;render();} };
+}
+
+
+// ============================================================
+// LESSON-SPECIFIC SCRIPT
+// ============================================================
+
+// ============================================================
+// Shared dataset for Lesson 3 tracers
+// ============================================================
+const A_L3 = [2, 1, 5, 3, 4, 7, 6, 8];
+const N_L3 = A_L3.length;
+const BASE_L3 = 8;
+const LEAF0_L3 = BASE_L3 - 1;
+
+function buildIterTree(a){
+  const tree = new Array(2 * BASE_L3).fill(0);
+  for(let i = 0; i < a.length; i++) tree[LEAF0_L3 + i] = a[i];
+  for(let i = LEAF0_L3 - 1; i >= 0; i--)
+    tree[i] = tree[2*i+1] + tree[2*i+2];
+  return tree;
+}
+
+// ============================================================
+// Tracer 1 — Bottom-up build
+// ============================================================
+(function(){
+  let frames = [];
+  function build(){
+    const tree = new Array(2 * BASE_L3).fill(0);
+    const done = {};
+    // initial: all zero
+    frames.push({
+      tree: tree.slice(),
+      hi: {},
+      done: {...done},
+      note: `Initial: tree[ ] all zero. Will load leaves into tree[${LEAF0_L3}..${LEAF0_L3 + N_L3 - 1}], then sweep upward.`
+    });
+    // load leaves
+    for(let i = 0; i < N_L3; i++){
+      tree[LEAF0_L3 + i] = A_L3[i];
+      done[LEAF0_L3 + i] = true;
+      frames.push({
+        tree: tree.slice(),
+        hi: { [LEAF0_L3 + i]: 'current' },
+        done: {...done},
+        note: `Leaf load: tree[${LEAF0_L3 + i}] = a[${i}] = ${A_L3[i]}`
+      });
+    }
+    // climb internal
+    for(let i = LEAF0_L3 - 1; i >= 0; i--){
+      const left = 2*i+1, right = 2*i+2;
+      tree[i] = tree[left] + tree[right];
+      done[i] = true;
+      frames.push({
+        tree: tree.slice(),
+        hi: { [i]: 'current', [left]: 'leaf', [right]: 'leaf' },
+        done: {...done},
+        note: `Internal: tree[${i}] = tree[${left}] + tree[${right}] = ${tree[left]} + ${tree[right]} = ${tree[i]}`
+      });
+    }
+    frames.push({
+      tree: tree.slice(),
+      hi: {},
+      done: {...done},
+      note: `Build complete. Root sum = tree[0] = ${tree[0]}.`
+    });
+  }
+  build();
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    // build highlight mapping using done state
+    const hi = {};
+    for(const k in f.done){ hi[k] = 'visited'; }
+    for(const k in f.hi){ hi[k] = f.hi[k]; }
+    drawSegTree('#bBuildSvg', { base: BASE_L3, nodes: f.tree,
+                                highlights: hi, width: 900, height: 460 });
+    // flat array
+    const arr = [];
+    for(let i = 0; i < 2 * BASE_L3 - 1; i++) arr.push(f.tree[i]);
+    const flatHi = {};
+    for(const k in f.done){ flatHi[k] = 'done'; }
+    for(const k in f.hi){ flatHi[k] = 'hl'; }
+    drawArray('#bBuildFlat', arr, { highlights: flatHi });
+    $('#bBuildStatus').textContent = f.note;
+  }
+  makeStepController({
+    ids: { reset:'#bBuildReset', prev:'#bBuildPrev', next:'#bBuildNext',
+           auto:'#bBuildAuto', step:'#bBuildStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 600
+  });
+})();
+
+// ============================================================
+// Tracer 2 — Point update (climb)
+// ============================================================
+(function(){
+  let frames = [];
+  let curA = A_L3.slice();
+  function compute(){
+    let pos = parseInt($('#iuPos').value, 10);
+    let val = parseInt($('#iuVal').value, 10);
+    if(!Number.isFinite(pos) || pos < 0 || pos >= N_L3) pos = 0;
+    if(!Number.isFinite(val)) val = 0;
+    curA = A_L3.slice();
+    const tree = buildIterTree(curA);
+    frames = [];
+    frames.push({
+      tree: tree.slice(),
+      hi: { [LEAF0_L3 + pos]: 'current' },
+      note: `Target leaf: tree[${LEAF0_L3 + pos}] (a[${pos}]). Current value = ${tree[LEAF0_L3 + pos]}. New value = ${val}.`,
+      a: curA.slice()
+    });
+    let i = LEAF0_L3 + pos;
+    tree[i] = val;
+    curA[pos] = val;
+    frames.push({
+      tree: tree.slice(),
+      hi: { [i]: 'updated' },
+      note: `Overwrote leaf: tree[${i}] ← ${val}`,
+      a: curA.slice()
+    });
+    while(i > 0){
+      i = (i - 1) >> 1;
+      const left = 2*i+1, right = 2*i+2;
+      const before = tree[i];
+      tree[i] = tree[left] + tree[right];
+      frames.push({
+        tree: tree.slice(),
+        hi: { [i]: 'current', [left]: 'visited', [right]: 'visited' },
+        note: `Climb to i=${i}: tree[${i}] = tree[${left}] + tree[${right}] = ${tree[left]} + ${tree[right]} = ${tree[i]} (was ${before})`,
+        a: curA.slice()
+      });
+    }
+    frames.push({
+      tree: tree.slice(),
+      hi: {},
+      note: `Update done. New root sum = ${tree[0]}.`,
+      a: curA.slice()
+    });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    drawSegTree('#iuSvg', { base: BASE_L3, nodes: f.tree,
+                            highlights: f.hi, width: 900, height: 460 });
+    let pos = parseInt($('#iuPos').value, 10);
+    const ah = {};
+    if(Number.isFinite(pos) && pos >= 0 && pos < N_L3) ah[pos] = 'upd';
+    drawArray('#iuArr', f.a, { highlights: ah });
+    $('#iuStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#iuReset', prev:'#iuPrev', next:'#iuNext',
+           auto:'#iuAuto', step:'#iuStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#iuRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+// ============================================================
+// Tracer 3 — Range query L/R sweep
+// ============================================================
+(function(){
+  let frames = [];
+  function compute(){
+    let ql = parseInt($('#iqL').value, 10);
+    let qr = parseInt($('#iqR').value, 10);
+    if(!Number.isFinite(ql)) ql = 0;
+    if(!Number.isFinite(qr)) qr = N_L3 - 1;
+    ql = Math.max(0, Math.min(N_L3 - 1, ql));
+    qr = Math.max(0, Math.min(N_L3 - 1, qr));
+    if(ql > qr) [ql, qr] = [qr, ql];
+    const tree = buildIterTree(A_L3);
+    frames = [];
+    let L = LEAF0_L3 + ql, R = LEAF0_L3 + qr;
+    let leftAns = 0, rightAns = 0;
+    frames.push({
+      tree: tree.slice(),
+      hi: { [L]: 'current', [R]: 'current' },
+      L, R, leftAns, rightAns,
+      note: `Start: L=${L} (leaf0+${ql}), R=${R} (leaf0+${qr}). left_ans=0, right_ans=0.`
+    });
+    while(L <= R){
+      // Left harvest
+      if((L & 1) === 0){
+        leftAns += tree[L];
+        frames.push({
+          tree: tree.slice(),
+          hi: { [L]: 'full', [R]: 'current' },
+          L, R, leftAns, rightAns,
+          note: `L=${L} is EVEN → right child. Sibling (L-1)=${L-1} is OUTSIDE the range. Harvest tree[${L}]=${tree[L]} into left_ans (now ${leftAns}), then L++.`
+        });
+        L++;
+        frames.push({
+          tree: tree.slice(),
+          hi: { [L]: 'current', [R]: 'current' },
+          L, R, leftAns, rightAns,
+          note: `L advanced to ${L}.`
+        });
+      }
+      // Right harvest
+      if((R & 1) === 1){
+        rightAns = tree[R] + rightAns;
+        frames.push({
+          tree: tree.slice(),
+          hi: { [R]: 'full', [L]: L <= R ? 'current' : 'visited' },
+          L, R, leftAns, rightAns,
+          note: `R=${R} is ODD → left child. Sibling (R+1)=${R+1} is OUTSIDE the range. Harvest tree[${R}]=${tree[R]} into right_ans (now ${rightAns}), then R--.`
+        });
+        R--;
+        frames.push({
+          tree: tree.slice(),
+          hi: { [L]: L <= R ? 'current' : 'visited', [R]: R >= L ? 'current' : 'visited' },
+          L, R, leftAns, rightAns,
+          note: `R retreated to ${R}.`
+        });
+      }
+      if(L > R){
+        frames.push({
+          tree: tree.slice(),
+          hi: {},
+          L, R, leftAns, rightAns,
+          note: `L > R → done before climb.`
+        });
+        break;
+      }
+      const oldL = L, oldR = R;
+      L = (L - 1) >> 1;
+      R = (R - 1) >> 1;
+      frames.push({
+        tree: tree.slice(),
+        hi: { [L]: 'current', [R]: 'current', [oldL]: 'visited', [oldR]: 'visited' },
+        L, R, leftAns, rightAns,
+        note: `Climb: L: ${oldL} → ${L}, R: ${oldR} → ${R}.`
+      });
+    }
+    const total = leftAns + rightAns;
+    frames.push({
+      tree: tree.slice(),
+      hi: {},
+      L, R, leftAns, rightAns, total,
+      note: `Done. sum over [${ql},${qr}] = left_ans + right_ans = ${leftAns} + ${rightAns} = ${total}.`
+    });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    let ql = parseInt($('#iqL').value, 10);
+    let qr = parseInt($('#iqR').value, 10);
+    if(!Number.isFinite(ql)) ql = 0;
+    if(!Number.isFinite(qr)) qr = N_L3 - 1;
+    drawSegTree('#iqSvg', { base: BASE_L3, nodes: f.tree,
+                            highlights: f.hi, width: 900, height: 480,
+                            queryRange: [ql, qr] });
+    $('#iqLval').textContent = String(f.L);
+    $('#iqRval').textContent = String(f.R);
+    $('#iqLA').textContent = String(f.leftAns);
+    $('#iqRA').textContent = String(f.rightAns);
+    $('#iqTotal').textContent = String(f.total !== undefined ? f.total : (f.leftAns + f.rightAns));
+    $('#iqStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#iqReset', prev:'#iqPrev', next:'#iqNext',
+           auto:'#iqAuto', step:'#iqStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#iqRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+</script>
+</body>
+</html>

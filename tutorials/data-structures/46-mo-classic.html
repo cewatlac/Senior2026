@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Mo's Algorithm (Classic) · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-cell: rgba(37,99,235,.30);
+    --hl-add:  rgba(15,118,110,.35);
+    --hl-rem:  rgba(185,28,28,.32);
+    --hl-cur:  rgba(180,83,9,.32);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-cell: rgba(79,140,255,.28);
+    --hl-add:  rgba(52,211,153,.30);
+    --hl-rem:  rgba(251,113,133,.30);
+    --hl-cur:  rgba(251,191,36,.30);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);font-size:21px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:17px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:20px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  svg.tracerSvg{width:100%;height:340px;border-radius:16px;background:rgba(0,0,0,0);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:700;overflow-x:auto;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:21px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:21px;font-weight:900;}
+  .hlPath{background:rgba(251,191,36,.25);border-radius:6px;padding:2px 4px;font-weight:900;}
+  /* Mo-specific */
+  .arrCell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:56px;height:60px;margin:0 3px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:950;font-size:24px;transition:all .25s ease;position:relative;}
+  .arrCell .idx{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-weight:800;}
+  .arrCell.inRange{background:var(--hl-cell);border-color:var(--accent2);}
+  .arrCell.curL{box-shadow:inset 0 0 0 3px var(--good);}
+  .arrCell.curR{box-shadow:inset 0 0 0 3px var(--good);}
+  .arrCell.curL.curR{box-shadow:inset 0 0 0 3px var(--good), inset 0 0 0 6px rgba(15,118,110,.4);}
+  .arrCell.justAdd{animation:flashAdd .55s ease;}
+  .arrCell.justRem{animation:flashRem .55s ease;}
+  @keyframes flashAdd{0%{background:var(--hl-add);transform:scale(1.12)}100%{}}
+  @keyframes flashRem{0%{background:var(--hl-rem);transform:scale(.92)}100%{}}
+  .arrRow{display:flex;flex-wrap:wrap;padding:14px 4px 28px;justify-content:center;}
+  .queryRow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .queryChip{padding:8px 14px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:900;font-size:18px;font-family:ui-monospace,monospace;}
+  .queryChip.curQ{border-color:var(--warn);background:var(--hl-cur);}
+  .queryChip.doneQ{border-color:var(--good);background:rgba(15,118,110,.10);color:var(--good);opacity:.7;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:18px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:6px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  .swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .sw-in{background:var(--accent2)} .sw-add{background:var(--good)} .sw-rem{background:var(--bad)} .sw-cur{background:var(--warn)}
+  /* Block ordering grid */
+  .blockGrid{display:grid;grid-template-columns:repeat(16, 1fr);gap:3px;margin-top:10px;}
+  .blockCell{aspect-ratio:1;border-radius:6px;background:var(--panel2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--muted);position:relative;}
+  .blockCell.query{background:var(--accent2);color:white;border-color:var(--accent);}
+  .blockCell.visited{background:rgba(37,99,235,.18);border-color:var(--accent2);}
+  .blockCell.cur{background:var(--warn);border-color:var(--bad);color:white;box-shadow:0 0 0 3px rgba(180,83,9,.4);}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">Mo's Algorithm</div>
+    <div class="t2">Classic Array · Offline Range Queries</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem" id="nav-problem">🧩 Problem Definition<small>What Mo solves</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition from Scratch<small>Why prefix/segtree fail</small></a>
+  <a href="#mental" id="nav-mental">🎯 Visual Mental Model<small>Two fingers on array</small></a>
+  <a href="#abstract" id="nav-abstract">🧠 Formal Abstraction<small>Movement + answer layers</small></a>
+  <a href="#observations" id="nav-observations">🔭 Key Observations<small>Order, locality, reversibility</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algo" id="nav-algo">⚙️ The Four Loops<small>Pointer movement engine</small></a>
+  <a href="#invariants" id="nav-invariants">🔒 Invariants<small>State, transition, query</small></a>
+  <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Three lemmas</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity Analysis<small>O((N+Q)√N)</small></a>
+  <div class="groupTitle">Template</div>
+  <a href="#philosophy" id="nav-philosophy">🧩 Template Philosophy<small>One backbone, many heads</small></a>
+  <a href="#master" id="nav-master">📄 Master Template<small>Reusable C++ skeleton</small></a>
+  <a href="#lbl" id="nav-lbl">🔎 Line-by-Line<small>Every block explained</small></a>
+  <div class="groupTitle">Tracers</div>
+  <a href="#tracer-pointer">🎮 Pointer Movement Tracer</a>
+  <a href="#tracer-order">🎮 Block Ordering Tracer</a>
+  <a href="#tracer-distinct">🎮 Distinct-Count Demo</a>
+  <div class="groupTitle">Ordering &amp; State</div>
+  <a href="#ordering" id="nav-ordering">🔀 Ordering Strategies<small>Plain · Odd-Even · Hilbert</small></a>
+  <a href="#patterns" id="nav-patterns">🧪 Answer-Maintenance Patterns<small>Distinct · Powerful · XOR · Freq</small></a>
+  <div class="groupTitle">Quality Gates</div>
+  <a href="#edges" id="nav-edges">🪜 Edge-Case Audit<small>13 must-check items</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>Real-bug catalog</small></a>
+  <a href="#decision" id="nav-decision">🧭 Decision Guide<small>When to use Mo</small></a>
+  <div class="groupTitle">Variants &amp; Problems</div>
+  <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Map of the family</small></a>
+  <a href="#problems" id="nav-problems">🚀 Problem-Based Learning<small>DQUERY · 86D · 220B · 617E</small></a>
+  <a href="#summary" id="nav-summary">📝 Final Summary<small>One-line core idea</small></a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🎓</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Mo Family · 1 / 4</div>
+        <h1>Mo's Algorithm — Classic Array</h1>
+        <div class="subtitle">Offline Range Queries · Sqrt Decomposition by Locality · The Master Template of the Family</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- SECTION: PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+    <p>We are given a static array <code class="inlineCode">a[0], a[1], …, a[n-1]</code> and many range queries of the form</p>
+    <pre><code>query i = [l_i, r_i]
+answer_i = F(a[l_i], a[l_i+1], ..., a[r_i])</code></pre>
+    <p>The aggregator <code class="inlineCode">F</code> can be simple or complicated. Mo's algorithm becomes useful when <code class="inlineCode">F</code> depends on the multiset of values inside the range, not just the prefix sums.</p>
+    <h3>Typical aggregators Mo handles well</h3>
+    <p>Examples that fit naturally include the number of distinct values, the sum of <code class="inlineCode">value · frequency²</code>, the count of values whose frequency equals some target <code class="inlineCode">x</code>, the number of pairs with XOR equal to <code class="inlineCode">k</code>, the mode of an interval, and the number of colours appearing at least <code class="inlineCode">k</code> times in a subtree (after an Euler-tour transformation). Each of these reduces to maintaining a frequency table while one element enters or leaves the active window.</p>
+    <h3>When Mo's algorithm is the right tool</h3>
+    <p>Mo applies when four conditions hold together. First, all queries must be known offline so they can be reordered. Second, the array is static, unless we add the time dimension and use the update-aware variant. Third, we can maintain an answer for the current range as a single piece of state. Fourth, adding or removing one element to the active range is much cheaper than recomputing the answer from scratch.</p>
+    <p class="note">Mo is rarely the first tool you should reach for. It is the tool you reach for when the answer is easy to update locally, but hard to merge from two halves.</p>
+  </section>
+
+  <!-- SECTION: INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch — Why Mo Exists</h2>
+
+    <h3>Naive idea: recompute every range</h3>
+    <p>For each query <code class="inlineCode">[l, r]</code>, scan the whole subarray. Each query costs up to <code class="inlineCode">O(n)</code>, and with <code class="inlineCode">q</code> queries that is <code class="inlineCode">O(nq)</code>. For <code class="inlineCode">n, q ≈ 2·10⁵</code> this is far too slow.</p>
+
+    <h3>Why prefix sums may fail</h3>
+    <p>Prefix sums work when the answer decomposes as</p>
+    <pre><code>answer(l, r) = prefix[r] − prefix[l-1]</code></pre>
+    <p>This is fine for sums, XOR, or counts of one fixed value. But it does not work for the number of distinct values in <code class="inlineCode">[l, r]</code>, because duplicates interact across the boundary. Knowing the distinct count of <code class="inlineCode">[1, 5]</code> and <code class="inlineCode">[6, 10]</code> does not tell you the distinct count of <code class="inlineCode">[1, 10]</code> — the same value can appear in both halves and gets double-counted.</p>
+
+    <h3>Why segment trees may fail</h3>
+    <p>A segment tree needs a clean merge: combining the answer of the left half and the answer of the right half must give the answer of the whole interval. Many frequency-based answers refuse to merge cheaply. The mode of the left half and the mode of the right half do not determine the mode of the whole; the merge would essentially need to look at both frequency tables, which kills the logarithmic advantage.</p>
+
+    <h3>Mo's different idea — do not merge, walk</h3>
+    <p>Mo refuses to merge anything. Instead it says: keep one current interval and move it slowly from one query to the next. If query A is <code class="inlineCode">[10, 20]</code> and query B is <code class="inlineCode">[12, 25]</code>, do not recompute B from scratch. Remove positions 10 and 11, then add positions 21 through 25. The cost is just the distance the endpoints travel.</p>
+    <p>This turns the whole problem into a routing problem: in what order should we visit all the query intervals so the endpoints move as little as possible? Mo's sort is a simple, locality-preserving heuristic, not the optimal route.</p>
+  </section>
+
+  <!-- SECTION: VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>🎯 Visual Mental Model — Two Fingers on the Array</h2>
+    <p>Imagine two fingers, called <code class="inlineCode">curL</code> and <code class="inlineCode">curR</code>, on the array. The current interval is exactly what lies between them. The data structure (a frequency table, a counter, or whatever the problem needs) always describes that interval and nothing else.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">🎮 Pointer Movement Tracer (Distinct-count problem)</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="ptResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="ptStepBtn">▶ Next Step</button>
+          <button class="miniBtn" id="ptAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div id="tracer-pointer" style="margin-top:6px;">
+        <div class="arrRow" id="ptArr"></div>
+        <div class="queryRow" id="ptQueries"></div>
+        <div class="grid2" style="margin-top:14px;">
+          <div class="statusPanel">
+            <div style="font-weight:950;font-size:22px;margin-bottom:6px;">Pointers &amp; State</div>
+            <div class="dsBox" id="ptState"></div>
+          </div>
+          <div class="statusPanel">
+            <div style="font-weight:950;font-size:22px;margin-bottom:6px;">Step Description</div>
+            <div class="dsBox" id="ptDesc"></div>
+          </div>
+        </div>
+        <div class="legend">
+          <span><i class="swatch sw-in"></i> in current interval</span>
+          <span><i class="swatch sw-add"></i> just added</span>
+          <span><i class="swatch sw-rem"></i> just removed</span>
+          <span><i class="swatch sw-cur"></i> current query</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:18px;">What each pointer move means</h3>
+    <p>Each pointer move corresponds to one local operation. The cost of any move is exactly one call to either <code class="inlineCode">add</code> or <code class="inlineCode">remove</code> — there is no batching, no recomputation, and no merging.</p>
+    <table>
+      <thead><tr><th>Pointer move</th><th>Meaning</th><th>Operation</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inlineCode">curL--</code></td><td>Include a new element on the left</td><td><code class="inlineCode">add(curL)</code> after the decrement</td></tr>
+        <tr><td><code class="inlineCode">curR++</code></td><td>Include a new element on the right</td><td><code class="inlineCode">add(curR)</code> after the increment</td></tr>
+        <tr><td><code class="inlineCode">curL++</code></td><td>Drop the old leftmost element</td><td><code class="inlineCode">remove(curL)</code> <em>before</em> the increment</td></tr>
+        <tr><td><code class="inlineCode">curR--</code></td><td>Drop the old rightmost element</td><td><code class="inlineCode">remove(curR)</code> <em>before</em> the decrement</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION: FORMAL ABSTRACTION -->
+  <section class="card" id="abstract">
+    <h2>🧠 Formal Abstraction — Two Layers</h2>
+    <p>Mo cleanly separates the algorithm into two independent layers. This is what makes the master template reusable: only the answer layer changes between problems.</p>
+
+    <h3>Movement layer — knows nothing about the answer</h3>
+    <p>The movement layer only knows how to transform the current interval into the next query interval. It is exactly four <code class="inlineCode">while</code> loops:</p>
+    <pre><code>while (curL &gt; L) add(--curL);
+while (curR &lt; R) add(++curR);
+while (curL &lt; L) remove_(curL++);
+while (curR &gt; R) remove_(curR--);</code></pre>
+    <p>These four lines are identical for every Mo problem on a static array. They are the "engine" of the algorithm.</p>
+
+    <h3>Answer layer — the problem-specific brain</h3>
+    <p>The answer layer knows what state must be kept so that adding or removing one index updates the answer correctly. Some common shapes are listed below.</p>
+    <table>
+      <thead><tr><th>Query type</th><th>Maintained state</th></tr></thead>
+      <tbody>
+        <tr><td>distinct values</td><td><code class="inlineCode">freq[value]</code>, scalar <code class="inlineCode">distinct</code></td></tr>
+        <tr><td>Powerful Array (∑ x·cnt[x]²)</td><td><code class="inlineCode">freq[value]</code>, scalar <code class="inlineCode">current_answer</code></td></tr>
+        <tr><td>mode of interval</td><td><code class="inlineCode">freq[value]</code> plus a structure over frequencies</td></tr>
+        <tr><td>XOR pairs</td><td><code class="inlineCode">cntPrefix[xor]</code>, scalar <code class="inlineCode">current_pairs</code></td></tr>
+        <tr><td>tree path distinct</td><td><code class="inlineCode">active[node]</code>, <code class="inlineCode">freq[color]</code>, scalar <code class="inlineCode">distinct</code></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:14px;">The single design question in every Mo problem is: <b>what must I store so that adding or removing one endpoint updates the answer correctly?</b> Once that is solved, the movement layer is copy-paste.</p>
+  </section>
+
+  <!-- SECTION: KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>🔭 Key Observations</h2>
+
+    <h3>Observation 1 — Query order does not affect correctness</h3>
+    <p>Queries are independent. If all queries are known beforehand, we may answer them in any order and store each answer by its original index <code class="inlineCode">id</code>. This is what unlocks reordering.</p>
+
+    <h3>Observation 2 — Adjacent ranges are cheap</h3>
+    <p>Moving from <code class="inlineCode">[L, R]</code> to <code class="inlineCode">[L+1, R]</code> costs exactly one removal. Moving to <code class="inlineCode">[L, R+1]</code> costs exactly one addition. So the total work depends on the total endpoint travel distance, not on the number of queries times the range length.</p>
+
+    <h3>Observation 3 — A good route, not the optimal route</h3>
+    <p>Think of every query as a point <code class="inlineCode">(l, r)</code> in a 2-D grid. Moving from query <code class="inlineCode">(l₁, r₁)</code> to <code class="inlineCode">(l₂, r₂)</code> costs <code class="inlineCode">|l₁ − l₂| + |r₁ − r₂|</code>. The optimal visiting order is a Manhattan TSP — too hard. Mo's heuristic is dead simple: group queries by the block of <code class="inlineCode">l</code>, and inside each block sort by <code class="inlineCode">r</code>. The two pointers then never wander randomly.</p>
+
+    <h3>Observation 4 — The update must be reversible</h3>
+    <p>Classic Mo needs both <code class="inlineCode">add</code> and <code class="inlineCode">remove</code>. If the problem has easy insertion but hard deletion (the canonical example is connectivity with a DSU), classic Mo may not directly fit. In that case, consider <b>rollback Mo</b>, DSU-on-tree, or offline divide-and-conquer instead — these are covered in the variants file.</p>
+  </section>
+
+  <!-- SECTION: ALGORITHM -->
+  <section class="card" id="algo">
+    <h2>⚙️ The Algorithm — Just Four Loops</h2>
+    <p>The whole Mo engine reads like this. After this loop body, the maintained data structure exactly represents the elements of <code class="inlineCode">[q.l, q.r]</code>, and we can read off the answer for query <code class="inlineCode">q</code>.</p>
+    <pre><code>for each query q (in sorted order) {
+    while (curL &gt; q.l) add(--curL);   // grow left
+    while (curR &lt; q.r) add(++curR);   // grow right
+    while (curL &lt; q.l) remove(curL++); // shrink left
+    while (curR &gt; q.r) remove(curR--); // shrink right
+
+    ans[q.id] = current_answer;
+}</code></pre>
+
+    <h3>Why exactly these four loops, in this order</h3>
+    <p>The four loops are designed so that <em>at every moment</em> the active interval is a valid (non-broken) interval, and the maintained state describes it. The two growing loops (<code class="inlineCode">curL--</code> and <code class="inlineCode">curR++</code>) come first because they enlarge the interval to a superset of both the current and target ranges — this guarantees we never "skip over" elements that should be included. The two shrinking loops then trim the interval down to exactly the target range. The growth-before-shrink order also avoids transient negative-length intervals, which would corrupt the frequency table.</p>
+    <p>Pre-decrement (<code class="inlineCode">--curL</code>) and pre-increment (<code class="inlineCode">++curR</code>) are critical inside the growth loops: we move the pointer first, then add the newly-included index. In the shrink loops the order is reversed (<code class="inlineCode">curL++</code>, <code class="inlineCode">curR--</code>) so that we remove the index that is leaving <em>before</em> the pointer leaves it.</p>
+
+    <div class="diagramWrap" style="margin-top:18px;">
+      <div class="diagramHeader">
+        <div class="diagramTitle">🎮 Block Ordering Tracer — visit queries in Mo order</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="boResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="boStepBtn">▶ Next</button>
+          <button class="miniBtn" id="boAutoBtn">⏯ Auto</button>
+          <button class="miniBtn active" id="boOEBtn">Odd-Even</button>
+          <button class="miniBtn" id="boPlainBtn">Plain</button>
+        </div>
+      </div>
+      <div id="tracer-order">
+        <div class="grid2">
+          <div>
+            <div class="note" style="margin-bottom:8px;">Query points <code class="inlineCode">(l, r)</code> on a 16×16 grid. Block boundaries marked in odd/even shading.</div>
+            <div class="blockGrid" id="boGrid"></div>
+          </div>
+          <div class="statusPanel">
+            <div style="font-weight:950;font-size:22px;margin-bottom:6px;">Visit Order &amp; Travel</div>
+            <div class="dsBox" id="boState"></div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:10px;">Inside each <code class="inlineCode">l</code>-block, odd blocks sort <code class="inlineCode">r</code> downward and even blocks sort <code class="inlineCode">r</code> upward — the snake path. Compare with the <em>Plain</em> order, which resets <code class="inlineCode">r</code> at the start of every block.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 Invariants — What is Always True</h2>
+
+    <h3>State invariant</h3>
+    <p>At all times during the main loop, the maintained data structure represents exactly the elements indexed by <code class="inlineCode">[curL, curR]</code>. For the initial empty interval we use <code class="inlineCode">curL = 0, curR = -1</code>, which is a valid representation of "no elements yet".</p>
+
+    <h3>Transition invariant</h3>
+    <p>Every pointer movement updates the state consistently. If an index enters the interval, <code class="inlineCode">add(index)</code> is called exactly once. If an index leaves, <code class="inlineCode">remove(index)</code> is called exactly once. Nothing is called twice, and nothing is skipped.</p>
+
+    <h3>Query invariant</h3>
+    <p>Immediately before storing <code class="inlineCode">ans[q.id]</code>, we have <code class="inlineCode">curL == q.l</code> and <code class="inlineCode">curR == q.r</code>. The maintained state therefore represents exactly the query range, and <code class="inlineCode">get_answer()</code> returns its answer.</p>
+
+    <h3>Termination invariant</h3>
+    <p>Each of the four <code class="inlineCode">while</code> loops strictly moves one pointer one step closer to its target on every iteration, so all four loops terminate in finite time, with no chance of livelock.</p>
+  </section>
+
+  <!-- SECTION: PROOF -->
+  <section class="card" id="proof">
+    <h2>📜 Proof of Correctness — Three Lemmas</h2>
+
+    <h3>Lemma 1 — Each pointer move preserves the state invariant</h3>
+    <p>Assume the maintained state represents exactly <code class="inlineCode">[curL, curR]</code> before a single step. Four cases:</p>
+    <p>If we execute <code class="inlineCode">add(--curL)</code>, the interval becomes <code class="inlineCode">[curL−1, curR]</code> and the newly-included index is added exactly once. If we execute <code class="inlineCode">add(++curR)</code>, the interval becomes <code class="inlineCode">[curL, curR+1]</code> and the new right end is added once. If we execute <code class="inlineCode">remove(curL++)</code>, the old <code class="inlineCode">curL</code> is removed before the pointer leaves; the interval becomes <code class="inlineCode">[curL+1, curR]</code>. If we execute <code class="inlineCode">remove(curR--)</code>, the old <code class="inlineCode">curR</code> is removed first; the interval becomes <code class="inlineCode">[curL, curR−1]</code>. In all four cases, after the step the state still matches the new interval.</p>
+
+    <h3>Lemma 2 — After the four loops, the current interval equals the query interval</h3>
+    <p>The first loop decreases <code class="inlineCode">curL</code> until <code class="inlineCode">curL ≤ q.l</code>. The third loop increases <code class="inlineCode">curL</code> until <code class="inlineCode">curL ≥ q.l</code>. Therefore <code class="inlineCode">curL == q.l</code>. Symmetrically, the second loop pushes <code class="inlineCode">curR</code> up to at least <code class="inlineCode">q.r</code>, and the fourth loop pulls it back to exactly <code class="inlineCode">q.r</code>. So after all four loops, <code class="inlineCode">[curL, curR] = [q.l, q.r]</code>.</p>
+
+    <h3>Lemma 3 — The stored answer for every query is correct</h3>
+    <p>By Lemma 2, before storing <code class="inlineCode">ans[q.id]</code> the current interval is exactly <code class="inlineCode">[q.l, q.r]</code>. By Lemma 1, the maintained state at this moment represents this interval. Therefore <code class="inlineCode">get_answer()</code> returns the correct answer for the query.</p>
+
+    <h3>Theorem</h3>
+    <p>The algorithm outputs the correct answer for every query, in original input order. Each query is processed exactly once; by Lemma 3 each stored answer is correct; the answers are stored in an array indexed by <code class="inlineCode">id</code>, so the final output respects the original order even though queries were processed in Mo order.</p>
+  </section>
+
+  <!-- SECTION: COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+    <p>Let <code class="inlineCode">n</code> be the array length, <code class="inlineCode">q</code> the number of queries, <code class="inlineCode">B</code> the block size, and <code class="inlineCode">F</code> the cost of one <code class="inlineCode">add</code> / <code class="inlineCode">remove</code> call.</p>
+
+    <h3>Left-pointer cost</h3>
+    <p>Within a fixed left block, all queries have <code class="inlineCode">l</code> inside a range of length <code class="inlineCode">B</code>. So moving <code class="inlineCode">curL</code> from one query to the next costs at most <code class="inlineCode">O(B)</code>. Across <code class="inlineCode">q</code> queries, the left pointer pays <code class="inlineCode">O(qB)</code> in total.</p>
+
+    <h3>Right-pointer cost</h3>
+    <p>There are about <code class="inlineCode">n / B</code> left blocks. Inside each block, queries are sorted by <code class="inlineCode">r</code> (or reverse-<code class="inlineCode">r</code> in odd blocks), so the right pointer mostly moves in one direction across the whole array; for one block that costs <code class="inlineCode">O(n)</code>. Across all blocks: <code class="inlineCode">O(n · (n/B)) = O(n²/B)</code>.</p>
+
+    <h3>Total work</h3>
+    <pre><code>movement = O(qB + n²/B)
+total    = O((qB + n²/B) · F)</code></pre>
+    <p>With <code class="inlineCode">B = √n</code> this collapses to the familiar <code class="inlineCode">O((n + q) · √n · F)</code>.</p>
+
+    <h3>Better theoretical block size when q differs greatly from n</h3>
+    <p>Balancing the two terms gives <code class="inlineCode">qB = n²/B</code>, i.e. <code class="inlineCode">B = n / √q</code>. So when <code class="inlineCode">q</code> is much smaller or much larger than <code class="inlineCode">n</code>, the tuned choice is:</p>
+    <pre><code>BLOCK = max(1, (int)(n / sqrt(q)));</code></pre>
+    <p>In contests many people still hard-code a block size by experiment because cache behaviour can matter more than the asymptotic constant.</p>
+  </section>
+
+  <!-- SECTION: TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>🧩 Template Philosophy — One Backbone, Many Heads</h2>
+    <p>Every Mo problem reuses the same engine. Only the answer layer changes. This file establishes the master template that all other family files (Mo on Trees, Mo with Updates, Rollback Mo, 4D Mo) mutate in tightly-scoped ways.</p>
+    <table>
+      <thead><tr><th>Variant</th><th>What changes from the master template</th></tr></thead>
+      <tbody>
+        <tr><td>Odd-even Mo</td><td>comparator only</td></tr>
+        <tr><td>Hilbert Mo</td><td>comparator replaced by a Hilbert-order key</td></tr>
+        <tr><td>Distinct / Powerful / mode / XOR</td><td>only <code class="inlineCode">add</code>, <code class="inlineCode">remove</code>, and the answer state change</td></tr>
+        <tr><td>Subtree Mo</td><td>tree becomes array through Euler preorder</td></tr>
+        <tr><td>Path Mo</td><td>interval elements <em>toggle</em> nodes instead of directly indexing</td></tr>
+        <tr><td>Mo with updates (3D)</td><td>state becomes <code class="inlineCode">[curL, curR, curT]</code></td></tr>
+        <tr><td>Rollback Mo</td><td>deletion is replaced by snapshots + rollback</td></tr>
+        <tr><td>4D Mo</td><td>state contains two intervals moving in tandem</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:14px;">Naming is unified across the family: <code class="inlineCode">a</code> for the input array, <code class="inlineCode">freq</code> for the frequency table, <code class="inlineCode">curL</code>/<code class="inlineCode">curR</code>/<code class="inlineCode">curT</code> for the pointers, <code class="inlineCode">add_index</code>/<code class="inlineCode">remove_index</code> for the hooks, <code class="inlineCode">current_answer</code> or <code class="inlineCode">curAns</code> for the maintained scalar. When you move between files in this series, the variable names mean the same thing.</p>
+  </section>
+
+  <!-- SECTION: MASTER TEMPLATE -->
+  <section class="card" id="master">
+    <h2>📄 Master Template — Classic Array Mo</h2>
+    <p>The skeleton below is 0-based and uses odd-even ordering by default. To solve a new problem, edit only the marked section. Everything outside the marked region is untouched across the entire variant family.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query {
+    int l, r, id;
+};
+
+int BLOCK;
+
+bool mo_cmp(const Query&amp; a, const Query&amp; b) {
+    int block_a = a.l / BLOCK;
+    int block_b = b.l / BLOCK;
+
+    if (block_a != block_b) return block_a &lt; block_b;
+
+    // Odd-even ordering: reduce right-pointer backtracking.
+    if (block_a &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+// ============================================================
+// Problem-specific state begins here.
+// Replace this section for each problem.
+// ============================================================
+
+vector&lt;int&gt; a;
+long long current_answer = 0;
+
+void add_index(int idx) {
+    // Add a[idx] to the maintained interval.
+}
+
+void remove_index(int idx) {
+    // Remove a[idx] from the maintained interval.
+}
+
+long long get_answer() {
+    return current_answer;
+}
+
+// ============================================================
+// Generic Mo solver. Do not modify.
+// ============================================================
+
+vector&lt;long long&gt; solve_mo(int n, vector&lt;Query&gt; queries) {
+    BLOCK = max(1, (int)sqrt(n));
+
+    sort(queries.begin(), queries.end(), mo_cmp);
+
+    vector&lt;long long&gt; ans(queries.size());
+
+    int curL = 0;
+    int curR = -1; // empty interval
+
+    for (const Query&amp; q : queries) {
+        while (curL &gt; q.l) add_index(--curL);
+        while (curR &lt; q.r) add_index(++curR);
+        while (curL &lt; q.l) remove_index(curL++);
+        while (curR &gt; q.r) remove_index(curR--);
+
+        ans[q.id] = get_answer();
+    }
+
+    return ans;
+}</code></pre>
+  </section>
+
+  <!-- SECTION: LINE BY LINE -->
+  <section class="card" id="lbl">
+    <h2>🔎 Line-by-Line Explanation</h2>
+
+    <h3><code class="inlineCode">struct Query</code></h3>
+    <p>Each query carries its left and right endpoints, plus the field <code class="inlineCode">id</code> recording its original input position. Storing <code class="inlineCode">id</code> is non-negotiable: Mo answers queries in a permuted order, and we need <code class="inlineCode">id</code> to put each answer back in the correct output slot.</p>
+
+    <h3>The block size variable</h3>
+    <p><code class="inlineCode">BLOCK</code> is a global so the comparator can read it. It is initialized once, just before sorting. <code class="inlineCode">sqrt(n)</code> is the safe default; <code class="inlineCode">n / sqrt(q)</code> is the tuned version when <code class="inlineCode">q</code> is far from <code class="inlineCode">n</code>.</p>
+
+    <h3>The comparator</h3>
+    <p><code class="inlineCode">block_a = a.l / BLOCK</code> maps each query's left endpoint to a block index. Queries in earlier blocks are processed first. Inside the same block, even blocks sort right endpoints ascending and odd blocks sort them descending — the "snake" or "boustrophedon" pattern, which avoids the right pointer jumping back to a small <code class="inlineCode">r</code> at the start of each new block.</p>
+
+    <h3>The initial interval</h3>
+    <p><code class="inlineCode">curL = 0, curR = -1</code> is the canonical representation of an empty interval. It is consistent: the set of indices <code class="inlineCode">{i : curL ≤ i ≤ curR}</code> is empty when <code class="inlineCode">curR &lt; curL</code>. The very first query will simply expand <code class="inlineCode">curR</code> upward and (if <code class="inlineCode">q.l &gt; 0</code>) shrink <code class="inlineCode">curL</code> upward.</p>
+
+    <h3>Expanding left — <code class="inlineCode">while (curL &gt; q.l) add_index(--curL);</code></h3>
+    <p>The pre-decrement runs first, so <code class="inlineCode">curL</code> becomes the new index. Then that new index is added to the maintained state. After this loop, <code class="inlineCode">curL ≤ q.l</code>.</p>
+
+    <h3>Expanding right — <code class="inlineCode">while (curR &lt; q.r) add_index(++curR);</code></h3>
+    <p>Symmetric: pre-increment first, then add. After this loop, <code class="inlineCode">curR ≥ q.r</code>.</p>
+
+    <h3>Shrinking left — <code class="inlineCode">while (curL &lt; q.l) remove_index(curL++);</code></h3>
+    <p>The element at <code class="inlineCode">curL</code> is leaving the interval, so we remove it <em>before</em> the post-increment moves the pointer away. After this loop, <code class="inlineCode">curL = q.l</code>.</p>
+
+    <h3>Shrinking right — <code class="inlineCode">while (curR &gt; q.r) remove_index(curR--);</code></h3>
+    <p>Same idea on the right side. After this loop, <code class="inlineCode">curR = q.r</code>.</p>
+
+    <h3>Storing the answer</h3>
+    <p>At this point, <code class="inlineCode">[curL, curR] = [q.l, q.r]</code> and the maintained state is correct. We store <code class="inlineCode">get_answer()</code> into <code class="inlineCode">ans[q.id]</code>, not <code class="inlineCode">ans[i]</code>, so the answer ends up in the right output slot.</p>
+  </section>
+
+  <!-- DISTINCT COUNT DEMO TRACER -->
+  <section class="card" id="tracer-distinct">
+    <h2>🎮 Distinct-Count Live Demo</h2>
+    <p>The tracer below applies the master template to the distinct-count problem: each <code class="inlineCode">add</code> increments a frequency and bumps <code class="inlineCode">distinct</code> if the frequency just became 1; each <code class="inlineCode">remove</code> decrements and lowers <code class="inlineCode">distinct</code> if the frequency just hit 0. Step through to see both layers move in lockstep.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Array · Frequency table · Distinct count</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="dcResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="dcStepBtn">▶ Next</button>
+          <button class="miniBtn" id="dcAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="arrRow" id="dcArr"></div>
+      <div class="queryRow" id="dcQueries"></div>
+      <div class="grid2" style="margin-top:14px;">
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:22px;margin-bottom:6px;">Frequency table</div>
+          <div class="dsBox" id="dcFreq"></div>
+        </div>
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:22px;margin-bottom:6px;">State &amp; description</div>
+          <div class="dsBox" id="dcStatus"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: ORDERING STRATEGIES -->
+  <section class="card" id="ordering">
+    <h2>🔀 Ordering Strategies — Plain, Odd-Even, Hilbert</h2>
+
+    <h3>Plain block ordering</h3>
+    <p>The simplest comparator sorts by left-block, then by right endpoint:</p>
+<pre><code>bool cmp(const Query&amp; a, const Query&amp; b) {
+    if (a.l / BLOCK != b.l / BLOCK) return a.l &lt; b.l;
+    return a.r &lt; b.r;
+}</code></pre>
+    <p>Plain ordering is correct, but at the boundary between blocks the right pointer may have to jump backward from a very high <code class="inlineCode">r</code> in the previous block to a very low <code class="inlineCode">r</code> in the next block. Asymptotically this is fine; in practice it wastes work.</p>
+
+    <h3>Odd-even ordering — the default</h3>
+    <p>Inside odd-indexed blocks, reverse the secondary key:</p>
+<pre><code>bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK;
+    int bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;   // odd block: r decreasing
+    return a.r &lt; b.r;               // even block: r increasing
+}</code></pre>
+    <p>The visit pattern becomes a snake: block 0 sweeps <code class="inlineCode">r</code> upward, block 1 sweeps it downward, block 2 upward again, and so on. The right pointer continues smoothly across block boundaries instead of resetting. The asymptotic bound is unchanged but the constant factor typically drops 20-40 percent.</p>
+
+    <h3>Hilbert order — when even odd-even is not enough</h3>
+    <p>Hilbert order treats each query as a 2-D point <code class="inlineCode">(l, r)</code> and sorts by a locality-preserving space-filling curve. Use it when <code class="inlineCode">n</code> and <code class="inlineCode">q</code> are both large, <code class="inlineCode">add</code>/<code class="inlineCode">remove</code> is expensive, and odd-even Mo barely passes the time limit. The Hilbert key is computed once per query at read-time, then queries are sorted by that key.</p>
+<pre><code>long long hilbert_order(int x, int y, int pow = 21, int rot = 0) {
+    if (pow == 0) return 0;
+
+    int hpow = 1 &lt;&lt; (pow - 1);
+    int seg;
+
+    if (x &lt; hpow) {
+        seg = (y &lt; hpow) ? 0 : 3;
+    } else {
+        seg = (y &lt; hpow) ? 1 : 2;
+    }
+
+    seg = (seg + rot) &amp; 3;
+
+    static const int rotate_delta[4] = {3, 0, 0, 1};
+
+    int nx = x &amp; (x ^ hpow);
+    int ny = y &amp; (y ^ hpow);
+    int nrot = (rot + rotate_delta[seg]) &amp; 3;
+
+    long long sub_square_size = 1LL &lt;&lt; (2 * pow - 2);
+    long long ans = 1LL * seg * sub_square_size;
+    long long add = hilbert_order(nx, ny, pow - 1, nrot);
+
+    ans += (seg == 1 || seg == 2) ? add : (sub_square_size - add - 1);
+    return ans;
+}</code></pre>
+    <p>Then add a field <code class="inlineCode">long long ord</code> to <code class="inlineCode">Query</code>, set <code class="inlineCode">query.ord = hilbert_order(query.l, query.r, 21)</code> while reading input, and sort by <code class="inlineCode">ord</code>. The recursion depth <code class="inlineCode">pow</code> must be large enough that <code class="inlineCode">2^pow</code> exceeds the maximum coordinate; <code class="inlineCode">21</code> covers up to about 2 million.</p>
+  </section>
+
+  <!-- SECTION: ANSWER PATTERNS -->
+  <section class="card" id="patterns">
+    <h2>🧪 Answer-Maintenance Patterns</h2>
+    <p>These are the four most useful answer-layer recipes. They are the only things that change between problems; the master template above is reused verbatim.</p>
+
+    <details open>
+      <summary>1) Distinct values <span class="rightHint">scalar + freq[]</span></summary>
+      <div class="detailsBody">
+        <p>Maintain <code class="inlineCode">freq[x]</code> and a scalar <code class="inlineCode">distinct_count</code>. The invariant is <code class="inlineCode">distinct_count = |{x : freq[x] &gt; 0}|</code>.</p>
+<pre><code>void add_value(int x) {
+    if (freq[x]++ == 0) distinct_count++;
+}
+
+void remove_value(int x) {
+    if (--freq[x] == 0) distinct_count--;
+}</code></pre>
+        <p>The trick is that <code class="inlineCode">distinct_count</code> only changes at the moments when a frequency transitions through zero — exactly when the post-increment in <code class="inlineCode">add</code> was previously zero, or the pre-decrement in <code class="inlineCode">remove</code> just reached zero.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>2) Powerful Array — sum of <code class="inlineCode">freq[x]² · x</code> <span class="rightHint">algebraic delta</span></summary>
+      <div class="detailsBody">
+        <p>If value <code class="inlineCode">x</code> currently has count <code class="inlineCode">c</code>, its contribution is <code class="inlineCode">c² · x</code>. Adding one <code class="inlineCode">x</code> changes the contribution from <code class="inlineCode">c²·x</code> to <code class="inlineCode">(c+1)²·x</code>, a delta of <code class="inlineCode">(2c+1)·x</code>. Removing gives a delta of <code class="inlineCode">−(2c−1)·x</code>. Compute the delta <em>before</em> mutating <code class="inlineCode">freq</code>:</p>
+<pre><code>void add_value(int x) {
+    current_answer += 1LL * (2 * freq[x] + 1) * x;
+    freq[x]++;
+}
+
+void remove_value(int x) {
+    current_answer -= 1LL * (2 * freq[x] - 1) * x;
+    freq[x]--;
+}</code></pre>
+        <p>Order matters: in <code class="inlineCode">add</code> the delta uses the <em>old</em> count <code class="inlineCode">c</code>; in <code class="inlineCode">remove</code> the delta also uses the <em>old</em> count, which is the count before the decrement.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>3) Count values whose frequency equals (or exceeds) something <span class="rightHint">double-indexed</span></summary>
+      <div class="detailsBody">
+        <p>Maintain two arrays. <code class="inlineCode">freqValue[x]</code> is the frequency of value <code class="inlineCode">x</code>, and <code class="inlineCode">freqCount[f]</code> is the number of distinct values that currently have frequency exactly <code class="inlineCode">f</code>. Both transitions are three lines:</p>
+<pre><code>// add x:
+freqCount[freqValue[x]]--;
+freqValue[x]++;
+freqCount[freqValue[x]]++;
+
+// remove x:
+freqCount[freqValue[x]]--;
+freqValue[x]--;
+freqCount[freqValue[x]]++;</code></pre>
+        <p>This unlocks three different queries with no extra cost: "how many values appear exactly <code class="inlineCode">k</code> times?" is just <code class="inlineCode">freqCount[k]</code>; the MEX of frequencies is the first <code class="inlineCode">f ≥ 1</code> with <code class="inlineCode">freqCount[f] == 0</code>; the count of values with frequency at least <code class="inlineCode">k</code> is a suffix sum, supported with a Fenwick tree over <code class="inlineCode">freqCount</code>.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>4) XOR-pair counting via prefix XOR <span class="rightHint">index transform</span></summary>
+      <div class="detailsBody">
+        <p>Build <code class="inlineCode">pref[0] = 0</code> and <code class="inlineCode">pref[i] = a[0] ⊕ a[1] ⊕ … ⊕ a[i−1]</code>. Then <code class="inlineCode">xor([l, r]) = pref[r+1] ⊕ pref[l]</code>. Counting subarrays inside <code class="inlineCode">[l, r]</code> with XOR equal to <code class="inlineCode">k</code> becomes counting prefix-index pairs inside <code class="inlineCode">[l, r+1]</code> whose XOR is <code class="inlineCode">k</code>. The state is <code class="inlineCode">cntPrefix[x]</code> and a scalar <code class="inlineCode">current_pairs</code>:</p>
+<pre><code>void add(int idx) {
+    int x = pref[idx];
+    current_pairs += cntPrefix[x ^ k];
+    cntPrefix[x]++;
+}
+
+void remove_(int idx) {
+    int x = pref[idx];
+    cntPrefix[x]--;
+    current_pairs -= cntPrefix[x ^ k];
+}</code></pre>
+        <p>The ordering inside <code class="inlineCode">add</code> and <code class="inlineCode">remove</code> is asymmetric on purpose: when adding, count pairs against <em>existing</em> partners first, then bump the counter; when removing, bump the counter down first, then subtract pairs against the <em>remaining</em> partners. This avoids self-pairing.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- SECTION: EDGE CASE AUDIT -->
+  <section class="card" id="edges">
+    <h2>🪜 Centralized Edge-Case Audit</h2>
+    <p>Before submitting any Mo solution, walk this checklist. Each item is a real bug that has lost real submissions.</p>
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Queries 0-based or 1-based?</td><td>SPOJ, Codeforces, and your code may all disagree. Convert at read-time, then stay 0-based internally.</td></tr>
+        <tr><td>2</td><td>Is <code class="inlineCode">r</code> inclusive?</td><td>The template assumes inclusive <code class="inlineCode">[l, r]</code>. If the problem gives <code class="inlineCode">[l, r)</code>, decrement <code class="inlineCode">r</code> at read-time.</td></tr>
+        <tr><td>3</td><td>Does the initial interval represent empty?</td><td><code class="inlineCode">curL = 0, curR = -1</code> is the canonical empty state. Any other initial value will mis-count the first query.</td></tr>
+        <tr><td>4</td><td>Values coordinate-compressed if needed?</td><td>If values reach 10⁹, you cannot index <code class="inlineCode">freq[a[i]]</code> directly. Compress to <code class="inlineCode">[0, distinct_count)</code>.</td></tr>
+        <tr><td>5</td><td>Can the answer overflow <code class="inlineCode">int</code>?</td><td>Powerful-array-style answers can reach <code class="inlineCode">10¹⁸</code>. Use <code class="inlineCode">long long</code> for the running total.</td></tr>
+        <tr><td>6</td><td>Is <code class="inlineCode">remove</code> exactly the inverse of <code class="inlineCode">add</code>?</td><td>Asymmetric implementations are the most common silent bug. Test on a long sequence of <code class="inlineCode">add(x); remove(x);</code> pairs.</td></tr>
+        <tr><td>7</td><td>Does <code class="inlineCode">freq[0]</code> mean something?</td><td>In frequency-of-frequency problems, <code class="inlineCode">freqCount[0]</code> is meaningless. Skip it when querying.</td></tr>
+        <tr><td>8</td><td>Are queries stored by original <code class="inlineCode">id</code>?</td><td>Writing to <code class="inlineCode">ans[i]</code> after sorting prints answers in the wrong order. Always use <code class="inlineCode">ans[q.id]</code>.</td></tr>
+        <tr><td>9</td><td>Is the block size nonzero?</td><td><code class="inlineCode">sqrt(0)</code> is <code class="inlineCode">0</code> and division-by-zero crashes. Use <code class="inlineCode">max(1, (int)sqrt(n))</code>.</td></tr>
+        <tr><td>10</td><td>Does Hilbert <code class="inlineCode">pow</code> cover max coordinate?</td><td><code class="inlineCode">pow = 21</code> covers <code class="inlineCode">2²¹ ≈ 2·10⁶</code>. For larger <code class="inlineCode">n</code>, bump it.</td></tr>
+        <tr><td>11</td><td>Tree-Mo: LCA handled exactly once?</td><td>The doubled-Euler trick toggles the LCA exactly once when needed and untoggles after. Forgetting either side gives <em>off-by-one in the answer</em> for many queries.</td></tr>
+        <tr><td>12</td><td>Update Mo: does each update record old <em>and</em> new value?</td><td>The "old value" is the value <em>after previous updates</em>, not the original array value.</td></tr>
+        <tr><td>13</td><td>Rollback DSU: path compression disabled?</td><td>Path compression rewires many ancestors silently; rollback only records the unions it knows about. Use union-by-size/rank without path compression.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION: PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+
+    <h3>Pitfall 1 — Removing after changing the pointer</h3>
+    <p>Wrong code (removes the <em>new</em> position, not the leaving one):</p>
+<pre><code>curL++;
+remove_index(curL);   // BUG: removes a[curL+1_old], not a[curL_old]</code></pre>
+    <p>Correct:</p>
+<pre><code>remove_index(curL++);   // remove first, then move</code></pre>
+
+    <h3>Pitfall 2 — Forgetting coordinate compression</h3>
+    <p>If values can reach <code class="inlineCode">10⁹</code>, then <code class="inlineCode">freq[a[i]]++</code> silently allocates an array of impossible size. Compress to <code class="inlineCode">[0, K)</code> where <code class="inlineCode">K</code> is the number of distinct values.</p>
+
+    <h3>Pitfall 3 — Overflow in Powerful Array</h3>
+    <p><code class="inlineCode">freq² · value</code> can overflow <code class="inlineCode">int</code> well before the array length does. Use <code class="inlineCode">long long</code> and write the multiplications as <code class="inlineCode">1LL * ... * ...</code> to force 64-bit arithmetic.</p>
+
+    <h3>Pitfall 4 — Coordinate-compressing the values needed by the answer</h3>
+    <p>Some answer formulas literally use the original numeric value of <code class="inlineCode">a[i]</code> (e.g. Powerful Array multiplies by <code class="inlineCode">x</code>). If you compress <code class="inlineCode">a[i]</code> to a small index, keep the original value alongside, or skip compression and use a frequency map.</p>
+
+    <h3>Pitfall 5 — Wrong order of pair-counting in XOR</h3>
+    <p>In <code class="inlineCode">add</code>, count pairs first, then bump <code class="inlineCode">cntPrefix[x]</code>. In <code class="inlineCode">remove</code>, decrement <code class="inlineCode">cntPrefix[x]</code> first, then subtract pairs. Doing it the other way pairs each element with itself.</p>
+
+    <h3>Pitfall 6 — Hilbert order with too-small <code class="inlineCode">pow</code></h3>
+    <p>If <code class="inlineCode">2^pow</code> is smaller than the maximum coordinate, the Hilbert key collapses many queries to the same value and the sort becomes random, losing all locality.</p>
+  </section>
+
+  <!-- SECTION: DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 Decision Guide — When Mo is the Right Tool</h2>
+
+    <h3>Decision table</h3>
+    <table>
+      <thead><tr><th>Situation</th><th>Prefer</th></tr></thead>
+      <tbody>
+        <tr><td>Static range sums</td><td>prefix sums</td></tr>
+        <tr><td>Static idempotent min/max</td><td>sparse table</td></tr>
+        <tr><td>Online point updates + sums</td><td>Fenwick / segment tree</td></tr>
+        <tr><td>Range answer has an associative merge</td><td>segment tree</td></tr>
+        <tr><td>Static order statistics in ranges</td><td>merge-sort tree / wavelet tree</td></tr>
+        <tr><td>Many offline static range queries; answer easy to add/remove, hard to merge</td><td><b>classic Mo (this file)</b></td></tr>
+        <tr><td>Offline static queries with expensive add/remove</td><td>Hilbert Mo</td></tr>
+        <tr><td>Tree subtree queries</td><td>Euler + Mo (see <em>Mo on Trees</em>) or DSU-on-tree</td></tr>
+        <tr><td>Tree path queries with frequency state</td><td>Mo on tree (see <em>Mo on Trees</em>)</td></tr>
+        <tr><td>Offline range queries with point updates</td><td>3D Mo (see <em>Mo with Updates</em>)</td></tr>
+        <tr><td>Add easy, delete hard</td><td>Rollback Mo (see <em>Other Variants</em>)</td></tr>
+        <tr><td>Query must be online</td><td>block-precomputed / segment tree / sqrt structure</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Quick reflex rules</h3>
+    <p>Reach for Mo when you see many range queries (typically <code class="inlineCode">10⁵</code> to <code class="inlineCode">3·10⁵</code>), a static array or offline-able operations, an answer that depends on frequencies inside the range, easy local add/remove, and merging two halves that looks hard or impossible. Do <em>not</em> use Mo just because the problem has a <code class="inlineCode">[l, r]</code>. Ask first whether a simpler tool (prefix sums, segtree, sparse table) handles it.</p>
+
+    <h3>Common confusion</h3>
+    <p>People sometimes pick Mo because it "always works for range queries". This is wrong. Mo's sqrt factor is the <em>worst</em> useful complexity in the family — slower than segment trees, Fenwick trees, and sparse tables for problems they cover. Pick Mo specifically when those tools cannot maintain the answer, not as a default.</p>
+  </section>
+
+  <!-- SECTION: VARIANTS MAP -->
+  <section class="card" id="variants">
+    <h2>🌿 Variants &amp; Extensions — Map of the Family</h2>
+    <p>This file covers classic array Mo. The rest of the family lives in three sibling files, each one a controlled mutation of this master template. The variant table tells you exactly what changes and why.</p>
+    <table>
+      <thead><tr><th>Variant</th><th>What changes</th><th>Why</th><th>When to use</th><th>File</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Mo on Trees</b></td>
+          <td>Map tree to array via Euler tour. For subtree queries the interval is <code class="inlineCode">[tin[v], tout[v]]</code>. For path queries use doubled Euler and a node-toggle instead of an index-add.</td>
+          <td>Subtrees and paths are not natively contiguous; Euler tours linearize them.</td>
+          <td>Subtree counts, path distincts, tree-color queries.</td>
+          <td><code class="inlineCode">23-mo-on-tree.html</code></td>
+        </tr>
+        <tr>
+          <td><b>Mo with Updates (3D Mo)</b></td>
+          <td>Add a time dimension <code class="inlineCode">curT</code>. Sort by <code class="inlineCode">(block_l, block_r, t)</code>. Block size becomes <code class="inlineCode">n^(2/3)</code>.</td>
+          <td>Point updates between queries must be applied/undone offline.</td>
+          <td>Range queries interleaved with point updates, all offline.</td>
+          <td><code class="inlineCode">24-mo-with-updates.html</code></td>
+        </tr>
+        <tr>
+          <td><b>Rollback Mo (with DSU)</b></td>
+          <td>Replace <code class="inlineCode">remove</code> with snapshot+rollback. Per left-block: reset the structure, sweep right forward permanently, snapshot, add left temporarily, answer, rollback.</td>
+          <td>Some data structures (DSU) support add but not delete.</td>
+          <td>Range-of-edges connectivity, monotonic-add answers.</td>
+          <td><code class="inlineCode">25-mo-other-variants.html</code></td>
+        </tr>
+        <tr>
+          <td><b>4D Mo</b></td>
+          <td>Two intervals <code class="inlineCode">[l₁, r₁]</code> and <code class="inlineCode">[l₂, r₂]</code> moving in tandem.</td>
+          <td>Some problems compare two ranges (e.g. two subtrees).</td>
+          <td>Two-subtree comparisons, multi-range aggregates.</td>
+          <td><code class="inlineCode">25-mo-other-variants.html</code></td>
+        </tr>
+        <tr>
+          <td><b>Online block-precomputed</b></td>
+          <td>Precompute structures for every full block; answer online queries by combining a full-block result with boundary adds.</td>
+          <td>Some problems forbid offline reordering.</td>
+          <td>Online range queries where Mo reordering is not allowed.</td>
+          <td><code class="inlineCode">25-mo-other-variants.html</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Related sqrt-decomposition techniques</h3>
+    <p>Mo belongs to the sqrt-decomposition family, but not every sqrt solution is Mo. Sorted blocks (each block keeps a sorted copy) handle <code class="inlineCode">count ≤ x</code> with updates. Block-Fenwick keeps a Fenwick per block for dynamic inversions. 2-D sliding-block plus monotonic queues handles matrix-window aggregates. These appear briefly in the <em>Other Variants</em> file, marked as adjacent techniques and not as "Mo".</p>
+  </section>
+
+  <!-- SECTION: PROBLEM-BASED LEARNING -->
+  <section class="card" id="problems">
+    <h2>🚀 Problem-Based Learning — Classic Array Mo</h2>
+    <p>Each problem here is included because it reveals a different answer-layer pattern. The movement layer is identical to the master template; only <code class="inlineCode">add</code>, <code class="inlineCode">remove</code>, and the state change.</p>
+
+    <details open>
+      <summary>23.1 — SPOJ DQUERY: distinct values in a range <span class="rightHint">scalar + freq[]</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-DQUERY">https://vjudge.net/problem/SPOJ-DQUERY</a></p>
+        <p><b>Story.</b> Given an array and many queries <code class="inlineCode">[l, r]</code>, answer how many distinct numbers occur in that interval.</p>
+        <p><b>Abstraction.</b> Static offline range query whose answer depends on the multiset of values in the range. Not merge-friendly.</p>
+        <p><b>Why Mo fits.</b> Adding or removing one value updates the distinct count in <code class="inlineCode">O(1)</code> through a single integer comparison.</p>
+        <p><b>Key observation.</b> A value contributes to the distinct count iff its frequency is positive. So <code class="inlineCode">distinct</code> changes only at the zero-to-one and one-to-zero transitions.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id; };
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n; cin &gt;&gt; n;
+    vector&lt;int&gt; a(n), all; all.reserve(n);
+    for (int i = 0; i &lt; n; i++) { cin &gt;&gt; a[i]; all.push_back(a[i]); }
+    sort(all.begin(), all.end());
+    all.erase(unique(all.begin(), all.end()), all.end());
+    for (int&amp; x : a) x = lower_bound(all.begin(), all.end(), x) - all.begin();
+
+    int q; cin &gt;&gt; q;
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int l, r; cin &gt;&gt; l &gt;&gt; r; --l; --r;
+        queries[i] = {l, r, i};
+    }
+
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), cmp);
+
+    vector&lt;int&gt; freq(all.size(), 0), ans(q);
+    int distinct = 0, curL = 0, curR = -1;
+
+    auto add = [&amp;](int idx) {
+        int x = a[idx];
+        if (freq[x] == 0) distinct++;
+        freq[x]++;
+    };
+    auto remove_ = [&amp;](int idx) {
+        int x = a[idx];
+        freq[x]--;
+        if (freq[x] == 0) distinct--;
+    };
+
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) add(--curL);
+        while (curR &lt; qu.r) add(++curR);
+        while (curL &lt; qu.l) remove_(curL++);
+        while (curR &gt; qu.r) remove_(curR--);
+        ans[qu.id] = distinct;
+    }
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <p><b>Complexity.</b> <code class="inlineCode">O((N + Q) · √N)</code>.</p>
+        <p><b>Pitfalls.</b> SPOJ uses 1-based input. Values can be large, so coordinate-compress to make <code class="inlineCode">freq[]</code> small.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>23.2 — Codeforces 86D: Powerful Array <span class="rightHint">algebraic delta</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeForces-86D">https://vjudge.net/problem/CodeForces-86D</a></p>
+        <p><b>Story.</b> For each query <code class="inlineCode">[l, r]</code>, compute the sum over values <code class="inlineCode">x</code> of <code class="inlineCode">cnt[x]² · x</code>.</p>
+        <p><b>Why Mo fits.</b> The answer depends on frequencies, not on a simple linear sum, so prefix sums fail. But adding or removing one occurrence of <code class="inlineCode">x</code> changes only its contribution, and the delta has a clean closed form.</p>
+        <p><b>Key observation.</b> Adding <code class="inlineCode">x</code> with old count <code class="inlineCode">c</code> changes the answer by <code class="inlineCode">(2c+1)·x</code>; removing changes it by <code class="inlineCode">−(2c−1)·x</code>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id; };
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; a(n);
+    int maxValue = 0;
+    for (int i = 0; i &lt; n; i++) { cin &gt;&gt; a[i]; maxValue = max(maxValue, a[i]); }
+
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int l, r; cin &gt;&gt; l &gt;&gt; r; --l; --r;
+        queries[i] = {l, r, i};
+    }
+
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), cmp);
+
+    vector&lt;long long&gt; ans(q);
+    vector&lt;int&gt; freq(maxValue + 1, 0);
+    long long curAns = 0;
+    int curL = 0, curR = -1;
+
+    auto add = [&amp;](int idx) {
+        int x = a[idx];
+        curAns += 1LL * (2 * freq[x] + 1) * x;
+        freq[x]++;
+    };
+    auto remove_ = [&amp;](int idx) {
+        int x = a[idx];
+        curAns -= 1LL * (2 * freq[x] - 1) * x;
+        freq[x]--;
+    };
+
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) add(--curL);
+        while (curR &lt; qu.r) add(++curR);
+        while (curL &lt; qu.l) remove_(curL++);
+        while (curR &gt; qu.r) remove_(curR--);
+        ans[qu.id] = curAns;
+    }
+    for (long long x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <p><b>Complexity.</b> <code class="inlineCode">O((N + Q) · √N)</code>.</p>
+        <p><b>Pitfalls.</b> Use <code class="inlineCode">long long</code> for the running total; the value <code class="inlineCode">x</code> appears in the formula, so if you compress, keep the original value alongside.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>23.3 — Codeforces 220B: Little Elephant and Array <span class="rightHint">contribution flip</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeForces-220B">https://vjudge.net/problem/CodeForces-220B</a></p>
+        <p><b>Story.</b> For each range <code class="inlineCode">[l, r]</code>, count values <code class="inlineCode">x</code> with <code class="inlineCode">freq(x) == x</code>.</p>
+        <p><b>Why Mo fits.</b> The answer depends on per-value frequencies. Only values <code class="inlineCode">x ≤ n</code> can ever satisfy <code class="inlineCode">freq(x) == x</code>, because a value cannot appear more often than the array length.</p>
+        <p><b>Pattern.</b> Before mutating <code class="inlineCode">freq[x]</code>, subtract the old contribution; mutate; add the new contribution. This "remove-old, change, add-new" pattern is reusable any time an answer has per-value contribution.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id; };
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int l, r; cin &gt;&gt; l &gt;&gt; r; --l; --r;
+        queries[i] = {l, r, i};
+    }
+
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), cmp);
+
+    vector&lt;int&gt; freq(n + 1, 0), ans(q);
+    int good = 0;
+
+    auto remove_contribution = [&amp;](int x) {
+        if (1 &lt;= x &amp;&amp; x &lt;= n &amp;&amp; freq[x] == x) good--;
+    };
+    auto add_contribution = [&amp;](int x) {
+        if (1 &lt;= x &amp;&amp; x &lt;= n &amp;&amp; freq[x] == x) good++;
+    };
+    auto add = [&amp;](int idx) {
+        int x = a[idx];
+        if (1 &lt;= x &amp;&amp; x &lt;= n) {
+            remove_contribution(x); freq[x]++; add_contribution(x);
+        }
+    };
+    auto remove_ = [&amp;](int idx) {
+        int x = a[idx];
+        if (1 &lt;= x &amp;&amp; x &lt;= n) {
+            remove_contribution(x); freq[x]--; add_contribution(x);
+        }
+    };
+
+    int curL = 0, curR = -1;
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) add(--curL);
+        while (curR &lt; qu.r) add(++curR);
+        while (curL &lt; qu.l) remove_(curL++);
+        while (curR &gt; qu.r) remove_(curR--);
+        ans[qu.id] = good;
+    }
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <p><b>Pitfalls.</b> Ignore values greater than <code class="inlineCode">n</code> early — testing <code class="inlineCode">x ≤ n</code> at the top of <code class="inlineCode">add</code> avoids a needless array write. Always remove the old contribution before mutating, then add the new contribution.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>23.4 — Codeforces 617E: XOR and Favorite Number <span class="rightHint">prefix-XOR index transform</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeForces-617E">https://vjudge.net/problem/CodeForces-617E</a></p>
+        <p><b>Story.</b> For each query <code class="inlineCode">[l, r]</code>, count subarrays inside that range with XOR equal to <code class="inlineCode">k</code>.</p>
+        <p><b>Abstraction.</b> Subarray XOR equals a pair of prefix XORs. Original query <code class="inlineCode">[l, r]</code> (1-based) becomes prefix-index query <code class="inlineCode">[l−1, r]</code>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query { int l, r, id; };
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int ba = a.l / BLOCK, bb = b.l / BLOCK;
+    if (ba != bb) return ba &lt; bb;
+    if (ba &amp; 1) return a.r &gt; b.r;
+    return a.r &lt; b.r;
+}
+
+int main() {
+    ios::sync_with_stdio(false); cin.tie(nullptr);
+
+    int n, q, k; cin &gt;&gt; n &gt;&gt; q &gt;&gt; k;
+    vector&lt;int&gt; pref(n + 1, 0);
+    for (int i = 1; i &lt;= n; i++) {
+        int x; cin &gt;&gt; x; pref[i] = pref[i - 1] ^ x;
+    }
+
+    vector&lt;Query&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) {
+        int l, r; cin &gt;&gt; l &gt;&gt; r;
+        queries[i] = {l - 1, r, i};
+    }
+
+    BLOCK = max(1, (int)sqrt(n + 1));
+    sort(queries.begin(), queries.end(), cmp);
+
+    const int MAXX = 1 &lt;&lt; 21;
+    vector&lt;int&gt; cnt(MAXX, 0);
+    vector&lt;long long&gt; ans(q);
+    long long curAns = 0;
+    int curL = 0, curR = -1;
+
+    auto add = [&amp;](int idx) {
+        int x = pref[idx];
+        curAns += cnt[x ^ k];   // count pairs before bumping
+        cnt[x]++;
+    };
+    auto remove_ = [&amp;](int idx) {
+        int x = pref[idx];
+        cnt[x]--;               // decrement first
+        curAns -= cnt[x ^ k];
+    };
+
+    for (const Query&amp; qu : queries) {
+        while (curL &gt; qu.l) add(--curL);
+        while (curR &lt; qu.r) add(++curR);
+        while (curL &lt; qu.l) remove_(curL++);
+        while (curR &gt; qu.r) remove_(curR--);
+        ans[qu.id] = curAns;
+    }
+    for (long long x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <p><b>Pitfalls.</b> Convert the original query to <code class="inlineCode">[l−1, r]</code> over prefix indices; in <code class="inlineCode">remove</code> decrement first, then subtract pairs, to avoid pairing the leaving element with itself.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>23.5 — Adjacent technique: SPOJ DISTNUM3 / mode of range <span class="rightHint">block over frequencies</span></summary>
+      <div class="detailsBody">
+        <p><b>Idea.</b> For range mode, maintain <code class="inlineCode">freq[value]</code> and a structure <code class="inlineCode">valuesByFrequency[f]</code> (or a block decomposition over values) so the maximum frequency can be queried in <code class="inlineCode">O(√max_freq)</code>. The movement layer is identical to the master template; only the answer layer changes.</p>
+        <p>This is the natural exercise after distinct count and Powerful Array. It teaches that the answer state can itself be a sqrt structure layered on top of the frequency table, without changing the engine.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- SECTION: SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 Final Summary</h2>
+    <p>Mo's algorithm is an offline range-query framework. Its core idea fits on one line:</p>
+    <pre><code>Do not answer each range from scratch.
+Sort the queries so consecutive ranges are similar.
+Move two pointers and maintain the answer incrementally.</code></pre>
+    <p>The master invariant is that the maintained data structure exactly represents <code class="inlineCode">[curL, curR]</code>. The four pointer loops are the entire engine; everything else is answer design.</p>
+    <pre><code>while (curL &gt; L) add(--curL);
+while (curR &lt; R) add(++curR);
+while (curL &lt; L) remove_(curL++);
+while (curR &gt; R) remove_(curR--);</code></pre>
+    <p>Use Mo when queries are offline, ranges are static (or updates can be made offline), add and remove are easy, and merging answers is hard. Avoid Mo when prefix sums solve it, when a segment or Fenwick tree handles it online, when the answer has a clean associative merge, when deletion is impossible and rollback is not available, or when constraints or constants are simply too large.</p>
+    <p>The most important skill is not memorizing the template. It is learning to design the maintained state so that one element entering or leaving the window can update the answer correctly. Once you can do that, the rest of the family — Mo on Trees, Mo with Updates, Rollback Mo, 4D Mo — is a small step away.</p>
+    <p class="note">Continue with: <a href="#"><code class="inlineCode">23-mo-on-tree.html</code></a> · <a href="#"><code class="inlineCode">24-mo-with-updates.html</code></a> · <a href="#"><code class="inlineCode">25-mo-other-variants.html</code></a></p>
+  </section>
+
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Mo's Algorithm Family · Classic Array · Master Template</div>
+    <div class="footer-copy">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+const saved=localStorage.getItem('mo_theme');
+if(saved)document.body.setAttribute('data-theme',saved);
+$('#themeSwitch').onclick=()=>{
+  const next=document.body.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.body.setAttribute('data-theme',next);
+  localStorage.setItem('mo_theme',next);
+};
+
+// ============================================================
+// SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+// ============================================================
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (window.innerWidth > 1400) {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      } else {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+      setSidebar(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1400) {
+      setSidebar(true);
+    } else {
+      setSidebar(false);
+    }
+  });
+
+  setSidebar(open);
+})();
+// ============================================================
+// SCROLL NAV HIGHLIGHT
+// ============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<180) cur=s.id; });
+  navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+$('.content').addEventListener('scroll',updateNav);
+updateNav();
+
+// ============================================================
+// TRACER 1 — POINTER MOVEMENT TRACER (Distinct count)
+// ============================================================
+(function(){
+  // Sample array: chosen to have repeats so distinct count changes meaningfully
+  const arr=[2,1,3,2,4,1,3,5];
+  const queries=[
+    {l:1,r:4,id:0},
+    {l:3,r:6,id:1},
+    {l:0,r:7,id:2},
+  ];
+  // Build frame list following classic Mo with odd-even sort (BLOCK=sqrt(8)~3)
+  const BLOCK=3;
+  const sorted=[...queries].sort((a,b)=>{
+    const ba=Math.floor(a.l/BLOCK), bb=Math.floor(b.l/BLOCK);
+    if(ba!==bb) return ba-bb;
+    return (ba&1) ? b.r-a.r : a.r-b.r;
+  });
+  const frames=[];
+  let curL=0, curR=-1;
+  const freq=new Array(10).fill(0);
+  let distinct=0;
+  function snap(desc, lastOp=null){
+    frames.push({
+      curL, curR,
+      freq:[...freq],
+      distinct,
+      desc,
+      lastOp, // {type:'add'|'remove', idx}
+      curQid: frames.length===0 ? -1 : (frames[frames.length-1].curQid ?? -1),
+      doneIds: frames.length===0 ? [] : [...(frames[frames.length-1].doneIds ?? [])],
+    });
+  }
+  function add(idx){
+    const x=arr[idx];
+    if(freq[x]===0) distinct++;
+    freq[x]++;
+  }
+  function rem(idx){
+    const x=arr[idx];
+    freq[x]--;
+    if(freq[x]===0) distinct--;
+  }
+  snap('Initial state: empty interval, curL=0, curR=-1.');
+  for(const q of sorted){
+    frames.push({...frames[frames.length-1], desc:`Processing query #${q.id}: target [${q.l}, ${q.r}].`, curQid:q.id, doneIds:frames[frames.length-1].doneIds});
+    while(curL>q.l){ curL--; add(curL); snap(`Expand left: --curL=${curL}, then add(a[${curL}]=${arr[curL]}).`, {type:'add', idx:curL}); frames[frames.length-1].curQid=q.id; }
+    while(curR<q.r){ curR++; add(curR); snap(`Expand right: ++curR=${curR}, then add(a[${curR}]=${arr[curR]}).`, {type:'add', idx:curR}); frames[frames.length-1].curQid=q.id;}
+    while(curL<q.l){ rem(curL); snap(`Shrink left: remove(a[${curL}]=${arr[curL]}), then curL++.`, {type:'remove', idx:curL}); curL++; frames[frames.length-1].curQid=q.id;}
+    while(curR>q.r){ rem(curR); snap(`Shrink right: remove(a[${curR}]=${arr[curR]}), then curR--.`, {type:'remove', idx:curR}); curR--; frames[frames.length-1].curQid=q.id;}
+    // Answer this query
+    const done=[...frames[frames.length-1].doneIds, q.id];
+    frames.push({...frames[frames.length-1], desc:`Answer for query #${q.id}: distinct = ${distinct}. Stored at ans[${q.id}].`, doneIds:done, curQid:q.id});
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f=frames[step];
+    // array
+    const wrap=$('#ptArr'); clearEl(wrap);
+    for(let i=0;i<arr.length;i++){
+      const cell=document.createElement('div');
+      cell.className='arrCell';
+      if(i>=f.curL && i<=f.curR) cell.classList.add('inRange');
+      if(i===f.curL) cell.classList.add('curL');
+      if(i===f.curR) cell.classList.add('curR');
+      if(f.lastOp){
+        if(f.lastOp.type==='add' && f.lastOp.idx===i) cell.classList.add('justAdd');
+        if(f.lastOp.type==='remove' && f.lastOp.idx===i) cell.classList.add('justRem');
+      }
+      cell.innerHTML=`${arr[i]}<span class="idx">i=${i}</span>`;
+      wrap.appendChild(cell);
+    }
+    // queries
+    const qw=$('#ptQueries'); clearEl(qw);
+    for(const q of queries){
+      const chip=document.createElement('div');
+      chip.className='queryChip';
+      chip.textContent=`#${q.id}: [${q.l},${q.r}]`;
+      if(f.doneIds && f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qw.appendChild(chip);
+    }
+    // state
+    const st=$('#ptState');
+    let s='';
+    s+=`curL = ${f.curL}\n`;
+    s+=`curR = ${f.curR}\n`;
+    s+=`interval = ${f.curR<f.curL?'(empty)':`[${f.curL}, ${f.curR}]`}\n`;
+    s+=`distinct = ${f.distinct}\n\n`;
+    s+='freq[]: ';
+    const nonZero=[];
+    for(let v=0; v<f.freq.length; v++) if(f.freq[v]>0) nonZero.push(`${v}→${f.freq[v]}`);
+    s+=nonZero.length?nonZero.join(', '):'(all zero)';
+    st.textContent=s;
+    $('#ptDesc').textContent=f.desc + `\n\nStep ${step+1} / ${frames.length}`;
+  }
+  $('#ptResetBtn').onclick=()=>{step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#ptAutoBtn').classList.remove('active');} render();};
+  $('#ptStepBtn').onclick=()=>{if(step<frames.length-1){step++;render();}};
+  $('#ptAutoBtn').onclick=function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active'); autoTimer=setInterval(()=>{if(step>=frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#ptAutoBtn').classList.remove('active');}else{step++;render();}},900);}
+  };
+  render();
+})();
+
+// ============================================================
+// TRACER 2 — BLOCK ORDERING TRACER (visit order)
+// ============================================================
+(function(){
+  // 16x16 grid; queries scattered, BLOCK=4
+  const N=16, BLOCK=4;
+  // Generate a handful of queries
+  const queries=[
+    {l:1,r:5},{l:2,r:14},{l:3,r:7},{l:0,r:11},
+    {l:5,r:9},{l:6,r:15},{l:7,r:8},{l:4,r:13},
+    {l:9,r:12},{l:10,r:14},{l:11,r:13},{l:8,r:10},
+    {l:13,r:15},{l:12,r:14},{l:14,r:15},{l:9,r:15},
+  ];
+  queries.forEach((q,i)=>q.id=i);
+
+  let mode='oddeven';
+  function sortQueries(){
+    return [...queries].sort((a,b)=>{
+      const ba=Math.floor(a.l/BLOCK), bb=Math.floor(b.l/BLOCK);
+      if(ba!==bb) return ba-bb;
+      if(mode==='oddeven') return (ba&1)?b.r-a.r:a.r-b.r;
+      return a.r-b.r;
+    });
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const sorted=sortQueries();
+    const grid=$('#boGrid'); clearEl(grid);
+    // Build cells row=r (top down 15..0), col=l 0..15
+    // Render top-down for readability
+    for(let r=N-1; r>=0; r--){
+      for(let l=0; l<N; l++){
+        const c=document.createElement('div');
+        c.className='blockCell';
+        const blk=Math.floor(l/BLOCK);
+        if(blk&1) c.style.background='var(--panel2)';
+        // Determine if this cell is a query
+        const qHere=sorted.find((q,idx)=>q.l===l && q.r===r);
+        if(qHere){
+          const idxInVisit=sorted.indexOf(qHere);
+          if(idxInVisit<step) c.classList.add('visited');
+          else if(idxInVisit===step) c.classList.add('cur');
+          else c.classList.add('query');
+          c.textContent=qHere.id;
+        }
+        grid.appendChild(c);
+      }
+    }
+    // State panel
+    const st=$('#boState');
+    let totalTravel=0, prevL=0, prevR=-1;
+    const lines=[];
+    lines.push(`Mode: ${mode==='oddeven'?'Odd-Even (snake)':'Plain'}`);
+    lines.push(`BLOCK = ${BLOCK}`);
+    lines.push('');
+    lines.push('Visit order (step → query id, [l,r]):');
+    sorted.forEach((q,idx)=>{
+      const dl=Math.abs(q.l-prevL), dr=Math.abs(q.r-prevR);
+      const trav=dl+dr;
+      const mark = idx===step ? ' ← now' : (idx<step ? ' ✓' : '');
+      lines.push(`  ${idx+1}. #${q.id}  [${q.l},${q.r}]  Δ=${trav}${mark}`);
+      if(idx<=step) totalTravel+=trav;
+      prevL=q.l; prevR=q.r;
+    });
+    lines.push('');
+    lines.push(`Total pointer travel so far: ${totalTravel}`);
+    st.textContent=lines.join('\n');
+  }
+  $('#boResetBtn').onclick=()=>{step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#boAutoBtn').classList.remove('active');} render();};
+  $('#boStepBtn').onclick=()=>{if(step<queries.length-1){step++;render();}};
+  $('#boAutoBtn').onclick=function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active'); autoTimer=setInterval(()=>{if(step>=queries.length-1){clearInterval(autoTimer);autoTimer=null;$('#boAutoBtn').classList.remove('active');}else{step++;render();}},700);}
+  };
+  $('#boOEBtn').onclick=function(){
+    mode='oddeven'; step=0;
+    this.classList.add('active'); $('#boPlainBtn').classList.remove('active'); render();
+  };
+  $('#boPlainBtn').onclick=function(){
+    mode='plain'; step=0;
+    this.classList.add('active'); $('#boOEBtn').classList.remove('active'); render();
+  };
+  render();
+})();
+
+// ============================================================
+// TRACER 3 — DISTINCT COUNT LIVE DEMO (separate instance)
+// ============================================================
+(function(){
+  const arr=[3,1,2,3,1,4,2,5,3,1];
+  const queries=[
+    {l:0,r:3,id:0},
+    {l:2,r:7,id:1},
+    {l:4,r:9,id:2},
+    {l:1,r:5,id:3},
+  ];
+  const BLOCK=Math.max(1,Math.floor(Math.sqrt(arr.length)));
+  const sorted=[...queries].sort((a,b)=>{
+    const ba=Math.floor(a.l/BLOCK), bb=Math.floor(b.l/BLOCK);
+    if(ba!==bb) return ba-bb;
+    return (ba&1)?b.r-a.r:a.r-b.r;
+  });
+
+  const frames=[];
+  let curL=0, curR=-1;
+  const freq=new Array(10).fill(0);
+  let distinct=0;
+  function snap(desc, lastOp=null, curQid=-1, doneIds=[]){
+    frames.push({
+      curL, curR, freq:[...freq], distinct, desc, lastOp, curQid, doneIds:[...doneIds]
+    });
+  }
+  function add(idx){
+    const x=arr[idx];
+    if(freq[x]===0) distinct++;
+    freq[x]++;
+  }
+  function rem(idx){
+    const x=arr[idx];
+    freq[x]--;
+    if(freq[x]===0) distinct--;
+  }
+  const done=[];
+  snap('Initial: empty interval. freq is all zero. distinct = 0.');
+  for(const q of sorted){
+    snap(`▶ Processing query #${q.id}: target [${q.l}, ${q.r}]`, null, q.id, done);
+    while(curL>q.l){ curL--; add(curL); snap(`add(a[${curL}]=${arr[curL]}) → freq[${arr[curL]}]=${freq[arr[curL]]}, distinct=${distinct}`, {type:'add', idx:curL}, q.id, done);}
+    while(curR<q.r){ curR++; add(curR); snap(`add(a[${curR}]=${arr[curR]}) → freq[${arr[curR]}]=${freq[arr[curR]]}, distinct=${distinct}`, {type:'add', idx:curR}, q.id, done);}
+    while(curL<q.l){ rem(curL); snap(`remove(a[${curL}]=${arr[curL]}) → freq[${arr[curL]}]=${freq[arr[curL]]}, distinct=${distinct}`, {type:'remove', idx:curL}, q.id, done); curL++;}
+    while(curR>q.r){ rem(curR); snap(`remove(a[${curR}]=${arr[curR]}) → freq[${arr[curR]}]=${freq[arr[curR]]}, distinct=${distinct}`, {type:'remove', idx:curR}, q.id, done); curR--;}
+    done.push(q.id);
+    snap(`✓ ans[${q.id}] = ${distinct}`, null, q.id, done);
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f=frames[step];
+    const wrap=$('#dcArr'); clearEl(wrap);
+    for(let i=0;i<arr.length;i++){
+      const cell=document.createElement('div');
+      cell.className='arrCell';
+      if(i>=f.curL && i<=f.curR) cell.classList.add('inRange');
+      if(i===f.curL) cell.classList.add('curL');
+      if(i===f.curR) cell.classList.add('curR');
+      if(f.lastOp){
+        if(f.lastOp.type==='add' && f.lastOp.idx===i) cell.classList.add('justAdd');
+        if(f.lastOp.type==='remove' && f.lastOp.idx===i) cell.classList.add('justRem');
+      }
+      cell.innerHTML=`${arr[i]}<span class="idx">i=${i}</span>`;
+      wrap.appendChild(cell);
+    }
+    const qw=$('#dcQueries'); clearEl(qw);
+    for(const q of queries){
+      const chip=document.createElement('div');
+      chip.className='queryChip';
+      chip.textContent=`#${q.id}: [${q.l},${q.r}]`;
+      if(f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qw.appendChild(chip);
+    }
+    const fr=$('#dcFreq');
+    let s='';
+    for(let v=1;v<=6;v++){
+      s+=`freq[${v}] = ${f.freq[v]||0}\n`;
+    }
+    fr.textContent=s;
+    const st=$('#dcStatus');
+    let t='';
+    t+=`curL = ${f.curL}, curR = ${f.curR}\n`;
+    t+=`distinct = ${f.distinct}\n`;
+    t+=`step ${step+1} / ${frames.length}\n\n`;
+    t+=f.desc;
+    st.textContent=t;
+  }
+  $('#dcResetBtn').onclick=()=>{step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#dcAutoBtn').classList.remove('active');} render();};
+  $('#dcStepBtn').onclick=()=>{if(step<frames.length-1){step++;render();}};
+  $('#dcAutoBtn').onclick=function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active'); autoTimer=setInterval(()=>{if(step>=frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#dcAutoBtn').classList.remove('active');}else{step++;render();}},650);}
+  };
+  render();
+})();
+</script>
+</body>
+</html>

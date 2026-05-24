@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Lesson 2 — Composite Node Segment Tree · Segment Tree Course</title>
+<style>
+
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:24px; --fs-sm:21px;
+    --fs-h1:50px; --fs-h2:36px; --fs-h3:28px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.4;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:380px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:20px 16px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:24px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 16px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:26px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:12px 4px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:14px 6px 8px;text-transform:uppercase;letter-spacing:.06em;font-size:16px;}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;border:2px solid transparent;font-weight:800;color:var(--text);margin:4px 4px;background:rgba(0,0,0,0);font-size:18px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:14px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:14px;border-left:3px dashed rgba(37,99,235,.35);padding-left:6px;}
+  .sub a{font-weight:700;font-size:17px;padding:8px 10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:12px 16px;border-radius:14px;font-weight:900;cursor:pointer;font-size:20px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .switch{width:60px;height:34px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 8px 18px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:31px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .card h4{margin:14px 0 8px;font-size:22px;color:var(--accent2);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:700;font-size:20px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:7px 11px;border-radius:999px;font-weight:900;font-size:16px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:16px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:18px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:14px 18px 18px;}
+  pre{margin:10px 0 0;background:var(--codebg);color:var(--codetext);border-radius:16px;padding:14px 16px;overflow:auto;border:2px solid rgba(255,255,255,.08);font-size:17px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;margin:14px 0;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:23px;}
+  .diagramTools{display:flex;gap:8px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .miniBtn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.35);color:var(--bad);}
+  svg.treeSvg{width:100%;height:auto;border-radius:16px;background:rgba(0,0,0,0);display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;overflow-x:auto;white-space:pre-wrap;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:3px solid var(--border);margin-top:10px;font-weight:800;font-size:19px;}
+  th,td{padding:10px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;text-align:left;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:44px;height:44px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:20px;height:14px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:380px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:74px;}
+  .statusPanel{border:3px solid var(--border);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:800;}
+  .statusPanel h3{margin:0 0 8px;font-size:22px;color:var(--accent2);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:16px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:18px;padding-top:14px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:13px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:1px 7px;font-size:19px;font-weight:900;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-weight:800;font-size:17px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;background:rgba(2,6,23,.04);padding:6px 10px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  [data-theme="dark"] .legend span{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;pointer-events:none;}
+  .edgeLine{transition:all .25s ease;}
+  .stepLabel{text-align:center;font-weight:900;font-size:18px;color:var(--muted);margin-top:8px;}
+  .arr{display:flex;flex-wrap:wrap;gap:6px;}
+  .arrCell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:48px;flex-direction:column;padding:4px 8px;border-radius:10px;border:2px solid var(--border);background:var(--panel);font-weight:950;font-family:ui-monospace,monospace;font-size:18px;}
+  .arrCell .idx{font-size:12px;color:var(--muted);font-weight:700;}
+  .arrCell.hl{border-color:var(--accent2);background:rgba(37,99,235,.15);box-shadow:0 4px 12px rgba(37,99,235,.18);}
+  .arrCell.upd{border-color:var(--warn);background:rgba(180,83,9,.15);color:var(--warn);}
+  .arrCell.done{border-color:var(--good);background:rgba(15,118,110,.15);color:var(--good);}
+  .kvLine{display:flex;align-items:center;gap:8px;font-family:ui-monospace,monospace;font-size:17px;margin:3px 0;}
+  .kvLine .k{font-weight:900;color:var(--accent2);min-width:80px;}
+  .kvLine .v{font-weight:700;}
+  .twoCol{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:flex-start;}
+  @media(max-width:1100px){.twoCol{grid-template-columns:1fr}}
+  .invariantBox{background:linear-gradient(180deg,rgba(15,118,110,.10),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .invariantBox h4{color:var(--good);margin:0 0 6px;font-size:21px;}
+  .pitfallBox{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .pitfallBox h4{color:var(--bad);margin:0 0 6px;font-size:21px;}
+  .proofBox{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .proofBox h4{color:var(--warn);margin:0 0 6px;font-size:21px;}
+
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🌳</div>
+    <div class="brandTitle">
+      <div class="t1">Segment Tree · L2</div>
+      <div class="t2">Composite Nodes · Max-Subarray</div>
+      <div class="by-line">Coach Academy</div>
+    </div>
+  </div>
+  <nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem">🧩 Problem Definition<small>Max subarray with updates</small></a>
+  <a href="#why-composite">💡 Why a Composite Node?<small>Sum alone isn't enough</small></a>
+  <a href="#four-values">📐 The Four Values<small>sum · pref · suff · best</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#merge-rule">⚙️ The Merge Rule<small>Four cases of crossing</small></a>
+  <div class="sub">
+  <a href="#trace-merge">Merge Tracer</a>
+  <a href="#trace-query">Query Tracer</a>
+  </div>
+  <a href="#invariants">🛡️ Invariants<small>Per-node contract</small></a>
+  <a href="#identity">⚠️ Identity is Tricky<small>Empty interval pitfall</small></a>
+  <a href="#proof">🧮 Proof of the Merge<small>Case analysis</small></a>
+  <a href="#complexity">⏱ Complexity<small>Same as Lesson 1</small></a>
+  <div class="groupTitle">Implementation</div>
+  <a href="#master-code">💻 Master Template<small>Full C++ code</small></a>
+  <a href="#explained">🔎 Line-by-Line<small>Every line explained</small></a>
+  <div class="groupTitle">Reference</div>
+  <a href="#variants">🎛️ Variants<small>Other composite trees</small></a>
+  <a href="#edges">🧯 Edge Cases<small>Negative values, ties</small></a>
+  <a href="#pitfalls">⚠️ Common Pitfalls<small>Avoid these</small></a>
+  <a href="#decision">🎯 Decision Guide<small>When to use this</small></a>
+  <a href="#problems">🚀 Practice Problems<small>GSS family</small></a>
+  <a href="#summary">🏁 Final Summary<small>Wrap-up</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:42px;height:42px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;">🎓</div>
+    <div class="sf-text">
+      Coach Academy<br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+    </div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:32px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Segment Tree Course</div>
+        <h1>Lesson 2 — Composite Node Segment Tree</h1>
+        <div class="subtitle">Max Subarray Sum · sum · pref · suff · best · The Crossing Case</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:18px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+
+    <p>You are given an array <code class="inlineCode">a</code> of <code class="inlineCode">n</code> integers (possibly negative). Support both:</p>
+    <div class="grid2">
+      <div class="statusPanel">
+        <h3>1. Point Set</h3>
+        <p>Replace <code>a[pos]</code> with a new value <code>x</code>.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>2. Max Subarray Sum Query</h3>
+        <p>Return <code>max( a[i] + a[i+1] + … + a[j] )</code> over all <code>l ≤ i ≤ j ≤ r</code> — the best contiguous subarray sum inside <code>[l, r]</code>.</p>
+      </div>
+    </div>
+    <p class="note" style="margin-top:12px;">This is the dynamic version of the classic <b>Kadane</b> problem. Brute force per query is <b>O(n)</b> with Kadane on <code>a[l..r]</code>; we want <b>O(log n)</b>.</p>
+
+  </section>
+  <section class="card" id="why-composite">
+    <h2>💡 Why a Composite Node?</h2>
+
+    <p>The simplest segment tree stores one value per node — say, the sum. But "max subarray inside a range" cannot be computed from two children's <b>max subarrays</b> alone. Here is why:</p>
+
+    <div class="grid2" style="margin-top:8px;">
+      <div class="statusPanel">
+        <h3>The crossing case</h3>
+<pre style="font-size:18px"><code>Left  child : a = [..., +3]    best inside = 3
+Right child : a = [+5, ...]    best inside = 5
+
+Parent's best is NOT max(3, 5) = 5.
+It could be 3 + 5 = 8 — a subarray
+that <b>crosses</b> the boundary.</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>What we need to know</h3>
+        <p>To check the crossing case we must know the <b>best suffix of the left</b> and the <b>best prefix of the right</b>. So each node must additionally store those.</p>
+        <p>And to maintain those when <i>that</i> node becomes a child of someone else, we need its <b>total sum</b> as well.</p>
+      </div>
+    </div>
+
+  </section>
+  <section class="card" id="four-values">
+    <h2>📐 The Four Values Stored at Each Node</h2>
+
+    <p>Each node for interval <code>[l, r]</code> stores a struct:</p>
+    <table>
+      <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>sum</code></td><td>Total sum of all values in <code>[l, r]</code>.</td></tr>
+        <tr><td><code>pref</code></td><td>Maximum sum of any <b>non-empty prefix</b> of <code>[l, r]</code>.</td></tr>
+        <tr><td><code>suff</code></td><td>Maximum sum of any <b>non-empty suffix</b> of <code>[l, r]</code>.</td></tr>
+        <tr><td><code>best</code></td><td>Maximum sum of any <b>non-empty contiguous subarray</b> inside <code>[l, r]</code>.</td></tr>
+      </tbody>
+    </table>
+    <p>At a leaf with value <code>x</code>, all four are simply <code>x</code>.</p>
+
+  </section>
+  <section class="card" id="merge-rule">
+    <h2>⚙️ The Merge Rule — A.merge(B)</h2>
+
+    <p>Let A be the left child's node, B the right child's. The parent's four values are:</p>
+
+    <div class="grid2">
+      <div class="statusPanel">
+        <h3>parent.sum</h3>
+        <pre style="font-size:19px"><code>parent.sum = A.sum + B.sum</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>parent.pref</h3>
+        <pre style="font-size:19px"><code>parent.pref = max(
+    A.pref,
+    A.sum + B.pref
+)</code></pre>
+        <p class="note">Either the best prefix lives inside A, or it eats all of A and continues into B.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>parent.suff</h3>
+        <pre style="font-size:19px"><code>parent.suff = max(
+    B.suff,
+    B.sum + A.suff
+)</code></pre>
+        <p class="note">Either inside B, or eats all of B going backward into A.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>parent.best</h3>
+        <pre style="font-size:19px"><code>parent.best = max(
+    A.best,
+    B.best,
+    A.suff + B.pref
+)</code></pre>
+        <p class="note">Three sources: entirely in A, entirely in B, or <b>crossing</b> the boundary.</p>
+      </div>
+    </div>
+
+    <div class="diagramWrap">
+  <div class="diagramHeader">
+    <span class="diagramTitle">Merge Visualizer — pick two child nodes</span>
+    <div class="diagramTools"><button class="miniBtn" id="mrPickLeft">Show another LEFT</button><button class="miniBtn" id="mrPickRight">Show another RIGHT</button></div>
+  </div>
+  <div id="trace-merge" class="grid2" style="margin-top:6px;"><div class="dsBox" id="mrChild"></div><div class="dsBox" id="mrParent"></div></div><div class="statusPanel" id="mrExplain" style="margin-top:10px;"></div>
+  
+  
+</div>
+
+
+    <div class="diagramWrap">
+  <div class="diagramHeader">
+    <span class="diagramTitle">Query Tracer — recursive max-subarray on [ql, qr]</span>
+    <div class="diagramTools"><button class="miniBtn active" id="qrResetBtn">Reset</button><button class="miniBtn" id="qrPrevBtn">Prev</button><button class="miniBtn" id="qrNextBtn">Next</button><button class="miniBtn" id="qrAutoBtn">Auto</button><span class="pill" style="margin-left:8px;">ql = <input id="qrL" type="number" min="0" max="7" value="1" style="width:50px;font-weight:900;font-size:18px;text-align:center;border:2px solid var(--border);border-radius:8px;padding:2px 6px;background:var(--panel2);color:var(--text);"> qr = <input id="qrR" type="number" min="0" max="7" value="6" style="width:50px;font-weight:900;font-size:18px;text-align:center;border:2px solid var(--border);border-radius:8px;padding:2px 6px;background:var(--panel2);color:var(--text);"></span><button class="miniBtn" id="qrRun">Trace</button></div>
+  </div>
+  <div id="trace-query"><svg id="qrSvg" class="treeSvg" viewBox="0 0 880 470" style="height:auto;"></svg><div class="grid2" style="margin-top:8px;"><div><div style="font-weight:900;font-size:18px;margin-bottom:4px;">Accumulated answer node</div><div id="qrAcc" class="dsBox" style="font-size:17px;min-height:60px;"></div></div><div class="dsBox" id="qrStatus" style="font-size:17px;min-height:60px;"></div></div></div>
+  <div class="legend"><span><span class="swatch" style="background:rgba(37,99,235,.30);"></span> visiting</span><span><span class="swatch" style="background:rgba(15,118,110,.20);"></span> FULL → return node</span><span><span class="swatch" style="background:rgba(180,83,9,.18);"></span> PARTIAL → recurse</span><span><span class="swatch" style="background:rgba(185,28,28,.12);"></span> NONE → identity</span></div>
+  <div class="stepLabel" id="qrStep"></div>
+</div>
+
+
+  </section>
+  <section class="card" id="invariants">
+    <h2>🛡️ Invariants</h2>
+
+    <div class="invariantBox"><h4>✅ Invariant — Per-node contract</h4><p>For every node interval <code>[l, r]</code>: <code>sum</code> = sum of values, <code>pref</code>/<code>suff</code> = best non-empty prefix/suffix sum, <code>best</code> = best non-empty contiguous subarray sum inside <code>[l, r]</code>.</p></div>
+    <div class="invariantBox"><h4>✅ Invariant — Merge invariant</h4><p>If <code>A</code> and <code>B</code> satisfy the contract for disjoint adjacent intervals, then <code>merge(A, B)</code> as defined above satisfies the contract for their concatenation.</p></div>
+    <div class="invariantBox"><h4>✅ Invariant — Identity invariant</h4><p>The identity node satisfies <code>identity ⊕ X = X ⊕ identity = X</code> for every valid <code>X</code>. For max-subarray this requires <code>sum = 0</code> and <code>pref = suff = best = −∞</code> (see <a href='#identity'>next section</a>).</p></div>
+
+  </section>
+  <section class="card" id="identity">
+    <h2>⚠️ The Identity is Tricky</h2>
+
+    <p>For sum, identity is just <code>0</code>. For max-subarray, identity must be a node such that combining it with any real node returns the real node <b>unchanged</b>. Substituting into the merge rules:</p>
+    <pre><code>parent.pref = max(IDLEFT.pref, IDLEFT.sum + B.pref)
+            = max(IDLEFT.pref, IDLEFT.sum + B.pref)
+            should equal B.pref</code></pre>
+    <p>So we need <code>IDLEFT.pref ≤ B.pref</code> for every legal <code>B</code> (force <code>−∞</code>), and <code>IDLEFT.sum + B.pref = B.pref</code> (force <code>sum = 0</code>). Same analysis for the other three fields.</p>
+    <div class="pitfallBox">
+      <h4>⚠️ Pitfall — using 0 for pref/suff/best</h4>
+      <p>If <code>pref = 0</code>, an array of all negatives would have <code>best ≥ 0</code> — wrong, because the best non-empty subarray of <code>[-5, -3]</code> is <code>-3</code>, not <code>0</code>. The identity must therefore be the <b>"empty" sentinel</b>: <code>sum = 0</code>, but all max-fields <code>= −∞</code>.</p>
+    </div>
+
+  </section>
+  <section class="card" id="proof">
+    <h2>🧮 Proof of the Merge</h2>
+
+<p>We prove the merge rule by case analysis on the location of the optimal subarray <code>S</code> inside <code>[L, R]</code>, where <code>[L, R]</code> is the union of A's interval and B's interval.</p>
+<ol style="font-size:21px;line-height:1.7;">
+  <li><b>S lies entirely inside A.</b> Then by A's <code>best</code> invariant, <code>sum(S) ≤ A.best</code>, and equality is achievable. Contribution to <code>parent.best</code>: <code>A.best</code>.</li>
+  <li><b>S lies entirely inside B.</b> Symmetric. Contribution: <code>B.best</code>.</li>
+  <li><b>S crosses the boundary.</b> Then S decomposes as a suffix of A followed by a prefix of B. By A's <code>suff</code> invariant, the suffix is at most <code>A.suff</code>; by B's <code>pref</code> invariant, the prefix is at most <code>B.pref</code>. Equality is achievable by taking the optimal suffix of A and the optimal prefix of B. Contribution: <code>A.suff + B.pref</code>.</li>
+</ol>
+<p>Taking the max over the three cases yields the merge rule for <code>best</code>. The rules for <code>pref</code>, <code>suff</code>, and <code>sum</code> follow similarly, with prefix/suffix not allowed to be empty (matching the non-empty requirement). ∎</p>
+
+  </section>
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity</h2>
+<p>Identical to Lesson 1. Build <b>O(n)</b>; point update and range query <b>O(log n)</b>. The constant factor is slightly larger because each merge does four max/sum operations instead of one.</p>
+  </section>
+  <section class="card" id="master-code">
+    <h2>💻 Master Template — Max Subarray Sum</h2>
+<details open>
+  <summary>Full C++ Template <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct MaxSubarraySegTree {
+    struct Node {
+        long long sum;
+        long long pref;
+        long long suff;
+        long long best;
+    };
+
+    int n = 0;
+    int base = 1;
+    vector&lt;Node&gt; tree;
+
+    static Node make_node(long long x) {
+        return {x, x, x, x};
+    }
+
+    static Node identity() {
+        const long long NEG = -(1LL &lt;&lt; 60);
+        return {0, NEG, NEG, NEG};
+    }
+
+    static Node merge_nodes(const Node&amp; a, const Node&amp; b) {
+        Node res;
+        res.sum = a.sum + b.sum;
+        res.pref = max(a.pref, a.sum + b.pref);
+        res.suff = max(b.suff, b.sum + a.suff);
+        res.best = max({a.best, b.best, a.suff + b.pref});
+        return res;
+    }
+
+    MaxSubarraySegTree() {}
+    MaxSubarraySegTree(const vector&lt;long long&gt;&amp; a) { init(a); }
+
+    void init(const vector&lt;long long&gt;&amp; a) {
+        n = (int)a.size();
+        base = 1;
+        while (base &lt; max(1, n)) base &lt;&lt;= 1;
+        tree.assign(2 * base, Node());
+        build(0, 0, base - 1, a);
+    }
+
+    void build(int i, int l, int r, const vector&lt;long long&gt;&amp; a) {
+        if (l == r) {
+            tree[i] = (l &lt; n) ? make_node(a[l]) : identity();
+            return;
+        }
+        int left = 2*i + 1, right = left + 1;
+        int mid = l + (r - l) / 2;
+        build(left, l, mid, a);
+        build(right, mid + 1, r, a);
+        tree[i] = merge_nodes(tree[left], tree[right]);
+    }
+
+    void point_set(int pos, long long value) {
+        point_set(pos, value, 0, 0, base - 1);
+    }
+    void point_set(int pos, long long value, int i, int l, int r) {
+        if (pos &lt; l || r &lt; pos) return;
+        if (l == r) { tree[i] = make_node(value); return; }
+        int left = 2*i + 1, right = left + 1;
+        int mid = l + (r - l) / 2;
+        point_set(pos, value, left, l, mid);
+        point_set(pos, value, right, mid + 1, r);
+        tree[i] = merge_nodes(tree[left], tree[right]);
+    }
+
+    Node query(int ql, int qr) const {
+        return query(ql, qr, 0, 0, base - 1);
+    }
+    Node query(int ql, int qr, int i, int l, int r) const {
+        if (qr &lt; l || r &lt; ql) return identity();
+        if (ql &lt;= l &amp;&amp; r &lt;= qr) return tree[i];
+        int left = 2*i + 1, right = left + 1;
+        int mid = l + (r - l) / 2;
+        Node a = query(ql, qr, left, l, mid);
+        Node b = query(ql, qr, right, mid + 1, r);
+        return merge_nodes(a, b);
+    }
+
+    long long max_subarray_sum(int l, int r) const {
+        return query(l, r).best;
+    }
+};</code></pre>
+  </div>
+</details>
+
+  </section>
+  <section class="card" id="explained">
+    <h2>🔎 Line-by-Line Walkthrough</h2>
+
+    <h3><code>make_node(x)</code> and <code>identity()</code></h3>
+    <p><code>make_node(x)</code> sets all four fields to <code>x</code> because a single element forms a length-1 prefix, suffix, and subarray with sum <code>x</code>. <code>identity()</code> uses <code>NEG = −2⁶⁰</code> as a safe stand-in for <code>−∞</code> (large enough to defeat any real answer, far from <code>LLONG_MIN</code> so that <code>X + NEG</code> doesn't overflow).</p>
+    <h3><code>merge_nodes(a, b)</code></h3>
+    <p>Computes the four parent fields exactly as derived. Each field is one max of two or three sums, all <b>O(1)</b>.</p>
+    <h3><code>build / point_set / query</code></h3>
+    <p>Structurally identical to Lesson 1 — the only change is the type of value flowing through the recursion. The recursive skeleton is uniform across the entire segment-tree family.</p>
+    
+  </section>
+  <section class="card" id="variants">
+    <h2>🎛️ Variants of Composite Nodes</h2>
+
+    <h3>Variant 1 — Longest run of consecutive equal values</h3>
+    <p>Store: <code>longestRun</code>, <code>prefRun</code>, <code>suffRun</code>, <code>leftVal</code>, <code>rightVal</code>, <code>len</code>.</p>
+    <p>Useful for problems like "longest streak of 1s after toggles".</p>
+
+    <h3>Variant 2 — Sum + count of zeros</h3>
+    <p>Store: <code>sum</code> and <code>cntZero</code>. Useful when you need to ignore zeros or count them separately.</p>
+
+    <h3>Variant 3 — Bracket matching</h3>
+    <p>Store: <code>unmatchedOpen</code>, <code>unmatchedClose</code>. Merge cancels A's unmatched opens with B's unmatched closes. Classic application: <a href="https://vjudge.net/problem/CodeForces-380C" target="_blank">CF 380C</a>.</p>
+
+    <h3>Variant 4 — Maximum subarray with at most one element removed</h3>
+    <p>Extension of this lesson: store another field for "best with one drop allowed". Used in many GSS variants.</p>
+
+  </section>
+  <section class="card" id="edges">
+    <h2>🧯 Edge Cases</h2>
+
+    <table><thead><tr><th>Edge case</th><th>Behavior</th></tr></thead><tbody>
+    <tr><td>All negative array</td><td><code>best</code> = the single largest (least negative) element.</td></tr>
+    <tr><td>Single element</td><td><code>{x, x, x, x}</code>; <code>best = x</code> even if negative.</td></tr>
+    <tr><td>Empty query (would mean ql > qr)</td><td>Don't allow — answer is undefined. Caller must ensure ql ≤ qr.</td></tr>
+    <tr><td>Adding identity to identity</td><td><code>sum = 0</code>, others remain <code>−∞</code>. Stable.</td></tr>
+    </tbody></table>
+  </section>
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+
+    <table><thead><tr><th>Pitfall</th><th>Fix</th></tr></thead><tbody>
+    <tr><td>Using <code>0</code> for <code>pref/suff/best</code> in identity</td><td>All-negative arrays return <code>0</code>. Use <code>−2⁶⁰</code>.</td></tr>
+    <tr><td>Using <code>LLONG_MIN</code> for <code>−∞</code></td><td><code>A.sum + B.pref</code> overflows. Use <code>−2⁶⁰</code> or smaller safe constant.</td></tr>
+    <tr><td>Swapping <code>pref</code>/<code>suff</code> in <code>best</code> calculation</td><td>It must be <code>A.suff + B.pref</code> (left's tail meets right's head).</td></tr>
+    <tr><td>Forgetting that the operation is <b>not commutative</b></td><td>You must preserve left/right order in merge. <code>merge(A, B) ≠ merge(B, A)</code> in general.</td></tr>
+    </tbody></table>
+  </section>
+  <section class="card" id="decision">
+    <h2>🎯 Decision Guide</h2>
+
+    <p>Use a composite-node segment tree whenever a single number per node isn't enough. The recipe:</p>
+    <ol style="font-size:21px;line-height:1.7;">
+    <li>Write down what the question asks at the <b>full</b> interval.</li>
+    <li>Decide what extra information the children must expose so the parent can answer the question.</li>
+    <li>Make sure the merge of two valid nodes is itself valid — this is the associativity check.</li>
+    <li>Pick an identity that absorbs cleanly.</li>
+    </ol>
+  </section>
+  <section class="card" id="problems">
+    <h2>🚀 Practice Problems</h2>
+
+    <h3>Hard</h3>
+    <ul style="font-size:21px;line-height:1.7;">
+      <li><a href="https://vjudge.net/problem/SPOJ-GSS1" target="_blank">SPOJ GSS1</a> — Static max subarray queries; perfect first problem.</li>
+      <li><a href="https://vjudge.net/problem/SPOJ-GSS3" target="_blank">SPOJ GSS3</a> — Point update + max subarray queries; uses this exact template.</li>
+      <li><a href="https://vjudge.net/problem/SPOJ-GSS5" target="_blank">SPOJ GSS5</a> — Max subarray with l1≤i≤r1, l2≤j≤r2 — composite query of two segments.</li>
+      <li><a href="https://vjudge.net/problem/CodeForces-380C" target="_blank">CF 380C — Sereja and Brackets</a> — Composite node for bracket matching.</li>
+    </ul>
+  </section>
+  <section class="card" id="summary">
+    <h2>🏁 Final Summary</h2>
+
+    <p>Composite-node segment trees teach the central segment-tree lesson: <b>"what does a node store, and how do children combine?"</b> Once you can answer those two questions, you can build a segment tree for almost any associative aggregate, even one as non-obvious as max subarray sum.</p>
+    <p>The same skeleton from Lesson 1 — recursion + the three query cases — applies <b>verbatim</b>. The only changes are the <code>Node</code> struct, the <code>identity</code>, and <code>merge_nodes</code>.</p>
+    <div class="chips" style="margin-top:14px;">
+      <span class="chip good">Same O(log n) per operation</span>
+      <span class="chip good">4 fields = sum/pref/suff/best</span>
+      <span class="chip warn">Identity must be the "empty" sentinel</span>
+      <span class="chip">Next: iterative ST — Lesson 3</span>
+    </div>
+
+  </section>
+
+
+  <div class="page-footer">
+    <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Segment Tree Course · Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">Composite Node ST · sum/pref/suff/best · The merge is the algorithm</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+
+// ============================================================
+// DOM + SVG HELPERS
+// ============================================================
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function clearEl(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function makeEl(tag, attrs={}, html=''){
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if(html) el.innerHTML = html;
+  return el;
+}
+function makeSVG(tag, attrs={}){
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+function getCssVar(name){
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+// ============================================================
+// THEME TOGGLE (with localStorage persistence)
+// ============================================================
+(function(){
+  const KEY = 'segtree_theme';
+  const saved = localStorage.getItem(KEY);
+  if(saved) document.body.setAttribute('data-theme', saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme', 'dark');
+  }
+  const sw = $('#themeSwitch');
+  if(sw){
+    sw.setAttribute('role','switch');
+    sw.setAttribute('aria-checked', document.body.getAttribute('data-theme')==='dark' ? 'true':'false');
+    sw.onclick = () => {
+      const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem(KEY, next);
+      sw.setAttribute('aria-checked', next==='dark'?'true':'false');
+      // Notify any tree drawers to re-render colors
+      document.dispatchEvent(new CustomEvent('segtree:themechange'));
+    };
+  }
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+(function(){
+  const toggle = $('#sidebarToggle');
+  const sidebar = $('#sidebar');
+  const appEl = $('#app');
+  const overlay = $('#sidebarOverlay');
+  if(!toggle || !sidebar || !appEl) return;
+  let open = window.innerWidth > 1400;
+  function apply(){
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      overlay.classList.remove('show');
+      if(window.innerWidth > 1400) appEl.classList.remove('sidebar-hidden');
+    } else {
+      appEl.classList.add('sidebar-hidden');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+  }
+  if(!open) appEl.classList.add('sidebar-hidden');
+  apply();
+  toggle.setAttribute('aria-controls','sidebar');
+  toggle.onclick = () => {
+    open = !open;
+    if(open && window.innerWidth <= 1400){
+      sidebar.classList.remove('collapsed');
+      overlay.classList.add('show');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    } else {
+      apply();
+    }
+  };
+  overlay.onclick = () => {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    open = false;
+  };
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      overlay.click();
+    }
+  });
+})();
+
+// ============================================================
+// SCROLL-BASED NAV HIGHLIGHTING
+// ============================================================
+(function(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  function update(){
+    let cur = '';
+    sections.forEach(s => {
+      if(s.getBoundingClientRect().top < 200) cur = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  const contentEl = $('.content');
+  if(contentEl) contentEl.addEventListener('scroll', update);
+  update();
+})();
+
+// ============================================================
+// SEGMENT TREE LAYOUT (0-based heap indexing)
+//   left  = 2*i + 1
+//   right = 2*i + 2
+// Returns a list { x, y, r } for each node, plus tree dimensions.
+// ============================================================
+function computeSegTreeLayout(base, opts={}){
+  // base must be a power of 2. Tree has 2*base - 1 nodes.
+  const levels = Math.log2(base) + 1;
+  const W = opts.width || 880;
+  const H = opts.height || (levels * 95 + 30);
+  const radius = opts.radius || Math.max(18, Math.min(34, 280 / base));
+  const layout = [];
+  function rec(i, depth, l, r){
+    layout[i] = { i, depth, l, r };
+    if(l === r) return;
+    const left = 2*i + 1, right = left + 1;
+    const mid = l + ((r - l) >> 1);
+    rec(left, depth+1, l, mid);
+    rec(right, depth+1, mid+1, r);
+  }
+  rec(0, 0, 0, base-1);
+  // Now assign x coordinates using leaf positions
+  const leafCount = base;
+  const leafGap = (W - 40) / leafCount;
+  let leafIdx = 0;
+  function place(i){
+    const node = layout[i];
+    if(node.l === node.r){
+      node.x = 20 + leafGap * (leafIdx + 0.5);
+      leafIdx++;
+    } else {
+      const left = 2*i + 1, right = left + 1;
+      place(left); place(right);
+      node.x = (layout[left].x + layout[right].x) / 2;
+    }
+    node.y = 30 + node.depth * ((H - 60) / Math.max(1, levels - 1));
+    node.rad = radius;
+  }
+  place(0);
+  return { layout, width: W, height: H, levels, radius };
+}
+
+// ============================================================
+// SEGMENT TREE SVG DRAWER
+// Highlight categories:
+//   current      - the node we are currently processing (blue strong)
+//   visited      - already touched in this step (light blue)
+//   full         - fully covered by query (green - return)
+//   partial      - partial overlap (orange - recurse)
+//   none         - no overlap (red dashed - skip)
+//   updated      - just changed by an update (warn fill)
+//   lazyPending  - has pending lazy tag (yellow ring)
+//   cloned       - newly cloned node (purple fill)
+//   frozen       - belongs to an old persistent version (gray dashed)
+// ============================================================
+function drawSegTree(svgSel, opts){
+  const svg = (typeof svgSel === 'string') ? $(svgSel) : svgSel;
+  clearEl(svg);
+  const { base, nodes, highlights={}, queryRange=null, arrLabels=null } = opts;
+  const layoutOpts = { width: opts.width || 880, height: opts.height || 0, radius: opts.radius };
+  const L = computeSegTreeLayout(base, layoutOpts);
+  svg.setAttribute('viewBox', `0 0 ${L.width} ${L.height}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  // Draw edges first
+  L.layout.forEach(nd => {
+    if(nd.l === nd.r) return;
+    const leftI = 2*nd.i + 1, rightI = leftI + 1;
+    [leftI, rightI].forEach(child => {
+      const c = L.layout[child];
+      const lineCol = getCssVar('--border');
+      const ln = makeSVG('line', {
+        x1: nd.x, y1: nd.y, x2: c.x, y2: c.y,
+        stroke: lineCol, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+        class: 'edgeLine'
+      });
+      svg.appendChild(ln);
+    });
+  });
+
+  // Draw nodes
+  L.layout.forEach(nd => {
+    const h = highlights[nd.i] || 'idle';
+    let fill = 'var(--panel)';
+    let stroke = getCssVar('--border');
+    let sw = 3;
+    let dasharray = '';
+    switch(h){
+      case 'current':  fill = 'rgba(37,99,235,.30)'; stroke = getCssVar('--accent2'); sw = 5; break;
+      case 'visited':  fill = 'rgba(37,99,235,.10)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'full':     fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 5; break;
+      case 'partial':  fill = 'rgba(180,83,9,.18)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'none':     fill = 'rgba(185,28,28,.12)'; stroke = getCssVar('--bad'); sw = 3; dasharray='6,5'; break;
+      case 'updated':  fill = 'rgba(180,83,9,.22)'; stroke = getCssVar('--warn'); sw = 5; break;
+      case 'lazyPending': fill='rgba(180,83,9,.10)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'cloned':   fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 5; break;
+      case 'frozen':   fill = 'rgba(120,120,120,.12)'; stroke = getCssVar('--muted'); sw = 2.5; dasharray='4,4'; break;
+      case 'leaf':     fill = 'rgba(37,99,235,.08)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'kth-left': fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 4; break;
+      case 'kth-right':fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 4; break;
+    }
+    const attrs = {
+      cx: nd.x, cy: nd.y, r: nd.rad,
+      fill, stroke, 'stroke-width': sw,
+      class: 'nodeCircle'
+    };
+    if(dasharray) attrs['stroke-dasharray'] = dasharray;
+    svg.appendChild(makeSVG('circle', attrs));
+
+    // Index label (small, above)
+    const idxLab = makeSVG('text', {
+      x: nd.x, y: nd.y - nd.rad - 4,
+      'text-anchor':'middle','font-size':'11','font-weight':'700',
+      fill: getCssVar('--muted'), 'pointer-events':'none'
+    });
+    idxLab.textContent = `i=${nd.i}`;
+    svg.appendChild(idxLab);
+
+    // Interval label inside
+    const intervalLab = makeSVG('text', {
+      x: nd.x, y: nd.y - 3,
+      'text-anchor':'middle','font-size': nd.rad >= 26 ? '13' : '11', 'font-weight':'900',
+      fill: getCssVar('--text'), 'pointer-events':'none'
+    });
+    intervalLab.textContent = `[${nd.l},${nd.r}]`;
+    svg.appendChild(intervalLab);
+
+    // Node value (passed in nodes[i])
+    const v = nodes ? nodes[nd.i] : undefined;
+    if(v !== undefined && v !== null){
+      const valLab = makeSVG('text', {
+        x: nd.x, y: nd.y + 14,
+        'text-anchor':'middle','font-size': nd.rad >= 26 ? '15' : '12','font-weight':'950',
+        fill: h === 'current' ? getCssVar('--accent2') :
+              h === 'updated' ? getCssVar('--warn') :
+              h === 'full'    ? getCssVar('--good') :
+              getCssVar('--text'),
+        'pointer-events':'none'
+      });
+      valLab.textContent = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      svg.appendChild(valLab);
+    }
+  });
+
+  // Optional: query range bar at top
+  if(queryRange){
+    const [ql, qr] = queryRange;
+    const leafLayer = L.layout.filter(n => n.l === n.r);
+    if(leafLayer.length){
+      const lx = leafLayer[ql] ? leafLayer[ql].x : null;
+      const rx = leafLayer[qr] ? leafLayer[qr].x : null;
+      if(lx !== null && rx !== null){
+        const y = L.layout[L.layout.length-1].y + L.radius + 16;
+        svg.appendChild(makeSVG('line', {
+          x1: lx - L.radius, y1: y, x2: rx + L.radius, y2: y,
+          stroke: getCssVar('--accent2'), 'stroke-width': 5, 'stroke-linecap':'round'
+        }));
+        const t = makeSVG('text', {
+          x: (lx+rx)/2, y: y+20, 'text-anchor':'middle','font-size':'14','font-weight':'900',
+          fill: getCssVar('--accent2')
+        });
+        t.textContent = `query [${ql}, ${qr}]`;
+        svg.appendChild(t);
+      }
+    }
+  }
+
+  return L;
+}
+
+// ============================================================
+// HORIZONTAL ARRAY DRAWER
+// nodes: array of values; highlights: index -> class ('hl','upd','done')
+// ============================================================
+function drawArray(containerSel, values, opts={}){
+  const c = (typeof containerSel === 'string') ? $(containerSel) : containerSel;
+  if(!c) return;
+  clearEl(c);
+  c.classList.add('arr');
+  const highlights = opts.highlights || {};
+  const showIdx = opts.showIdx !== false;
+  values.forEach((v, i) => {
+    const cls = highlights[i] ? ('arrCell '+highlights[i]) : 'arrCell';
+    const cell = makeEl('div', { class: cls });
+    if(showIdx){
+      const idx = makeEl('span', { class: 'idx' });
+      idx.textContent = String(i);
+      cell.appendChild(idx);
+    }
+    const val = makeEl('span', {});
+    val.textContent = (v === null || v === undefined) ? '·' : String(v);
+    cell.appendChild(val);
+    c.appendChild(cell);
+  });
+}
+
+// ============================================================
+// COMMON STEP CONTROLLER (Reset / Prev / Next / Auto)
+// Pass: { ids:{reset,prev,next,auto,step,status}, totalFn, renderFn,
+//         interval(ms), startStep=0 }
+// ============================================================
+function makeStepController(cfg){
+  const { ids, totalFn, renderFn } = cfg;
+  let step = cfg.startStep || 0;
+  let timer = null;
+  function render(){
+    const total = totalFn();
+    if(step >= total) step = total - 1;
+    if(step < 0) step = 0;
+    renderFn(step);
+    if(ids.step){
+      const el = $(ids.step);
+      if(el) el.textContent = `Step ${step+1} / ${total}`;
+    }
+  }
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if(ids.auto){ const a = $(ids.auto); if(a) a.classList.remove('active'); }
+  }
+  function reset(){ step = 0; stopAuto(); render(); }
+  function prev(){ stopAuto(); step--; render(); }
+  function next(){ step++; render(); }
+  function autoToggle(){
+    if(timer){ stopAuto(); return; }
+    const a = $(ids.auto); if(a) a.classList.add('active');
+    timer = setInterval(() => {
+      const total = totalFn();
+      if(step >= total - 1){ stopAuto(); return; }
+      step++; render();
+    }, cfg.interval || 800);
+  }
+  if(ids.reset){ const e = $(ids.reset); if(e) e.onclick = reset; }
+  if(ids.prev) { const e = $(ids.prev);  if(e) e.onclick = prev;  }
+  if(ids.next) { const e = $(ids.next);  if(e) e.onclick = next;  }
+  if(ids.auto) { const e = $(ids.auto);  if(e) e.onclick = autoToggle; }
+  document.addEventListener('segtree:themechange', () => render());
+  render();
+  return { reset, prev, next, autoToggle, render, get step(){return step;}, set step(v){step=v;render();} };
+}
+
+
+// ============================================================
+// LESSON-SPECIFIC SCRIPT
+// ============================================================
+
+const A2 = [-2, 1, -3, 4, -1, 2, 1, -5];  // Famous Kadane example, n=8
+const BASE2 = 8;
+
+// Compute composite node {sum, pref, suff, best} structurally.
+function makeLeaf(x){ return { sum:x, pref:x, suff:x, best:x }; }
+const NEG = -(2**40);
+function ident(){ return { sum:0, pref:NEG, suff:NEG, best:NEG }; }
+function mergeNodes(a, b){
+  return {
+    sum:  a.sum + b.sum,
+    pref: Math.max(a.pref, a.sum + b.pref),
+    suff: Math.max(b.suff, b.sum + a.suff),
+    best: Math.max(a.best, b.best, a.suff + b.pref)
+  };
+}
+function buildCompositeTree(a, base){
+  const tree = new Array(2*base).fill(null);
+  function rec(i,l,r){
+    if(l===r){ tree[i] = l < a.length ? makeLeaf(a[l]) : ident(); return; }
+    const L=2*i+1, R=L+1, m=l+((r-l)>>1);
+    rec(L,l,m); rec(R,m+1,r);
+    tree[i] = mergeNodes(tree[L], tree[R]);
+  }
+  rec(0,0,base-1);
+  return tree;
+}
+function fmtNode(n){
+  const f = v => (v <= NEG/2) ? '−∞' : (v>=0?'+':'')+v;
+  return `sum=${n.sum} pref=${f(n.pref)} suff=${f(n.suff)} best=${f(n.best)}`;
+}
+
+// ============================================================
+// MERGE TRACER — pick two example children, show the merge
+// ============================================================
+(function(){
+  // Curated examples to illustrate each case
+  const lefts = [
+    { name:'A = [+3]',             node: makeLeaf(3) },
+    { name:'A = [−2, +1]',         node: mergeNodes(makeLeaf(-2), makeLeaf(1)) },
+    { name:'A = [+4, −1, −2]',     node: mergeNodes(mergeNodes(makeLeaf(4),makeLeaf(-1)), makeLeaf(-2)) },
+    { name:'A = [−5, −3]',         node: mergeNodes(makeLeaf(-5), makeLeaf(-3)) },
+  ];
+  const rights = [
+    { name:'B = [+5]',             node: makeLeaf(5) },
+    { name:'B = [+2, +1]',         node: mergeNodes(makeLeaf(2), makeLeaf(1)) },
+    { name:'B = [−1, +6, +2]',     node: mergeNodes(mergeNodes(makeLeaf(-1),makeLeaf(6)), makeLeaf(2)) },
+    { name:'B = [−4]',             node: makeLeaf(-4) },
+  ];
+  let li=0, ri=0;
+  function explain(A, B, P){
+    const cases = [];
+    cases.push({lab:'best inside A', val: A.best});
+    cases.push({lab:'best inside B', val: B.best});
+    cases.push({lab:'crossing = A.suff + B.pref', val: A.suff + B.pref});
+    const winner = cases.reduce((acc, c) => c.val > acc.val ? c : acc, cases[0]);
+    return `<p><b>Merge selected</b>: ${winner.lab} = <b>${winner.val}</b></p>` +
+           cases.map(c=>`<div class="kvLine"><span class="k">candidate</span><span class="v">${c.lab} = ${c.val}${c===winner?' ←':''}</span></div>`).join('');
+  }
+  function render(){
+    const A = lefts[li].node, B = rights[ri].node;
+    const P = mergeNodes(A, B);
+    const chBox = $('#mrChild');
+    chBox.innerHTML =
+      `<div style="font-weight:900;font-size:18px;margin-bottom:6px;">${lefts[li].name}</div>` +
+      `<div class="kvLine"><span class="k">sum</span><span class="v">${A.sum}</span></div>` +
+      `<div class="kvLine"><span class="k">pref</span><span class="v">${A.pref<=NEG/2?'−∞':A.pref}</span></div>` +
+      `<div class="kvLine"><span class="k">suff</span><span class="v">${A.suff<=NEG/2?'−∞':A.suff}</span></div>` +
+      `<div class="kvLine"><span class="k">best</span><span class="v">${A.best<=NEG/2?'−∞':A.best}</span></div>` +
+      `<div style="border-top:2px dashed var(--border);margin:10px 0;"></div>` +
+      `<div style="font-weight:900;font-size:18px;margin-bottom:6px;">${rights[ri].name}</div>` +
+      `<div class="kvLine"><span class="k">sum</span><span class="v">${B.sum}</span></div>` +
+      `<div class="kvLine"><span class="k">pref</span><span class="v">${B.pref<=NEG/2?'−∞':B.pref}</span></div>` +
+      `<div class="kvLine"><span class="k">suff</span><span class="v">${B.suff<=NEG/2?'−∞':B.suff}</span></div>` +
+      `<div class="kvLine"><span class="k">best</span><span class="v">${B.best<=NEG/2?'−∞':B.best}</span></div>`;
+    const parBox = $('#mrParent');
+    parBox.innerHTML =
+      `<div style="font-weight:900;font-size:18px;margin-bottom:6px;color:var(--accent2);">Parent = merge(A, B)</div>` +
+      `<div class="kvLine"><span class="k">sum</span><span class="v">${A.sum} + ${B.sum} = ${P.sum}</span></div>` +
+      `<div class="kvLine"><span class="k">pref</span><span class="v">max(${A.pref}, ${A.sum}+${B.pref}) = ${P.pref}</span></div>` +
+      `<div class="kvLine"><span class="k">suff</span><span class="v">max(${B.suff}, ${B.sum}+${A.suff}) = ${P.suff}</span></div>` +
+      `<div class="kvLine"><span class="k">best</span><span class="v">max(${A.best}, ${B.best}, ${A.suff}+${B.pref}) = <b>${P.best}</b></span></div>`;
+    $('#mrExplain').innerHTML = `<h3>Why this best?</h3>${explain(A,B,P)}`;
+  }
+  $('#mrPickLeft').onclick = () => { li = (li+1) % lefts.length; render(); };
+  $('#mrPickRight').onclick = () => { ri = (ri+1) % rights.length; render(); };
+  render();
+})();
+
+// ============================================================
+// QUERY TRACER
+// ============================================================
+(function(){
+  let frames = [];
+  function buildFrames(a, base, ql, qr){
+    const tree = buildCompositeTree(a, base);
+    const fr = [];
+    // Start
+    fr.push({ tree, hi:{0:'current'}, acc: ident(), note:`Start query(${ql},${qr}) at root i=0 covering [0,${base-1}]` });
+    function rec(i, l, r){
+      if(qr < l || r < ql){
+        fr.push({ tree, hi:{[i]:'none'}, acc: ident(), note:`i=${i} [${l},${r}]: NONE → return identity` });
+        return ident();
+      }
+      if(ql <= l && r <= qr){
+        fr.push({ tree, hi:{[i]:'full'}, acc: tree[i], note:`i=${i} [${l},${r}]: FULL → return node {${fmtNode(tree[i])}}` });
+        return tree[i];
+      }
+      fr.push({ tree, hi:{[i]:'partial'}, acc: ident(), note:`i=${i} [${l},${r}]: PARTIAL → recurse both` });
+      const L=2*i+1, R=L+1, m=l+((r-l)>>1);
+      const a1 = rec(L,l,m);
+      const a2 = rec(R,m+1,r);
+      const merged = mergeNodes(a1, a2);
+      fr.push({ tree, hi:{[i]:'visited'}, acc: merged, note:`BACK at i=${i}: merge child answers → ${fmtNode(merged)}` });
+      return merged;
+    }
+    const ans = rec(0,0,base-1);
+    fr.push({ tree, hi:{}, acc: ans, note:`Done. Answer node = {${fmtNode(ans)}}. best = ${ans.best}` });
+    return fr;
+  }
+  let ctrl;
+  function compute(){
+    let ql=parseInt($('#qrL').value,10), qr=parseInt($('#qrR').value,10);
+    if(!Number.isFinite(ql)) ql=0;
+    if(!Number.isFinite(qr)) qr=A2.length-1;
+    ql = Math.max(0, Math.min(A2.length-1, ql));
+    qr = Math.max(0, Math.min(A2.length-1, qr));
+    if(ql>qr) [ql,qr] = [qr,ql];
+    frames = buildFrames(A2, BASE2, ql, qr);
+  }
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    const treeForDraw = f.tree.map(n => n ? n.best : null);
+    let ql=parseInt($('#qrL').value,10), qr=parseInt($('#qrR').value,10);
+    drawSegTree('#qrSvg', { base: BASE2, nodes: treeForDraw, highlights: f.hi,
+                            width: 880, height: 460, queryRange: [ql, qr] });
+    const a = f.acc;
+    $('#qrAcc').innerHTML =
+      `<div class="kvLine"><span class="k">sum</span><span class="v">${a.sum}</span></div>` +
+      `<div class="kvLine"><span class="k">pref</span><span class="v">${a.pref<=NEG/2?'−∞':a.pref}</span></div>` +
+      `<div class="kvLine"><span class="k">suff</span><span class="v">${a.suff<=NEG/2?'−∞':a.suff}</span></div>` +
+      `<div class="kvLine"><span class="k">best</span><span class="v" style="color:var(--good);font-weight:950;">${a.best<=NEG/2?'−∞':a.best}</span></div>`;
+    $('#qrStatus').textContent = f.note;
+  }
+  compute();
+  ctrl = makeStepController({
+    ids: { reset:'#qrResetBtn', prev:'#qrPrevBtn', next:'#qrNextBtn',
+           auto:'#qrAutoBtn', step:'#qrStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#qrRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+</script>
+</body>
+</html>

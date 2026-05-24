@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — Implicit Treap (Sequence Treap)</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --link:#1d4ed8;
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --node-blue:#2563eb; --node-green:#0f766e; --node-amber:#b45309; --node-red:#b91c1c; --node-purple:#7c3aed;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --link:#93c5fd;
+      --node-blue:#4f8cff; --node-green:#34d399; --node-amber:#fbbf24; --node-red:#fb7185; --node-purple:#a78bfa;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;cursor:pointer;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";float:right;font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:17px;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;white-space:pre;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .goodRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--good);border-radius:0 var(--radius) var(--radius) 0;background:rgba(15,118,110,.08);}
+    .gLabel{font-weight:950;font-size:24px;color:var(--good);margin-bottom:6px;}
+    .gDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .plink{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:8px 12px;border-radius:12px;font-weight:900;font-size:18px;color:var(--accent2);margin-top:6px;}
+    .stepper{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;margin:18px 0;box-shadow:var(--shadow);}
+    .stepper-title{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:10px;}
+    .stepper-svg{width:100%;height:auto;display:block;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+    .stepper-desc{margin-top:14px;padding:14px 18px;background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;font-weight:800;font-size:21px;line-height:1.4;color:var(--text);min-height:70px;}
+    .stepper-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+    .stepper-btn{padding:10px 18px;border-radius:12px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:18px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .stepper-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(37,99,235,.08);}
+    .stepper-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .stepper-btn.primary{background:var(--accent2);color:white;border-color:var(--accent2);}
+    .stepper-btn.primary:hover:not(:disabled){background:var(--accent);}
+    .stepper-counter{font-weight:900;font-size:20px;color:var(--muted);min-width:120px;text-align:center;}
+    .tree-edge{stroke:var(--muted);stroke-width:2.5;fill:none;transition:all .35s ease;}
+    .tree-edge.path{stroke:var(--accent2);stroke-width:5;}
+    .tree-edge.new{stroke:var(--good);stroke-width:5;}
+    .tree-edge.faded{stroke:var(--border);stroke-width:2;opacity:.4;}
+    .tree-node circle{stroke:var(--panel);stroke-width:3;transition:all .35s ease;}
+    .tree-node text{fill:white;text-anchor:middle;font-family:system-ui,sans-serif;font-weight:900;dominant-baseline:central;}
+    .tree-node.highlight circle{stroke:var(--accent2);stroke-width:6;}
+    .tree-node.target circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.doomed circle{stroke:var(--bad);stroke-width:6;stroke-dasharray:5,3;}
+    .tree-node.new-node circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.faded{opacity:.4;}
+    .tree-label{fill:var(--text);text-anchor:middle;font-weight:800;font-size:18px;font-family:system-ui,sans-serif;}
+    .tree-caption{fill:var(--muted);text-anchor:middle;font-weight:750;font-size:14px;font-family:system-ui,sans-serif;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle"><span></span><span></span><span></span></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Implicit Treap (Sequence)</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundations</div>
+    <a class="navlink active" onclick="navTo('problem')">01 · Problem Definition<small>Dynamic sequence</small></a>
+    <a class="navlink" onclick="navTo('intuition')">02 · Intuition from Scratch<small>Position is the key</small></a>
+    <a class="navlink" onclick="navTo('visual')">03 · Visual Mental Model<small>Inorder = sequence</small></a>
+    <a class="navlink" onclick="navTo('formal')">04 · Formal Abstraction<small>split / merge primitives</small></a>
+    <a class="navlink" onclick="navTo('observations')">05 · Key Observations<small>No keys, only positions</small></a>
+    <div class="groupTitle">Algorithm</div>
+    <a class="navlink" onclick="navTo('algorithm')">06 · Algorithm<small>split / merge / lazy push</small></a>
+    <a class="navlink" onclick="navTo('invariants')">07 · Invariants<small>State / transition / termination</small></a>
+    <a class="navlink" onclick="navTo('proof')">08 · Proof of Correctness<small>Split-merge identity</small></a>
+    <a class="navlink" onclick="navTo('complexity')">09 · Complexity<small>Expected O(log n) per op</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a class="navlink" onclick="navTo('philosophy')">10 · Template Philosophy<small>Info, lazy, push order</small></a>
+    <a class="navlink" onclick="navTo('master')">11 · Master Template<small>Full ready-to-submit code</small></a>
+    <a class="navlink" onclick="navTo('lineByLine')">12 · Line-by-Line<small>Code walkthrough</small></a>
+    <div class="groupTitle">Mastery</div>
+    <a class="navlink" onclick="navTo('edges')">13 · Edge Cases<small>Audit</small></a>
+    <a class="navlink" onclick="navTo('pitfalls')">14 · Common Pitfalls<small>Push order, lazy traps</small></a>
+    <a class="navlink" onclick="navTo('decision')">15 · Decision Guide<small>When implicit treap fits</small></a>
+    <a class="navlink" onclick="navTo('variants')">16 · Variants<small>Cyclic shift, persistent, 2D</small></a>
+    <a class="navlink" onclick="navTo('problems')">17 · Problem Set<small>VJudge-ready</small></a>
+    <a class="navlink" onclick="navTo('summary')">18 · Final Summary<small>One-page recap</small></a>
+    <a class="navlink" onclick="navTo('contact')">19 · Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">
+      Coach Academy<br>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br>© 2026 All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>Implicit Treap (Sequence Treap)</h1>
+      <div class="subtitle">A treap where position is the implicit key. The same node type that gave us an ordered multiset now gives us a dynamic sequence supporting insert-at-position, erase-at-position, range add, range assign, range reverse, range sum, and cyclic shift — all in expected O(log n) per operation.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill">Theme<div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div></div>
+    </div>
+  </div>
+
+  <div id="sec-problem" class="section">
+  <section id="problem" class="card scroll-reveal">
+    <h2>📌 01 · Problem Definition</h2>
+    <p class="note">Maintain a dynamic sequence <code>A[0], A[1], ..., A[n-1]</code> of values under a rich menu of position-based operations. The structure must support insertion of a new value at an arbitrary position, deletion of the value at a given position, point read and point update, range query (sum, min, max, or any commutative-associative aggregate), range update (add a constant to every element of a range, or assign a constant to every element of a range), range reverse (reverse a contiguous block in place), and cyclic shift of a contiguous block. Every operation must complete in expected O(log n) time, where n is the current length of the sequence.</p>
+    <p class="note">No comparison ordering exists between values. Two adjacent elements can be in any order; the only structure is positional. This rules out the key treap of tutorial 27, which depended on the BST invariant on values. The implicit treap solves this by treating position itself as the key, with a clever twist: positions are not stored at all. Each node\u2019s position is implicit, derived from the size of its left subtree at the moment of access.</p>
+  </section>
+  </div>
+
+  <div id="sec-intuition" class="section">
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 02 · Intuition from Scratch</h2>
+    <p class="note">If we wanted to maintain a sequence using a balanced BST keyed by position, we would have a problem: inserting a value at position k would shift the positions of every subsequent value by one. Storing the positions explicitly would force us to rewrite up to <code>n - k</code> keys per insertion, defeating the logarithmic bound. The implicit treap sidesteps this by never storing the position at all. Instead, the inorder rank of each node within the tree is its position. The leftmost node is at position 0, the second-leftmost at position 1, and so on. When we walk down the tree, we infer the position of the current node from the size of its left subtree.</p>
+
+    <h3>The price we pay, the price we save</h3>
+    <p class="note">The price we pay: we cannot answer a query like "what position is the value 42 at?" without scanning. We can only answer position-based queries. The price we save: insertion and deletion at any position cost O(log n), with no shift cost, because shifting is implicit in the tree structure. A node at position k has k − 1 inorder predecessors; if we rewire the tree so it now has k inorder predecessors, that node\u2019s position becomes k + 1 for free.</p>
+
+    <h3>From rotation to split/merge</h3>
+    <p class="note">The key treap of tutorial 27 used rotate-up after insertion and rotate-down before deletion. The implicit treap uses two different primitives: <code>split</code> and <code>merge</code>. Split takes a treap and a position k and returns two treaps: one holding the first k elements (in order) and one holding the remaining elements. Merge takes two treaps and concatenates them into one. Every other operation — insert, erase, range query, range update, range reverse — is expressed as a short sequence of splits and merges with a small piece of work in between.</p>
+  </section>
+  </div>
+
+  <div id="sec-visual" class="section">
+  <section id="visual" class="card scroll-reveal">
+    <h2>🎨 03 · Visual Mental Model</h2>
+    <p class="note">Visualise a sequence of five values <code>[a, b, c, d, e]</code> stored in an implicit treap. The tree has five nodes, one per value, and the inorder reads <code>a, b, c, d, e</code>. The shape of the tree is determined by the random priorities. To find the element at position 2 (which is <code>c</code>), we descend from the root: at each step we compare the requested position with the size of the left subtree, and either descend left, return the current node, or subtract <code>sz(left) + 1</code> from the position and descend right.</p>
+
+    <p class="note">Below is a representative implicit treap with five nodes. The labels show value on top, priority below, and the size of each subtree. The descent logic for finding position 2 is highlighted in the second step of the split stepper later in this tutorial.</p>
+
+    <div class="formula">Sequence:    [a, b, c, d, e]
+Positions:    0  1  2  3  4
+
+A possible treap (depends on random priorities):
+                  c (pri 90, sz 5)
+                 / \
+                b   d (pri 50, sz 2)
+               /     \
+              a       e (pri 30, sz 1)
+
+Inorder:    a  b  c  d  e
+Position:   0  1  2  3  4</div>
+  </section>
+  </div>
+
+  <div id="sec-formal" class="section">
+  <section id="formal" class="card scroll-reveal">
+    <h2>📐 04 · Formal Abstraction</h2>
+
+    <h3>Node fields</h3>
+    <p class="note">Each node stores an <code>Info</code> bundle that carries the value at this position plus any aggregate derived from the subtree it roots. The minimal Info has the value <code>v</code> and the subtree sum <code>sum</code>; richer variants add <code>min</code>, <code>max</code>, or any commutative-associative aggregate. The node also holds a random priority <code>pri</code>, a subtree size <code>sz</code> counting the number of elements (each contributes one regardless of value), a pair of child pointers <code>l</code> and <code>r</code>, and three lazy flags: <code>add</code> for pending range-add, <code>set_val</code> with a boolean <code>has_set</code> for pending range-assign, and <code>rev</code> for pending range-reverse.</p>
+
+    <h3>The three invariants</h3>
+    <div class="formula">heap invariant:  for every node u, u.pri >= u.l.pri AND u.pri >= u.r.pri
+
+size invariant:  for every node u, u.sz = sz(u.l) + 1 + sz(u.r)
+
+push invariant:  for every node u that does not have a pending lazy update,
+                 u.info is the correct aggregate of every value below it
+                 with all pending updates applied.</div>
+
+    <h3>What is <em>not</em> in the invariants</h3>
+    <p class="note">There is no BST invariant on values. Two adjacent elements in the sequence can carry any values; the treap does not impose an ordering on them. The only ordering that matters is the inorder, which is the sequence order.</p>
+
+    <h3>The lazy bundle</h3>
+    <p class="note">The lazy fields encode pending updates that have been promised to a subtree but not yet pushed to its descendants. When we descend into a node\u2019s children, we must first push the parent\u2019s lazy updates into both children\u2019s lazy fields, then clear the parent\u2019s lazy. The push order matters: <code>rev</code> swaps the children\u2019s subtrees in addition to flipping their <code>rev</code> flags, <code>set_val</code> overrides any pending <code>add</code>, and <code>add</code> accumulates with any pending <code>add</code>. We push in the order <code>rev</code>, then <code>set_val</code>, then <code>add</code>.</p>
+  </section>
+  </div>
+
+  <div id="sec-observations" class="section">
+  <section id="observations" class="card scroll-reveal">
+    <h2>🔍 05 · Key Observations</h2>
+    <div class="goodRow"><div class="gLabel">Position is implicit, never stored</div><div class="gDesc">The position of a node in the sequence is its inorder rank in the tree. We compute it on demand by looking at the left subtree size of every ancestor we descended through.</div></div>
+    <div class="goodRow"><div class="gLabel">Every operation is split-then-merge</div><div class="gDesc">Insert at position k: split at k, build a single-node treap, merge three times. Erase at position k: split at k, split at k+1, drop the middle, merge twice. Range reverse on [l, r): split-split, set rev on the middle, merge-merge. The split/merge primitives are the only mutators of tree structure.</div></div>
+    <div class="goodRow"><div class="gLabel">Random priority gives expected O(log n) height</div><div class="gDesc">Same argument as the key treap: the tree shape depends only on the priorities, which are random, so the expected height is O(log n) regardless of operation order.</div></div>
+    <div class="warnRow"><div class="wLabel">Push order matters</div><div class="wDesc">Lazy updates of different kinds do not commute. <code>set_val</code> after <code>add</code> means the final value is the assigned constant; <code>add</code> after <code>set_val</code> means the final value is constant + add. The push routine must apply them in a fixed order; we use <code>rev</code> first, then <code>set_val</code>, then <code>add</code>.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-algorithm" class="section">
+  <section id="algorithm" class="card scroll-reveal">
+    <h2>⚙️ 06 · Algorithm</h2>
+
+    <h3>Split at position k</h3>
+    <p class="note">Given a treap rooted at <code>t</code>, the operation <code>split(t, k)</code> returns a pair <code>(L, R)</code> of treaps such that <code>L</code> holds the first k elements of <code>t</code> in order and <code>R</code> holds the remaining elements. The recursion is: push any pending lazy updates at <code>t</code> down to its children. Compute <code>lc = sz(t-&gt;l)</code>. If <code>k &lt;= lc</code>, recursively split the left subtree at k, getting <code>(L\u2032, R\u2032)</code>; then return <code>(L\u2032, t)</code> after replacing <code>t-&gt;l</code> with <code>R\u2032</code>. Otherwise, recursively split the right subtree at <code>k - lc - 1</code>, getting <code>(L\u2032, R\u2032)</code>; replace <code>t-&gt;r</code> with <code>L\u2032</code> and return <code>(t, R\u2032)</code>. After every replacement, recompute the aggregate at <code>t</code> via <code>pull(t)</code>.</p>
+
+    <div class="stepper" id="treap-split">
+      <div class="stepper-title">Splitting a 5-element sequence at position 3</div>
+      <svg class="stepper-svg" viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Merge two treaps</h3>
+    <p class="note">Given two treaps <code>a</code> and <code>b</code>, the operation <code>merge(a, b)</code> assumes every element of <code>a</code> is positioned before every element of <code>b</code> and returns one treap. The recursion is: if either side is empty, return the other. Push any pending lazy on the side we are about to descend. Compare <code>a-&gt;pri</code> with <code>b-&gt;pri</code>. If <code>a-&gt;pri &gt; b-&gt;pri</code>, then <code>a</code> is the root of the merged treap; recursively merge <code>a-&gt;r</code> with <code>b</code> and store the result as <code>a-&gt;r</code>. Otherwise <code>b</code> is the root; recursively merge <code>a</code> with <code>b-&gt;l</code> and store the result as <code>b-&gt;l</code>. After every replacement, pull.</p>
+
+    <div class="stepper" id="treap-merge">
+      <div class="stepper-title">Merging a 2-element treap with a 3-element treap</div>
+      <svg class="stepper-svg" viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Range reverse via the lazy flag</h3>
+    <p class="note">To reverse the contiguous block <code>A[l..r-1]</code>, we split twice. First, <code>split(t, l)</code> gives <code>(L, mid_plus_R)</code>. Then <code>split(mid_plus_R, r - l)</code> gives <code>(mid, R)</code>. Now the middle treap <code>mid</code> holds exactly the block we want to reverse. We toggle <code>mid-&gt;rev = !mid-&gt;rev</code>, which flips a lazy bit but does not yet swap any children. Finally we merge <code>L</code> with <code>mid</code> with <code>R</code> in that order to reassemble the sequence. The reverse only materialises when we later push the flag down on a descent.</p>
+
+    <p class="note">When we push the <code>rev</code> flag at a node, we swap that node\u2019s two children pointers and toggle the <code>rev</code> flag on each child. The flag thus propagates lazily down the tree exactly when a descent forces it. Subsequent split or merge calls into a node with a pending <code>rev</code> first push the flag, then proceed normally.</p>
+
+    <div class="stepper" id="treap-reverse">
+      <div class="stepper-title">Range reverse on positions [1, 4): the lazy flag toggles, the swap is deferred</div>
+      <svg class="stepper-svg" viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Other operations as split / merge sequences</h3>
+    <p class="note">Insertion of value <code>x</code> at position k is: <code>split(t, k)</code>, build single-node treap <code>n</code> with value <code>x</code>, merge <code>L</code> with <code>n</code> with <code>R</code>. Erasure at position k is: split at k, split at k+1, discard the middle, merge the two remaining pieces. Range query is: split, split, read <code>mid-&gt;info</code>, merge back. Range add is: split, split, set <code>mid-&gt;add += delta</code> and update <code>mid-&gt;info</code> accordingly, merge back. Range assign is: split, split, set <code>mid-&gt;has_set = true</code> with <code>mid-&gt;set_val = c</code>, clear <code>mid-&gt;add</code>, update <code>mid-&gt;info</code>, merge back. Cyclic shift left by one on a range: split into three, then reassemble in shifted order.</p>
+  </section>
+  </div>
+
+  <div id="sec-invariants" class="section">
+  <section id="invariants" class="card scroll-reveal">
+    <h2>📊 07 · Invariants and Transitions</h2>
+
+    <h3>State invariants between operations</h3>
+    <p class="note">Between operations the implicit treap maintains the heap invariant on priorities, the size invariant on subtree sizes, and a weaker version of the push invariant: every node\u2019s <code>info</code> is the correct aggregate of every value below it <em>with all pending lazy applied</em>. The lazy fields may carry deferred work that has not yet reached the descendants, but the aggregate already reflects the deferred work.</p>
+
+    <h3>Transition: push</h3>
+    <p class="note">The push operation at a node <code>t</code> propagates the lazy fields at <code>t</code> to its two children and clears them at <code>t</code>. The order is: first apply <code>t-&gt;rev</code> to the children (swap their children pointers, toggle their <code>rev</code>), then apply <code>t-&gt;set_val</code> if <code>t-&gt;has_set</code> is true (set each child\u2019s <code>set_val</code> and <code>has_set</code>, clear each child\u2019s <code>add</code>, update each child\u2019s <code>info</code>), then apply <code>t-&gt;add</code> (accumulate into each child\u2019s <code>add</code> if not has_set, or into each child\u2019s <code>set_val</code> if has_set, and update each child\u2019s <code>info</code>). Finally clear <code>t-&gt;rev</code>, <code>t-&gt;has_set</code>, <code>t-&gt;add</code>.</p>
+
+    <h3>Transition: pull</h3>
+    <p class="note">The pull operation at a node <code>t</code> recomputes <code>t-&gt;sz</code> and <code>t-&gt;info</code> from <code>t-&gt;l</code> and <code>t-&gt;r</code>. It assumes the two children\u2019s <code>info</code> is correct and aggregates the children\u2019s contributions plus <code>t</code>\u2019s own value into <code>t</code>\u2019s info. Every mutation of a child pointer must be followed by a pull on the parent.</p>
+
+    <h3>Termination of split and merge</h3>
+    <p class="note">Both recursions descend one level into the tree at each step, so both terminate after at most <code>h</code> levels, where <code>h</code> is the expected O(log n) height.</p>
+  </section>
+  </div>
+
+  <div id="sec-proof" class="section">
+  <section id="proof" class="card scroll-reveal">
+    <h2>📜 08 · Proof of Correctness</h2>
+
+    <h3>Split is correct</h3>
+    <p class="note">By induction on the height of the input. Base: an empty tree splits into two empty trees. Inductive step: at a node <code>t</code> with left size <code>lc</code>, if <code>k &lt;= lc</code> then the first k elements are entirely contained in <code>t-&gt;l</code>; the inductive hypothesis on the recursive call at <code>t-&gt;l</code> produces the correct <code>(L\u2032, R\u2032)</code> partition of <code>t-&gt;l</code>, and gluing <code>R\u2032</code> back as <code>t</code>\u2019s left child yields a treap whose first k elements are <code>L\u2032</code> and whose remainder is <code>t</code> with its other elements. Symmetric for <code>k &gt; lc</code>. Lazy is pushed at the start to ensure the position computations use up-to-date subtree sizes.</p>
+
+    <h3>Merge is correct</h3>
+    <p class="note">By induction on the sum of the two heights. If either side is empty, the other is returned unchanged, which is correct. Otherwise, compare priorities: if <code>a-&gt;pri &gt; b-&gt;pri</code>, the heap invariant forces <code>a</code> to be the root of the merged treap. The merged treap\u2019s left subtree is <code>a-&gt;l</code> unchanged, and the merged treap\u2019s right subtree is the recursive merge of <code>a-&gt;r</code> with <code>b</code>. By induction the recursive merge is correct, so the whole result is correct.</p>
+
+    <h3>The split-merge identity</h3>
+    <p class="note">For any treap <code>t</code> and any valid position <code>k</code>, <code>merge(split(t, k))</code> reproduces <code>t</code> as a multiset of (value, priority) pairs. The shape may differ because the recursive merge may pick different roots than the original tree did; the inorder sequence and the multiset of priorities are preserved.</p>
+
+    <h3>Lazy push preserves the aggregate</h3>
+    <p class="note">By construction, pushing a lazy flag from a parent to its children sets the children\u2019s lazy fields to encode the same pending update, sets the children\u2019s <code>info</code> to the value it would have if the update were applied, and clears the parent\u2019s lazy. The parent\u2019s <code>info</code> remains correct because it was already aggregating the children\u2019s post-push views.</p>
+  </section>
+  </div>
+
+  <div id="sec-complexity" class="section">
+  <section id="complexity" class="card scroll-reveal">
+    <h2>⏱️ 09 · Complexity Analysis</h2>
+    <p class="note">Every implicit-treap operation reduces to a constant number of split and merge calls plus a constant amount of post-processing per node visited. Each split or merge call descends one root-to-leaf path, so each costs O(h). The expected height of the treap is O(log n) because priorities are random, giving expected O(log n) per operation.</p>
+
+    <table>
+      <tr><th>Operation</th><th>Expected time</th><th>Splits / merges</th><th>Notes</th></tr>
+      <tr><td>insert(k, v)</td><td>O(log n)</td><td>1 split, 2 merges</td><td>O(1) extra work to make a leaf</td></tr>
+      <tr><td>erase(k)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>delete the middle one-node treap</td></tr>
+      <tr><td>get(k)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>or one descent without split</td></tr>
+      <tr><td>set_value(k, v)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>edit then merge back</td></tr>
+      <tr><td>range_query(l, r)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>read middle\u2019s aggregate</td></tr>
+      <tr><td>range_add(l, r, d)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>set lazy add on middle</td></tr>
+      <tr><td>range_set(l, r, c)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>set lazy assign on middle</td></tr>
+      <tr><td>reverse(l, r)</td><td>O(log n)</td><td>2 splits, 2 merges</td><td>toggle lazy rev on middle</td></tr>
+      <tr><td>cyclic_shift(l, r)</td><td>O(log n)</td><td>3 splits, 3 merges</td><td>split into three, reassemble shifted</td></tr>
+    </table>
+  </section>
+  </div>
+
+  <div id="sec-philosophy" class="section">
+  <section id="philosophy" class="card scroll-reveal">
+    <h2>🧱 10 · Template Philosophy</h2>
+    <p class="note">The template choices for the implicit treap differ from the key treap on three points.</p>
+
+    <h3>Choice 1: no parent pointers</h3>
+    <p class="note">All operations work via recursive split and merge that pass and return pointers. There is no rotate operation, so parent pointers earn nothing and cost a word per node. We drop them.</p>
+
+    <h3>Choice 2: nullptr instead of an EMPTY sentinel</h3>
+    <p class="note">The recursive split / merge style branches on <code>if (!t)</code> at the start of every function, which is exactly what we want for nullptr. A sentinel would force us to either check pointer equality against the sentinel or push lazy fields into the sentinel, neither of which gains us anything.</p>
+
+    <h3>Choice 3: an <code>Info</code> bundle for clean augmentation</h3>
+    <p class="note">Rather than scatter <code>sum</code>, <code>min</code>, <code>max</code>, and other aggregates across the node body, we group them into an <code>Info</code> struct with a <code>combine</code> and an <code>apply_add</code> and an <code>apply_set</code> method. Add a new aggregate by extending <code>Info</code>; the rest of the template does not change. The combine function is associative and commutative; if you want non-commutative aggregates, the <code>rev</code> flag must also flip the aggregate, which Info should expose as <code>apply_rev</code>.</p>
+
+    <h3>Choice 4: a strict lazy-push order</h3>
+    <p class="note">The push function pushes <code>rev</code> first, then <code>set_val</code>, then <code>add</code>. The reasoning: <code>rev</code> is a structural rearrangement that does not change values, so it can be applied before any value mutation; <code>set_val</code> overrides any pending <code>add</code>, so it must come before <code>add</code>; <code>add</code> is the only thing left at that point. Any other order silently corrupts the aggregate.</p>
+  </section>
+  </div>
+
+  <div id="sec-master" class="section">
+  <section id="master" class="card scroll-reveal">
+    <h2>🎯 11 · Master Template — Ready to Submit</h2>
+    <p class="note">A complete implicit treap with subtree-sum aggregate, range add, range assign, range reverse, and cyclic shift, around 250 lines. The <code>Info</code> bundle is sized for sum and count; extend it for min, max, or any commutative-associative aggregate by adding fields and updating <code>combine</code>, <code>apply_add</code>, <code>apply_set</code>.</p>
+    <pre><code><span class="c">// Implicit Treap with lazy: range add, range assign, range reverse, cyclic shift</span>
+<span class="k">#include</span> <span class="s">&lt;bits/stdc++.h&gt;</span>
+<span class="k">using namespace</span> std;
+
+mt19937 rng(<span class="k">chrono</span>::steady_clock::now().time_since_epoch().count());
+
+<span class="k">struct</span> Info {
+    <span class="k">long long</span> sum = 0;  <span class="c">// sum of values in this subtree</span>
+    <span class="k">int</span> cnt = 0;        <span class="c">// number of nodes in this subtree</span>
+};
+
+Info combine(<span class="k">const</span> Info&amp; a, <span class="k">const</span> Info&amp; b){
+    Info r; r.sum = a.sum + b.sum; r.cnt = a.cnt + b.cnt; <span class="k">return</span> r;
+}
+
+<span class="k">struct</span> node {
+    <span class="k">long long</span> v;       <span class="c">// the value stored at this position</span>
+    <span class="k">int</span> pri, sz;
+    Info info;          <span class="c">// aggregate over the subtree</span>
+    node *l = <span class="k">nullptr</span>, *r = <span class="k">nullptr</span>;
+    <span class="k">long long</span> add = 0; <span class="c">// pending range-add</span>
+    <span class="k">long long</span> set_val = 0;
+    <span class="k">bool</span> has_set = <span class="k">false</span>;  <span class="c">// pending range-assign?</span>
+    <span class="k">bool</span> rev = <span class="k">false</span>;       <span class="c">// pending range-reverse?</span>
+};
+
+<span class="k">int</span> sz(node* t){ <span class="k">return</span> t ? t-&gt;sz : 0; }
+Info info_of(node* t){ <span class="k">return</span> t ? t-&gt;info : Info{}; }
+
+<span class="k">void</span> apply_add(node* t, <span class="k">long long</span> delta){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    t-&gt;v += delta;
+    t-&gt;info.sum += delta * (<span class="k">long long</span>) t-&gt;sz;
+    <span class="k">if</span> (t-&gt;has_set) t-&gt;set_val += delta; <span class="k">else</span> t-&gt;add += delta;
+}
+
+<span class="k">void</span> apply_set(node* t, <span class="k">long long</span> c){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    t-&gt;v = c;
+    t-&gt;info.sum = c * (<span class="k">long long</span>) t-&gt;sz;
+    t-&gt;has_set = <span class="k">true</span>; t-&gt;set_val = c;
+    t-&gt;add = 0;
+}
+
+<span class="k">void</span> apply_rev(node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    swap(t-&gt;l, t-&gt;r);
+    t-&gt;rev ^= 1;
+}
+
+<span class="k">void</span> push(node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    <span class="c">// push order: rev, then set, then add</span>
+    <span class="k">if</span> (t-&gt;rev){
+        apply_rev(t-&gt;l); apply_rev(t-&gt;r);
+        t-&gt;rev = <span class="k">false</span>;
+    }
+    <span class="k">if</span> (t-&gt;has_set){
+        apply_set(t-&gt;l, t-&gt;set_val);
+        apply_set(t-&gt;r, t-&gt;set_val);
+        t-&gt;has_set = <span class="k">false</span>; t-&gt;set_val = 0;
+    }
+    <span class="k">if</span> (t-&gt;add){
+        apply_add(t-&gt;l, t-&gt;add);
+        apply_add(t-&gt;r, t-&gt;add);
+        t-&gt;add = 0;
+    }
+}
+
+<span class="k">void</span> pull(node* t){
+    <span class="k">if</span> (!t) <span class="k">return</span>;
+    t-&gt;sz = 1 + sz(t-&gt;l) + sz(t-&gt;r);
+    Info self; self.sum = t-&gt;v; self.cnt = 1;
+    t-&gt;info = combine(combine(info_of(t-&gt;l), self), info_of(t-&gt;r));
+}
+
+<span class="c">// Split t into (a, b) where a holds the first k elements, b holds the rest.</span>
+<span class="k">void</span> split(node* t, <span class="k">int</span> k, node*&amp; a, node*&amp; b){
+    <span class="k">if</span> (!t){ a = b = <span class="k">nullptr</span>; <span class="k">return</span>; }
+    push(t);
+    <span class="k">int</span> lc = sz(t-&gt;l);
+    <span class="k">if</span> (k &lt;= lc){
+        split(t-&gt;l, k, a, t-&gt;l);
+        b = t;
+    } <span class="k">else</span> {
+        split(t-&gt;r, k - lc - 1, t-&gt;r, b);
+        a = t;
+    }
+    pull(t);
+}
+
+<span class="c">// Merge two treaps a and b where every position in a precedes every position in b.</span>
+node* merge(node* a, node* b){
+    <span class="k">if</span> (!a) <span class="k">return</span> b;
+    <span class="k">if</span> (!b) <span class="k">return</span> a;
+    <span class="k">if</span> (a-&gt;pri &gt; b-&gt;pri){
+        push(a);
+        a-&gt;r = merge(a-&gt;r, b);
+        pull(a);
+        <span class="k">return</span> a;
+    } <span class="k">else</span> {
+        push(b);
+        b-&gt;l = merge(a, b-&gt;l);
+        pull(b);
+        <span class="k">return</span> b;
+    }
+}
+
+node* make_node(<span class="k">long long</span> v){
+    node* x = <span class="k">new</span> node{};
+    x-&gt;v = v; x-&gt;pri = (<span class="k">int</span>) rng(); x-&gt;sz = 1;
+    x-&gt;info.sum = v; x-&gt;info.cnt = 1;
+    <span class="k">return</span> x;
+}
+
+<span class="k">struct</span> ImplicitTreap {
+    node* root = <span class="k">nullptr</span>;
+
+    <span class="k">int</span> size(){ <span class="k">return</span> sz(root); }
+
+    <span class="k">void</span> build(<span class="k">const</span> vector&lt;<span class="k">long long</span>&gt;&amp; a){
+        root = <span class="k">nullptr</span>;
+        <span class="k">for</span> (<span class="k">long long</span> v : a) root = merge(root, make_node(v));
+    }
+
+    <span class="k">void</span> insert(<span class="k">int</span> k, <span class="k">long long</span> v){
+        node *L, *R; split(root, k, L, R);
+        root = merge(merge(L, make_node(v)), R);
+    }
+
+    <span class="k">void</span> erase(<span class="k">int</span> k){
+        node *L, *M, *R;
+        split(root, k, L, M); split(M, 1, M, R);
+        <span class="k">delete</span> M;
+        root = merge(L, R);
+    }
+
+    <span class="k">long long</span> get(<span class="k">int</span> k){
+        node *L, *M, *R;
+        split(root, k, L, M); split(M, 1, M, R);
+        <span class="k">long long</span> ans = M-&gt;v;
+        root = merge(merge(L, M), R);
+        <span class="k">return</span> ans;
+    }
+
+    <span class="k">void</span> set_value(<span class="k">int</span> k, <span class="k">long long</span> v){
+        node *L, *M, *R;
+        split(root, k, L, M); split(M, 1, M, R);
+        apply_set(M, v);
+        root = merge(merge(L, M), R);
+    }
+
+    Info query(<span class="k">int</span> l, <span class="k">int</span> r){
+        node *L, *M, *R;
+        split(root, l, L, M); split(M, r - l, M, R);
+        Info ans = info_of(M);
+        root = merge(merge(L, M), R);
+        <span class="k">return</span> ans;
+    }
+
+    <span class="k">void</span> range_add(<span class="k">int</span> l, <span class="k">int</span> r, <span class="k">long long</span> d){
+        node *L, *M, *R;
+        split(root, l, L, M); split(M, r - l, M, R);
+        apply_add(M, d);
+        root = merge(merge(L, M), R);
+    }
+
+    <span class="k">void</span> range_set(<span class="k">int</span> l, <span class="k">int</span> r, <span class="k">long long</span> c){
+        node *L, *M, *R;
+        split(root, l, L, M); split(M, r - l, M, R);
+        apply_set(M, c);
+        root = merge(merge(L, M), R);
+    }
+
+    <span class="k">void</span> reverse(<span class="k">int</span> l, <span class="k">int</span> r){
+        node *L, *M, *R;
+        split(root, l, L, M); split(M, r - l, M, R);
+        apply_rev(M);
+        root = merge(merge(L, M), R);
+    }
+
+    <span class="c">// Cyclic shift: rotate A[l..r-1] left by one position; A[l] moves to A[r-1].</span>
+    <span class="k">void</span> cyclic_shift(<span class="k">int</span> l, <span class="k">int</span> r){
+        <span class="k">if</span> (r - l &lt;= 1) <span class="k">return</span>;
+        node *L, *M, *R, *first, *rest;
+        split(root, l, L, M); split(M, r - l, M, R);
+        split(M, 1, first, rest);
+        root = merge(L, merge(merge(rest, first), R));
+    }
+};</code></pre>
+  </section>
+  </div>
+
+  <div id="sec-lineByLine" class="section">
+  <section id="lineByLine" class="card scroll-reveal">
+    <h2>📝 12 · Line-by-Line Walkthrough</h2>
+
+    <h3>The Info bundle and aggregation</h3>
+    <p class="note">The <code>Info</code> struct holds the subtree aggregate. For this template we maintain <code>sum</code> and a count <code>cnt</code>. The <code>combine</code> function adds two Infos componentwise; it is associative and commutative. To add a minimum aggregate, extend Info with a <code>mn</code> field, update combine to take the minimum, and update <code>apply_add</code> and <code>apply_set</code> to push the lazy into <code>mn</code> as well.</p>
+
+    <h3>The three lazy appliers</h3>
+    <p class="note">The function <code>apply_add</code> applies a pending add to a subtree: it updates the node\u2019s own value, adjusts the subtree sum by <code>delta * sz</code>, and merges the delta into the lazy field (into <code>set_val</code> if the subtree already has a pending assign, otherwise into <code>add</code>). The function <code>apply_set</code> applies a pending assign: it overwrites the node\u2019s value, recomputes the subtree sum as <code>c * sz</code>, sets <code>has_set</code> and <code>set_val</code>, and clears any pending add (because the assign supersedes the add). The function <code>apply_rev</code> applies a pending reverse: it swaps the node\u2019s two children pointers and toggles the rev flag. The actual swap propagates lazily as descendants get pushed.</p>
+
+    <h3>The push order</h3>
+    <p class="note">The push function does three things in fixed order. First, push <code>rev</code> by calling <code>apply_rev</code> on both children and clearing the flag at <code>t</code>; this is purely structural and does not change values. Second, push <code>has_set</code> by calling <code>apply_set</code> on both children with <code>t-&gt;set_val</code>; this overrides any pending add the children might have. Third, push <code>add</code> by calling <code>apply_add</code> on both children with <code>t-&gt;add</code>; this accumulates into the children\u2019s pending add (or into their pending assign if they have one). Any other order produces wrong aggregates.</p>
+
+    <h3>The pull function</h3>
+    <p class="note">The pull function recomputes <code>sz</code> and <code>info</code> at a node from its children. Subtree size is one plus the children\u2019s sizes. The aggregate is the children\u2019s aggregates combined with a single-node aggregate built from the current node\u2019s value. The call order in combine is <code>combine(combine(left, self), right)</code>; the order matters for non-commutative aggregates but is irrelevant here.</p>
+
+    <h3>Split and merge</h3>
+    <p class="note">The split function descends one level per recursive call. At each level it pushes lazy, computes the left subtree size <code>lc</code>, and either splits the left subtree (if k is in the left subtree) or splits the right subtree (with the adjusted index <code>k - lc - 1</code>). The references <code>a</code> and <code>b</code> are written before returning; the assignments overwrite <code>t-&gt;l</code> or <code>t-&gt;r</code> with the appropriate part of the recursive split. Final pull ensures the aggregate is correct on the way back up. The merge function picks the higher-priority root, pushes lazy on it, recurses on the appropriate side, and pulls on the way back up.</p>
+
+    <h3>The public API</h3>
+    <p class="note">Every public operation follows the same shape: split-split, work on the middle, merge-merge. The build function repeatedly merges single-node treaps to initialise the structure from a vector; it is O(n log n) on the average random input but can be improved to O(n) by sorting the priorities and using a Cartesian-tree-style build. Cyclic shift is a slight generalisation: split into three (prefix, middle, suffix), then split the middle to peel off its first element, then reassemble in shifted order.</p>
+  </section>
+  </div>
+
+  <div id="sec-edges" class="section">
+  <section id="edges" class="card scroll-reveal">
+    <h2>🧩 13 · Edge Cases (Centralized Audit)</h2>
+    <ul class="checklist">
+      <li><b>Empty tree.</b> split returns two nullptrs; merge returns whichever side is non-null. All operations handle the empty case without special-casing.</li>
+      <li><b>Insert at position 0.</b> split(root, 0) returns (nullptr, root); merge(new, root) gives a tree with the new node at position 0.</li>
+      <li><b>Insert at position n.</b> split(root, n) returns (root, nullptr); merge(root, new) gives a tree with the new node at the back.</li>
+      <li><b>Erase at the boundaries.</b> Same split-split structure; the middle is the single node to remove. Be sure to <code>delete</code> it before merging.</li>
+      <li><b>Range [l, r) with r == l.</b> The middle split returns nullptr; range operations on it are no-ops. Merging back is safe.</li>
+      <li><b>Range that covers the whole sequence.</b> Reduces to lazy on the root and trivial merges.</li>
+      <li><b>Reverse on a range of length 1.</b> The middle treap is a single node; toggling its rev flag has no effect because pushing on a leaf still leaves no descendants to reorder.</li>
+      <li><b>Cyclic shift on a range of length 0 or 1.</b> Guarded explicitly at the top of <code>cyclic_shift</code>.</li>
+      <li><b>Range assign then range add interaction.</b> set_val first wins; subsequent adds accumulate into set_val. The push order in <code>apply_add</code> handles this by checking <code>has_set</code>.</li>
+      <li><b>Forgetting to push before descending.</b> Every descent through a node (in split, merge, get without split) must push first; the master template enforces this at the top of split and merge.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="sec-pitfalls" class="section">
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>🪲 14 · Common Pitfalls and Bugs</h2>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 1 — Wrong push order</div><div class="wDesc">If you push <code>add</code> before <code>set_val</code>, the assigned constant overwrites your add and the value silently drops the delta. If you push <code>set_val</code> before <code>rev</code> with non-commutative aggregates, the reversed view sees a sum that was computed before the reversal. The strict order rev / set_val / add is mandatory.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 2 — Forgetting to push at the top of split or merge</div><div class="wDesc">Both functions read child pointers and subtree sizes to decide the recursion direction. If the parent has a pending rev that has not been pushed, the children pointers are still in the unrotated layout and the split goes into the wrong subtree. Always push at the top of split and merge.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 3 — Forgetting to pull after a recursive call</div><div class="wDesc">Each recursive split or merge call may change a child pointer; the parent\u2019s subtree size and aggregate must be refreshed afterward. The cleanest fix is a strict discipline: every function that changes a child pointer ends with a pull.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 4 — Mutating a child pointer without going through a helper</div><div class="wDesc">In the key treap of tutorial 27, we routed all child writes through <code>link</code>. The implicit treap does not have parent pointers, so we cannot make link a strict requirement, but the recursive split and merge functions enforce pull after every mutation; ad-hoc rewrites outside these functions tend to forget pull and produce subtle aggregation bugs.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 5 — Range bounds confusion (inclusive vs exclusive)</div><div class="wDesc">The master template uses half-open ranges <code>[l, r)</code>. The split call <code>split(M, r - l, M, R)</code> produces a middle whose size is exactly <code>r - l</code>. If you accidentally pass <code>r - l + 1</code> you grab one extra element; <code>r - l - 1</code> grabs one too few. Pin the convention and test all four boundary cases.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 6 — Random priority quality</div><div class="wDesc">Same warning as the key treap: use <code>mt19937</code>, not <code>rand()</code>. On Windows <code>rand()</code> has 15 bits which gives ties with high probability on n &gt; 30000 and the treap degenerates.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 7 — Memory leaks on erase</div><div class="wDesc">After split-split isolates the middle node, you must <code>delete</code> it before merging the two surviving pieces. Forgetting the delete is harmless for correctness on a single problem but leaks memory on stress tests with many erases.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-decision" class="section">
+  <section id="decision" class="card scroll-reveal">
+    <h2>🧭 15 · Decision Guide</h2>
+    <div class="decisionBox">
+      <h3>When the implicit treap is the right tool</h3>
+      <div class="ruleBox">
+        <div><span class="cond">need insert at position k</span> <span class="arrow">⇒</span> implicit treap</div>
+        <div><span class="cond">need erase at position k</span> <span class="arrow">⇒</span> implicit treap</div>
+        <div><span class="cond">need range reverse</span> <span class="arrow">⇒</span> implicit treap (segment tree cannot)</div>
+        <div><span class="cond">need cyclic shift</span> <span class="arrow">⇒</span> implicit treap</div>
+        <div><span class="cond">need range query + range update (no insert/delete)</span> <span class="arrow">⇒</span> segment tree with lazy (simpler, faster)</div>
+        <div><span class="cond">need historical versions of the sequence</span> <span class="arrow">⇒</span> persistent implicit treap (tutorial 29)</div>
+        <div><span class="cond">need order-statistic queries on values</span> <span class="arrow">⇒</span> key treap (tutorial 27)</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-variants" class="section">
+  <section id="variants" class="card scroll-reveal">
+    <h2>🎭 16 · Variants and Extensions</h2>
+
+    <h3>Variant A — non-commutative aggregates</h3>
+    <p class="note">If the aggregate is non-commutative (matrix product, prefix-sum, GCD over an ordered range), then range reverse must also reverse the aggregate. Add an <code>apply_rev</code> method on Info that flips its internal ordering, and call it inside <code>apply_rev</code> on the node. Without this, the aggregate is silently wrong after a reverse.</p>
+
+    <h3>Variant B — persistent implicit treap</h3>
+    <p class="note">Clone before mutating: every split and every merge that descends into a subtree first creates a fresh copy of the node it is about to modify. Old versions remain immutable and addressable through stored root pointers. The cost is O(log n) extra allocations per operation. See tutorial 29 for the full persistent treatment.</p>
+
+    <h3>Variant C — 2D implicit treap (treap of treaps)</h3>
+    <p class="note">For sequence-of-sequences problems where each row is itself a dynamic sequence: store an implicit treap of pointers to implicit treaps. Outer-treap operations split and merge rows; inner-treap operations split and merge within a row. The combined cost is O(log n × log m).</p>
+
+    <h3>Variant D — offline batched build in O(n)</h3>
+    <p class="note">Instead of merging n single-node treaps in O(n log n), generate n random priorities, sort the priorities, and build a Cartesian tree in O(n). The result is a valid implicit treap whose inorder is the input array; useful when the initial sequence is provided up front.</p>
+
+    <h3>Variant E — Sliding-window queries</h3>
+    <p class="note">If the workload is a fixed-size sliding window over a long stream, an implicit treap supports insert at the back and erase at the front, each in O(log n). For some aggregates (sum, max) a monotonic deque is faster, but the implicit treap handles arbitrary commutative-associative aggregates uniformly.</p>
+  </section>
+  </div>
+
+  <div id="sec-problems" class="section">
+  <section id="problems" class="card scroll-reveal">
+    <h2>🏆 17 · Problem-Based Applications</h2>
+
+    <details open>
+      <summary>P1 · Sequence — SPOJ SEQ2 (CERC07S)</summary>
+      <div class="detailsBody">
+        <p>Maintain a sequence under range insert, range erase, range reverse, range assign, range add, range max-sum. This is the canonical implicit-treap problem; every feature of the master template earns its place.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-SEQ2" target="_blank" rel="noopener">VJudge — SPOJ SEQ2</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P2 · Maximum Sum Subsequence — SPOJ GSS6</summary>
+      <div class="detailsBody">
+        <p>Range maximum-subarray-sum with insertions and deletions. Implicit treap with a four-field Info (prefix-max, suffix-max, total-sum, best-subarray) handles it in O(log n) per operation.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-GSS6" target="_blank" rel="noopener">VJudge — SPOJ GSS6</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P3 · The Hidden Twisted Tree — SPOJ TWIST</summary>
+      <div class="detailsBody">
+        <p>Range reverse problem. Reverse a range and report values at specific positions; the lazy <code>rev</code> flag does all the work.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-TWIST" target="_blank" rel="noopener">VJudge — SPOJ TWIST</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P4 · Ada and Harvest — SPOJ ADAHARVE</summary>
+      <div class="detailsBody">
+        <p>Maintain a sequence with insertions, deletions, and range queries on a moving window. The implicit treap models the harvest schedule and answers position-based queries directly.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ADAHARVE" target="_blank" rel="noopener">VJudge — SPOJ ADAHARVE</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P5 · Arrange — SPOJ ARRANGE</summary>
+      <div class="detailsBody">
+        <p>Sequence rearrangement under cyclic shifts and range queries. The cyclic_shift operation in the master template is the key primitive.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ARRANGE" target="_blank" rel="noopener">VJudge — SPOJ ARRANGE</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P6 · ZigZag — SPOJ ZIGZAG2</summary>
+      <div class="detailsBody">
+        <p>Maintain a sequence; queries ask for the longest zigzag (alternating up-down) subarray in a range. Augment Info with four counts capturing the zigzag state, then it works exactly like sum.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ZIGZAG2" target="_blank" rel="noopener">VJudge — SPOJ ZIGZAG2</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P7 · Horrible Queries — SPOJ HORRIBLE</summary>
+      <div class="detailsBody">
+        <p>Range add and range sum on a sequence (no insertions). Implicit treap works, but a lazy segment tree is shorter; useful as a stress test for the range_add / query path.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-HORRIBLE" target="_blank" rel="noopener">VJudge — SPOJ HORRIBLE</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P8 · Yet Another Array Queries — Codeforces 863D</summary>
+      <div class="detailsBody">
+        <p>Cyclic shift on a range, plus point queries. The cyclic_shift primitive of the master template solves it in O((n + q) log n) total.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-863D" target="_blank" rel="noopener">VJudge — Codeforces 863D</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P9 · ChineseRemainderTheorem — UVA 11505</summary>
+      <div class="detailsBody">
+        <p>Sequence with insertions and range queries; sum aggregate. Direct application of the master template with build from initial array.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-11505" target="_blank" rel="noopener">VJudge — UVA 11505</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P10 · SGU 155 — Cartesian Tree</summary>
+      <div class="detailsBody">
+        <p>Given keys and priorities, construct the unique treap and report parent indices. Sort by key, sweep with a stack, and emit parents. Conceptually adjacent to implicit-treap build.</p>
+        <a class="plink" href="https://vjudge.net/problem/SGU-155" target="_blank" rel="noopener">VJudge — SGU 155</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P11 · CodeChef PALINDR</summary>
+      <div class="detailsBody">
+        <p>Insert characters into a string and query whether a range is a palindrome. Implicit treap with hash-based aggregation handles it; augment Info with forward hash and reverse hash, combine carefully, and check equality on a queried range.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeChef-PALINDR" target="_blank" rel="noopener">VJudge — CodeChef PALINDR</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P12 · Yosupo Library Checker — range_chmin_chmax_add_range_sum</summary>
+      <div class="detailsBody">
+        <p>Hard problem typically solved by Segment Tree Beats. An implicit treap variant with Beats-style lazy can also be made to work; useful as a stress test of the lazy infrastructure.</p>
+        <a class="plink" href="https://judge.yosupo.jp/problem/range_chmin_chmax_add_range_sum" target="_blank" rel="noopener">Yosupo Library Checker — range_chmin_chmax_add_range_sum</a>
+      </div>
+    </details>
+  </section>
+  </div>
+
+  <div id="sec-summary" class="section">
+  <section id="summary" class="card scroll-reveal">
+    <h2>🎯 18 · Final Summary</h2>
+    <p class="note" style="font-size:24px"><b>One sentence:</b> an implicit treap replaces the value-key BST invariant of tutorial 27 with implicit position-as-key, giving a dynamic sequence container with split / merge as the only primitives and expected O(log n) for insert at position, erase at position, range query, range update, and range reverse.</p>
+
+    <h3>Five things to remember</h3>
+    <p class="note">First, position is implicit. We never store positions; we infer them on each descent from left-subtree sizes. Second, every operation reduces to split-then-merge. Insert is split + 2 merges; erase is 2 splits + 2 merges; range operations are 2 splits + 2 merges with work on the middle. Third, lazy push order is rev, then set_val, then add — any other order corrupts the aggregate. Fourth, the Info bundle is the single place to extend the template: add a new field, update combine, update apply_add and apply_set, and every operation continues to work. Fifth, no parent pointers, no rotations, no sentinel — the recursive split / merge style needs none of them.</p>
+
+    <h3>Mastery checklist</h3>
+    <ul class="checklist">
+      <li>I can write split and merge from memory in under 10 minutes.</li>
+      <li>I can hand-trace split(t, k) on a 5-element treap to show which pieces go left and which go right.</li>
+      <li>I can explain why range reverse needs a lazy flag and not just a structural swap.</li>
+      <li>I can extend Info with a min field, update combine, apply_add, apply_set, and have the template still work.</li>
+      <li>I know which problems prefer an implicit treap over a segment tree (anything with insert / erase / reverse / cyclic shift).</li>
+    </ul>
+
+    <h3>What is next</h3>
+    <div class="tipBox">Tutorial 29 — Persistent Treap. We add path copying to clone-before-mutate so that every operation produces a new version of the treap without destroying the old, giving us an immutable history of every state the sequence has ever been in.</div>
+  </section>
+  </div>
+
+  <div id="sec-contact" class="section">
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h2>🛠️ Runtime Validation Checklist</h2>
+    <ul class="checklist">
+      <li>Sidebar opens and closes on hamburger click; overlay dismisses on click outside.</li>
+      <li>Theme toggle switches dark and light and persists in localStorage.</li>
+      <li>Escape key closes an open sidebar on mobile widths.</li>
+      <li>Active nav link highlights as the user scrolls.</li>
+      <li>All mailto links are plain (no Cloudflare obfuscation).</li>
+      <li>All VJudge problem links open in new tabs.</li>
+      <li>No duplicate id attributes; HTML validates with no JS console errors.</li>
+      <li>Every stepper responds to Next, Prev, and Reset; SVG redraws cleanly between frames.</li>
+      <li>Scroll-reveal animations trigger on intersection; a 300 ms fallback reveals all content if IntersectionObserver does not fire.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function nodeColor(c){
+  const map = { blue:'var(--node-blue)', green:'var(--node-green)', amber:'var(--node-amber)', red:'var(--node-red)', purple:'var(--node-purple)', dark:'#1f2937', black:'#0f172a' };
+  return map[c] || map.blue;
+}
+function makeStepper(containerId, frames){
+  const root    = document.getElementById(containerId);
+  const svg     = root.querySelector('.stepper-svg');
+  const desc    = root.querySelector('.stepper-desc');
+  const counter = root.querySelector('.stepper-counter');
+  const prevBtn = root.querySelector('[data-act="prev"]');
+  const nextBtn = root.querySelector('[data-act="next"]');
+  const resetBtn= root.querySelector('[data-act="reset"]');
+  let idx = 0;
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function render(){
+    const f = frames[idx];
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    (f.edges || []).forEach(e => {
+      const a = f.nodes.find(n => n.id === e.from);
+      const b = f.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const line = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y});
+      let cls = 'tree-edge';
+      if (e.state) cls += ' ' + e.state;
+      line.setAttribute('class', cls);
+      svg.appendChild(line);
+    });
+    (f.nodes || []).forEach(n => {
+      const g = el('g', {});
+      let cls = 'tree-node';
+      if (n.state) cls += ' ' + n.state;
+      g.setAttribute('class', cls);
+      const r = n.r || 28;
+      g.appendChild(el('circle', {cx:n.x, cy:n.y, r:r, fill:nodeColor(n.color)}));
+      const labelY = n.sub ? n.y - 6 : n.y;
+      const t1 = el('text', {x:n.x, y:labelY, 'font-size':n.fs || 16});
+      t1.textContent = n.label;
+      g.appendChild(t1);
+      if (n.sub){
+        const t2 = el('text', {x:n.x, y:n.y + 10, 'font-size':11});
+        t2.textContent = n.sub;
+        g.appendChild(t2);
+      }
+      svg.appendChild(g);
+    });
+    (f.labels || []).forEach(l => {
+      const t = el('text', {x:l.x, y:l.y, 'font-size':l.fs || 18, class:l.caption ? 'tree-caption' : 'tree-label'});
+      t.textContent = l.text;
+      svg.appendChild(t);
+    });
+    desc.textContent = f.desc;
+    counter.textContent = 'Step ' + (idx + 1) + ' / ' + frames.length;
+    prevBtn.disabled  = idx === 0;
+    nextBtn.disabled  = idx === frames.length - 1;
+  }
+  prevBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < frames.length - 1) { idx++; render(); } });
+  resetBtn.addEventListener('click', () => { idx = 0; render(); });
+  render();
+}
+
+// --- Split at position 3 on a 5-element implicit treap [a, b, c, d, e] ---
+// The chosen layout has c (pri 90) at the root, b (pri 70) and d (pri 60)
+// as its children, a (pri 40) under b, and e (pri 30) under d. Inorder
+// reads a, b, c, d, e exactly. We split at k = 3, so the first three
+// elements (a, b, c) end up in the left half and the last two (d, e)
+// in the right half.
+const TREAP_SPLIT_FRAMES = [
+  {
+    desc: 'Starting treap. Inorder reads a, b, c, d, e at positions 0..4. We will split at k=3, so the left half should contain a, b, c and the right half should contain d, e.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', sub:'pri90 sz5', color:'blue', r:30},
+      {id:'b', x:260, y:190, label:'b', sub:'pri70 sz2', color:'blue', r:30},
+      {id:'d', x:500, y:190, label:'d', sub:'pri60 sz2', color:'blue', r:30},
+      {id:'a', x:160, y:290, label:'a', sub:'pri40 sz1', color:'blue', r:30},
+      {id:'e', x:600, y:290, label:'e', sub:'pri30 sz1', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d'},{from:'b',to:'a'},{from:'d',to:'e'}]
+  },
+  {
+    desc: 'At the root c. sz(left) = 2, so positions 0..1 are in the left subtree, position 2 is c itself, and positions 3..4 are in the right subtree. We need k=3, which is > 2, so we keep c in the left half and recurse into the right subtree with k = 3 - 2 - 1 = 0.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', sub:'pri90 sz5', color:'red', state:'highlight', r:30},
+      {id:'b', x:260, y:190, label:'b', sub:'pri70 sz2', color:'blue', r:30},
+      {id:'d', x:500, y:190, label:'d', sub:'pri60 sz2', color:'blue', state:'highlight', r:30},
+      {id:'a', x:160, y:290, label:'a', sub:'pri40 sz1', color:'blue', r:30},
+      {id:'e', x:600, y:290, label:'e', sub:'pri30 sz1', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d',state:'path'},{from:'b',to:'a'},{from:'d',to:'e'}],
+    labels: [{x:380, y:340, text:'k=3, sz(left)=2, so descend right with k\u2032 = 0', fs:16, caption:true}]
+  },
+  {
+    desc: 'At node d (the right subtree of c). sz(left) = 0 for d. We need k=0, so the whole subtree at d (which is d and e) belongs to the right half. The split returns L\u2032 = nullptr and R\u2032 = d-subtree.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', sub:'pri90 sz5', color:'blue', r:30},
+      {id:'b', x:260, y:190, label:'b', sub:'pri70 sz2', color:'blue', r:30},
+      {id:'d', x:500, y:190, label:'d', sub:'pri60 sz2', color:'red', state:'highlight', r:30},
+      {id:'a', x:160, y:290, label:'a', sub:'pri40 sz1', color:'blue', r:30},
+      {id:'e', x:600, y:290, label:'e', sub:'pri30 sz1', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d',state:'path'},{from:'b',to:'a'},{from:'d',to:'e'}],
+    labels: [{x:380, y:340, text:'k=0 at d, L\u2032 = nullptr, R\u2032 = d-subtree', fs:16, caption:true}]
+  },
+  {
+    desc: 'Result of the split. Left half is rooted at c with subtree {a, b, c}; right half is rooted at d with subtree {d, e}. Sizes are 3 and 2 respectively. Aggregates have been pulled along the way.',
+    nodes: [
+      {id:'c', x:200, y:90,  label:'c', sub:'pri90 sz3', color:'green', r:30},
+      {id:'b', x:120, y:200, label:'b', sub:'pri70 sz2', color:'green', r:30},
+      {id:'a', x:60,  y:290, label:'a', sub:'pri40 sz1', color:'green', r:30},
+      {id:'d', x:520, y:90,  label:'d', sub:'pri60 sz2', color:'amber', r:30},
+      {id:'e', x:600, y:200, label:'e', sub:'pri30 sz1', color:'amber', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'b',to:'a'},{from:'d',to:'e'}],
+    labels: [{x:200, y:340, text:'Left half (positions 0..2)', fs:18, caption:true},
+             {x:560, y:340, text:'Right half (positions 3..4)', fs:18, caption:true}]
+  }
+];
+
+
+// --- Merging a 2-element treap A = [a, b] with a 3-element treap B = [c, d, e] ---
+// Treap A has root b (pri 80) with a (pri 50) as left child. Treap B
+// has root d (pri 70) with c (pri 60) as left child and e (pri 40) as
+// right child. We merge by comparing root priorities: b (80) beats
+// d (70), so b becomes the root of the merged treap; recursively
+// merge b's right subtree (empty) with B; result is d with everything
+// hanging off b->r.
+const TREAP_MERGE_FRAMES = [
+  {
+    desc: 'Two treaps to merge. Treap A holds positions 0..1 with values a, b. Treap B holds positions 0..2 with values c, d, e. After merging they should form a single treap with inorder a, b, c, d, e.',
+    nodes: [
+      {id:'b', x:170, y:80,  label:'b', sub:'pri80 sz2', color:'blue', r:30},
+      {id:'a', x:90,  y:200, label:'a', sub:'pri50 sz1', color:'blue', r:30},
+      {id:'d', x:520, y:80,  label:'d', sub:'pri70 sz3', color:'amber', r:30},
+      {id:'c', x:440, y:200, label:'c', sub:'pri60 sz1', color:'amber', r:30},
+      {id:'e', x:600, y:200, label:'e', sub:'pri40 sz1', color:'amber', r:30}
+    ],
+    edges: [{from:'b',to:'a'},{from:'d',to:'c'},{from:'d',to:'e'}],
+    labels: [{x:170, y:280, text:'Treap A (positions 0..1)', fs:18, caption:true},
+             {x:520, y:280, text:'Treap B (positions 0..2)', fs:18, caption:true}]
+  },
+  {
+    desc: 'Compare root priorities. Root of A has pri=80, root of B has pri=70. A\u2019s root wins, so b becomes the root of the merged treap. We recursively merge b\u2019s right subtree (currently empty) with all of B.',
+    nodes: [
+      {id:'b', x:170, y:80,  label:'b', sub:'pri80', color:'red', state:'highlight', r:30},
+      {id:'a', x:90,  y:200, label:'a', sub:'pri50', color:'blue', r:30},
+      {id:'d', x:520, y:80,  label:'d', sub:'pri70', color:'red', state:'highlight', r:30},
+      {id:'c', x:440, y:200, label:'c', sub:'pri60', color:'amber', r:30},
+      {id:'e', x:600, y:200, label:'e', sub:'pri40', color:'amber', r:30}
+    ],
+    edges: [{from:'b',to:'a'},{from:'d',to:'c'},{from:'d',to:'e'}],
+    labels: [{x:380, y:300, text:'80 > 70, A wins root; recurse on (b\u2192r=null, B)', fs:16, caption:true}]
+  },
+  {
+    desc: 'Recursive merge of null with B. The result is just B unchanged. So b\u2019s new right child becomes d (the root of B). The merged treap has b at the top, a as b\u2019s left child, and d as b\u2019s right child. Inorder reads a, b, c, d, e.',
+    nodes: [
+      {id:'b', x:380, y:60,  label:'b', sub:'pri80 sz5', color:'green', r:30},
+      {id:'a', x:200, y:170, label:'a', sub:'pri50 sz1', color:'blue', r:30},
+      {id:'d', x:540, y:170, label:'d', sub:'pri70 sz3', color:'green', r:30},
+      {id:'c', x:460, y:280, label:'c', sub:'pri60 sz1', color:'amber', r:30},
+      {id:'e', x:620, y:280, label:'e', sub:'pri40 sz1', color:'amber', r:30}
+    ],
+    edges: [{from:'b',to:'a'},{from:'b',to:'d',state:'new'},{from:'d',to:'c'},{from:'d',to:'e'}],
+    labels: [{x:380, y:330, text:'Merged: inorder a, b, c, d, e (sz=5)', fs:18, caption:true}]
+  }
+];
+
+// --- Range reverse on positions [1, 4) of [a, b, c, d, e] ---
+// We split twice to isolate b, c, d. We toggle the rev flag on the
+// middle treap. We do not physically swap any children yet; the flag
+// will propagate lazily. We then merge the three pieces back together.
+const TREAP_REVERSE_FRAMES = [
+  {
+    desc: 'Initial treap holding the sequence a, b, c, d, e. We want to reverse positions 1..3 in-place, producing a, d, c, b, e.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', sub:'pri90 sz5', color:'blue', r:30},
+      {id:'b', x:260, y:190, label:'b', sub:'pri70 sz2', color:'blue', r:30},
+      {id:'d', x:500, y:190, label:'d', sub:'pri60 sz2', color:'blue', r:30},
+      {id:'a', x:160, y:290, label:'a', sub:'pri40 sz1', color:'blue', r:30},
+      {id:'e', x:600, y:290, label:'e', sub:'pri30 sz1', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d'},{from:'b',to:'a'},{from:'d',to:'e'}]
+  },
+  {
+    desc: 'Split twice to isolate the middle block. First split at 1 separates {a} on the left from {b, c, d, e} on the right. Then split that right half at 3 to peel {b, c, d} from {e}. The middle treap holds exactly the positions we want to reverse.',
+    nodes: [
+      {id:'a', x:90,  y:180, label:'a', sub:'sz1', color:'amber', r:28},
+      {id:'c', x:380, y:80,  label:'c', sub:'sz3', color:'red', state:'target', r:30},
+      {id:'b', x:300, y:190, label:'b', sub:'sz1', color:'red', state:'target', r:30},
+      {id:'d', x:460, y:190, label:'d', sub:'sz1', color:'red', state:'target', r:30},
+      {id:'e', x:660, y:180, label:'e', sub:'sz1', color:'amber', r:28}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d'}],
+    labels: [{x:90, y:250, text:'Left (a)', fs:16, caption:true},
+             {x:380, y:280, text:'Middle (b, c, d) \u2014 to be reversed', fs:16, caption:true},
+             {x:660, y:250, text:'Right (e)', fs:16, caption:true}]
+  },
+  {
+    desc: 'Set the rev flag on the middle treap\u2019s root. No children are swapped yet \u2014 the flag is lazy. The visual structure of the middle treap is unchanged, but the descendants will see the reversed order whenever we push.',
+    nodes: [
+      {id:'a', x:90,  y:180, label:'a', color:'amber', r:28},
+      {id:'c', x:380, y:80,  label:'c', sub:'rev=1', color:'red', state:'highlight', r:30},
+      {id:'b', x:300, y:190, label:'b', color:'blue', r:30},
+      {id:'d', x:460, y:190, label:'d', color:'blue', r:30},
+      {id:'e', x:660, y:180, label:'e', color:'amber', r:28}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d'}],
+    labels: [{x:380, y:280, text:'rev flag toggled \u2014 no physical swap yet', fs:16, caption:true}]
+  },
+  {
+    desc: 'Merge the three pieces back together. The merged treap still has the rev flag pending on the middle subtree. Subsequent operations that descend into that subtree will push the flag, which lazily swaps children and propagates downward.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', sub:'rev=1', color:'red', state:'highlight', r:30},
+      {id:'b', x:260, y:190, label:'b', color:'blue', r:30},
+      {id:'d', x:500, y:190, label:'d', color:'blue', r:30},
+      {id:'a', x:160, y:290, label:'a', color:'blue', r:30},
+      {id:'e', x:600, y:290, label:'e', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'b'},{from:'c',to:'d'},{from:'b',to:'a'},{from:'d',to:'e'}],
+    labels: [{x:380, y:340, text:'Pending rev on middle; logical sequence is now a, d, c, b, e', fs:16, caption:true}]
+  },
+  {
+    desc: 'When a descent eventually pushes the flag, c\u2019s left and right children swap (b and d swap places). Then b and d each get the rev flag toggled; their leaves a and e will swap when those flags get pushed in turn. The final logical sequence is a, d, c, b, e.',
+    nodes: [
+      {id:'c', x:380, y:80,  label:'c', color:'green', r:30},
+      {id:'d', x:260, y:190, label:'d', sub:'rev=1', color:'amber', state:'highlight', r:30},
+      {id:'b', x:500, y:190, label:'b', sub:'rev=1', color:'amber', state:'highlight', r:30},
+      {id:'e', x:160, y:290, label:'e', color:'blue', r:30},
+      {id:'a', x:600, y:290, label:'a', color:'blue', r:30}
+    ],
+    edges: [{from:'c',to:'d',state:'new'},{from:'c',to:'b',state:'new'},{from:'d',to:'e'},{from:'b',to:'a'}],
+    labels: [{x:380, y:340, text:'After one push at c: children swap, child flags toggled', fs:16, caption:true}]
+  }
+];
+
+// ===== Wiring (same as files 26 & 27) =====
+const themeSwitch = document.getElementById('themeSwitch');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
+}
+applyTheme(localStorage.getItem('ca-theme') || 'light');
+themeSwitch.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('ca-theme', next);
+});
+themeSwitch.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeSwitch.click(); }
+});
+
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  if (window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay   = document.getElementById('sidebarOverlay');
+const sidebarEl        = document.getElementById('sidebar');
+
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+});
+
+const sectionIds = ['problem','intuition','visual','formal','observations','algorithm','invariants','proof','complexity','philosophy','master','lineByLine','edges','pitfalls','decision','variants','problems','summary','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector('.navlink[onclick*="\'' + id + '\'"]');
+  if (a) navLinks[id] = a;
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('revealed'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('revealed')); }, 300);
+
+function safeInit(id, frames){
+  try { makeStepper(id, frames); }
+  catch(e){ console.error('stepper init failed for ' + id, e); }
+}
+safeInit('treap-split',   TREAP_SPLIT_FRAMES);
+safeInit('treap-merge',   TREAP_MERGE_FRAMES);
+safeInit('treap-reverse', TREAP_REVERSE_FRAMES);
+</script>
+</body>
+</html>

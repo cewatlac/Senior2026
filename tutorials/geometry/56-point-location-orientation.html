@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 02 · Point Location &amp; Orientation</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🧭</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 02 · Point Location &amp; Orientation</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Which side / which quadrant?</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>ASTC signs · zero vector</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Polar · complex plane</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>atan2 · trig bridge · complex</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Sign of cross = side</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>rot · perp · orient · reflect</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Sign · isometry contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>perp · orient · reflection</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(1) per operation</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Typed rot · const ref</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every helper explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Centralized audit</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>atan · rotate · y-down</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Integer orient · signed angle</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>CSES Point Location · drill</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🧭</div>
+    <div class="sf-text">Coach Academy · Geometry Class 02<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">🧭</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 02 — Point Location &amp; Orientation</h1>
+        <div class="subtitle">The orientation toolkit. We build <span class="inlineCode">orient</span>, the perpendicular helpers, rotation and reflection via complex numbers, and the heavy local-frame classifier <span class="inlineCode">ccwQuadrant</span> — all on top of the <span class="inlineCode">dot</span>/<span class="inlineCode">cross</span>/<span class="inlineCode">cmp</span> substrate from Class 01.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Class 01 measured things: distances, lengths, the sign of a value. Class 02 answers a different family of questions — <b>where is a point relative to a direction?</b> These are the predicates that drive nearly every higher-level algorithm in geometry:</p>
+    <div class="chips">
+      <span class="chip">Is point <b>p</b> to the left or right of the directed line <b>a → b</b>?</span>
+      <span class="chip">Are three points collinear?</span>
+      <span class="chip">Which quadrant of a local frame does <b>p</b> fall in?</span>
+      <span class="chip">How do I rotate a point by an angle around any centre?</span>
+      <span class="chip">How do I reflect a point across an arbitrary mirror line?</span>
+    </div>
+    <p style="margin-top:16px;">The single most important tool in this class is <span class="inlineCode">orient(a, b, p)</span> — the signed side test. Convex hull, segment intersection, polygon cutting, and point-in-polygon are all built on it. Alongside it we develop the rotation and reflection isometries, because so many problems become trivial once you move the configuration into a convenient frame, solve, and move back.</p>
+    <div class="callout warn">
+      <b>Recall the four classic geometry bugs (Class 01).</b> This class is where bug <b>1</b> ("wrong model") and bug <b>3</b> ("forgetting degeneracies") most often bite: using <span class="inlineCode">atan(y/x)</span> instead of <span class="inlineCode">atan2(y, x)</span>, or feeding a zero-length vector into an orientation predicate. We confront both head-on.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — The ASTC sign chart</h3>
+    <p>Before any code, recall how the signs of sine, cosine, and tangent behave by quadrant. The mnemonic <b>ASTC</b> ("All Students Take Calculus") names which functions are positive in each quadrant, counter-clockwise from the first:</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · ASTC — which trig functions are positive in each quadrant</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <line x1="60" y1="210" x2="840" y2="210" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="450" y1="400" x2="450" y2="20" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="848" y="216" font-size="20" font-weight="900" fill="var(--muted)">x (cos)</text>
+        <text x="430" y="18" font-size="20" font-weight="900" fill="var(--muted)">y (sin)</text>
+        <rect x="450" y="40" width="370" height="170" fill="rgba(15,118,110,.10)"/>
+        <rect x="80" y="40" width="370" height="170" fill="rgba(37,99,235,.10)"/>
+        <rect x="80" y="210" width="370" height="170" fill="rgba(180,83,9,.10)"/>
+        <rect x="450" y="210" width="370" height="170" fill="rgba(185,28,28,.10)"/>
+        <text x="635" y="120" font-size="30" font-weight="950" fill="var(--good)" text-anchor="middle">A</text>
+        <text x="635" y="150" font-size="17" font-weight="800" fill="var(--good)" text-anchor="middle">all positive</text>
+        <text x="265" y="120" font-size="30" font-weight="950" fill="var(--accent2)" text-anchor="middle">S</text>
+        <text x="265" y="150" font-size="17" font-weight="800" fill="var(--accent2)" text-anchor="middle">sin positive</text>
+        <text x="265" y="300" font-size="30" font-weight="950" fill="var(--warn)" text-anchor="middle">T</text>
+        <text x="265" y="330" font-size="17" font-weight="800" fill="var(--warn)" text-anchor="middle">tan positive</text>
+        <text x="635" y="300" font-size="30" font-weight="950" fill="var(--bad)" text-anchor="middle">C</text>
+        <text x="635" y="330" font-size="17" font-weight="800" fill="var(--bad)" text-anchor="middle">cos positive</text>
+        <text x="492" y="74" font-size="16" font-weight="800" fill="var(--muted)">Q1</text>
+        <text x="92" y="74" font-size="16" font-weight="800" fill="var(--muted)">Q2</text>
+        <text x="92" y="244" font-size="16" font-weight="800" fill="var(--muted)">Q3</text>
+        <text x="492" y="244" font-size="16" font-weight="800" fill="var(--muted)">Q4</text>
+      </svg>
+    </div>
+    <p>Why does this matter for code? Because the <b>sign</b> of a dot product follows <span class="inlineCode">cos θ</span> and the <b>sign</b> of a cross product follows <span class="inlineCode">sin θ</span> (we proved both in Class 01). So the dot/cross signs are exactly the ASTC chart in disguise — and that is what lets us classify "which side" and "which quadrant" with two cheap multiplications instead of a slow, fragile <span class="inlineCode">atan</span>.</p>
+
+    <h3>2.2 — Slope is fragile; sign-of-cross is not</h3>
+    <p>A beginner's instinct for "which side of a line" is to compute the slope. But slope is undefined for a vertical line (<span class="inlineCode">dx = 0</span> gives division by zero) and numerically unstable when nearly vertical. The cross product has neither problem: it is a single subtraction of two products, defined and stable for every direction. This is the same lesson as Class 01's "don't use <span class="inlineCode">y = mx + c</span> for a vertical line", now applied to <i>side</i> tests.</p>
+
+    <h3>2.3 — The degenerate zero vector has no direction</h3>
+    <p>Every predicate in this class assumes its input vectors are non-zero. A vector of length 0 — for example when <span class="inlineCode">a == b</span> so the "line" <span class="inlineCode">a → b</span> collapses to a point — does not point anywhere. Asking "which side of a point is <span class="inlineCode">p</span> on?" is meaningless. This is Class 01's observation O6 made concrete, and it is the most common silent bug in orientation code.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · The zero vector has no direction</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 300" preserveAspectRatio="xMidYMid meet">
+        <circle cx="300" cy="160" r="12" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="250" y="150" font-size="22" font-weight="900" fill="var(--bad)">a = b</text>
+        <text x="250" y="210" font-size="20" font-weight="800" fill="var(--muted)">length 0</text>
+        <text x="360" y="120" font-size="48" font-weight="950" fill="var(--warn)">?</text>
+        <text x="420" y="170" font-size="20" font-weight="800" fill="var(--muted)">No direction → orient(a, a, p) is undefined; the predicate must not be called.</text>
+        <circle cx="640" cy="90" r="9" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="656" y="84" font-size="20" font-weight="900" fill="var(--accent2)">p</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — Polar coordinates</h3>
+    <p>A point can be named two ways. <b>Cartesian</b> uses <span class="inlineCode">(x, y)</span>; <b>polar</b> uses a radius <span class="inlineCode">r</span> (distance from the origin) and an angle <span class="inlineCode">θ</span> (measured CCW from the positive x-axis). The conversions are <span class="inlineCode">x = r·cos θ</span>, <span class="inlineCode">y = r·sin θ</span>, with <span class="inlineCode">r = |v|</span> and <span class="inlineCode">θ = atan2(y, x)</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Polar coordinates (r, θ)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="300" x2="820" y2="300" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="140" y1="340" x2="140" y2="40" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="828" y="306" font-size="20" font-weight="900" fill="var(--muted)">x</text>
+        <text x="120" y="40" font-size="20" font-weight="900" fill="var(--muted)">y</text>
+        <line x1="140" y1="300" x2="560" y2="140" stroke="var(--accent)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="560" cy="140" r="10" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="574" y="134" font-size="22" font-weight="950" fill="var(--text)">(x, y) = (r cos θ, r sin θ)</text>
+        <text x="320" y="200" font-size="22" font-weight="900" fill="var(--accent)">r</text>
+        <path d="M 240 300 A 100 100 0 0 0 222 252" fill="none" stroke="var(--warn)" stroke-width="4"/>
+        <text x="252" y="280" font-size="22" font-weight="900" fill="var(--warn)">θ</text>
+      </svg>
+    </div>
+
+    <h3>3.2 — The complex plane is the geometry plane</h3>
+    <p>The single most powerful idea in this whole class: a 2D point <span class="inlineCode">(x, y)</span> <i>is</i> a complex number <span class="inlineCode">x + yi</span>. Addition is translation, multiplication by <span class="inlineCode">polar(1, θ)</span> is rotation, and conjugation is reflection across the x-axis. By storing points as <span class="inlineCode">complex&lt;long double&gt;</span> (the Class 01 type), we get rotation and reflection almost for free.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · A point as a complex number z = x + yi</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="250" x2="820" y2="250" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="200" y1="300" x2="200" y2="40" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="828" y="256" font-size="20" font-weight="900" fill="var(--muted)">Re (x)</text>
+        <text x="150" y="40" font-size="20" font-weight="900" fill="var(--muted)">Im (y)</text>
+        <line x1="200" y1="250" x2="600" y2="110" stroke="var(--accent)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="600" cy="110" r="10" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="614" y="104" font-size="22" font-weight="950" fill="var(--text)">z = x + y i</text>
+        <line x1="200" y1="250" x2="600" y2="250" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <line x1="600" y1="250" x2="600" y2="110" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <text x="390" y="278" font-size="20" font-weight="900" fill="var(--accent2)">x</text>
+        <text x="612" y="190" font-size="20" font-weight="900" fill="var(--accent2)">y</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — <span class="inlineCode">atan2(y, x)</span>, never <span class="inlineCode">atan(y / x)</span></h3>
+    <p>The direction of a vector is its angle. The naive formula <span class="inlineCode">atan(y / x)</span> fails twice over: it divides by zero when <span class="inlineCode">x = 0</span> (a vertical vector), and it collapses two genuinely different directions into one because <span class="inlineCode">atan</span> only returns values in <span class="inlineCode">(−π/2, π/2)</span> — it cannot tell <span class="inlineCode">(1, 1)</span> from <span class="inlineCode">(−1, −1)</span>. The standard library function <span class="inlineCode">atan2(y, x)</span> takes the two components separately, inspects their signs, and returns the correct angle in the full range <span class="inlineCode">(−π, π]</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · atan2 covers all four quadrants; atan(y/x) does not</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="190" x2="820" y2="190" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="450" y1="340" x2="450" y2="30" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="450" y1="190" x2="640" y2="110" stroke="var(--good)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="650" y="104" font-size="18" font-weight="900" fill="var(--good)">(1,1) → atan2 = +π/4</text>
+        <line x1="450" y1="190" x2="260" y2="270" stroke="var(--bad)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="60" y="300" font-size="18" font-weight="900" fill="var(--bad)">(−1,−1) → atan2 = −3π/4</text>
+        <text x="120" y="60" font-size="18" font-weight="800" fill="var(--muted)">atan(y/x) gives +π/4 for BOTH — it cannot distinguish them.</text>
+      </svg>
+    </div>
+
+    <h3>4.2 — The trig sum/difference bridge</h3>
+    <p>In Class 01 we showed that <span class="inlineCode">dot(a, b) = |a||b| cos θ</span> and <span class="inlineCode">cross(a, b) = |a||b| sin θ</span>, where <span class="inlineCode">θ</span> is the angle from <span class="inlineCode">a</span> to <span class="inlineCode">b</span>. Those came from the angle-difference identities:</p>
+<pre><code>cos(β - α) = cos α cos β + sin α sin β     ← dot
+sin(β - α) = cos α sin β - sin α cos β     ← cross</code></pre>
+    <p>The consequence we use constantly in this class: to recover the <i>signed</i> angle from <span class="inlineCode">a</span> to <span class="inlineCode">b</span> in the full range <span class="inlineCode">(−π, π]</span>, combine both into one <span class="inlineCode">atan2</span>:</p>
+<pre><code>signedAngle(a, b) = atan2( cross(a, b), dot(a, b) )</code></pre>
+    <p>This is exactly <span class="inlineCode">atan2(sin θ, cos θ) = θ</span>, scaled by the (positive) product of magnitudes which cancels inside <span class="inlineCode">atan2</span>.</p>
+
+    <h3>4.3 — Complex numbers as geometric operators</h3>
+    <p>We re-use the Class 01 type aliases. A point and a vector are both <span class="inlineCode">complex&lt;long double&gt;</span>, with the convenience macros <span class="inlineCode">#define X real()</span> and <span class="inlineCode">#define Y imag()</span>. The complex operations carry geometric meaning:</p>
+    <table>
+      <thead><tr><th>Complex operation</th><th>Geometric meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">a + b</span></td><td>Translation of point <span class="inlineCode">a</span> by vector <span class="inlineCode">b</span>.</td></tr>
+        <tr><td><span class="inlineCode">a * polar(1, θ)</span></td><td>Rotation of <span class="inlineCode">a</span> by angle <span class="inlineCode">θ</span> (CCW) about the origin.</td></tr>
+        <tr><td><span class="inlineCode">conj(a)</span></td><td>Reflection of <span class="inlineCode">a</span> across the x-axis.</td></tr>
+        <tr><td><span class="inlineCode">a * i</span> (i.e. <span class="inlineCode">a * Point(0,1)</span>)</td><td>Rotation by exactly +90° — the basis of <span class="inlineCode">perpCCW</span>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.4 — Euler's formula and rotation</h3>
+    <p>Euler's formula <span class="inlineCode">e^{iθ} = cos θ + i sin θ</span> says that the unit complex number at angle <span class="inlineCode">θ</span> is <span class="inlineCode">polar(1, θ)</span>. Multiplying any complex number by it adds <span class="inlineCode">θ</span> to its argument while leaving its magnitude unchanged — that is precisely a rotation. The Class 01 / Class 02 helper captures this:</p>
+<pre><code>Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }</code></pre>
+    <div class="callout">
+      <b>Why a typed helper and not a macro.</b> As fixed in Class 01, <span class="inlineCode">rot</span> is a real function, not a <span class="inlineCode">#define</span>. A macro would text-substitute and hand <span class="inlineCode">std::polar</span> a mixed <span class="inlineCode">long double</span> / <span class="inlineCode">double</span> pair (e.g. from <span class="inlineCode">rot(v, 0.5)</span>), tripping template deduction. The typed parameter <span class="inlineCode">T t</span> converts the argument at the call boundary. And the name is <span class="inlineCode">rot</span>, never <span class="inlineCode">rotate</span> — the latter collides with <span class="inlineCode">std::rotate</span>.
+    </div>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Euler rotation — multiplying z by e^{iθ} adds θ to its angle</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="250" x2="820" y2="250" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <line x1="250" y1="320" x2="250" y2="30" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="828" y="256" font-size="20" font-weight="900" fill="var(--muted)">Re</text>
+        <text x="200" y="34" font-size="20" font-weight="900" fill="var(--muted)">Im</text>
+        <!-- original z -->
+        <line x1="250" y1="250" x2="610" y2="170" stroke="var(--accent2)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="610" cy="170" r="9" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="624" y="166" font-size="20" font-weight="950" fill="var(--accent2)">z</text>
+        <!-- rotated z·e^{iθ}, same magnitude, larger angle -->
+        <line x1="250" y1="250" x2="470" y2="70" stroke="var(--good)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="470" cy="70" r="9" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="380" y="56" font-size="20" font-weight="950" fill="var(--good)">z · e^{iθ}</text>
+        <!-- equal-radius reference arc through both tips -->
+        <path d="M 610 170 A 369 369 0 0 0 470 70" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 6"/>
+        <!-- angle arc θ between the two vectors -->
+        <path d="M 560 232 A 110 110 0 0 0 512 196" fill="none" stroke="var(--warn)" stroke-width="4"/>
+        <text x="556" y="206" font-size="22" font-weight="950" fill="var(--warn)">θ</text>
+        <text x="120" y="320" font-size="16" font-weight="800" fill="var(--muted)">Same magnitude |z|; the dashed arc is the circle of radius |z|. Only the angle changes, by +θ.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — The sign of the cross product is a side test.</b> <span class="inlineCode">cross(b − a, p − a) &gt; 0</span> means <span class="inlineCode">p</span> is to the left of the directed line <span class="inlineCode">a → b</span>; <span class="inlineCode">&lt; 0</span> means right; <span class="inlineCode">= 0</span> means collinear. This single fact powers <span class="inlineCode">orient</span>.</li>
+      <li><b>O2 — A rotation by 90° is multiplication by <span class="inlineCode">i</span>.</b> So <span class="inlineCode">(x, y) · i = (−y, x)</span>, which is exactly <span class="inlineCode">perpCCW</span>. No trig, no <span class="inlineCode">polar</span> call needed for the right-angle case.</li>
+      <li><b>O3 — Conjugation reflects across the x-axis, full stop.</b> To reflect across any <i>other</i> line, first rotate the world so that line becomes the x-axis, conjugate, then rotate back. This "rotate–conjugate–rotate-back" pattern reflects across any line through the origin.</li>
+      <li><b>O4 — Reflection across an arbitrary line = translate + reflect-through-origin-line + translate-back.</b> Move one point of the line to the origin, do the through-origin reflection, move back.</li>
+      <li><b>O5 — A local frame turns "which quadrant" into two sign tests.</b> Project onto the local x-axis with <span class="inlineCode">dot</span> and onto the local y-axis with <span class="inlineCode">cross</span>; the two signs name the region. This is the engine of <span class="inlineCode">ccwQuadrant</span>.</li>
+      <li><b>O6 — Reversing the line direction flips <span class="inlineCode">orient</span>.</b> <span class="inlineCode">orient(a, b, p) = −orient(b, a, p)</span>, because swapping <span class="inlineCode">a</span> and <span class="inlineCode">b</span> negates the cross product. This is Class 01's antisymmetry invariant I3 in action.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — Perpendicular vectors</h3>
+    <p>Rotating <span class="inlineCode">(x, y)</span> by +90° gives <span class="inlineCode">(−y, x)</span> — that is <span class="inlineCode">perpCCW</span>. Rotating by −90° gives <span class="inlineCode">(y, −x)</span> — that is <span class="inlineCode">perpCW</span>. These are constant-time, trig-free, and exact on integer coordinates.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · perpCCW (+90°) and perpCW (−90°)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="200" x2="820" y2="200" stroke="currentColor" stroke-width="2"/>
+        <line x1="450" y1="340" x2="450" y2="40" stroke="currentColor" stroke-width="2"/>
+        <line x1="450" y1="200" x2="680" y2="130" stroke="var(--accent2)" stroke-width="6" marker-end="url(#arrow1)"/>
+        <text x="690" y="124" font-size="22" font-weight="950" fill="var(--accent2)">v = (x, y)</text>
+        <line x1="450" y1="200" x2="380" y2="40" stroke="var(--good)" stroke-width="6" marker-end="url(#arrow1)"/>
+        <text x="300" y="70" font-size="22" font-weight="950" fill="var(--good)">perpCCW = (−y, x)</text>
+        <line x1="450" y1="200" x2="520" y2="360" stroke="var(--warn)" stroke-width="6" marker-end="url(#arrow1)"/>
+        <text x="530" y="330" font-size="22" font-weight="950" fill="var(--warn)">perpCW = (y, −x)</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — <span class="inlineCode">orient(a, b, p)</span></h3>
+    <p>One line: return the sign (via <span class="inlineCode">cmp</span>) of <span class="inlineCode">cross(b − a, p − a)</span>. The result is <span class="inlineCode">+1</span> (left / CCW), <span class="inlineCode">−1</span> (right / CW), or <span class="inlineCode">0</span> (collinear). Precondition: <span class="inlineCode">a ≠ b</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · orient(a, b, p) — left / right / collinear</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="160" y1="280" x2="740" y2="120" stroke="var(--accent)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="160" cy="280" r="10" fill="var(--text)"/><text x="130" y="305" font-size="22" font-weight="950" fill="var(--text)">a</text>
+        <circle cx="740" cy="120" r="10" fill="var(--text)"/><text x="752" y="114" font-size="22" font-weight="950" fill="var(--text)">b</text>
+        <circle cx="360" cy="120" r="10" fill="var(--good)"/><text x="376" y="114" font-size="20" font-weight="900" fill="var(--good)">p left → orient = +1</text>
+        <circle cx="560" cy="290" r="10" fill="var(--warn)"/><text x="576" y="296" font-size="20" font-weight="900" fill="var(--warn)">p right → orient = −1</text>
+        <circle cx="450" cy="208" r="10" fill="var(--bad)"/><text x="300" y="200" font-size="20" font-weight="900" fill="var(--bad)">p on line → orient = 0</text>
+      </svg>
+    </div>
+
+    <h3>6.3 — Rotation around an arbitrary centre</h3>
+    <p><span class="inlineCode">rotateAround(p, o, t)</span> translates <span class="inlineCode">p</span> so the centre <span class="inlineCode">o</span> sits at the origin, applies <span class="inlineCode">rot</span>, then translates back: <span class="inlineCode">o + rot(p − o, t)</span>.</p>
+
+    <h3>6.4 — Reflection, three layers</h3>
+    <p>We build reflection from the inside out:</p>
+    <ol>
+      <li><b><span class="inlineCode">reflectXAxis(p) = conj(p)</span></b> — reflect across the x-axis.</li>
+      <li><b><span class="inlineCode">reflectAroundLineThroughOrigin(p, ang)</span></b> — rotate by <span class="inlineCode">−ang</span> so the mirror aligns with the x-axis, conjugate, rotate back by <span class="inlineCode">+ang</span>.</li>
+      <li><b><span class="inlineCode">reflectAroundLine(p, a, b)</span></b> — translate by <span class="inlineCode">−a</span>, reflect through the origin line in direction <span class="inlineCode">b − a</span> (whose angle is <span class="inlineCode">atan2</span>), translate back by <span class="inlineCode">+a</span>.</li>
+    </ol>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Conjugation reflects z = x + yi to conj(z) = x − yi across the x-axis</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <!-- the mirror: the x-axis itself -->
+        <line x1="80" y1="180" x2="820" y2="180" stroke="var(--accent)" stroke-width="4" marker-end="url(#arrow1)"/>
+        <text x="828" y="186" font-size="20" font-weight="900" fill="var(--accent)">Re (x)</text>
+        <line x1="250" y1="330" x2="250" y2="30" stroke="currentColor" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="200" y="34" font-size="20" font-weight="900" fill="var(--muted)">Im (y)</text>
+        <text x="700" y="166" font-size="15" font-weight="800" fill="var(--muted)">mirror = x-axis (Im = 0)</text>
+        <!-- z above the axis -->
+        <line x1="250" y1="180" x2="610" y2="90" stroke="var(--accent2)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="610" cy="90" r="9" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="624" y="84" font-size="20" font-weight="950" fill="var(--accent2)">z = x + y i</text>
+        <!-- conj(z) below the axis: same x, negated y -->
+        <line x1="250" y1="180" x2="610" y2="270" stroke="var(--good)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="610" cy="270" r="9" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="624" y="276" font-size="20" font-weight="950" fill="var(--good)">conj(z) = x − y i</text>
+        <!-- vertical dashed link showing equal distance above/below -->
+        <line x1="610" y1="90" x2="610" y2="270" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 6"/>
+        <text x="624" y="186" font-size="15" font-weight="800" fill="var(--warn)">same x, y flips sign</text>
+      </svg>
+    </div>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Rotate–conjugate–rotate-back reflection across a tilted line</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <!-- frame 1: tilted mirror -->
+        <g transform="translate(0,0)">
+          <line x1="40" y1="300" x2="260" y2="100" stroke="var(--accent)" stroke-width="4"/>
+          <circle cx="120" cy="120" r="8" fill="var(--accent2)"/><text x="80" y="110" font-size="16" font-weight="900" fill="var(--accent2)">p</text>
+          <text x="40" y="330" font-size="16" font-weight="800" fill="var(--muted)">1 · mirror at angle ang</text>
+        </g>
+        <!-- frame 2: rotated so mirror is x-axis -->
+        <g transform="translate(320,0)">
+          <line x1="20" y1="220" x2="260" y2="220" stroke="var(--accent)" stroke-width="4"/>
+          <circle cx="120" cy="120" r="8" fill="var(--accent2)"/><text x="126" y="116" font-size="16" font-weight="900" fill="var(--accent2)">rot(p,−ang)</text>
+          <text x="20" y="330" font-size="16" font-weight="800" fill="var(--muted)">2 · rotate −ang → conj</text>
+          <circle cx="120" cy="320" r="8" fill="var(--good)"/><text x="126" y="330" font-size="16" font-weight="900" fill="var(--good)">conj</text>
+          <line x1="120" y1="120" x2="120" y2="320" stroke="var(--good)" stroke-width="2" stroke-dasharray="4 4"/>
+        </g>
+        <!-- frame 3: rotated back -->
+        <g transform="translate(640,0)">
+          <line x1="20" y1="300" x2="240" y2="100" stroke="var(--accent)" stroke-width="4"/>
+          <circle cx="120" cy="120" r="8" fill="var(--accent2)"/><text x="60" y="112" font-size="16" font-weight="900" fill="var(--accent2)">p</text>
+          <circle cx="200" cy="240" r="8" fill="var(--good)"/><text x="150" y="270" font-size="16" font-weight="900" fill="var(--good)">reflected</text>
+          <text x="20" y="330" font-size="16" font-weight="800" fill="var(--muted)">3 · rotate +ang back</text>
+        </g>
+      </svg>
+    </div>
+
+    <h3>6.5 — The local-frame classifier <span class="inlineCode">ccwQuadrant</span></h3>
+    <p>Given an anchor <span class="inlineCode">a</span> and a direction point <span class="inlineCode">b</span>, build a local frame whose +x axis runs along <span class="inlineCode">u = b − a</span> and whose +y axis is 90° CCW from it. For the query point <span class="inlineCode">p</span> let <span class="inlineCode">w = p − a</span>. Then the local x-coordinate has the sign of <span class="inlineCode">dot(w, u)</span> and the local y-coordinate has the sign of <span class="inlineCode">cross(u, w)</span>. The pair of signs names one of nine regions: the origin, the four axis rays, or the four open quadrants.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · ccwQuadrant — nine regions in the local frame at a along (b − a)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <line x1="60" y1="210" x2="840" y2="210" stroke="var(--accent)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <line x1="450" y1="400" x2="450" y2="20" stroke="var(--accent)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="820" y="240" font-size="18" font-weight="900" fill="var(--accent)">local +x (along b−a)</text>
+        <text x="460" y="36" font-size="18" font-weight="900" fill="var(--accent)">local +y</text>
+        <circle cx="450" cy="210" r="9" fill="var(--bad)"/><text x="408" y="236" font-size="16" font-weight="900" fill="var(--bad)">ORIGIN (a)</text>
+        <text x="650" y="120" font-size="20" font-weight="950" fill="var(--good)">QUAD_1</text>
+        <text x="230" y="120" font-size="20" font-weight="950" fill="var(--accent2)">QUAD_2</text>
+        <text x="230" y="320" font-size="20" font-weight="950" fill="var(--warn)">QUAD_3</text>
+        <text x="650" y="320" font-size="20" font-weight="950" fill="var(--bad)">QUAD_4</text>
+        <text x="700" y="200" font-size="15" font-weight="800" fill="var(--muted)">POS_X_RAY</text>
+        <text x="150" y="200" font-size="15" font-weight="800" fill="var(--muted)">NEG_X_RAY</text>
+        <text x="460" y="80" font-size="15" font-weight="800" fill="var(--muted)">POS_Y_RAY</text>
+        <text x="460" y="370" font-size="15" font-weight="800" fill="var(--muted)">NEG_Y_RAY</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — <span class="inlineCode">orient</span> is tri-state.</b> It returns only <span class="inlineCode">−1, 0, +1</span> (it forwards a <span class="inlineCode">cmp</span> result). Callers may switch on the sign.</li>
+      <li><b>I2 — Antisymmetry of <span class="inlineCode">orient</span>.</b> <span class="inlineCode">orient(a, b, p) = −orient(b, a, p)</span>, and likewise swapping the roles of the query reverses the side. This is inherited from <span class="inlineCode">cross</span>'s sign behaviour.</li>
+      <li><b>I3 — <span class="inlineCode">ccwQuadrant</span> returns exactly one of nine values.</b> The cascade is exhaustive: the two signs (each in <span class="inlineCode">{−1, 0, +1}</span>) give nine combinations, each mapped to exactly one <span class="inlineCode">Pos2D</span> value.</li>
+    </ul>
+    <h3>Transition invariants (isometries preserve structure)</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Rotation preserves distances and angles.</b> <span class="inlineCode">rot</span> multiplies by a unit complex number, so <span class="inlineCode">|rot(v, t)| = |v|</span> for every <span class="inlineCode">v</span> and <span class="inlineCode">t</span>. <span class="inlineCode">rotateAround</span> inherits this about any centre.</li>
+      <li><b>I5 — Reflection is an involution.</b> Reflecting twice across the same line returns the original point: <span class="inlineCode">reflectAroundLine(reflectAroundLine(p, a, b), a, b) = p</span> (up to floating drift). Conjugation makes this exact for the x-axis, and the rotate-conjugate-rotate-back wrapper preserves it.</li>
+      <li><b>I6 — Points on the mirror are fixed.</b> If <span class="inlineCode">p</span> lies on the reflection line, the reflection returns <span class="inlineCode">p</span> (again up to drift). For the x-axis, <span class="inlineCode">conj(x + 0i) = x + 0i</span> exactly.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Every function in this class is straight-line code: a constant number of arithmetic operations, one possible <span class="inlineCode">atan2</span>, and one possible <span class="inlineCode">polar</span>. No loops, no recursion. Each returns in <span class="inlineCode">O(1)</span>.</p>
+    <div class="callout warn">
+      <b>Failure mode — applicability.</b> <span class="inlineCode">orient</span>, <span class="inlineCode">ccwQuadrant</span>, and <span class="inlineCode">reflectAroundLine</span> all assume <span class="inlineCode">a ≠ b</span> so that the direction vector is non-zero (Class 01 O6). They do not defensively check this — by family policy we trust callers and document the precondition. Feeding <span class="inlineCode">a = b</span> yields a meaningless zero direction.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Why <span class="inlineCode">perpCCW(v) = (−y, x)</span> rotates by +90°</h3>
+    <h4>Complex proof</h4>
+    <p>Multiplying by <span class="inlineCode">i</span> rotates by +90° (Euler: <span class="inlineCode">i = polar(1, π/2)</span>). Compute it directly: <span class="inlineCode">(x + yi)·i = xi + yi² = −y + xi</span>, whose components are <span class="inlineCode">(−y, x)</span>. That is exactly <span class="inlineCode">perpCCW</span>.</p>
+    <h4>Dot-product check</h4>
+    <p>A +90° rotation must be perpendicular to the original and the same length. Perpendicularity: <span class="inlineCode">dot((x, y), (−y, x)) = x(−y) + y(x) = 0</span>. Length: <span class="inlineCode">|(−y, x)| = √(y² + x²) = |(x, y)|</span>. Both hold, and the cross product <span class="inlineCode">cross((x, y), (−y, x)) = x·x − y·(−y) = x² + y²</span>, which is <span class="inlineCode">&gt; 0</span> for non-zero <span class="inlineCode">v</span>, confirms the turn is CCW rather than CW.</p>
+
+    <h3>8.2 — Why <span class="inlineCode">cross(b − a, p − a)</span> is a signed side test</h3>
+    <p>From Class 01, <span class="inlineCode">cross(u, w) = |u||w| sin φ</span>, where <span class="inlineCode">φ</span> is the angle from <span class="inlineCode">u</span> to <span class="inlineCode">w</span>, measured CCW. Here <span class="inlineCode">u = b − a</span> is the line direction and <span class="inlineCode">w = p − a</span> points from the line's base to the query. The magnitudes are positive, so the sign of the cross product is the sign of <span class="inlineCode">sin φ</span>: positive when <span class="inlineCode">p</span> is on the CCW (left) side, negative on the CW (right) side, zero when <span class="inlineCode">p</span> is collinear (<span class="inlineCode">φ = 0</span> or <span class="inlineCode">π</span>). Geometrically, <span class="inlineCode">|cross(u, w)|</span> is twice the area of triangle <span class="inlineCode">a, b, p</span>; a zero area means the three points are collinear.</p>
+
+    <h3>8.3 — Why <span class="inlineCode">atan2(y, x)</span> is quadrant-correct</h3>
+    <p><span class="inlineCode">atan2</span> receives the numerator <span class="inlineCode">y</span> and denominator <span class="inlineCode">x</span> separately, so it can read their individual signs. The sign of <span class="inlineCode">x</span> tells it the half-plane (right vs left), the sign of <span class="inlineCode">y</span> tells it up vs down, and together they place the angle in the correct quadrant of <span class="inlineCode">(−π, π]</span>. By contrast <span class="inlineCode">atan(y/x)</span> first divides — destroying the individual signs (since <span class="inlineCode">(−)/(−) = (+)/(+)</span>) and dividing by zero on the y-axis — and then can only return a value in <span class="inlineCode">(−π/2, π/2)</span>, which covers only the right half-plane.</p>
+
+    <h3>8.4 — Why rotate–conjugate–rotate-back reflects across a tilted line</h3>
+    <p>Let the mirror pass through the origin at angle <span class="inlineCode">ang</span>. The map <span class="inlineCode">z ↦ rot(z, −ang)</span> rotates the whole plane so the mirror lands on the x-axis. In that frame, reflection across the x-axis is exactly conjugation: <span class="inlineCode">z ↦ conj(z)</span>. Finally <span class="inlineCode">z ↦ rot(z, +ang)</span> rotates the plane back to its original orientation. Composing the three steps gives</p>
+<pre><code>reflectAroundLineThroughOrigin(p, ang) = rot( conj( rot(p, -ang) ), ang )</code></pre>
+    <p>Each step is an isometry, so the composition is an isometry; the middle step is the only orientation-reversing one, which is what makes the whole map a reflection rather than a rotation. To reflect across a line that does <i>not</i> pass through the origin, conjugate the configuration by a translation: subtract one anchor point <span class="inlineCode">a</span>, reflect through the origin line, add <span class="inlineCode">a</span> back. This is <span class="inlineCode">reflectAroundLine</span>, with the mirror's angle computed as <span class="inlineCode">atan2((b − a).Y, (b − a).X)</span>.</p>
+
+    <h3>8.5 — Why the local-frame signs classify the region</h3>
+    <p>The local frame at <span class="inlineCode">a</span> uses <span class="inlineCode">u = b − a</span> as its +x basis vector and <span class="inlineCode">perpCCW(u)</span> as its +y basis vector. For the query offset <span class="inlineCode">w = p − a</span>, the local x-coordinate is the projection onto <span class="inlineCode">u</span>, whose sign is <span class="inlineCode">sign(dot(w, u))</span>; the local y-coordinate is the projection onto <span class="inlineCode">perpCCW(u)</span>, and since <span class="inlineCode">dot(w, perpCCW(u)) = cross(u, w)</span>, its sign is <span class="inlineCode">sign(cross(u, w))</span>. Two independent signs in <span class="inlineCode">{−1, 0, +1}</span> give exactly nine cases, mapped one-to-one to the nine <span class="inlineCode">Pos2D</span> values. The mapping is exhaustive and disjoint, which is precisely invariant I3.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">perpCCW</span> / <span class="inlineCode">perpCW</span></td><td>O(1)</td><td>Two negations and a swap; no trig.</td></tr>
+        <tr><td><span class="inlineCode">orient(a, b, p)</span></td><td>O(1)</td><td>One <span class="inlineCode">cross</span> + one <span class="inlineCode">cmp</span>.</td></tr>
+        <tr><td><span class="inlineCode">rot</span> / <span class="inlineCode">rotateAround</span></td><td>O(1)</td><td>One <span class="inlineCode">polar</span> + one complex multiply.</td></tr>
+        <tr><td><span class="inlineCode">reflectXAxis</span></td><td>O(1)</td><td>One conjugation; exact.</td></tr>
+        <tr><td><span class="inlineCode">reflectAroundLineThroughOrigin</span></td><td>O(1)</td><td>Two <span class="inlineCode">rot</span> + one <span class="inlineCode">conj</span>.</td></tr>
+        <tr><td><span class="inlineCode">reflectAroundLine</span></td><td>O(1)</td><td>One <span class="inlineCode">atan2</span> + the through-origin reflection.</td></tr>
+        <tr><td><span class="inlineCode">ccwQuadrant</span></td><td>O(1)</td><td>One <span class="inlineCode">dot</span>, one <span class="inlineCode">cross</span>, two <span class="inlineCode">cmp</span>, a small branch cascade.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">Everything in Class 02 is constant-time. When these helpers appear inside a loop — for example <span class="inlineCode">orient</span> inside a convex-hull scan — the asymptotic cost belongs to the loop, not to these primitives.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Build on Class 01, do not duplicate it.</b> This class assumes <span class="inlineCode">cmp</span>, <span class="inlineCode">dot</span>, <span class="inlineCode">cross</span>, the type aliases, and the <span class="inlineCode">X</span>/<span class="inlineCode">Y</span> macros are already in scope. The master block below shows them for a standalone compile, but in practice you paste only the Class 02 additions on top of the Class 01 header.</li>
+      <li><b>Typed <span class="inlineCode">rot</span>, never a <span class="inlineCode">rotate</span> macro.</b> <span class="inlineCode">rot</span> is a helper function (<span class="inlineCode">Point rot(const Point&amp; v, T t)</span>). It avoids the <span class="inlineCode">std::polar</span> mixed-type deduction trap, and the name dodges the collision with <span class="inlineCode">std::rotate</span>.</li>
+      <li><b>Sign tests over angles.</b> Prefer <span class="inlineCode">orient</span> (a cross-product sign) to anything involving <span class="inlineCode">atan2</span> when you only need "which side". Reserve <span class="inlineCode">atan2</span> for when you genuinely need the angle's value.</li>
+      <li><b>Const-reference inputs, documented preconditions.</b> Every helper takes <span class="inlineCode">const Point&amp;</span> and documents its <span class="inlineCode">a ≠ b</span> requirement where relevant.</li>
+      <li><b>Unified naming.</b> <span class="inlineCode">perpCCW</span>, <span class="inlineCode">perpCW</span>, <span class="inlineCode">orient</span>, <span class="inlineCode">rot</span> — consistent across the whole family so later classes read fluently.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Standalone, compiles with <span class="inlineCode">g++ -std=c++17</span>. The first block repeats just enough of the Class 01 substrate for the file to build on its own; the Class 02 additions follow the divider.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+Point rot(const Point&amp; v, T t) {
+    return v * polar((T)1, t);
+}
+
+// ---- Class 01 substrate (cmp / dot / cross) -----------------------
+template&lt;class U&gt;
+int cmpInt(const U&amp; a, const U&amp; b = U(0)) { return (a &gt; b) - (a &lt; b); }
+template&lt;class U&gt;
+int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt;
+int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+
+// ===================================================================
+// CLASS 02 — orientation toolkit
+// ===================================================================
+
+// Perpendicular vectors. perpCCW rotates v by +90 degrees, perpCW by -90.
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }
+Point perpCW (const Point&amp; v) { return Point( v.Y, -v.X); }
+
+// Orientation of point p relative to the directed line a -&gt; b.
+// +1 = p is to the LEFT (CCW), -1 = RIGHT (CW), 0 = collinear.
+// Precondition: a != b (otherwise the "line" has no direction).
+int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    return cmp(cross(b - a, p - a));
+}
+
+// Rotate point p by angle t (radians, CCW) around centre o.
+Point rotateAround(const Point&amp; p, const Point&amp; o, T t) {
+    return o + rot(p - o, t);
+}
+
+// Reflect a point across the x-axis: conjugation.
+Point reflectXAxis(const Point&amp; p) { return conj(p); }
+
+// Reflect p across the line through the ORIGIN at angle ang.
+// Rotate the world by -ang so the mirror lands on the x-axis,
+// conjugate, then rotate back by +ang.
+Point reflectAroundLineThroughOrigin(const Point&amp; p, T ang) {
+    return rot(conj(rot(p, -ang)), ang);
+}
+
+// Reflect p across the infinite line through points a and b.
+// Translate so a is at the origin, reflect across the line through
+// the origin in direction (b - a), then translate back.
+// Precondition: a != b.
+Point reflectAroundLine(const Point&amp; p, const Point&amp; a, const Point&amp; b) {
+    Point d = b - a;
+    T ang = atan2l((long double)d.Y, (long double)d.X);
+    return a + reflectAroundLineThroughOrigin(p - a, ang);
+}
+
+// ---- local-frame nine-region classifier ---------------------------
+enum Pos2D {
+    ORIGIN, POS_X_RAY, POS_Y_RAY, NEG_X_RAY, NEG_Y_RAY,
+    QUAD_1, QUAD_2, QUAD_3, QUAD_4
+};
+
+// Classify where p lies in the local frame anchored at a with the
+// local +x axis pointing along (b - a) and local +y axis 90 deg CCW.
+// Precondition: a != b.
+Pos2D ccwQuadrant(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    Point u = b - a;            // local +x direction
+    Point w = p - a;            // vector to classify
+    int sx = cmp(dot(w, u));    // sign of local x-coordinate
+    int sy = cmp(cross(u, w));  // sign of local y-coordinate (CCW positive)
+
+    if (sx == 0 &amp;&amp; sy == 0) return ORIGIN;
+    if (sy == 0) return (sx &gt; 0) ? POS_X_RAY : NEG_X_RAY;
+    if (sx == 0) return (sy &gt; 0) ? POS_Y_RAY : NEG_Y_RAY;
+    if (sx &gt; 0 &amp;&amp; sy &gt; 0) return QUAD_1;
+    if (sx &lt; 0 &amp;&amp; sy &gt; 0) return QUAD_2;
+    if (sx &lt; 0 &amp;&amp; sy &lt; 0) return QUAD_3;
+    return QUAD_4;
+}
+</code></pre>
+    <div class="callout">
+      <b>Two macros that look identical to fields but are not.</b> <span class="inlineCode">#define X real()</span> means <span class="inlineCode">v.X</span> expands to <span class="inlineCode">v.real()</span>; <span class="inlineCode">#define Y imag()</span> likewise. They are <i>method calls</i> dressed up as field access — pure CP convenience. Note <span class="inlineCode">rot</span> is <i>not</i> in this list: it is a typed helper function, not a macro.
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>perpCCW · perpCW <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">Point perpCCW(const Point&amp; v)</div><div class="lineExpl">Returns <span class="inlineCode">v</span> rotated by +90°. Takes a const reference for the family-wide convention.</div>
+        <div class="lineNo">2</div><div class="lineCode">return Point(-v.Y, v.X);</div><div class="lineExpl">The closed form of a +90° turn: <span class="inlineCode">(x, y) ↦ (−y, x)</span>. No <span class="inlineCode">polar</span>, no trig — exact even on integer-valued inputs.</div>
+        <div class="lineNo">3</div><div class="lineCode">Point perpCW(const Point&amp; v)</div><div class="lineExpl">The −90° counterpart.</div>
+        <div class="lineNo">4</div><div class="lineCode">return Point(v.Y, -v.X);</div><div class="lineExpl"><span class="inlineCode">(x, y) ↦ (y, −x)</span> — the mirror of <span class="inlineCode">perpCCW</span>.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>orient <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p)</div><div class="lineExpl">Signed side test for <span class="inlineCode">p</span> against the directed line <span class="inlineCode">a → b</span>. Precondition <span class="inlineCode">a ≠ b</span> so the direction is non-zero.</div>
+        <div class="lineNo">2</div><div class="lineCode">return cmp(cross(b - a, p - a));</div><div class="lineExpl"><span class="inlineCode">b − a</span> is the line direction, <span class="inlineCode">p − a</span> points to the query. The cross product's sign is the side; <span class="inlineCode">cmp</span> turns it into <span class="inlineCode">−1 / 0 / +1</span>, applying EPS for floating inputs and exact comparison for integer inputs.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>rotateAround · reflectXAxis <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">Point rotateAround(const Point&amp; p, const Point&amp; o, T t)</div><div class="lineExpl">Rotate <span class="inlineCode">p</span> by <span class="inlineCode">t</span> radians about an arbitrary centre <span class="inlineCode">o</span>.</div>
+        <div class="lineNo">2</div><div class="lineCode">return o + rot(p - o, t);</div><div class="lineExpl">Translate so <span class="inlineCode">o</span> is the origin (<span class="inlineCode">p − o</span>), rotate with the typed <span class="inlineCode">rot</span> helper, translate back (<span class="inlineCode">o +</span>). Three composable isometries.</div>
+        <div class="lineNo">3</div><div class="lineCode">Point reflectXAxis(const Point&amp; p)</div><div class="lineExpl">Reflect across the x-axis.</div>
+        <div class="lineNo">4</div><div class="lineCode">return conj(p);</div><div class="lineExpl">Conjugation negates the imaginary part: <span class="inlineCode">(x, y) ↦ (x, −y)</span>. Exact, with the on-axis case fixed precisely.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>reflectAroundLineThroughOrigin · reflectAroundLine <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">Point reflectAroundLineThroughOrigin(const Point&amp; p, T ang)</div><div class="lineExpl">Reflect across the line through the origin at angle <span class="inlineCode">ang</span>.</div>
+        <div class="lineNo">2</div><div class="lineCode">return rot(conj(rot(p, -ang)), ang);</div><div class="lineExpl">Read inside-out: rotate by <span class="inlineCode">−ang</span> (mirror becomes the x-axis), <span class="inlineCode">conj</span> (reflect across x-axis), rotate by <span class="inlineCode">+ang</span> (restore orientation). This is the proof of §8.4 turned into one line.</div>
+        <div class="lineNo">3</div><div class="lineCode">Point reflectAroundLine(const Point&amp; p, const Point&amp; a, const Point&amp; b)</div><div class="lineExpl">Reflect across the infinite line through <span class="inlineCode">a</span> and <span class="inlineCode">b</span>. Precondition <span class="inlineCode">a ≠ b</span>.</div>
+        <div class="lineNo">4</div><div class="lineCode">Point d = b - a;</div><div class="lineExpl">The mirror's direction vector.</div>
+        <div class="lineNo">5</div><div class="lineCode">T ang = atan2l(d.Y, d.X);</div><div class="lineExpl">The mirror's angle, computed safely with <span class="inlineCode">atan2l</span> (the <span class="inlineCode">long double</span> overload) — never <span class="inlineCode">atan</span>.</div>
+        <div class="lineNo">6</div><div class="lineCode">return a + reflectAroundLineThroughOrigin(p - a, ang);</div><div class="lineExpl">Translate by <span class="inlineCode">−a</span>, reflect through the origin line, translate back by <span class="inlineCode">+a</span>.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>Pos2D · ccwQuadrant <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">enum Pos2D { ORIGIN, POS_X_RAY, … QUAD_4 };</div><div class="lineExpl">The nine possible regions of the local frame as named constants — readable return values instead of magic integers.</div>
+        <div class="lineNo">2</div><div class="lineCode">Point u = b - a;</div><div class="lineExpl">Local +x basis direction.</div>
+        <div class="lineNo">3</div><div class="lineCode">Point w = p - a;</div><div class="lineExpl">The query offset from the anchor.</div>
+        <div class="lineNo">4</div><div class="lineCode">int sx = cmp(dot(w, u));</div><div class="lineExpl">Sign of the local x-coordinate (projection of <span class="inlineCode">w</span> onto <span class="inlineCode">u</span>).</div>
+        <div class="lineNo">5</div><div class="lineCode">int sy = cmp(cross(u, w));</div><div class="lineExpl">Sign of the local y-coordinate. <span class="inlineCode">cross(u, w) = dot(w, perpCCW(u))</span>, so this is the projection onto the local +y axis. CCW is positive.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (sx == 0 &amp;&amp; sy == 0) return ORIGIN;</div><div class="lineExpl">Both coordinates zero — <span class="inlineCode">p</span> coincides with the anchor <span class="inlineCode">a</span>.</div>
+        <div class="lineNo">7</div><div class="lineCode">if (sy == 0) return (sx &gt; 0)? POS_X_RAY : NEG_X_RAY;</div><div class="lineExpl">On the local x-axis (but not the origin): which ray depends on the sign of <span class="inlineCode">sx</span>.</div>
+        <div class="lineNo">8</div><div class="lineCode">if (sx == 0) return (sy &gt; 0)? POS_Y_RAY : NEG_Y_RAY;</div><div class="lineExpl">On the local y-axis: which ray depends on the sign of <span class="inlineCode">sy</span>.</div>
+        <div class="lineNo">9</div><div class="lineCode">if (sx &gt; 0 &amp;&amp; sy &gt; 0) return QUAD_1; …</div><div class="lineExpl">The four open quadrants follow from the two signs. The final unconditional <span class="inlineCode">return QUAD_4</span> covers <span class="inlineCode">sx &gt; 0, sy &lt; 0</span>, the only remaining case.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">orient(a, a, p)</span> — collapsed line</td><td>Direction <span class="inlineCode">b − a</span> is the zero vector; the cross product is 0 for every <span class="inlineCode">p</span>.</td><td>Undefined by precondition. Caller must ensure <span class="inlineCode">a ≠ b</span>; we do not silently "succeed".</td></tr>
+        <tr><td><span class="inlineCode">orient</span> returns <span class="inlineCode">0</span></td><td>Three points are collinear.</td><td>Legitimate result — handled by callers (e.g. convex hull's collinearity policy in Class 09).</td></tr>
+        <tr><td><span class="inlineCode">atan2(0, 0)</span></td><td>Direction is undefined (zero vector).</td><td>Only reached if <span class="inlineCode">a == b</span> in <span class="inlineCode">reflectAroundLine</span> — forbidden by precondition.</td></tr>
+        <tr><td>Rotating by exactly <span class="inlineCode">π</span></td><td><span class="inlineCode">sin π</span> is a tiny non-zero float (~1.2e-16), so a 180° rotation of <span class="inlineCode">(1, 0)</span> is <span class="inlineCode">(−1, ~1.2e-16)</span>, not exactly <span class="inlineCode">(−1, 0)</span>.</td><td>Expected floating drift. Downstream comparisons go through <span class="inlineCode">cmp</span>, which absorbs it.</td></tr>
+        <tr><td>Reflecting a point that lies on the mirror</td><td>Should return the point itself.</td><td>Exact for the x-axis (<span class="inlineCode">conj</span> fixes real points); for tilted lines it holds up to floating drift (invariant I6).</td></tr>
+        <tr><td><span class="inlineCode">ccwQuadrant</span> with <span class="inlineCode">a == b</span></td><td><span class="inlineCode">u = 0</span>, so both signs are 0 and it always returns <span class="inlineCode">ORIGIN</span>.</td><td>Undefined by precondition; the documented requirement is <span class="inlineCode">a ≠ b</span>.</td></tr>
+        <tr><td><span class="inlineCode">p</span> exactly on a local axis</td><td>One of <span class="inlineCode">sx</span>, <span class="inlineCode">sy</span> is 0.</td><td>Routed to one of the four ray cases (<span class="inlineCode">POS_X_RAY</span>, etc.) before the quadrant tests run.</td></tr>
+        <tr><td>Integer coordinates, large, used in <span class="inlineCode">orient</span></td><td><span class="inlineCode">cross</span> can overflow <span class="inlineCode">long long</span>.</td><td>Use the integer <span class="inlineCode">orient</span> variant (§16) with an <span class="inlineCode">__int128</span> intermediate.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Using <span class="inlineCode">atan(y / x)</span> for a direction.</b> Divides by zero on the y-axis and collapses opposite directions. Always <span class="inlineCode">atan2(y, x)</span> (or <span class="inlineCode">atan2l</span> for <span class="inlineCode">long double</span>).</li>
+      <li><b>P2 — Naming the rotation helper <span class="inlineCode">rotate</span>.</b> It collides with <span class="inlineCode">std::rotate</span> from <span class="inlineCode">&lt;algorithm&gt;</span>. Use <span class="inlineCode">rot</span> — and as a typed function, not a macro (Class 01 fix).</li>
+      <li><b>P3 — Treating <span class="inlineCode">dot = 0</span> as "perpendicular" without checking for zero-length inputs.</b> The zero vector has no direction (O6 / §2.3), so a zero dot product against it means nothing.</li>
+      <li><b>P4 — Feeding <span class="inlineCode">a = b</span> into <span class="inlineCode">orient</span> / <span class="inlineCode">ccwQuadrant</span> / <span class="inlineCode">reflectAroundLine</span>.</b> The direction collapses; results are meaningless. Guard the caller.</li>
+      <li><b>P5 — Confusing math convention with screen convention.</b> All proofs here assume the math convention: y points <i>up</i> and CCW is positive. On a screen canvas y points <i>down</i>, which flips the sign of every cross product and turns CCW into CW. Decide one convention and stick to it; if you must mix, negate consistently.</li>
+      <li><b>P6 — Using <span class="inlineCode">orient</span>'s integer result in a boolean context.</b> <span class="inlineCode">if (orient(a, b, p))</span> is true for both left and right (any non-zero) and false only for collinear — rarely what you want. Compare against the explicit sign you mean.</li>
+      <li><b>P7 — Building <span class="inlineCode">ccwQuadrant</span>-style logic with hand-rolled <span class="inlineCode">if/else</span> and missing a case.</b> There are nine regions. Use the two-sign cascade exactly as written, ending with an unconditional return for the last quadrant.</li>
+      <li><b>P8 — Comparing rotated coordinates with raw <span class="inlineCode">==</span>.</b> A rotation by <span class="inlineCode">π</span> leaves ~1e-16 noise. Route every comparison through <span class="inlineCode">cmp</span> (Class 01).</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>I only need left / right / collinear of a point vs a directed line.</td><td><span class="inlineCode">orient(a, b, p)</span></td></tr>
+        <tr><td>I need quadrant or axis-ray classification in a local frame.</td><td><span class="inlineCode">ccwQuadrant(a, b, p)</span></td></tr>
+        <tr><td>I need a vector turned 90°.</td><td><span class="inlineCode">perpCCW</span> (+90°) or <span class="inlineCode">perpCW</span> (−90°)</td></tr>
+        <tr><td>I need to rotate a point around an arbitrary centre.</td><td><span class="inlineCode">rotateAround(p, o, t)</span></td></tr>
+        <tr><td>I need to reflect a point across the x-axis.</td><td><span class="inlineCode">reflectXAxis(p)</span> (just <span class="inlineCode">conj</span>)</td></tr>
+        <tr><td>I need to reflect across an arbitrary line.</td><td><span class="inlineCode">reflectAroundLine(p, a, b)</span></td></tr>
+        <tr><td>I genuinely need the angle of a vector.</td><td><span class="inlineCode">atan2(v.Y, v.X)</span> — never <span class="inlineCode">atan</span></td></tr>
+        <tr><td>I need the signed angle from <span class="inlineCode">a</span> to <span class="inlineCode">b</span>.</td><td><span class="inlineCode">atan2(cross(a, b), dot(a, b))</span></td></tr>
+        <tr><td>Integer coordinates, exact side test.</td><td>Integer <span class="inlineCode">orient</span> (§16), <span class="inlineCode">__int128</span> intermediate if large.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Side test = sign of cross.</span>
+      <span class="chip good">+90° = perpCCW = (−y, x).</span>
+      <span class="chip good">Reflect = rotate · conj · rotate-back.</span>
+      <span class="chip warn">Angle = atan2, never atan.</span>
+      <span class="chip warn">Check a ≠ b before any direction test.</span>
+      <span class="chip bad">No macro named "rotate".</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"My orientations are all backwards."</b> Almost always the y-down screen convention (P5). On a screen, increasing y goes downward, so a cross product that is "left" in math space reads as "right" on screen. Either render in a y-up frame, or accept the flip and negate every <span class="inlineCode">orient</span> result consistently — never mix the two.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Exact integer <span class="inlineCode">orient</span></h3>
+    <p>For lattice problems with integer coordinates, the floating <span class="inlineCode">cross</span> is unnecessary and lossy. Compute the cross product directly in integers and read off its sign. <b>What changes:</b> exact arithmetic, no EPS. <b>Why:</b> orientation must be exact for hulls and intersection on lattice points. <b>When to use:</b> any problem with integer input coordinates.</p>
+<pre><code>// Exact orientation on integer coordinates.
+// Returns +1 (left/CCW), -1 (right/CW), 0 (collinear).
+__int128 cross128(long long ax, long long ay,
+                  long long bx, long long by) {
+    return (__int128)ax * by - (__int128)ay * bx;
+}
+
+int orientInt(long long ax, long long ay,
+              long long bx, long long by,
+              long long px, long long py) {
+    __int128 c = cross128(bx - ax, by - ay, px - ax, py - ay);
+    return (c &gt; 0) - (c &lt; 0);
+}</code></pre>
+    <div class="callout warn"><b>Overflow watch.</b> With <span class="inlineCode">|coord| ≤ 10⁹</span>, products can reach around <span class="inlineCode">10¹⁸</span>, and the subtraction can overflow <span class="inlineCode">long long</span>. That is why the template above promotes the products to <span class="inlineCode">__int128</span> before taking the sign.</div>
+
+    <h3>16.2 — Signed angle between two vectors</h3>
+    <p>The trig bridge of §4.2 gives the signed angle in <span class="inlineCode">(−π, π]</span> directly. <b>What changes:</b> one <span class="inlineCode">atan2</span> over the cross and dot. <b>Why:</b> it carries both magnitude and direction, unlike <span class="inlineCode">orient</span> which is only a sign. <b>When to use:</b> total-turning / winding computations, angular sweeps (previewed in Class 07).</p>
+    <p><b>Precondition.</b> Both input vectors must be non-zero. If either vector is zero, both <span class="inlineCode">cross</span> and <span class="inlineCode">dot</span> may be zero, and <span class="inlineCode">atan2(0,0)</span> is not a meaningful angle.</p>
+<pre><code>// Precondition: a and b are non-zero vectors.
+T signedAngle(const Point&amp; a, const Point&amp; b) {
+    return (T)atan2l((long double)cross(a, b), (long double)dot(a, b));
+}</code></pre>
+
+    <h3>16.3 — Fast integer <span class="inlineCode">ccwQuadrant</span> for grids</h3>
+    <p>On an integer grid the same two-sign cascade works with integer <span class="inlineCode">dot</span> and <span class="inlineCode">cross</span>, avoiding floating point entirely. The structure is identical; only the sign computation changes to exact integer arithmetic (with <span class="inlineCode">__int128</span> if coordinates are large). This is useful for grid-walk and rook/queen-direction problems.</p>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>CSES — Point Location Test <span class="rightHint">the canonical orient problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Story.</b> You are given a line that goes through the points <span class="inlineCode">p1</span> and <span class="inlineCode">p2</span> (in that direction), and a third point <span class="inlineCode">p3</span>. For each test case, determine whether <span class="inlineCode">p3</span> is located on the left side of the line, on the right side of the line, or touches the line.</p>
+      <p><b>Abstraction.</b> Output is one of three labels per test, driven entirely by <span class="inlineCode">orient(p1, p2, p3)</span>: <span class="inlineCode">+1 → "LEFT"</span>, <span class="inlineCode">−1 → "RIGHT"</span>, <span class="inlineCode">0 → "TOUCH"</span> (collinear).</p>
+      <p><b>Why this geometry model fits.</b> "Which side of a directed line" is the literal meaning of the cross-product sign (§8.2). The slope approach would choke on vertical lines and lose precision; the cross product is one exact subtraction of two products and handles every direction uniformly.</p>
+      <p><b>Algorithm.</b> Read the test count <span class="inlineCode">t</span>. For each test read the six integers <span class="inlineCode">x1 y1 x2 y2 x3 y3</span>, compute the orientation of <span class="inlineCode">(x3, y3)</span> against the directed line <span class="inlineCode">(x1,y1) → (x2,y2)</span> using a <span class="inlineCode">__int128</span> cross product (coordinates reach <span class="inlineCode">10⁹</span>, so the products reach <span class="inlineCode">10¹⁸</span> and the difference would overflow <span class="inlineCode">long long</span>), and print the matching label.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// Exact cross product on integer coordinates using __int128 so that
+// products of coordinates up to ~1e9 (reaching ~1e18) and their
+// difference cannot overflow a 64-bit type.
+__int128 cross128(long long ax, long long ay,
+                  long long bx, long long by) {
+    return (__int128)ax * by - (__int128)ay * bx;
+}
+
+// Orientation of p3 relative to the directed line p1 -&gt; p2.
+// +1 = LEFT (CCW), -1 = RIGHT (CW), 0 = TOUCH (collinear).
+int orientInt(long long x1, long long y1,
+              long long x2, long long y2,
+              long long x3, long long y3) {
+    __int128 c = cross128(x2 - x1, y2 - y1, x3 - x1, y3 - y1);
+    return (c &gt; 0) - (c &lt; 0);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int t;
+    if (!(cin &gt;&gt; t)) return 0;
+    while (t--) {
+        long long x1, y1, x2, y2, x3, y3;
+        cin &gt;&gt; x1 &gt;&gt; y1 &gt;&gt; x2 &gt;&gt; y2 &gt;&gt; x3 &gt;&gt; y3;
+        int o = orientInt(x1, y1, x2, y2, x3, y3);
+        if      (o &gt; 0) cout &lt;&lt; "LEFT\n";
+        else if (o &lt; 0) cout &lt;&lt; "RIGHT\n";
+        else            cout &lt;&lt; "TOUCH\n";
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per test case, <span class="inlineCode">O(t)</span> overall.</p>
+      <p><b>Pitfalls.</b> The coordinates can be as large as <span class="inlineCode">10⁹</span> in magnitude, so the cross product <i>must</i> be computed in <span class="inlineCode">__int128</span> — a plain <span class="inlineCode">long long</span> product overflows. Keep the convention straight: left of the directed line is CCW (positive cross).</p>
+      <p><b>Official URL.</b> <a href="https://cses.fi/problemset/task/2189" target="_blank" rel="noopener">https://cses.fi/problemset/task/2189</a></p>
+    </div>
+    </details>
+
+    <details><summary>Teaching snippet — local-frame classification with ccwQuadrant <span class="rightHint">template-using, not standalone AC code</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> This is a template-using teaching snippet, not AC-ready standalone code. It assumes the Class 02 master implementation (the <span class="inlineCode">Point</span> type, <span class="inlineCode">cmp</span>, <span class="inlineCode">dot</span>, <span class="inlineCode">cross</span>, the <span class="inlineCode">Pos2D</span> enum, and <span class="inlineCode">ccwQuadrant</span>) is already pasted above it. It is included to show the nine-region classifier in a realistic usage shape before later classes lean on it.</p>
+      <p><b>Story.</b> A robot sits at <span class="inlineCode">a</span> facing toward <span class="inlineCode">b</span>. For each landmark <span class="inlineCode">p</span>, report which sector of the robot's own frame it falls in — straight ahead, behind, hard left, hard right, or one of the four diagonal quadrants.</p>
+      <p><b>Abstraction.</b> This is exactly <span class="inlineCode">ccwQuadrant(a, b, p)</span>: the robot's facing direction is the local +x axis, "left" is local +y, and the nine <span class="inlineCode">Pos2D</span> values are the sectors.</p>
+      <p><b>Why this geometry model fits.</b> A heading plus a sideways axis <i>is</i> a local frame. The two sign tests (<span class="inlineCode">dot</span> for ahead/behind, <span class="inlineCode">cross</span> for left/right) classify the sector with no trig and no angle wraparound.</p>
+      <p><b>Algorithm.</b> Build the local frame once per <span class="inlineCode">(a, b)</span>, then evaluate the two signs per landmark and map to a label.</p>
+<pre><code>// Usage snippet, not standalone AC-ready code.
+// Assumes the Class 02 master implementation is already pasted above:
+// Pos2D, Point, ccwQuadrant, cmp, dot, cross, and related helpers.
+const char* label(Pos2D q) {
+    switch (q) {
+        case ORIGIN:    return "AT ROBOT";
+        case POS_X_RAY: return "STRAIGHT AHEAD";
+        case NEG_X_RAY: return "DIRECTLY BEHIND";
+        case POS_Y_RAY: return "HARD LEFT";
+        case NEG_Y_RAY: return "HARD RIGHT";
+        case QUAD_1:    return "AHEAD-LEFT";
+        case QUAD_2:    return "BEHIND-LEFT";
+        case QUAD_3:    return "BEHIND-RIGHT";
+        case QUAD_4:    return "AHEAD-RIGHT";
+    }
+    return "?";
+}
+
+int main() {
+    long double ax, ay, bx, by;
+    cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; bx &gt;&gt; by;
+    Point a(ax, ay), b(bx, by);   // precondition: a != b
+
+    long double px, py;
+    while (cin &gt;&gt; px &gt;&gt; py) {
+        Point p(px, py);
+        cout &lt;&lt; label(ccwQuadrant(a, b, p)) &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per landmark.</p>
+      <p><b>Pitfalls.</b> The robot must actually be facing somewhere: require <span class="inlineCode">a ≠ b</span>, or the frame collapses and everything classifies as <span class="inlineCode">ORIGIN</span>. For integer landmarks, switch to the exact integer variant (§16.3) to avoid EPS questions on the axes.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>orient</b> = sign of <span class="inlineCode">cross(b−a, p−a)</span> = which side.</li>
+          <li><b>perpCCW / perpCW</b> = ±90° turns, trig-free.</li>
+          <li><b>rot</b> = multiply by <span class="inlineCode">polar(1, θ)</span> = rotate.</li>
+          <li><b>conj</b> = reflect across the x-axis.</li>
+          <li><b>reflect</b> = rotate · conj · rotate-back, then translate.</li>
+          <li><b>ccwQuadrant</b> = two local-frame signs → one of nine regions.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Angle from a vector: <span class="inlineCode">atan2</span>, never <span class="inlineCode">atan</span>.</li>
+          <li>Side test: prefer <span class="inlineCode">orient</span> over any angle.</li>
+          <li>Every direction test needs <span class="inlineCode">a ≠ b</span>.</li>
+          <li>Watch the y-down screen convention.</li>
+          <li>No macro named <span class="inlineCode">rotate</span> — typed <span class="inlineCode">rot</span>.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 02 is the workhorse of the whole family. <span class="inlineCode">orient</span> reappears in segment intersection (Class 04), polygon cutting and convex hull (Class 09); the rotation and reflection helpers feed ellipse local/world transforms (Class 07) and mirror-unfolding (Class 10). Master the cross-product side test here and the later classes read like applications of one idea.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 03 introduces line representations — slope-intercept, general implicit, and parametric forms — and the point-on-line / on-ray / on-segment predicates plus projection and point-to-line distance, all built on the orientation and dot/cross machinery established here.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using this toolkit in a contest solution, verify each item below. These are the failure modes specific to orientation and isometry code; the Class 01 numeric checklist still applies underneath.</p>
+
+    <h4>Orientation &amp; frame</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">orient</span> uses <span class="inlineCode">cmp(cross(...))</span> — no slopes, no division.</li>
+      <li>Every direction test (<span class="inlineCode">orient</span>, <span class="inlineCode">ccwQuadrant</span>, <span class="inlineCode">reflectAroundLine</span>) is called with <span class="inlineCode">a ≠ b</span>.</li>
+      <li><span class="inlineCode">ccwQuadrant</span>'s cascade ends with an unconditional return so all nine regions are covered.</li>
+      <li>Math convention (y up, CCW positive) is consistent with the problem's coordinate system; the y-down screen flip is handled deliberately if present.</li>
+    </ul>
+
+    <h4>Angles &amp; isometries</h4>
+    <ul class="checklist">
+      <li>Every vector angle uses <span class="inlineCode">atan2</span> / <span class="inlineCode">atan2l</span> — never <span class="inlineCode">atan(y/x)</span>.</li>
+      <li><span class="inlineCode">rot</span> is the typed helper, not a <span class="inlineCode">rotate</span> macro.</li>
+      <li>Comparisons on rotated/reflected coordinates go through <span class="inlineCode">cmp</span> (rotation by <span class="inlineCode">π</span> leaves ~1e-16 drift).</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">perpCCW(Point(3,1))</span> returns <span class="inlineCode">(−1, 3)</span>; <span class="inlineCode">perpCW(Point(3,1))</span> returns <span class="inlineCode">(1, −3)</span>.</li>
+      <li><span class="inlineCode">orient((0,0),(4,0),(2,1))</span> = <span class="inlineCode">+1</span>; <span class="inlineCode">orient((0,0),(4,0),(2,−1))</span> = <span class="inlineCode">−1</span>; <span class="inlineCode">orient((0,0),(4,0),(2,0))</span> = <span class="inlineCode">0</span>.</li>
+      <li><span class="inlineCode">rotateAround((1,0),(0,0),π/2)</span> ≈ <span class="inlineCode">(0, 1)</span>.</li>
+      <li><span class="inlineCode">reflectXAxis((3,2))</span> = <span class="inlineCode">(3, −2)</span>.</li>
+      <li><span class="inlineCode">reflectAroundLine((3,0),(0,0),(1,1))</span> ≈ <span class="inlineCode">(0, 3)</span> (mirror is the line y = x).</li>
+      <li><span class="inlineCode">ccwQuadrant((0,0),(4,0),(2,3))</span> = <span class="inlineCode">QUAD_1</span>; <span class="inlineCode">(−2,3) → QUAD_2</span>; <span class="inlineCode">(0,3) → POS_Y_RAY</span>; <span class="inlineCode">(0,0) → ORIGIN</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 02</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Point location &amp; orientation · The side-test toolkit the later classes build on.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

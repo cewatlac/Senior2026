@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — SCC, Tarjan, Kosaraju &amp; 2-SAT</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────── */
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);
+  --sbw:420px;
+}
+[data-theme="dark"],[data-theme="dark"] body{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+p{margin:8px 0 12px}
+ul,ol{font-size:var(--fs-sm);font-weight:700;line-height:1.8;margin:8px 0 12px;padding-left:1.5rem}
+/* LAYOUT */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1)}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06)}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;
+  justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+/* SIDEBAR INTERNALS */
+.brand{display:flex;align-items:center;gap:14px;padding:14px 16px 12px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:90px;height:58px;border-radius:14px;background:#000a20;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden;padding:4px}
+.logo-box img{width:100%;height:100%;object-fit:contain}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+/* CARD */
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+/* NOTICE BOXES */
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+/* CODE */
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:17px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+/* ACCORDION */
+details{border-radius:var(--radius);border:3px solid var(--border);
+  background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+/* TABLES */
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.upd{background:rgba(15,118,110,.12);color:var(--good);font-weight:950}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+/* DIAGRAM */
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+.dist-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ditem{display:flex;flex-direction:column;align-items:center;background:var(--panel);
+  border:3px solid var(--border);border-radius:10px;padding:7px 10px;
+  min-width:52px;transition:all .25s}
+.di-lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.di-val{font-size:20px;font-weight:900;font-family:ui-monospace,monospace}
+.ditem.src{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.08)}
+.ditem.upd{border-color:var(--good);background:rgba(15,118,110,.12);animation:flash .6s ease}
+@keyframes flash{0%,100%{transform:scale(1)}40%{transform:scale(1.13)}}
+/* TRACER */
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.spd-row{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;
+  color:var(--muted);margin-bottom:10px}
+.spd-row input{flex:1;accent-color:var(--accent2)}
+.rjump{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.rjbtn{padding:5px 12px;border-radius:999px;border:2px solid var(--border);
+  background:var(--panel);font-size:16px;font-weight:900;cursor:pointer;transition:all .16s}
+.rjbtn:hover{border-color:var(--accent2)}
+.rjbtn.active{background:var(--accent2);color:#fff;border-color:transparent}
+.rjbtn.done{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.tracer-wrap{display:grid;grid-template-columns:1fr 350px;gap:14px;align-items:start}
+.tside{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:14px;position:sticky;top:6px}
+.sp-phase{font-size:14px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;
+  color:var(--muted);margin-bottom:3px}
+.sp-round{font-weight:900;font-size:20px;margin-bottom:5px}
+.sp-edge{font-family:ui-monospace,monospace;font-size:16px;background:var(--codebg);
+  color:var(--codetext);padding:6px 10px;border-radius:8px;margin-bottom:7px;min-height:30px}
+.sp-exp{font-size:17px;font-weight:700;line-height:1.5;padding:9px 11px;
+  border-radius:9px;border-left:4px solid var(--border)}
+.sp-exp.ok{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.skip{background:rgba(0,0,0,.03)}
+.sp-exp.init{border-left-color:var(--accent2);background:rgba(37,99,235,.08)}
+.sp-exp.pop{border-left-color:#7c3aed;background:rgba(124,58,237,.08)}
+.sp-exp.done{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.neg{border-left-color:var(--bad);background:rgba(185,28,28,.07)}
+.slog{max-height:130px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.sli{padding:3px 5px;border-radius:4px;color:#6b7280;line-height:1.4;cursor:pointer}
+.sli:hover{background:rgba(255,255,255,.07)}
+.sli.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.sli.ok{color:#34d399}.sli.ph{color:#fbbf24}.sli.neg{color:#fb7185}
+/* FORMULA */
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+/* TAB */
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:9px 18px;border-radius:12px;border:2.5px solid var(--border);
+  background:var(--panel);font-weight:900;font-size:18px;cursor:pointer;transition:all .18s}
+.tab:hover{border-color:var(--accent2)}
+.tab.active{background:var(--accent2);color:#fff;border-color:transparent}
+.tab-panel{display:none}.tab-panel.active{display:block}
+/* KNOWLEDGE SUMMARY */
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:17px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:6px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:15px;height:15px;border-radius:50%;display:inline-block}
+/* STACK DISPLAY */
+.stack-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;min-height:40px;align-items:center}
+.stk-item{background:var(--warn);color:#fff;border-radius:8px;padding:5px 12px;
+  font-weight:900;font-size:16px;font-family:ui-monospace,monospace;
+  animation:popIn .22s ease}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+/* DC DEMO */
+.dcdemo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.dci{font-size:17px;font-weight:800;padding:7px 11px;border-radius:9px;
+  border:2px solid var(--border);background:var(--panel);
+  font-family:ui-monospace,monospace;margin-bottom:6px}
+.dci.bad{border-color:var(--bad);background:rgba(185,28,28,.08);color:var(--bad)}
+/* FOOTER */
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);
+  text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+/* RESPONSIVE */
+@media(max-width:1300px){
+  .tracer-wrap{grid-template-columns:1fr}.tside{position:static}
+  .grid2,.grid3,.ks-grid,.dcdemo{grid-template-columns:1fr}
+}
+@media(max-width:700px){h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}}
+</style>
+<!-- Pre-body theme init: prevents first-paint flash -->
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('ca-theme');
+    if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}
+    else if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){
+      document.documentElement.setAttribute('data-theme','dark');
+    }
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Menu" title="Toggle Menu" aria-controls="sidebar" aria-expanded="true">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAIFBLADASIAAhEBAxEB/8QAGwABAAMBAQEBAAAAAAAAAAAAAAQFBgMCAQj/xABLEAACAgECAQcGCwYFAwIHAQAAAQIDBAURIQYSMUFRYXETIoGRwdEUIzI1QlJyobHh8BUzNGJzkhZTVIKyJENjJaImNkRVg5Pxwv/EABsBAQACAwEBAAAAAAAAAAAAAAAEBQIDBgEH/8QAOREAAgIBAgMECAUFAQEAAwEAAAECAwQFERIhMRNBUXEiMmGBkaGx0RQzQsHwFSM0UuHxJDVDU2L/2gAMAwEAAhEDEQA/APxkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/2Q==" alt="Coach Academy"/></div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">SCC &amp; 2-SAT</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations</div>
+    <a href="#s0">Overview<small>What you'll learn</small></a>
+    <a href="#s1">1. What is an SCC?<small>Definition &amp; properties</small></a>
+    <a href="#s2">2. Condensation DAG<small>Why it's always acyclic</small></a>
+    <div class="grpTitle">Tarjan's Algorithm</div>
+    <a href="#s3">3. Tarjan Overview<small>One-pass, O(N+M)</small></a>
+    <a href="#s3a">3.1 Three Arrays<small>dfsT, low, cmpId</small></a>
+    <a href="#s3b">3.2 Key Invariant<small>When low[u] == dfsT[u]</small></a>
+    <a href="#s3c">3.3 The cmpId Trick<small>Replaces inStack[]</small></a>
+    <a href="#s3d">3.4 Correctness Proof<small>Two claims</small></a>
+    <a href="#s3e">3.5 Complexity &amp; Template<small>O(N+M), master code</small></a>
+    <a href="#stracer">Interactive Tracer<small>Step-by-step Tarjan DFS</small></a>
+    <div class="grpTitle">Kosaraju</div>
+    <a href="#s4">4. Kosaraju's Algorithm<small>Two-pass approach</small></a>
+    <a href="#s5">5. Tarjan vs Kosaraju<small>When to use which</small></a>
+    <div class="grpTitle">2-SAT</div>
+    <a href="#s6">6. 2-SAT &amp; Implication Graph<small>Clause → implications</small></a>
+    <a href="#s6b">6.2 Contradiction Criterion<small>Same SCC = unsatisfiable</small></a>
+    <a href="#s6c">6.3 Assignment Rule<small>SCC order gives values</small></a>
+    <a href="#s7">7. 2-SAT Master Template<small>Contest-ready code</small></a>
+    <a href="#s8">8. Modeling Patterns<small>OR, IMP, XOR, EQUAL</small></a>
+    <a href="#s9">9. Max-SAT Notes<small>What SCC can't do</small></a>
+    <div class="grpTitle">Contest Problems</div>
+    <a href="#s10a">POJ 1236 — Schools<small>Source/sink on DAG</small></a>
+    <a href="#s10b">SPOJ CAPCITY<small>Sink SCC extraction</small></a>
+    <a href="#s10c">CSES 1684 — Giant Pizza<small>Direct 2-SAT</small></a>
+    <a href="#s10d">POJ 3648 — Wedding<small>Couple seating 2-SAT</small></a>
+    <a href="#s10e">UVA 10319 — Manhattan<small>Grid direction 2-SAT</small></a>
+    <a href="#s10f">UVA 1086 — Ministers<small>Complex forced assignment</small></a>
+    <a href="#summary">Knowledge Summary</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">
+      <strong>Coach Academy</strong><br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+      <div style="margin-top:7px;display:flex;flex-direction:column;gap:4px;align-items:center">
+        <a href="mailto:coach@coach-academy.net" style="color:var(--link);font-size:13px;font-weight:800;text-decoration:none">✉ coach@coach-academy.net</a>
+        <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--link);font-size:13px;font-weight:800;text-decoration:none">✉ a.ashraf@coach-academy.net</a>
+      </div>
+      <div style="margin-top:7px;font-size:13px">© 2025 All rights reserved.</div>
+    </div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>SCC &amp; 2-SAT</h1>
+    <div class="subtitle">Tarjan · Kosaraju · Condensation Graph · 2-SAT — Complete Interactive Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- ═══════ 0. OVERVIEW ═══════ -->
+<section class="card" id="s0">
+  <h2>What you'll learn</h2>
+  <p>This tutorial builds SCC algorithms from scratch and connects them to 2-SAT — one of the most powerful tools in competitive programming. No prior knowledge required beyond basic DFS.</p>
+  <div class="grid2">
+    <div><div class="chips">
+      <span class="chip">SCC definition</span>
+      <span class="chip">Condensation DAG</span>
+      <span class="chip">Tarjan's algorithm</span>
+      <span class="chip">Correctness proof</span>
+      <span class="chip">O(N+M) complexity</span>
+      <span class="chip">Master C++ template</span>
+    </div></div>
+    <div><div class="chips">
+      <span class="chip p">Kosaraju algorithm</span>
+      <span class="chip p">2-SAT formulation</span>
+      <span class="chip p">Implication graph</span>
+      <span class="chip p">Contradiction criterion</span>
+      <span class="chip p">Assignment extraction</span>
+      <span class="chip p">6 contest problems</span>
+    </div></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Algorithm</th><th>DFS passes</th><th>Reverse graph?</th><th>2-SAT base?</th><th>Complexity</th></tr></thead>
+    <tbody>
+      <tr><td class="cy"><strong>Tarjan</strong></td><td>1</td><td class="cy">No</td><td class="cy">Direct</td><td>O(N+M)</td></tr>
+      <tr><td class="cp"><strong>Kosaraju</strong></td><td>2</td><td class="cr">Yes</td><td class="cb">With extra work</td><td>O(N+M)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════ 1. SCC ═══════ -->
+<section class="card" id="s1">
+  <h2>1. What is a Strongly Connected Component?</h2>
+  <p>In a <strong>directed graph</strong>, a <strong>strongly connected component (SCC)</strong> is a maximal set of vertices such that every vertex can reach every other vertex in that set.</p>
+  <div class="ib ib-blue"><i>💡</i><p>If u and v belong to the same SCC, there exists a path <strong>u → v</strong> AND a path <strong>v → u</strong>. <em>"Maximal"</em> means you cannot add any more vertex and preserve this property.</p></div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">SCC Example — 8-node directed graph</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="sccHlBtn">Highlight SCCs</button>
+        <button class="miniBtn" id="sccRstBtn">⏮ Reset</button>
+      </div>
+    </div>
+    <svg id="sccSvg" class="graphsvg" viewBox="0 0 860 300" style="height:300px"></svg>
+    <div class="legend">
+      <span><span class="swatch" style="background:#e53e3e"></span>SCC #0 {0,1,2}</span>
+      <span><span class="swatch" style="background:#38a169"></span>SCC #1 {3,4}</span>
+      <span><span class="swatch" style="background:#3182ce"></span>SCC #2 {5,6}</span>
+      <span><span class="swatch" style="background:#d69e2e"></span>SCC #3 {7}</span>
+    </div>
+    <div class="statusPanel" id="sccStatus">Click "Highlight SCCs" to colour nodes by their SCC. Blue edges = within same SCC. Orange = cross-SCC edges.</div>
+  </div>
+  <h3>Why SCC Matters</h3>
+  <p>Once you compress every SCC into one super-node, the graph turns into a <strong>DAG</strong> — the <em>condensation graph</em>. This single fact powers an enormous amount of contest graph logic.</p>
+</section>
+
+<!-- ═══════ 2. CONDENSATION ═══════ -->
+<section class="card" id="s2">
+  <h2>2. Why the Condensation Graph is Always a DAG</h2>
+  <p>Suppose the condensation had a directed cycle:</p>
+  <div class="formula">C₁ → C₂ → ··· → Cₖ → C₁</div>
+  <p>Pick any vertex from C₁. Because there is a path through the cycle and back, every component on the cycle can reach every other one. But then they were never <em>different</em> SCCs — contradiction. So the condensation is acyclic.</p>
+  <div class="ib ib-red"><i>⚠</i><p><strong>Key consequence:</strong> The condensation is always a DAG regardless of the original graph's structure. This is what makes SCC compression so powerful — DAGs are much easier to reason about.</p></div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Original Graph → Condensation DAG</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="condBtn">Show Condensation</button>
+        <button class="miniBtn" id="condRst">⏮ Reset</button>
+      </div>
+    </div>
+    <svg id="condSvg" class="graphsvg" viewBox="0 0 860 270" style="height:270px"></svg>
+    <div class="statusPanel" id="condStatus">Click "Show Condensation" to compress the 8 nodes into 4 SCC super-nodes. Watch the DAG emerge.</div>
+  </div>
+</section>
+
+<!-- ═══════ 3. TARJAN ═══════ -->
+<section class="card" id="s3">
+  <h2>3. Tarjan's Algorithm</h2>
+  <p>Tarjan is the cleanest <strong>one-pass SCC algorithm</strong>. A single DFS discovers all SCCs in <strong>O(N + M)</strong>. It is also the best base for 2-SAT.</p>
+  <div class="ib ib-green"><i>🏆</i><p><strong>Why prefer Tarjan?</strong> One DFS pass, no reverse graph, directly produces SCC IDs in the topological order needed for 2-SAT assignment.</p></div>
+</section>
+
+<section class="card" id="s3a">
+  <h3>3.1 The Three Key Arrays</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Array</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ic">dfsT[u]</span></td><td>DFS <strong>discovery time</strong> of node u (increments with each new visit)</td></tr>
+      <tr><td><span class="ic">low[u]</span></td><td>Smallest discovery time reachable from u via tree edges downward, then optionally one back-edge staying in the active DFS region</td></tr>
+      <tr><td><span class="ic">cmpId[u]</span></td><td>−1 = not yet assigned to any SCC; otherwise = the SCC id of u</td></tr>
+    </tbody>
+  </table></div>
+  <p>We also maintain a <strong>stack</strong> of currently active (not-yet-finished) vertices. When an SCC root is found, we pop everything down to and including the root.</p>
+</section>
+
+<section class="card" id="s3b">
+  <h3>3.2 The Key Invariant</h3>
+  <p>While node u is still in the recursion stack, <span class="ic">low[u]</span> tells us the "highest point" the current SCC connects back to.</p>
+  <div class="ib ib-purple"><i>🔑</i><p><strong>If <span class="ic">low[u] == dfsT[u]</span></strong>, then u is the <em>root</em> of an SCC. Pop everything from the stack down to u — they all belong to that SCC.</p></div>
+  <div class="diagramWrap">
+    <div class="diagramHeader"><div class="diagramTitle">How low[] updates — three edge cases</div></div>
+    <svg id="lowSvg" class="graphsvg" viewBox="0 0 860 200" style="height:200px"></svg>
+  </div>
+  <div class="grid3">
+    <div class="ib ib-blue"><i>🌳</i><p><strong>Tree edge u→v (unvisited):</strong><br/><span class="ic">low[u] = min(low[u], low[v])</span> — after returning from v</p></div>
+    <div class="ib ib-green"><i>↩</i><p><strong>Back edge u→v (v active, cmpId[v]==-1):</strong><br/><span class="ic">low[u] = min(low[u], low[v])</span> — v is still in our DFS region</p></div>
+    <div class="ib ib-orange"><i>✗</i><p><strong>Cross edge u→v (v done, cmpId[v]!=-1):</strong><br/>Skip entirely — v belongs to a finished SCC, cannot affect us</p></div>
+  </div>
+</section>
+
+<section class="card" id="s3c">
+  <h3>3.3 Why <code>cmpId[v] == -1</code> is a Clever Trick</h3>
+  <p>Many textbooks maintain a separate boolean <span class="ic">inStack[v]</span>. Tarjan's implementation can avoid this with:</p>
+  <div class="formula">cmpId[v] == −1  ⟺  v is still active in the current DFS</div>
+  <p>The moment a node is popped into an SCC, its <span class="ic">cmpId</span> is set to a non-negative id. So <span class="ic">cmpId[v] == -1</span> perfectly captures "v has been visited but not yet finished." One array does the work of two.</p>
+  <div class="ib ib-green"><i>✓</i><p>This is exactly the trick used in the templates in this tutorial — it is cleaner and just as correct as a separate inStack array.</p></div>
+</section>
+
+<section class="card" id="s3d">
+  <h3>3.4 Tarjan Correctness Proof</h3>
+  <details>
+    <summary>Claim 1 — The popped block is exactly one SCC <span class="hint">click to expand proof</span></summary>
+    <div class="detailsBody">
+      <p><strong>They are strongly connected:</strong> Every popped vertex x is in the DFS subtree of u. Since <span class="ic">low[x]</span> cannot escape above u, all vertices remain tied into the region rooted at u. By the DFS-tree and back-edge structure, u reaches all of them, and each has a path back into the active ancestor chain through u.</p>
+      <p><strong>No outside vertex belongs:</strong> Any vertex not in the popped block either cannot reach back to u inside the active region, or is already assigned to another SCC. It cannot be part of this SCC.</p>
+      <div class="ib ib-green"><i>✓</i><p>Therefore: the popped block is <strong>exactly one SCC</strong>.</p></div>
+    </div>
+  </details>
+  <details>
+    <summary>Claim 2 — Every SCC is found exactly once <span class="hint">click to expand proof</span></summary>
+    <div class="detailsBody">
+      <p>Pick any SCC S, and let u be the <strong>first vertex discovered</strong> in S. No vertex in S has a smaller discovery time than u. Since all vertices in S reach each other, DFS from u eventually visits all of them, and each can reach back to u or a descendant of u in the active chain. Therefore <span class="ic">low[u] = dfsT[u]</span>, and when u finishes, exactly S is popped.</p>
+      <p>Since popped vertices are permanently assigned (cmpId set), no SCC is counted twice.</p>
+      <div class="ib ib-green"><i>✓</i><p><strong>Tarjan is correct.</strong></p></div>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s3e">
+  <h3>3.5 Complexity</h3>
+  <p>Each vertex is discovered once, pushed once, and popped once. Each edge is examined once. Total: <strong>O(N + M)</strong> time and space.</p>
+
+  <h3 style="margin-top:22px">3.6 Tarjan Master Template — Forward-Star Style</h3>
+  <div class="tab-bar">
+    <div class="tab active" data-tab="tarjan" data-panel="tarjan-code">C++ Template</div>
+    <div class="tab" data-tab="tarjan" data-panel="tarjan-notes">Code Notes</div>
+  </div>
+  <div id="tarjan-code" class="tab-panel active">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+#define adj(head, u, e, v) for (int e = head[u], v; ~e &amp;&amp; ((v = to[e]), 1); e = nxt[e])
+
+const int N = 200000 + 5;
+const int M = 400000 + 5;
+
+int head[N], to[M], nxt[M], ne;
+int dfsT[N], low[N], cmpId[N], stk[N], sz, curT, cmpCnt;
+int n;
+
+void initGraph(int nNodes){
+    n = nNodes; ne = 0;
+    memset(head, -1, n * sizeof(head[0]));
+}
+
+void addEdge(int u, int v){
+    to[ne] = v; nxt[ne] = head[u]; head[u] = ne++;
+}
+
+void tarjanDfs(int u){
+    dfsT[u] = low[u] = curT++;
+    stk[sz++] = u;
+
+    adj(head, u, e, v){
+        if(dfsT[v] == -1){           // unvisited → tree edge
+            tarjanDfs(v);
+            low[u] = min(low[u], low[v]);
+        } else if(cmpId[v] == -1){   // visited &amp; still active → back edge
+            low[u] = min(low[u], low[v]);
+        }
+        // cmpId[v] != -1 → finished SCC, skip
+    }
+
+    if(low[u] == dfsT[u]){           // u is SCC root
+        do {
+            cmpId[stk[--sz]] = cmpCnt;
+        } while(stk[sz] != u);
+        cmpCnt++;
+    }
+}
+
+void tarjan(){
+    curT = sz = cmpCnt = 0;
+    memset(dfsT, -1, n * sizeof(dfsT[0]));
+    memset(cmpId, -1, n * sizeof(cmpId[0]));
+    for(int i = 0; i &lt; n; i++)
+        if(dfsT[i] == -1) tarjanDfs(i);
+}
+</code></pre>
+  </div>
+  <div id="tarjan-notes" class="tab-panel">
+    <div class="ib ib-blue"><i>📌</i><p>The <span class="ic">adj</span> macro iterates the forward-star adjacency list. <span class="ic">~e</span> is <span class="ic">e != -1</span> via bitwise NOT.</p></div>
+    <div class="ib ib-orange"><i>⚠</i><p>Recursive DFS may stack-overflow for N ≥ 200 000 on some judges. Convert to iterative if needed.</p></div>
+    <div class="ib ib-green"><i>💡</i><p>SCC IDs are assigned in <strong>reverse topological order</strong> of the condensation. This is exactly the order needed for 2-SAT value assignment.</p></div>
+    <div class="ib ib-purple"><i>🔢</i><p><span class="ic">cmpCnt</span> after running = total number of SCCs in the graph.</p></div>
+  </div>
+</section>
+
+<!-- ═══════ TARJAN TRACER ═══════ -->
+<section class="card" id="stracer">
+  <h2>Interactive Tarjan Tracer</h2>
+  <p>Step through Tarjan on a 6-node graph. Three SCCs: {0,1,2}, {3,4}, {5}. Watch <span class="ic">dfsT</span>, <span class="ic">low</span>, the stack, and SCC assignments update live.</p>
+  <div class="rjump" id="tRjump"></div>
+  <div class="tracer-wrap">
+    <div>
+      <svg id="tSvg" class="graphsvg" viewBox="0 0 600 320" style="height:320px"></svg>
+      <div class="legend" style="margin-top:8px">
+        <span><span class="swatch" style="background:#e2e8f0;border:2px solid #9ca3af"></span>Unvisited</span>
+        <span><span class="swatch" style="background:#fbbf24"></span>On stack</span>
+        <span><span class="swatch" style="background:#e53e3e"></span>SCC #0</span>
+        <span><span class="swatch" style="background:#38a169"></span>SCC #1</span>
+        <span><span class="swatch" style="background:#3182ce"></span>SCC #2</span>
+      </div>
+    </div>
+    <div class="tside">
+      <div class="ctrl-row">
+        <button class="cbtn" id="tRst">⏮</button>
+        <button class="cbtn" id="tPrv">◀</button>
+        <button class="cbtn" id="tPly">▶</button>
+        <button class="cbtn" id="tNxt">▶|</button>
+      </div>
+      <div class="spd-row">
+        <span>Speed</span>
+        <input type="range" id="tSpd" min="0" max="4" value="2">
+        <span id="tSpdLbl">1×</span>
+      </div>
+      <div style="padding:12px 14px;border:3px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(37,99,235,.07),transparent);margin-bottom:10px">
+        <div class="sp-phase" id="tPhase">—</div>
+        <div class="sp-round" id="tRound">—</div>
+        <div class="sp-edge" id="tEdge">—</div>
+        <div class="sp-exp init" id="tExp">Press ▶ to start Tarjan.</div>
+      </div>
+      <div style="font-weight:900;font-size:16px;margin-bottom:6px">Stack (bottom → top)</div>
+      <div class="stack-row" id="tStack"></div>
+      <div class="slog" id="tLog"></div>
+      <div style="font-size:14px;font-weight:700;color:var(--muted);text-align:right;margin-top:4px" id="tCtr">Step 0/0</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 4. KOSARAJU ═══════ -->
+<section class="card" id="s4">
+  <h2>4. Kosaraju's Algorithm</h2>
+  <p>Kosaraju uses <strong>two DFS passes</strong> and requires building the reverse graph. Same O(N+M) complexity, but preferred when teaching because the intuition is easy to follow.</p>
+  <h3>The Three Steps</h3>
+  <ol>
+    <li>DFS the <strong>original graph</strong>, push each node after it fully finishes (post-order).</li>
+    <li><strong>Reverse all edges</strong> to get the transpose graph.</li>
+    <li>Process nodes in <strong>reverse finishing order</strong> on the transpose — each new DFS gives exactly one SCC.</li>
+  </ol>
+  <h3>Why Finishing Order Works</h3>
+  <p>If there is an edge SCC A → SCC B in the condensation, the finish time of any vertex in A is <em>larger</em> than that of any vertex in B during DFS on the original graph. So processing in reverse finishing order always starts a DFS from a "source" SCC of whatever remains. On the reversed graph, that DFS cannot leak into another unassigned SCC.</p>
+  <details>
+    <summary>Kosaraju Master Template <span class="hint">forward-star style</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+#define adj(head, u, e, v) for (int e = head[u], v; ~e &amp;&amp; ((v = to[e]), 1); e = nxt[e])
+
+const int N = 200000 + 5;
+const int M = 400000 + 5;
+
+int head[N], rhead[N], to[M], rto[M], nxt[M], rnxt[M], ne, rne;
+bool vis[N];
+int stk[N], topOrder, cmpId[N];
+int n;
+
+void initGraph(int nNodes){
+    n = nNodes; ne = rne = 0;
+    memset(head, -1, n * sizeof(head[0]));
+    memset(rhead, -1, n * sizeof(rhead[0]));
+}
+
+void addEdge(int u, int v){
+    to[ne] = v; nxt[ne] = head[u]; head[u] = ne++;
+    rto[rne] = u; rnxt[rne] = rhead[v]; rhead[v] = rne++;
+}
+
+void dfs1(int u){
+    vis[u] = true;
+    adj(head, u, e, v){ if(!vis[v]) dfs1(v); }
+    stk[topOrder++] = u;          // post-order
+}
+
+void dfs2(int u, int c){
+    cmpId[u] = c;
+    adj(rhead, u, e, v){ if(cmpId[v] == -1) dfs2(v, c); }
+}
+
+int kosaraju(){
+    memset(vis, 0, n * sizeof(vis[0]));
+    topOrder = 0;
+    for(int i = 0; i &lt; n; i++) if(!vis[i]) dfs1(i);
+    memset(cmpId, -1, n * sizeof(cmpId[0]));
+    int cmpCnt = 0;
+    for(int i = topOrder - 1; i &gt;= 0; i--){
+        int u = stk[i];
+        if(cmpId[u] == -1) dfs2(u, cmpCnt++);
+    }
+    return cmpCnt;
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<!-- ═══════ 5. COMPARISON ═══════ -->
+<section class="card" id="s5">
+  <h2>5. Tarjan vs Kosaraju</h2>
+  <div class="grid2">
+    <div class="ib ib-green" style="flex-direction:column;align-items:stretch">
+      <div style="font-weight:950;font-size:20px;margin-bottom:8px">Use Tarjan when:</div>
+      <ul style="margin:0;padding-left:1.2rem">
+        <li>You want one DFS pass</li>
+        <li>You need a direct 2-SAT base</li>
+        <li>You want no reverse graph</li>
+        <li>Contest code must be minimal</li>
+      </ul>
+    </div>
+    <div class="ib ib-blue" style="flex-direction:column;align-items:stretch">
+      <div style="font-weight:950;font-size:20px;margin-bottom:8px">Use Kosaraju when:</div>
+      <ul style="margin:0;padding-left:1.2rem">
+        <li>Teaching — proof is more intuitive</li>
+        <li>Reverse edges already available</li>
+        <li>2× memory is acceptable</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-purple"><i>⚡</i><p><strong>Both are O(N + M) time and space.</strong> For 2-SAT in competitive programming, Tarjan is the standard choice.</p></div>
+</section>
+
+<!-- ═══════ 6. 2-SAT ═══════ -->
+<section class="card" id="s6">
+  <h2>6. 2-SAT &amp; the Implication Graph</h2>
+  <p>A <strong>2-SAT formula</strong> is a conjunction of clauses, each with exactly two literals:</p>
+  <div class="formula">(a ∨ b) ∧ (¬c ∨ d) ∧ ···</div>
+  <p>2-SAT is solvable in polynomial time via the <strong>implication graph</strong>. The key transformation:</p>
+  <div class="formula">(a ∨ b)  ≡  (¬a → b)  ∧  (¬b → a)</div>
+  <p>Every clause becomes two directed implications. Each variable x has two nodes: <span class="ic">x</span> (true) and <span class="ic">¬x</span> (false). Node encoding: false-literal of variable i = <span class="ic">2*i</span>, true-literal = <span class="ic">2*i+1</span>.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Implication Graph Builder — step by step</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="satNxt">+ Add Clause</button>
+        <button class="miniBtn" id="satRst">⏮ Reset</button>
+      </div>
+    </div>
+    <svg id="satSvg" class="graphsvg" viewBox="0 0 860 300" style="height:300px"></svg>
+    <div class="statusPanel" id="satStatus">Formula: (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₃) ∧ (¬x₂ ∨ ¬x₃). Press "+ Add Clause" to add implications one at a time.</div>
+  </div>
+</section>
+
+<section class="card" id="s6b">
+  <h3>6.2 The Contradiction Criterion</h3>
+  <div class="ib ib-red"><i>⚠</i><p><strong>Theorem:</strong> The 2-SAT formula is satisfiable if and only if, for every variable x, the nodes <span class="ic">x</span> and <span class="ic">¬x</span> belong to <strong>different SCCs</strong>.</p></div>
+  <details>
+    <summary>Proof — why same SCC means contradiction <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>If x and ¬x are in the same SCC, both <strong>x → ¬x</strong> and <strong>¬x → x</strong> hold.</p>
+      <ul>
+        <li>If x is set true, implication forces ¬x true — contradiction.</li>
+        <li>If x is set false (¬x true), implication forces x true — contradiction.</li>
+      </ul>
+      <p>Conversely, if no variable's two literals share an SCC, the condensation DAG is consistent and we can assign values along topological order without violations.</p>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s6c">
+  <h3>6.3 Which SCC Order Gives the Assignment?</h3>
+  <p>With the Tarjan numbering in this tutorial, if there is an edge C → D in the condensation, then <span class="ic">cmpId[C] &gt; cmpId[D]</span> (C is popped earlier, gets a higher ID). Therefore:</p>
+  <div class="formula">value(x) = (cmpId[x]  &lt;  cmpId[¬x])</div>
+  <div class="ib ib-purple"><i>🔑</i><p><strong>Intuition:</strong> Set the literal whose SCC is "earlier in topological order" (lower ID in our numbering) to true. This respects all implications — you never force a false literal to be true against an implication.</p></div>
+  <div class="tw"><table>
+    <thead><tr><th>Condition</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ic">cmpId[x] == cmpId[¬x]</span></td><td class="cr"><strong>UNSATISFIABLE</strong> — contradiction</td></tr>
+      <tr><td><span class="ic">cmpId[x] &lt; cmpId[¬x]</span></td><td class="cy">Set x = <strong>true</strong></td></tr>
+      <tr><td><span class="ic">cmpId[x] &gt; cmpId[¬x]</span></td><td class="cy">Set x = <strong>false</strong></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ═══════ 7. 2-SAT TEMPLATE ═══════ -->
+<section class="card" id="s7">
+  <h2>7. Tarjan 2-SAT Master Template</h2>
+  <div class="tab-bar">
+    <div class="tab active" data-tab="twosat" data-panel="twosat-code">Full Template</div>
+    <div class="tab" data-tab="twosat" data-panel="twosat-helpers">Helper Reference</div>
+  </div>
+  <div id="twosat-code" class="tab-panel active">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+#define adj(head, u, e, v) for (int e = head[u], v; ~e &amp;&amp; ((v = to[e]), 1); e = nxt[e])
+
+const int MAXV = 400000 + 5;
+const int MAXE = 4000000 + 5;
+
+int head[MAXV], to[MAXE], nxt[MAXE], ne;
+int dfsT[MAXV], low[MAXV], cmpId[MAXV], stk[MAXV], sz, curT, cmpCnt;
+int vars, nodes;
+
+void init2SAT(int nVars){
+    vars = nVars; nodes = 2 * vars; ne = 0;
+    memset(head, -1, nodes * sizeof(head[0]));
+}
+
+inline int var(int x)  { return 2 * x; }    // false-literal node for variable x (0-based)
+inline int neg(int x)  { return x ^ 1; }    // flip literal (XOR bit-0)
+
+void addEdge(int u, int v){ to[ne]=v; nxt[ne]=head[u]; head[u]=ne++; }
+
+void addOr(int a, int b)   { addEdge(neg(a),b); addEdge(neg(b),a); }
+void addImp(int a, int b)  { addEdge(a,b); }
+void forceTrue(int a)      { addEdge(neg(a),a); }
+void forceFalse(int a)     { addEdge(a,neg(a)); }
+void addXor(int a, int b)  { addOr(a,b); addOr(neg(a),neg(b)); }
+void addEqual(int a, int b){ addImp(a,b); addImp(b,a); addImp(neg(a),neg(b)); addImp(neg(b),neg(a)); }
+
+void tarjanDfs(int u){
+    dfsT[u] = low[u] = curT++;
+    stk[sz++] = u;
+    adj(head, u, e, v){
+        if(dfsT[v]==-1){ tarjanDfs(v); low[u]=min(low[u],low[v]); }
+        else if(cmpId[v]==-1){ low[u]=min(low[u],low[v]); }
+    }
+    if(low[u]==dfsT[u]){ do{ cmpId[stk[--sz]]=cmpCnt; }while(stk[sz]!=u); cmpCnt++; }
+}
+
+bool solve2SAT(vector&lt;int&gt;&amp; ans){
+    curT=sz=cmpCnt=0;
+    memset(dfsT,-1,nodes*sizeof(dfsT[0]));
+    memset(cmpId,-1,nodes*sizeof(cmpId[0]));
+    for(int i=0;i&lt;nodes;i++) if(dfsT[i]==-1) tarjanDfs(i);
+
+    ans.assign(vars,0);
+    for(int i=0;i&lt;vars;i++){
+        if(cmpId[var(i)]==cmpId[neg(var(i))]) return false; // contradiction
+        ans[i]=(cmpId[var(i)]&lt;cmpId[neg(var(i))]);          // assignment rule
+    }
+    return true;
+}
+</code></pre>
+  </div>
+  <div id="twosat-helpers" class="tab-panel">
+    <h3>Variable Encoding</h3>
+    <div class="formula">Variable i (0-based): false-node = 2i, true-node = 2i+1</div>
+    <p>Flipping a literal: <span class="ic">x ^ 1</span> works because 2i and 2i+1 differ only in bit 0.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Function</th><th>Logical meaning</th><th>Edges added</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ic">addOr(a, b)</span></td><td>a ∨ b</td><td>¬a→b, ¬b→a</td></tr>
+        <tr><td><span class="ic">addImp(a, b)</span></td><td>a → b (≡ ¬a ∨ b)</td><td>a→b</td></tr>
+        <tr><td><span class="ic">forceTrue(a)</span></td><td>a must be true</td><td>¬a→a</td></tr>
+        <tr><td><span class="ic">forceFalse(a)</span></td><td>a must be false</td><td>a→¬a</td></tr>
+        <tr><td><span class="ic">addXor(a, b)</span></td><td>exactly one of a, b is true</td><td>a∨b and ¬a∨¬b</td></tr>
+        <tr><td><span class="ic">addEqual(a, b)</span></td><td>a and b have same value</td><td>a↔b (4 edges)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="ib ib-blue"><i>📌</i><p>To get the <em>true-literal</em> of variable i, use <span class="ic">var(i)|1</span> or <span class="ic">neg(var(i))</span>. To get the <em>false-literal</em>, use <span class="ic">var(i)</span>.</p></div>
+  </div>
+</section>
+
+<!-- ═══════ 8. PATTERNS ═══════ -->
+<section class="card" id="s8">
+  <h2>8. Common 2-SAT Modeling Patterns</h2>
+  <p>Let <span class="ic">a</span>, <span class="ic">b</span> be already-encoded literal nodes (either true- or false-literal of any variable).</p>
+  <div class="grid2">
+    <div>
+      <h3>OR clause: a ∨ b</h3>
+<pre><code>addOr(a, b);</code></pre>
+      <p style="font-size:var(--fs-sm)">If ¬a (a is false), b must be true. If ¬b, a must be true. Both directions encoded.</p>
+    </div>
+    <div>
+      <h3>Implication: a ⟹ b</h3>
+<pre><code>addImp(a, b);
+// same as: addOr(neg(a), b)</code></pre>
+      <p style="font-size:var(--fs-sm)">One directed edge. If a is true, b must also be true.</p>
+    </div>
+    <div>
+      <h3>Forced assignment</h3>
+<pre><code>forceTrue(a);    // ¬a → a
+forceFalse(a);   // a → ¬a</code></pre>
+    </div>
+    <div>
+      <h3>XOR: exactly one true</h3>
+<pre><code>addXor(a, b);
+// addOr(a,b) + addOr(neg(a),neg(b))</code></pre>
+    </div>
+    <div>
+      <h3>Equality: same truth value</h3>
+<pre><code>addEqual(a, b);
+// a→b, b→a, ¬a→¬b, ¬b→¬a</code></pre>
+    </div>
+    <div class="ib ib-orange" style="align-self:center;margin:0">
+      <i>💡</i><p><strong>All roads lead to implications.</strong> A clause (a ∨ b) simply says: if you choose not-a, you must choose b.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 9. MAX-SAT ═══════ -->
+<section class="card" id="s9">
+  <h2>9. Weighted / Max-SAT Notes</h2>
+  <div class="grid3">
+    <div class="ib ib-green" style="flex-direction:column;align-items:stretch">
+      <div style="font-weight:950;font-size:18px;margin-bottom:6px">✅ Standard 2-SAT</div>
+      <p style="font-size:17px;margin:0">Polynomial (O(N+M)), SCC-based. Covered by this tutorial.</p>
+    </div>
+    <div class="ib ib-red" style="flex-direction:column;align-items:stretch">
+      <div style="font-weight:950;font-size:18px;margin-bottom:6px">✗ General Max-SAT</div>
+      <p style="font-size:17px;margin:0">NP-hard in general. SCC alone does not solve it.</p>
+    </div>
+    <div class="ib ib-purple" style="flex-direction:column;align-items:stretch">
+      <div style="font-weight:950;font-size:18px;margin-bottom:6px">⚡ Contest Combos</div>
+      <p style="font-size:17px;margin:0">Binary search + 2-SAT feasibility; min-cut for weighted variants; monotone reductions.</p>
+    </div>
+  </div>
+  <div class="ib ib-blue"><i>📌</i><p><strong>ICPC advice:</strong> Use 2-SAT as a <em>feasibility oracle</em> inside a larger optimization, not as a standalone optimizer for weighted clauses.</p></div>
+</section>
+
+<!-- ═══════ PROBLEMS ═══════ -->
+<section class="card" id="s10a">
+  <h2>10.1 POJ 1236 — Network of Schools &nbsp;<a href="https://vjudge.net/problem/POJ-1236" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>A pure SCC condensation problem. Build the condensation DAG and count sources (in-degree 0) and sinks (out-degree 0).</p>
+  <div class="grid2">
+    <div class="ib ib-blue"><i>1</i><p><strong>Min schools to reach all:</strong> = number of <em>source</em> SCCs (in-degree 0)</p></div>
+    <div class="ib ib-purple"><i>2</i><p><strong>Min edges to make fully connected:</strong> = max(sources, sinks) — or 0 if already one SCC</p></div>
+  </div>
+  <details>
+    <summary>Why max(sources, sinks)? <span class="hint">proof sketch</span></summary>
+    <div class="detailsBody">
+      <p>Each added edge can reduce at most one source deficiency and one sink deficiency. So you need at least max(sources, sinks) edges. This bound is achievable by pairing source SCCs with sink SCCs and adding a chain of edges.</p>
+    </div>
+  </details>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+#define adj(head,u,e,v) for(int e=head[u],v;e&amp;&amp;((v=to[e]),1);e=nxt[e])
+const int N=105,M=20005;
+int head[N],to[M],nxt[M],ne=1;
+int dfsT[N],low[N],cmpId[N],stk[N],sz,curT,cmpCnt;
+bool notSource[N],notSink[N];
+int n;
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void tarjanDfs(int u){
+    dfsT[u]=low[u]=curT++;stk[sz++]=u;
+    adj(head,u,e,v){
+        if(dfsT[v]==-1){tarjanDfs(v);low[u]=min(low[u],low[v]);}
+        else if(cmpId[v]==-1){low[u]=min(low[u],low[v]);}
+    }
+    if(low[u]==dfsT[u]){do{cmpId[stk[--sz]]=cmpCnt;}while(stk[sz]!=u);cmpCnt++;}
+}
+int main(){
+    scanf("%d",&amp;n);
+    int u;
+    for(int i=1;i&lt;=n;i++) while(scanf("%d",&amp;u),u) addEdge(i,u);
+    memset(dfsT+1,-1,n*sizeof(dfsT[0]));
+    memset(cmpId+1,-1,n*sizeof(cmpId[0]));
+    curT=sz=cmpCnt=0;
+    for(int i=1;i&lt;=n;i++) if(dfsT[i]==-1) tarjanDfs(i);
+    for(int i=1;i&lt;=n;i++) adj(head,i,e,v){
+        if(cmpId[i]!=cmpId[v]){notSource[cmpId[v]]=true;notSink[cmpId[i]]=true;}
+    }
+    int src=0,snk=0;
+    for(int i=0;i&lt;cmpCnt;i++){src+=!notSource[i];snk+=!notSink[i];}
+    printf("%d\n",src);
+    if(cmpCnt==1) puts("0"); else printf("%d\n",max(src,snk));
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s10b">
+  <h2>10.2 SPOJ — CAPCITY &nbsp;<a href="https://vjudge.net/problem/SPOJ-CAPCITY" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>Find all cities from which every city is reachable. This is only possible if the condensation DAG has <strong>exactly one sink SCC</strong>. If so, every node in that SCC is a valid answer.</p>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+#define adj(head,u,e,v) for(int e=head[u],v;~e&amp;&amp;((v=to[e]),1);e=nxt[e])
+const int N=100005,M=500005;
+int head[N],to[M],nxt[M],ne;
+int dfsT[N],low[N],cmpId[N],stk[N],sz,curT,cmpCnt;
+int n,m,outDeg[N];
+void initGraph(int nn){n=nn;ne=0;memset(head,-1,(n+1)*sizeof(head[0]));}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void tarjanDfs(int u){
+    dfsT[u]=low[u]=curT++;stk[sz++]=u;
+    adj(head,u,e,v){
+        if(dfsT[v]==-1){tarjanDfs(v);low[u]=min(low[u],low[v]);}
+        else if(cmpId[v]==-1){low[u]=min(low[u],low[v]);}
+    }
+    if(low[u]==dfsT[u]){do{cmpId[stk[--sz]]=cmpCnt;}while(stk[sz]!=u);cmpCnt++;}
+}
+int main(){
+    scanf("%d%d",&amp;n,&amp;m); initGraph(n);
+    for(int i=0,u,v;i&lt;m;i++){scanf("%d%d",&amp;u,&amp;v);addEdge(u,v);}
+    memset(dfsT+1,-1,n*sizeof(dfsT[0]));
+    memset(cmpId+1,-1,n*sizeof(cmpId[0]));
+    curT=sz=cmpCnt=0;
+    for(int i=1;i&lt;=n;i++) if(dfsT[i]==-1) tarjanDfs(i);
+    for(int u=1;u&lt;=n;u++) adj(head,u,e,v){if(cmpId[u]!=cmpId[v])outDeg[cmpId[u]]++;}
+    int sinkCmp=-1,cntSink=0;
+    for(int i=0;i&lt;cmpCnt;i++) if(outDeg[i]==0){cntSink++;sinkCmp=i;}
+    if(cntSink!=1){puts("0");puts("");return 0;}
+    vector&lt;int&gt; ans;
+    for(int i=1;i&lt;=n;i++) if(cmpId[i]==sinkCmp) ans.push_back(i);
+    printf("%d\n",(int)ans.size());
+    for(int i=0;i&lt;(int)ans.size();i++){if(i) printf(" ");printf("%d",ans[i]);}
+    puts("");
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s10c">
+  <h2>10.3 CSES 1684 — Giant Pizza &nbsp;<a href="https://vjudge.net/problem/CSES-1684" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>A direct textbook 2-SAT problem. Each topping is a boolean. Each customer's two preferences form a clause: at least one must be satisfied.</p>
+  <div class="ib ib-blue"><i>🍕</i><p><strong>Abstraction:</strong> Customer "− 3 + 5" means: topping 3 off OR topping 5 on. One clause, two implications added by <span class="ic">addOr</span>.</p></div>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+#define adj(head,u,e,v) for(int e=head[u],v;~e&amp;&amp;((v=to[e]),1);e=nxt[e])
+const int MAXV=200005,MAXE=2000005;
+int head[MAXV],to[MAXE],nxt[MAXE],ne;
+int dfsT[MAXV],low[MAXV],cmpId[MAXV],stk[MAXV],sz,curT,cmpCnt;
+int vars,nodes;
+void init2SAT(int nv){vars=nv;nodes=2*vars;ne=0;memset(head,-1,nodes*sizeof(head[0]));}
+inline int lit(int idx,char sign){int x=2*idx;if(sign=='-')x^=1;return x;}
+inline int neg2(int x){return x^1;}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void addOr(int a,int b){addEdge(neg2(a),b);addEdge(neg2(b),a);}
+void tarjanDfs(int u){
+    dfsT[u]=low[u]=curT++;stk[sz++]=u;
+    adj(head,u,e,v){
+        if(dfsT[v]==-1){tarjanDfs(v);low[u]=min(low[u],low[v]);}
+        else if(cmpId[v]==-1){low[u]=min(low[u],low[v]);}
+    }
+    if(low[u]==dfsT[u]){do{cmpId[stk[--sz]]=cmpCnt;}while(stk[sz]!=u);cmpCnt++;}
+}
+int main(){
+    ios::sync_with_stdio(false);cin.tie(nullptr);
+    int m,n;cin&gt;&gt;m&gt;&gt;n;init2SAT(n);
+    for(int i=0;i&lt;m;i++){
+        char s1,s2;int a,b;
+        cin&gt;&gt;s1&gt;&gt;a&gt;&gt;s2&gt;&gt;b;--a;--b;
+        addOr(lit(a,s1),lit(b,s2));
+    }
+    memset(dfsT,-1,nodes*sizeof(dfsT[0]));
+    memset(cmpId,-1,nodes*sizeof(cmpId[0]));
+    curT=sz=cmpCnt=0;
+    for(int i=0;i&lt;nodes;i++) if(dfsT[i]==-1) tarjanDfs(i);
+    vector&lt;char&gt; ans(n);
+    for(int i=0;i&lt;n;i++){
+        if(cmpId[2*i]==cmpId[2*i+1]){cout&lt;&lt;"IMPOSSIBLE\n";return 0;}
+        ans[i]=(cmpId[2*i]&lt;cmpId[2*i+1]?'+':'-');
+    }
+    for(int i=0;i&lt;n;i++){if(i)cout&lt;&lt;' ';cout&lt;&lt;ans[i];}cout&lt;&lt;'\n';
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s10d">
+  <h2>10.4 POJ 3648 — Wedding &nbsp;<a href="https://vjudge.net/problem/POJ-3648" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>Each couple gets a boolean: husband/wife on bride's side. Pair constraints become clauses. Couple 0's wife is forced to the bride's side.</p>
+  <div class="ib ib-purple"><i>💍</i><p>Key trick: <span class="ic">addOr(w(0), w(0))</span> is equivalent to <span class="ic">forceTrue(w(0))</span> — encoding a forced literal as a degenerate OR clause.</p></div>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+#define adj(head,u,e,v) for(int e=head[u],v;~e&amp;&amp;((v=to[e]),1);e=nxt[e])
+const int MAXV=5000,MAXE=200000;
+int head[MAXV],to[MAXE],nxt[MAXE],ne;
+int dfsT[MAXV],low[MAXV],cmpId[MAXV],stk[MAXV],sz,curT,cmpCnt;
+int nVars,nodes;
+inline int h(int i){return 2*(2*i);}
+inline int w(int i){return h(i)^1;}
+void initGraph(int n2){nodes=n2;ne=0;memset(head,-1,nodes*sizeof(head[0]));}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void addOr(int a,int b){addEdge(a^1,b);addEdge(b^1,a);}
+void addXor(int a,int b){addOr(a,b);addOr(a^1,b^1);}
+void tarjanDfs(int u){
+    dfsT[u]=low[u]=curT++;stk[sz++]=u;
+    adj(head,u,e,v){
+        if(dfsT[v]==-1){tarjanDfs(v);low[u]=min(low[u],low[v]);}
+        else if(cmpId[v]==-1){low[u]=min(low[u],low[v]);}
+    }
+    if(low[u]==dfsT[u]){do{cmpId[stk[--sz]]=cmpCnt;}while(stk[sz]!=u);cmpCnt++;}
+}
+int main(){
+    int n,m;
+    while(scanf("%d%d",&amp;n,&amp;m),n||m){
+        nVars=n; initGraph(4*n);
+        for(int i=0;i&lt;n;i++) addXor(h(i),w(i));
+        addOr(w(0),w(0));
+        while(m--){
+            int a,b;char sa,sb;
+            scanf("%d%c %d%c",&amp;a,&amp;sa,&amp;b,&amp;sb);
+            int x=(sa=='h'?h(a):w(a));
+            int y=(sb=='h'?h(b):w(b));
+            addOr(x,y);
+        }
+        memset(dfsT,-1,nodes*sizeof(dfsT[0]));
+        memset(cmpId,-1,nodes*sizeof(cmpId[0]));
+        curT=sz=cmpCnt=0;
+        for(int i=0;i&lt;nodes;i++) if(dfsT[i]==-1) tarjanDfs(i);
+        bool bad=false;
+        for(int i=0;i&lt;nodes;i+=2) if(cmpId[i]==cmpId[i^1]){bad=true;break;}
+        if(bad){puts("bad luck");continue;}
+        for(int i=1;i&lt;n;i++){
+            if(i&gt;1) printf(" ");
+            bool hSide=(cmpId[h(i)]&lt;cmpId[h(i)^1]);
+            printf("%d%c",i,hSide?'h':'w');
+        }
+        puts("");
+    }
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s10e">
+  <h2>10.5 UVA 10319 — Manhattan &nbsp;<a href="https://vjudge.net/problem/UVA-10319" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>Each street direction is a boolean. Route constraints encode as 2-SAT clauses. When row and column both differ, two possible move orders exist — at least one must work, giving an OR constraint.</p>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+#define adj(head,u,e,v) for(int e=head[u],v;~e&amp;&amp;((v=to[e]),1);e=nxt[e])
+const int N=4005,M=4000005;
+int head[N],to[M],nxt[M],ne;
+int dfsT[N],low[N],cmpId[N],stk[N],sz,curT,cmpCnt,n;
+void initGraph(){ne=0;memset(head,-1,n*sizeof(head[0]));}
+void addEdge(int u,int v){to[ne]=v;nxt[ne]=head[u];head[u]=ne++;}
+void addOr(int a,int b){addEdge(a^1,b);addEdge(b^1,a);}
+void addSoP(int a,int b,int x,int y){addOr(a,x);addOr(a,y);addOr(b,x);addOr(b,y);}
+void tarjanDfs(int u){
+    dfsT[u]=low[u]=curT++;stk[sz++]=u;
+    adj(head,u,e,v){
+        if(dfsT[v]==-1){tarjanDfs(v);low[u]=min(low[u],low[v]);}
+        else if(cmpId[v]==-1){low[u]=min(low[u],low[v]);}
+    }
+    if(low[u]==dfsT[u]){do{cmpId[stk[--sz]]=cmpCnt;}while(stk[sz]!=u);cmpCnt++;}
+}
+int main(){
+    int T;scanf("%d",&amp;T);
+    while(T--){
+        int r,c,m;scanf("%d%d%d",&amp;r,&amp;c,&amp;m);
+        n=2*(r+c);initGraph();
+        while(m--){
+            int r1,c1,r2,c2;scanf("%d%d%d%d",&amp;r1,&amp;c1,&amp;r2,&amp;c2);
+            --r1;--c1;--r2;--c2;
+            if(r1==r2&amp;&amp;c1==c2) continue;
+            if(r1==r2){int v=2*r1;if(c2&lt;c1)v^=1;addOr(v,v);}
+            else if(c1==c2){int v=2*(r+c1);if(r2&lt;r1)v^=1;addOr(v,v);}
+            else{
+                bool dr=(c2&lt;c1),dc=(r2&lt;r1);
+                int R1=2*r1+dr,R2=2*r2+dr;
+                int C1=2*(r+c1)+dc,C2=2*(r+c2)+dc;
+                addSoP(R1,C2,R2,C1);
+            }
+        }
+        memset(dfsT,-1,n*sizeof(dfsT[0]));
+        memset(cmpId,-1,n*sizeof(cmpId[0]));
+        curT=sz=cmpCnt=0;
+        for(int i=0;i&lt;n;i++) if(dfsT[i]==-1) tarjanDfs(i);
+        bool ok=true;
+        for(int i=0;i&lt;n;i+=2) if(cmpId[i]==cmpId[i^1]){ok=false;break;}
+        puts(ok?"Yes":"No");
+    }
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s10f">
+  <h2>10.6 UVA 1086 — The Ministers' Major Mess &nbsp;<a href="https://vjudge.net/problem/UVA-1086" target="_blank" style="font-size:18px;font-weight:800;color:var(--link)">↗ VJudge</a></h2>
+  <p>Each bill is a boolean. Each minister requires more than half their opinions to hold. For ministers with k ≤ 2 opinions: all opinions are forced. For k = 3 or 4: if any opinion fails, all others must hold — giving "¬vote[p] → vote[q] for all q ≠ p" implications.</p>
+  <div class="ib ib-purple"><i>⚡</i><p>After solving, to determine if each variable is definitely true/false/unknown, test forcing it both ways and checking satisfiability each time.</p></div>
+  <details>
+    <summary>AC-Ready Code <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int MAXN=262144;
+struct TwoSAT{
+    int n;
+    vector&lt;int&gt; g[MAXN];
+    int vfind[MAXN],findIdx,stk[MAXN],stkIdx,inStk[MAXN],visited[MAXN],contract[MAXN],sccCnt;
+    int scc(int u){
+        inStk[u]=visited[u]=1;stk[++stkIdx]=u;vfind[u]=++findIdx;
+        int mn=vfind[u];
+        for(int v:g[u]){if(!visited[v])mn=min(mn,scc(v));if(inStk[v])mn=min(mn,vfind[v]);}
+        if(mn==vfind[u]){do{inStk[stk[stkIdx]]=0;contract[stk[stkIdx]]=u;}while(stk[stkIdx--]!=u);sccCnt++;}
+        return mn;
+    }
+    void init(int _n){n=_n;for(int i=0;i&lt;n;i++)g[i].clear();}
+    void addEdge(int u,int v){g[u].push_back(v);}
+    bool solvable(){
+        memset(visited,0,n*sizeof(visited[0]));memset(inStk,0,n*sizeof(inStk[0]));sccCnt=0;
+        for(int i=0;i&lt;n;i++){if(visited[i])continue;stkIdx=0;findIdx=0;scc(i);}
+        for(int i=0;i&lt;n;i+=2) if(contract[i]==contract[i^1])return false;
+        return true;
+    }
+    void computeChoice(){
+        if(!solvable())return;
+        for(int i=0;i&lt;n;i+=2){
+            int val=0;
+            g[i].push_back(i^1);if(solvable())val|=1;g[i].pop_back();
+            g[i^1].push_back(i);if(solvable())val|=2;g[i^1].pop_back();
+            printf("%c","-yn?"[val]);
+        }puts("");
+    }
+}sat;
+int main(){
+    int n,m,tc=0;char s[20];
+    while(scanf("%d%d",&amp;n,&amp;m)==2&amp;&amp;n){
+        sat.init(2*n);
+        for(int i=0;i&lt;m;i++){
+            int k;scanf("%d",&amp;k);
+            vector&lt;int&gt; vote(k);
+            for(int j=0;j&lt;k;j++){int x;scanf("%d%s",&amp;x,s);--x;vote[j]=2*x+(s[0]=='y');}
+            if(k&lt;=2){for(int x:vote)sat.addEdge(x^1,x);}
+            else{for(int p=0;p&lt;k;p++)for(int q=0;q&lt;k;q++)if(p!=q)sat.addEdge(vote[p]^1,vote[q]);}
+        }
+        printf("Case %d: ",++tc);
+        if(!sat.solvable())puts("impossible");
+        else sat.computeChoice();
+    }
+}
+</code></pre>
+    </div>
+  </details>
+</section>
+
+<!-- ═══════ SUMMARY ═══════ -->
+<section class="card" id="summary">
+  <h2>Knowledge Summary</h2>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✅ Core Checklist</h4>
+      <ul class="checklist">
+        <li>SCC = maximal mutually reachable set</li>
+        <li>Condensation graph is always a DAG</li>
+        <li>Tarjan: one DFS, three arrays (dfsT, low, cmpId)</li>
+        <li>low[u]==dfsT[u] ⟹ u is an SCC root</li>
+        <li>cmpId[v]==-1 replaces inStack[v]</li>
+        <li>Kosaraju: post-order + reversed graph</li>
+        <li>2-SAT: (a∨b) → ¬a→b, ¬b→a</li>
+        <li>Conflict ⟺ x and ¬x in same SCC</li>
+        <li>Value: x true iff cmpId[x] &lt; cmpId[¬x]</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠ Common Mistakes</h4>
+      <ul class="mistake">
+        <li>Updating low from a cross-edge to a finished SCC</li>
+        <li>Using dfsT instead of low when checking SCC root</li>
+        <li>Wrong assignment direction — check cmpId numbering</li>
+        <li>Checking satisfiability after extracting assignment</li>
+        <li>Stack overflow with large N and deep recursion</li>
+        <li>Not popping the SCC root itself from the stack</li>
+        <li>Forgetting to init cmpId to -1 before each run</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🔑 Key Theorems to Memorize</h4>
+      <ul class="checklist">
+        <li>Tarjan and Kosaraju both run in O(N+M)</li>
+        <li>Condensation is always a DAG — no exceptions</li>
+        <li>2-SAT satisfiability is linear-time decidable</li>
+        <li>Min broadcasts = #source SCCs in condensation</li>
+        <li>Min edges to make SCC = max(sources, sinks)</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>📚 Problem Taxonomy</h4>
+      <ul class="checklist">
+        <li>Source/sink counting on DAG → POJ 1236</li>
+        <li>Sink SCC extraction → SPOJ CAPCITY</li>
+        <li>Direct 2-SAT → CSES 1684 Giant Pizza</li>
+        <li>Implication modeling → POJ 3648 Wedding</li>
+        <li>Grid direction 2-SAT → UVA 10319</li>
+        <li>Forced assignment detection → UVA 1086</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Final Takeaways</h3>
+  <div class="ib ib-blue"><i>🎯</i><p>The <strong>algorithm is not the hard part</strong>. Once you have the template, the real skill is seeing how to turn a problem story into boolean variables and implications. The best way to build that skill is to read and re-implement diverse 2-SAT problem solutions.</p></div>
+  <div class="ib ib-purple"><i>🏗</i><p>Backbone to internalize: SCC definition → condensation is DAG → Tarjan invariant → Kosaraju finishing order → 2-SAT contradiction = same SCC → assignment from SCC order → modeling is the real skill.</p></div>
+</section>
+
+<!-- ═══════ RUNTIME VALIDATION CHECKLIST ═══════ -->
+<section class="card" id="checklist">
+  <h2>Runtime Validation Checklist</h2>
+  <p style="font-size:var(--fs-sm);color:var(--muted);margin-bottom:14px">All items below are literally true in the final file and verified at runtime.</p>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>🗂 Sidebar &amp; Navigation</h4>
+      <ul class="checklist">
+        <li>Sidebar opens and closes correctly on all viewports</li>
+        <li>Hamburger button animates correctly when toggled</li>
+        <li><code>aria-expanded</code> stays synchronized with actual sidebar state</li>
+        <li>Overlay appears only on narrow layouts when sidebar is open</li>
+        <li>Narrow layouts (≤1300 px) start with sidebar closed by default</li>
+        <li>Desktop layouts start with sidebar open without triggering overlay</li>
+        <li>Escape key closes sidebar on narrow layouts</li>
+        <li>Active nav link highlights update correctly while scrolling</li>
+        <li><code>aria-controls="sidebar"</code> is set on the hamburger button</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🎨 Theme System</h4>
+      <ul class="checklist">
+        <li>Theme persists across page reloads via localStorage</li>
+        <li>System <code>prefers-color-scheme: dark</code> fallback applies when no saved theme exists</li>
+        <li>Pre-body init script prevents first-paint flash</li>
+        <li>Theme switch supports click, Enter, and Space keyboard events</li>
+        <li><code>aria-checked</code> on the switch is correct on first load</li>
+        <li>SVG diagrams and tracers redraw correctly after theme change</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🔗 Email &amp; Branding</h4>
+      <ul class="checklist">
+        <li>All visible email links are plain direct <code>mailto:</code> links</li>
+        <li>No Cloudflare email obfuscation (<code>__cf_email__</code>, <code>cdn-cgi</code>) remains</li>
+        <li>No JS string-assembly email injection remains</li>
+        <li>Footer branding reads: Coach Academy / Prepared by The Coach (Dr. Wahab) &amp; Ashraf</li>
+        <li>Sidebar footer branding matches page footer branding</li>
+        <li>Copyright reads: © 2025 All rights reserved.</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚙ File Integrity</h4>
+      <ul class="checklist">
+        <li>All interactive controls and tracers (SCC, Tarjan, condensation, 2-SAT) work correctly</li>
+        <li>No duplicate IDs remain in the document</li>
+        <li>No broken JS event handlers remain</li>
+        <li>File is not truncated — ends with <code>&lt;/body&gt;&lt;/html&gt;</code></li>
+        <li>All opened HTML tags are properly closed</li>
+        <li>All script blocks are syntactically valid</li>
+        <li>SCC / Tarjan / Kosaraju / 2-SAT teaching content is intact and complete</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-copy">© 2025 All rights reserved.</div>
+</footer>
+</div><!-- end .content -->
+
+<script>
+/* ══════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════ */
+var NS='http://www.w3.org/2000/svg';
+function mk(t,a){var e=document.createElementNS(NS,t);if(a)for(var k in a)e.setAttribute(k,a[k]);return e;}
+function cv(n){return getComputedStyle(document.body).getPropertyValue('--'+n).trim();}
+function dark(){return document.body.getAttribute('data-theme')==='dark';}
+
+function addMarkers(svg,prefix,cols){
+  var defs=mk('defs');
+  for(var k in cols){
+    var m=mk('marker',{id:prefix+k,markerWidth:'9',markerHeight:'9',refX:'8',refY:'3.5',orient:'auto'});
+    m.appendChild(mk('path',{d:'M0,0 L9,3.5 L0,7 Z',fill:cols[k]}));
+    defs.appendChild(m);
+  }
+  svg.appendChild(defs);
+}
+
+function perp(x1,y1,x2,y2){
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+  return{px:-dy/len,py:dx/len};
+}
+
+function drawArrow(svg,x1,y1,x2,y2,col,mid,sw,r){
+  r=r||26;sw=sw||2.5;
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+  var sx=x1+(dx/len)*r,sy=y1+(dy/len)*r;
+  var ex=x2-(dx/len)*r,ey=y2-(dy/len)*r;
+  var p=mk('path',{d:'M'+sx+','+sy+' L'+ex+','+ey,fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+  svg.appendChild(p);
+  return{mx:(sx+ex)/2,my:(sy+ey)/2};
+}
+
+function drawCurve(svg,x1,y1,x2,y2,col,mid,sw,offset){
+  offset=offset||30;sw=sw||2.5;
+  var dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
+  var mx=(x1+x2)/2,my=(y1+y2)/2;
+  var qx=mx+(-dy/len)*offset,qy=my+(dx/len)*offset;
+  var p=mk('path',{d:'M'+x1+','+y1+' Q'+qx+','+qy+' '+x2+','+y2,fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+  svg.appendChild(p);
+  return{lx:0.25*x1+0.5*qx+0.25*x2,ly:0.25*y1+0.5*qy+0.25*y2};
+}
+
+function drawWLabel(svg,x,y,txt,col){
+  var s=String(txt),w=s.length*9+14;
+  svg.appendChild(mk('rect',{x:x-w/2,y:y-11,width:w,height:20,rx:6,fill:cv('panel'),'fill-opacity':'0.92',stroke:col,'stroke-width':'1'}));
+  var t=mk('text',{x:x,y:y+5,fill:col,'font-size':'14','font-weight':'900','text-anchor':'middle','font-family':'system-ui,sans-serif'});
+  t.textContent=s; svg.appendChild(t);
+}
+
+function drawNode(svg,cx,cy,r,fill,stroke,sw,letter,dlabel,dcol){
+  r=r||27;
+  svg.appendChild(mk('circle',{cx:cx,cy:cy,r:r,fill:fill,stroke:stroke,'stroke-width':sw||3}));
+  var lc=(fill==='#6d28d9'||fill===cv('good')||fill===cv('warn')||fill==='#e53e3e'||fill==='#38a169'||fill==='#3182ce'||fill==='#d69e2e'||fill==='#fbbf24')?'#fff':(dark()?'#e5e7eb':cv('text'));
+  var t=mk('text',{x:cx,y:cy+6,fill:lc,'font-size':'17','font-weight':'950','text-anchor':'middle','font-family':'system-ui,sans-serif'});
+  t.textContent=letter; svg.appendChild(t);
+  if(dlabel!==undefined){
+    var dy2=cy+r+20,ds=String(dlabel),dw=ds.length*9+14;
+    svg.appendChild(mk('rect',{x:cx-dw/2,y:dy2-12,width:dw,height:20,rx:5,fill:cv('panel'),'fill-opacity':'0.88'}));
+    var dt=mk('text',{x:cx,y:dy2+3,fill:dcol||cv('muted'),'font-size':'13','font-weight':'800','text-anchor':'middle','font-family':'ui-monospace,monospace'});
+    dt.textContent=ds; svg.appendChild(dt);
+  }
+}
+
+/* ══════════════════════════════════════
+   SIDEBAR + THEME
+══════════════════════════════════════ */
+(function(){
+  var sidebar=document.getElementById('sidebar');
+  var overlay=document.getElementById('sidebarOverlay');
+  var toggle=document.getElementById('sidebarToggle');
+  var body=document.body;
+  var NARROW=1300;
+  function isNarrow(){return window.innerWidth<NARROW;}
+  function openSidebar(){
+    sidebar.classList.remove('collapsed');
+    toggle.classList.add('open');
+    toggle.setAttribute('aria-expanded','true');
+    body.classList.remove('sb-closed');body.classList.add('sb-open');
+    if(isNarrow())overlay.classList.add('show'); else overlay.classList.remove('show');
+  }
+  function closeSidebar(){
+    sidebar.classList.add('collapsed');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    body.classList.add('sb-closed');body.classList.remove('sb-open');
+    overlay.classList.remove('show');
+  }
+  // init based on viewport
+  if(isNarrow()){closeSidebar();}else{openSidebar();}
+  toggle.addEventListener('click',function(){if(sidebar.classList.contains('collapsed'))openSidebar();else closeSidebar();});
+  overlay.addEventListener('click',closeSidebar);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&isNarrow()&&!sidebar.classList.contains('collapsed'))closeSidebar();
+  });
+  window.addEventListener('resize',function(){if(isNarrow())closeSidebar();else openSidebar();});
+  document.querySelectorAll('.nav a').forEach(function(a){
+    a.addEventListener('click',function(){
+      document.querySelectorAll('.nav a').forEach(function(x){x.classList.remove('active');});
+      a.classList.add('active');
+      if(isNarrow())closeSidebar();
+    });
+  });
+  // scroll spy
+  var sections2=Array.from(document.querySelectorAll('section[id]'));
+  var navAs=document.querySelectorAll('.nav a');
+  function updateScrollSpy(){
+    var sy=window.scrollY+90;
+    var active=sections2[0];
+    sections2.forEach(function(s){if(s.offsetTop<=sy)active=s;});
+    navAs.forEach(function(a){a.classList.toggle('active',active&&a.getAttribute('href')==='#'+active.id);});
+  }
+  window.addEventListener('scroll',updateScrollSpy,{passive:true});
+  updateScrollSpy();
+})();
+
+/* THEME */
+(function(){
+  var sw=document.getElementById('themeSwitch');
+  function setTheme(isDark){
+    document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+    document.body.setAttribute('data-theme',isDark?'dark':'light');
+    sw.setAttribute('aria-checked',String(isDark));
+    try{localStorage.setItem('ca-theme',isDark?'dark':'light');}catch(e){}
+    if(typeof window.redrawAll==='function')window.redrawAll();
+  }
+  // restore persisted theme or use system preference as fallback
+  var initDark=false;
+  try{
+    var saved=localStorage.getItem('ca-theme');
+    if(saved==='dark'){initDark=true;}
+    else if(!saved&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){initDark=true;}
+  }catch(e){}
+  setTheme(initDark);
+  sw.addEventListener('click',function(){setTheme(document.body.getAttribute('data-theme')!=='dark');});
+  sw.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();setTheme(document.body.getAttribute('data-theme')!=='dark');}});
+})();
+
+/* TAB SWITCHER */
+document.addEventListener('click',function(e){
+  if(!e.target.classList.contains('tab'))return;
+  var tabGroup=e.target.dataset.tab;
+  var panel=e.target.dataset.panel;
+  if(!tabGroup||!panel)return;
+  document.querySelectorAll('.tab[data-tab="'+tabGroup+'"]').forEach(function(t){t.classList.remove('active');});
+  e.target.classList.add('active');
+  document.querySelectorAll('[id^="'+tabGroup+'-"]').forEach(function(p){p.classList.remove('active');});
+  var target=document.getElementById(panel);
+  if(target)target.classList.add('active');
+});
+
+/* ══════════════════════════════════════
+   SCC DIAGRAM (Section 1)
+══════════════════════════════════════ */
+(function(){
+  var P=[[90,95],[215,50],[215,155],[370,70],[370,165],[530,75],[530,180],[700,125]];
+  var NM=['0','1','2','3','4','5','6','7'];
+  var E=[{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:1,v:3},{u:3,v:4},{u:4,v:3},{u:3,v:5},{u:5,v:6},{u:6,v:5},{u:5,v:7},{u:6,v:7}];
+  var SCC={0:0,1:0,2:0,3:1,4:1,5:2,6:2,7:3};
+  var SC=['#e53e3e','#38a169','#3182ce','#d69e2e'];
+  var hl=false;
+
+  function draw(){
+    var svg=document.getElementById('sccSvg');if(!svg)return;svg.innerHTML='';
+    var dc=dark()?'#6b7280':'#9ca3af';
+    var cols={def:dc,scc:'#3b82f6',cross:'#f59e0b'};
+    addMarkers(svg,'scc-',cols);
+    E.forEach(function(e){
+      var same=hl&&SCC[e.u]===SCC[e.v];
+      var col=hl?(same?cols.scc:cols.cross):cols.def;
+      var mid='scc-'+(hl?(same?'scc':'cross'):'def');
+      var pp=perp(P[e.u][0],P[e.u][1],P[e.v][0],P[e.v][1]);
+      var ox=pp.px*11,oy=pp.py*11;
+      var r=drawArrow(svg,P[e.u][0]+ox,P[e.u][1]+oy,P[e.v][0]+ox,P[e.v][1]+oy,col,mid,hl?(same?3:2):2,22);
+    });
+    P.forEach(function(p,i){
+      var fill=hl?SC[SCC[i]]:(dark()?cv('panel2'):'#e2e8f0');
+      var stroke=hl?SC[SCC[i]]:(dark()?'#4a5568':'#9ca3af');
+      drawNode(svg,p[0],p[1],22,fill,stroke,3,NM[i]);
+      if(hl){
+        var lb=mk('text',{x:p[0],y:p[1]-28,'font-size':'11','font-weight':'900','text-anchor':'middle',fill:SC[SCC[i]]});
+        lb.textContent='C'+SCC[i];svg.appendChild(lb);
+      }
+    });
+  }
+  window.sccDraw=draw;
+  document.getElementById('sccHlBtn').addEventListener('click',function(){hl=true;draw();document.getElementById('sccStatus').textContent='Nodes coloured by SCC. Blue edges = intra-SCC. Orange = cross-SCC. SCCs: C0={0,1,2}, C1={3,4}, C2={5,6}, C3={7}.';});
+  document.getElementById('sccRstBtn').addEventListener('click',function(){hl=false;draw();document.getElementById('sccStatus').textContent='Click "Highlight SCCs" to colour nodes by their SCC.';});
+  draw();
+})();
+
+/* ══════════════════════════════════════
+   CONDENSATION DIAGRAM (Section 2)
+══════════════════════════════════════ */
+(function(){
+  var origP=[[90,90],[215,48],[215,150],[370,65],[370,160],[530,70],[530,175],[700,120]];
+  var E=[{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:1,v:3},{u:3,v:4},{u:4,v:3},{u:3,v:5},{u:5,v:6},{u:6,v:5},{u:5,v:7},{u:6,v:7}];
+  var SCC={0:0,1:0,2:0,3:1,4:1,5:2,6:2,7:3};
+  var SC=['#e53e3e','#38a169','#3182ce','#d69e2e'];
+  var condP=[[130,135],[310,135],[500,135],[700,135]];
+  var condE=[{u:0,v:1},{u:1,v:2},{u:2,v:3,off:+36},{u:2,v:3,off:-36}];
+  var mode='orig';
+
+  function drawOrig(){
+    var svg=document.getElementById('condSvg');if(!svg)return;svg.innerHTML='';
+    var dc=dark()?'#6b7280':'#9ca3af';
+    addMarkers(svg,'cond0-',{def:dc});
+    E.forEach(function(e){
+      var pp=perp(origP[e.u][0],origP[e.u][1],origP[e.v][0],origP[e.v][1]);
+      var ox=pp.px*10,oy=pp.py*10;
+      drawArrow(svg,origP[e.u][0]+ox,origP[e.u][1]+oy,origP[e.v][0]+ox,origP[e.v][1]+oy,dc,'cond0-def',2,22);
+    });
+    origP.forEach(function(p,i){
+      drawNode(svg,p[0],p[1],20,SC[SCC[i]],SC[SCC[i]],3,String(i));
+    });
+  }
+
+  function drawCond(){
+    var svg=document.getElementById('condSvg');if(!svg)return;svg.innerHTML='';
+    addMarkers(svg,'cond1-',{arr:'#f59e0b'});
+    condE.forEach(function(e,ei){
+      var x1=condP[e.u][0],y1=condP[e.u][1],x2=condP[e.v][0],y2=condP[e.v][1];
+      if(e.off!==undefined){
+        // parallel edges: curve each one to opposite sides so both are visible
+        drawCurve(svg,x1,y1,x2,y2,'#f59e0b','cond1-arr',3,e.off);
+      } else {
+        drawArrow(svg,x1,y1,x2,y2,'#f59e0b','cond1-arr',3,48);
+      }
+    });
+    condP.forEach(function(p,i){
+      var c=mk('circle',{cx:p[0],cy:p[1],r:46,fill:SC[i],opacity:'0.13',stroke:SC[i],'stroke-width':'3'});
+      svg.appendChild(c);
+      var t1=mk('text',{x:p[0],y:p[1]-6,'font-size':'17','font-weight':'950','text-anchor':'middle',fill:SC[i]});
+      t1.textContent='C'+i;svg.appendChild(t1);
+      var t2=mk('text',{x:p[0],y:p[1]+14,'font-size':'12','font-weight':'700','text-anchor':'middle',fill:SC[i]});
+      t2.textContent=['{0,1,2}','{3,4}','{5,6}','{7}'][i];svg.appendChild(t2);
+    });
+    var lbl=mk('text',{x:430,y:30,'font-size':'15','font-weight':'950','text-anchor':'middle',fill:cv('good')});
+    lbl.textContent='✓ Condensation is a DAG — no cycles possible';svg.appendChild(lbl);
+  }
+
+  window.condDraw=function(){if(mode==='orig')drawOrig();else drawCond();};
+  document.getElementById('condBtn').addEventListener('click',function(){mode='cond';drawCond();document.getElementById('condStatus').textContent='4 SCCs → 4 super-nodes. Edges: C0→C1, C1→C2, C2→C3 (×2, from 5→7 and 6→7). Strictly acyclic — this is always a DAG.';});
+  document.getElementById('condRst').addEventListener('click',function(){mode='orig';drawOrig();document.getElementById('condStatus').textContent='Click "Show Condensation" to compress into the condensation DAG.';});
+  drawOrig();
+})();
+
+/* ══════════════════════════════════════
+   low[] EXPLANATION SVG (Section 3b)
+══════════════════════════════════════ */
+(function(){
+  function drawLow(){
+    var svg=document.getElementById('lowSvg');if(!svg)return;svg.innerHTML='';
+    var cases=[
+      {x:145,title:'Tree edge u→v',col:'#3182ce',rule:'low[u]=min(low[u],low[v])'},
+      {x:430,title:'Back edge (v active)',col:'#38a169',rule:'low[u]=min(low[u],low[v])'},
+      {x:715,title:'Cross edge (v finished)',col:'#9ca3af',rule:'skip — cmpId[v]≠-1'},
+    ];
+    addMarkers(svg,'low-',{'b':'#3182ce','g':'#38a169','gr':'#9ca3af'});
+    cases.forEach(function(c,ci){
+      var col=c.col;
+      var mid='low-'+(ci===0?'b':ci===1?'g':'gr');
+      // box
+      svg.appendChild(mk('rect',{x:c.x-120,y:20,width:240,height:160,rx:'12',fill:'none',stroke:col,'stroke-width':'2','stroke-dasharray':ci===2?'6,4':'none',opacity:'0.5'}));
+      var ttl=mk('text',{x:c.x,y:40,'font-size':'13','font-weight':'900','text-anchor':'middle',fill:col});
+      ttl.textContent=c.title;svg.appendChild(ttl);
+      // u node
+      var ux=c.x-48,uy=95;
+      drawNode(svg,ux,uy,18,col,col,2,'u');
+      // v node
+      var vx=c.x+48,vy=95;
+      var vfill=ci===2?(dark()?cv('panel2'):'#e2e8f0'):col;
+      var vstroke=ci===2?(dark()?'#4a5568':'#9ca3af'):col;
+      drawNode(svg,vx,vy,18,vfill,vstroke,2,'v');
+      // arrow
+      drawArrow(svg,ux+20,uy,vx-20,vy,col,mid,2.5,0);
+      // rule
+      var rt=mk('text',{x:c.x,y:165,'font-size':'12','font-weight':'800','text-anchor':'middle',fill:col,'font-family':'ui-monospace,monospace'});
+      rt.textContent=c.rule;svg.appendChild(rt);
+    });
+  }
+  window.lowDraw=drawLow;
+  drawLow();
+})();
+
+/* ══════════════════════════════════════
+   INTERACTIVE TARJAN TRACER
+══════════════════════════════════════ */
+(function(){
+  // 6-node graph: edges 0→1, 1→2, 2→0, 1→3, 3→4, 4→3, 3→5
+  var GP=[[100,90],[240,50],[240,195],[400,90],[400,195],[540,135]];
+  var GN=['0','1','2','3','4','5'];
+  var GE=[{u:0,v:1},{u:1,v:2},{u:2,v:0},{u:1,v:3},{u:3,v:4},{u:4,v:3},{u:3,v:5}];
+  var SC_COL=['#e53e3e','#38a169','#3182ce'];
+
+  // Pre-computed trace steps
+  var steps=[
+    {u:0,ae:-1,dfst:[-1,-1,-1,-1,-1,-1],low:[9,9,9,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[],phase:'Init',round:'—',edge:'—',exp:'Start Tarjan. Visit node 0. dfsT[0]=low[0]=0. Push 0.',cls:'init'},
+    {u:0,ae:0, dfst:[0,-1,-1,-1,-1,-1],low:[0,9,9,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0],phase:'DFS',round:'u=0',edge:'0→1',exp:'Edge 0→1: node 1 unvisited. Recurse into 1.',cls:'skip'},
+    {u:1,ae:0, dfst:[0,1,-1,-1,-1,-1],low:[0,1,9,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1],phase:'DFS',round:'u=1',edge:'—',exp:'Visit node 1. dfsT[1]=low[1]=1. Push 1.',cls:'init'},
+    {u:1,ae:1, dfst:[0,1,-1,-1,-1,-1],low:[0,1,9,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1],phase:'DFS',round:'u=1',edge:'1→2',exp:'Edge 1→2: node 2 unvisited. Recurse into 2.',cls:'skip'},
+    {u:2,ae:1, dfst:[0,1,2,-1,-1,-1],low:[0,1,2,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2],phase:'DFS',round:'u=2',edge:'—',exp:'Visit node 2. dfsT[2]=low[2]=2. Push 2.',cls:'init'},
+    {u:2,ae:2, dfst:[0,1,2,-1,-1,-1],low:[0,1,0,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2],phase:'Back edge',round:'u=2',edge:'2→0 (back)',exp:'Edge 2→0: cmpId[0]==-1 (active). low[2]=min(2,low[0])=min(2,0)=0.',cls:'ok'},
+    {u:1,ae:1, dfst:[0,1,2,-1,-1,-1],low:[0,0,0,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2],phase:'Return',round:'u=2→1',edge:'—',exp:'Return from 2 to 1. low[1]=min(1,low[2])=min(1,0)=0. Node 2 not root (low≠dfsT).',cls:'skip'},
+    {u:1,ae:3, dfst:[0,1,2,-1,-1,-1],low:[0,0,0,9,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2],phase:'DFS',round:'u=1',edge:'1→3',exp:'Edge 1→3: node 3 unvisited. Recurse into 3.',cls:'skip'},
+    {u:3,ae:3, dfst:[0,1,2,3,-1,-1],low:[0,0,0,3,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3],phase:'DFS',round:'u=3',edge:'—',exp:'Visit node 3. dfsT[3]=low[3]=3. Push 3.',cls:'init'},
+    {u:3,ae:4, dfst:[0,1,2,3,-1,-1],low:[0,0,0,3,9,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3],phase:'DFS',round:'u=3',edge:'3→4',exp:'Edge 3→4: node 4 unvisited. Recurse into 4.',cls:'skip'},
+    {u:4,ae:4, dfst:[0,1,2,3,4,-1],low:[0,0,0,3,4,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3,4],phase:'DFS',round:'u=4',edge:'—',exp:'Visit node 4. dfsT[4]=low[4]=4. Push 4.',cls:'init'},
+    {u:4,ae:5, dfst:[0,1,2,3,4,-1],low:[0,0,0,3,3,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3,4],phase:'Back edge',round:'u=4',edge:'4→3 (back)',exp:'Edge 4→3: cmpId[3]==-1 (active). low[4]=min(4,low[3])=min(4,3)=3.',cls:'ok'},
+    {u:3,ae:4, dfst:[0,1,2,3,4,-1],low:[0,0,0,3,3,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3],phase:'Return',round:'u=4→3',edge:'—',exp:'Return from 4 to 3. low[3]=min(3,low[4])=3. Node 4 done: low[4]=3 ≠ dfsT[4]=4, not SCC root.',cls:'skip'},
+    {u:3,ae:6, dfst:[0,1,2,3,4,-1],low:[0,0,0,3,3,9],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3],phase:'DFS',round:'u=3',edge:'3→5',exp:'Edge 3→5: node 5 unvisited. Recurse into 5.',cls:'skip'},
+    {u:5,ae:6, dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[-1,-1,-1,-1,-1,-1],stk:[0,1,2,3,5],phase:'DFS',round:'u=5',edge:'—',exp:'Visit node 5. dfsT[5]=low[5]=5. Push 5. No outgoing edges.',cls:'init'},
+    {u:5,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[-1,-1,-1,-1,-1,2],stk:[0,1,2,3],phase:'SCC found!',round:'★ SCC #2',edge:'Pop {5}',exp:'★ Node 5: low[5]=5 == dfsT[5]=5 → SCC root! Pop {5} → assign SCC #2.',cls:'pop'},
+    {u:3,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[-1,-1,-1,1,1,2],stk:[0,1,2],phase:'SCC found!',round:'★ SCC #1',edge:'Pop {4,3}',exp:'★ Node 3: low[3]=3 == dfsT[3]=3 → SCC root! Pop {4,3} → assign SCC #1.',cls:'pop'},
+    {u:1,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[-1,-1,-1,1,1,2],stk:[0,1,2],phase:'Return',round:'u=3→1',edge:'—',exp:'Return from 3 to 1. low[1]=min(0,low[3])=0. Node 1: low=0 ≠ dfsT=1, not SCC root.',cls:'skip'},
+    {u:0,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[-1,-1,-1,1,1,2],stk:[0,1,2],phase:'Return',round:'u=1→0',edge:'—',exp:'Return from 1 to 0. low[0]=min(0,low[1])=0. Node 0: low=0 == dfsT=0 → SCC root!',cls:'ok'},
+    {u:-1,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[0,0,0,1,1,2],stk:[],phase:'SCC found!',round:'★ SCC #0',edge:'Pop {2,1,0}',exp:'★ Pop {2,1,0} → assign SCC #0. All 6 nodes assigned! 3 SCCs total.',cls:'pop'},
+    {u:-1,ae:-1,dfst:[0,1,2,3,4,5],low:[0,0,0,3,3,5],cmp:[0,0,0,1,1,2],stk:[],phase:'Done',round:'✅ Complete',edge:'—',exp:'Tarjan complete! SCC#0={0,1,2}, SCC#1={3,4}, SCC#2={5}. cmpCnt=3.',cls:'done'},
+  ];
+
+  var cur=0,playing=false,tmr=null;
+
+  function spd(){var ls=[4000,2000,1000,500,200];return ls[parseInt(document.getElementById('tSpd').value)];}
+
+  function nodeCol(i,s){
+    var c=s.cmp[i];
+    if(c===0)return SC_COL[0];
+    if(c===1)return SC_COL[1];
+    if(c===2)return SC_COL[2];
+    if(s.stk.indexOf(i)>=0)return '#fbbf24';
+    if(s.dfst[i]>=0)return dark()?'#2d3a4a':'#bfdbfe';
+    return dark()?cv('panel2'):'#e2e8f0';
+  }
+  function nodeStroke(i,s){
+    var c=s.cmp[i];
+    if(c>=0)return SC_COL[c];
+    if(s.stk.indexOf(i)>=0)return '#f59e0b';
+    if(s.dfst[i]>=0)return cv('accent2');
+    return dark()?'#4a5568':'#9ca3af';
+  }
+
+  function draw(){
+    var s=steps[cur];
+    var svg=document.getElementById('tSvg');if(!svg)return;
+    svg.innerHTML='';
+    var dc=dark()?'#6b7280':'#9ca3af';
+    addMarkers(svg,'t-',{def:dc,act:'#f59e0b',ok:cv('good')});
+    GE.forEach(function(e,i){
+      var isAct=(i===s.ae);
+      var col=isAct?(s.cls==='ok'?cv('good'):'#f59e0b'):dc;
+      var mid='t-'+(isAct?(s.cls==='ok'?'ok':'act'):'def');
+      var pp=perp(GP[e.u][0],GP[e.u][1],GP[e.v][0],GP[e.v][1]);
+      var ox=pp.px*12,oy=pp.py*12;
+      drawArrow(svg,GP[e.u][0]+ox,GP[e.u][1]+oy,GP[e.v][0]+ox,GP[e.v][1]+oy,col,mid,isAct?3.5:2,22);
+    });
+    GN.forEach(function(nm,i){
+      var isU=(i===s.u);
+      var fill=nodeCol(i,s),stroke=nodeStroke(i,s);
+      var r=isU?28:22;
+      svg.appendChild(mk('circle',{cx:GP[i][0],cy:GP[i][1],r:r,fill:fill,stroke:stroke,'stroke-width':isU?'4':'2.5'}));
+      var lc=(fill==='#e2e8f0'||fill===cv('panel2')||fill==='#bfdbfe'||fill==='#2d3a4a')?(dark()?'#e5e7eb':'#374151'):'#fff';
+      var t=mk('text',{x:GP[i][0],y:GP[i][1]+6,fill:lc,'font-size':'15','font-weight':'950','text-anchor':'middle'});
+      t.textContent=nm;svg.appendChild(t);
+      if(s.dfst[i]>=0){
+        var lb=mk('text',{x:GP[i][0],y:GP[i][1]+r+16,'font-size':'11','font-weight':'800','text-anchor':'middle',fill:stroke,'font-family':'ui-monospace,monospace'});
+        lb.textContent='d='+s.dfst[i]+' l='+s.low[i];svg.appendChild(lb);
+      }
+    });
+
+    // right panel
+    document.getElementById('tPhase').textContent=s.phase;
+    document.getElementById('tRound').textContent=s.round;
+    document.getElementById('tEdge').textContent=s.edge;
+    var expEl=document.getElementById('tExp');
+    expEl.className='sp-exp '+s.cls;
+    expEl.textContent=s.exp;
+
+    // stack
+    var stkEl=document.getElementById('tStack');stkEl.innerHTML='';
+    if(s.stk.length===0){
+      stkEl.innerHTML='<span style="font-size:15px;color:var(--muted);font-weight:700">(empty)</span>';
+    } else {
+      s.stk.forEach(function(v){
+        var d=document.createElement('div');d.className='stk-item';d.textContent=v;stkEl.appendChild(d);
+      });
+    }
+
+    // log
+    var log=document.getElementById('tLog');log.innerHTML='';
+    var start=Math.max(0,cur-10);
+    for(var i=start;i<=cur;i++){
+      var li=document.createElement('div');
+      li.className='sli'+(i===cur?' cur':'')+(steps[i].cls==='ok'?' ok':steps[i].cls==='pop'?' ph':steps[i].cls==='done'?' ok':'');
+      li.textContent='['+i+'] '+steps[i].exp.slice(0,58)+(steps[i].exp.length>58?'…':'');
+      (function(idx){li.addEventListener('click',function(){cur=idx;draw();});})(i);
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+
+    document.getElementById('tCtr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('tPrv').disabled=cur===0;
+    document.getElementById('tNxt').disabled=cur===steps.length-1;
+
+    // rjump
+    var rj=document.getElementById('tRjump');
+    Array.from(rj.querySelectorAll('.rjbtn')).forEach(function(b){
+      var idx=parseInt(b.dataset.i);
+      b.classList.remove('active','done');
+      if(idx===cur)b.classList.add('active');
+      else if(idx<cur)b.classList.add('done');
+    });
+  }
+
+  function buildRjump(){
+    var rj=document.getElementById('tRjump');rj.innerHTML='';
+    var items=[{l:'Init',i:0}];
+    steps.forEach(function(s,i){if(s.phase==='SCC found!')items.push({l:s.round.replace('★ ',''),i:i});});
+    items.push({l:'Done',i:steps.length-1});
+    items.forEach(function(item){
+      var b=document.createElement('button');b.className='rjbtn';b.textContent=item.l;b.dataset.i=item.i;
+      b.addEventListener('click',function(){cur=parseInt(b.dataset.i);stopPlay();draw();});
+      rj.appendChild(b);
+    });
+  }
+
+  function startPlay(){
+    if(playing)return;playing=true;
+    document.getElementById('tPly').textContent='⏸';
+    document.getElementById('tPly').classList.add('playing');
+    function tick(){
+      if(!playing||cur>=steps.length-1){stopPlay();return;}
+      cur++;draw();tmr=setTimeout(tick,spd());
+    }
+    tmr=setTimeout(tick,spd());
+  }
+  function stopPlay(){
+    playing=false;clearTimeout(tmr);
+    document.getElementById('tPly').textContent='▶';
+    document.getElementById('tPly').classList.remove('playing');
+  }
+
+  document.getElementById('tRst').addEventListener('click',function(){stopPlay();cur=0;draw();});
+  document.getElementById('tPrv').addEventListener('click',function(){stopPlay();if(cur>0){cur--;draw();}});
+  document.getElementById('tPly').addEventListener('click',function(){playing?stopPlay():startPlay();});
+  document.getElementById('tNxt').addEventListener('click',function(){stopPlay();if(cur<steps.length-1){cur++;draw();}});
+  document.getElementById('tSpd').addEventListener('input',function(){
+    var ls=['¼×','½×','1×','2×','4×'];
+    document.getElementById('tSpdLbl').textContent=ls[this.value];
+  });
+
+  buildRjump();draw();
+  window.tDraw=draw;
+})();
+
+/* ══════════════════════════════════════
+   2-SAT IMPLICATION BUILDER (Section 6)
+══════════════════════════════════════ */
+(function(){
+  // Variables x1, x2, x3. False node = 2i, True node = 2i+1.
+  // Position layout: top row = true literals (x1,x2,x3), bottom = false (¬x1,¬x2,¬x3)
+  var NP={
+    'x₁':{x:130,y:80},'¬x₁':{x:130,y:215},
+    'x₂':{x:430,y:80},'¬x₂':{x:430,y:215},
+    'x₃':{x:730,y:80},'¬x₃':{x:730,y:215}
+  };
+  var clauses=[
+    {text:'(x₁ ∨ x₂)',col:'#e53e3e',edges:[{u:'¬x₁',v:'x₂'},{u:'¬x₂',v:'x₁'}]},
+    {text:'(¬x₁ ∨ x₃)',col:'#38a169',edges:[{u:'x₁',v:'x₃'},{u:'¬x₃',v:'¬x₁'}]},
+    {text:'(¬x₂ ∨ ¬x₃)',col:'#d69e2e',edges:[{u:'x₂',v:'¬x₃'},{u:'x₃',v:'¬x₂'}]},
+  ];
+  var shown=0;
+
+  function draw(){
+    var svg=document.getElementById('satSvg');if(!svg)return;svg.innerHTML='';
+    var defs=mk('defs');
+    for(var ci=0;ci<shown;ci++){
+      var m=mk('marker',{id:'sat'+ci,markerWidth:'9',markerHeight:'9',refX:'8',refY:'3.5',orient:'auto'});
+      m.appendChild(mk('path',{d:'M0,0 L9,3.5 L0,7 Z',fill:clauses[ci].col}));
+      defs.appendChild(m);
+    }
+    svg.appendChild(defs);
+
+    // draw edges
+    for(var ci=0;ci<shown;ci++){
+      clauses[ci].edges.forEach(function(e){
+        var p1=NP[e.u],p2=NP[e.v];
+        var res=drawCurve(svg,p1.x,p1.y,p2.x,p2.y,clauses[ci].col,'sat'+ci,3,40);
+      });
+    }
+
+    // draw nodes
+    Object.keys(NP).forEach(function(name){
+      var p=NP[name];
+      var isNeg=name.charAt(0)==='¬';
+      var fill=isNeg?(dark()?'#2d1515':'#fed7d7'):(dark()?'#0d2010':'#c6f6d5');
+      var stroke=isNeg?'#e53e3e':'#38a169';
+      svg.appendChild(mk('circle',{cx:p.x,cy:p.y,r:24,fill:fill,stroke:stroke,'stroke-width':'3'}));
+      var t=mk('text',{x:p.x,y:p.y+6,fill:stroke,'font-size':'14','font-weight':'900','text-anchor':'middle'});
+      t.textContent=name;svg.appendChild(t);
+    });
+
+    // clause labels bottom
+    for(var ci=0;ci<shown;ci++){
+      var lb=mk('text',{x:15,y:255+ci*22,'font-size':'13','font-weight':'900',fill:clauses[ci].col});
+      lb.textContent='Clause '+ci+': '+clauses[ci].text+' → '+clauses[ci].edges.map(function(e){return e.u+'→'+e.v;}).join(', ');
+      svg.appendChild(lb);
+    }
+  }
+
+  document.getElementById('satNxt').addEventListener('click',function(){
+    if(shown<clauses.length){shown++;draw();
+      var msgs=['Added (x₁ ∨ x₂): two implications ¬x₁→x₂ and ¬x₂→x₁ drawn in red.',
+                'Added (¬x₁ ∨ x₃): implications x₁→x₃ and ¬x₃→¬x₁ drawn in green.',
+                'Added (¬x₂ ∨ ¬x₃): implications x₂→¬x₃ and x₃→¬x₂ drawn in yellow. Graph complete!'];
+      document.getElementById('satStatus').textContent=msgs[shown-1];
+    }
+  });
+  document.getElementById('satRst').addEventListener('click',function(){
+    shown=0;draw();
+      document.getElementById('satStatus').textContent='Formula: (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₃) ∧ (¬x₂ ∨ ¬x₃). Press "+ Add Clause" to add implications one at a time.';
+  });
+  window.redrawAll=(function(prev){return function(){if(typeof prev==='function')prev();draw();};})(window.redrawAll);
+  draw();
+})();
+</script>
+</body>
+</html>

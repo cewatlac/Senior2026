@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Sparse Table · 2D · Disjoint · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+    --left-tint: rgba(37,99,235,.18);
+    --right-tint: rgba(180,83,9,.20);
+    --overlap-tint: rgba(124,58,237,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+    --left-tint: rgba(79,140,255,.25);
+    --right-tint: rgba(251,191,36,.25);
+    --overlap-tint: rgba(167,139,250,.35);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:30px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:26px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:20px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  svg.graphsvg{width:100%;height:470px;border-radius:16px;background:rgba(0,0,0,0);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:700;overflow-x:auto;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .tooltip{position:fixed;pointer-events:none;background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:10px 12px;font-weight:900;font-size:20px;box-shadow:var(--shadow);transform:translate(12px,12px);opacity:0;transition:opacity .08s ease;z-index:50;max-width:520px;}
+  .tooltip.show{opacity:1}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  /* Sparse-Table specific */
+  .arrCell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;height:60px;border:3px solid var(--border);border-radius:12px;background:var(--panel);font-family:ui-monospace,monospace;font-weight:950;font-size:22px;margin:3px;position:relative;transition:all .25s ease;}
+  .arrCell .idx{position:absolute;top:-22px;font-size:14px;font-weight:800;color:var(--muted);font-family:ui-monospace,monospace;}
+  .arrCell.lvl0{background:var(--panel);}
+  .arrCell.lvl1{background:rgba(37,99,235,.10);border-color:var(--accent2);}
+  .arrCell.lvl2{background:rgba(15,118,110,.12);border-color:var(--good);}
+  .arrCell.lvl3{background:rgba(180,83,9,.12);border-color:var(--warn);}
+  .arrCell.cur{outline:4px solid var(--accent2);outline-offset:3px;animation:pulse 1s ease-in-out infinite;}
+  .arrCell.leftBlk{background:var(--left-tint);border-color:var(--accent2);color:var(--accent2);}
+  .arrCell.rightBlk{background:var(--right-tint);border-color:var(--warn);color:var(--warn);}
+  .arrCell.overlap{background:var(--overlap-tint);border-color:#7c3aed;color:#7c3aed;}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  .arrRow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0;padding:24px 4px 4px;}
+  .lvlLabel{display:inline-flex;align-items:center;justify-content:center;min-width:90px;height:60px;padding:0 12px;margin:3px 8px 3px 3px;background:var(--panel2);border:3px solid var(--border);border-radius:12px;font-weight:950;font-size:18px;font-family:ui-monospace,monospace;color:var(--muted);}
+  .stBlock{display:inline-flex;align-items:center;justify-content:center;height:60px;border:3px solid var(--border);border-radius:12px;background:var(--panel);font-family:ui-monospace,monospace;font-weight:950;font-size:20px;margin:3px;padding:0 14px;transition:all .25s ease;}
+  .stBlock.lvl1{background:rgba(37,99,235,.10);border-color:var(--accent2);color:var(--accent2);}
+  .stBlock.lvl2{background:rgba(15,118,110,.12);border-color:var(--good);color:var(--good);}
+  .stBlock.lvl3{background:rgba(180,83,9,.12);border-color:var(--warn);color:var(--warn);}
+  .stBlock.cur{outline:4px solid #7c3aed;outline-offset:3px;animation:pulse 1s ease-in-out infinite;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:6px;padding:2px 4px;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:20px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:8px;background:rgba(2,6,23,.04);padding:8px 12px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  .swatch{width:18px;height:18px;border-radius:6px;display:inline-block;border:2px solid var(--border);}
+  .sw-left{background:var(--left-tint);}
+  .sw-right{background:var(--right-tint);}
+  .sw-overlap{background:var(--overlap-tint);}
+  .sw-good{background:rgba(15,118,110,.30);}
+  .sw-warn{background:rgba(180,83,9,.30);}
+  .traceLog{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px;font-family:ui-monospace,monospace;font-size:18px;font-weight:700;line-height:1.7;max-height:240px;overflow:auto;}
+  .traceLog .line{padding:2px 0;}
+  .traceLog .line.cur{color:var(--accent2);font-weight:950;}
+  .matrixGrid{display:inline-grid;border:3px solid var(--border);border-radius:14px;overflow:hidden;background:var(--panel2);}
+  .matrixCell{width:54px;height:54px;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-weight:900;font-size:20px;border-right:2px solid var(--border);border-bottom:2px solid var(--border);background:var(--panel);transition:all .25s ease;}
+  .matrixCell:last-child{border-right:none;}
+  .matrixCell.corner1{background:var(--left-tint);}
+  .matrixCell.corner2{background:rgba(37,99,235,.30);}
+  .matrixCell.corner3{background:rgba(180,83,9,.20);}
+  .matrixCell.corner4{background:rgba(15,118,110,.20);}
+  .matrixCell.allCorner{background:var(--overlap-tint);}
+  .matrixCell.query{outline:3px solid #7c3aed;outline-offset:-3px;}
+  .dstBlock{display:inline-flex;align-items:center;justify-content:center;min-width:54px;height:60px;margin:3px;padding:0 8px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-family:ui-monospace,monospace;font-weight:950;font-size:18px;transition:all .25s ease;position:relative;}
+  .dstBlock .idx{position:absolute;top:-22px;font-size:14px;font-weight:800;color:var(--muted);}
+  .dstBlock.suffix{background:rgba(37,99,235,.15);border-color:var(--accent2);color:var(--accent2);}
+  .dstBlock.prefix{background:rgba(180,83,9,.15);border-color:var(--warn);color:var(--warn);}
+  .dstBlock.cur{outline:4px solid #7c3aed;outline-offset:3px;}
+  .dstBlock.midLine{border-left:5px dashed #7c3aed;margin-left:8px;}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle open" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🎓</div>
+  <div class="brandTitle">
+    <div class="t1">Sparse Table</div>
+    <div class="t2">1D · 2D · Disjoint</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#intro" id="nav-intro">🧩 Problem Definition<small>Static range queries</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition from Scratch<small>Why power-of-two blocks</small></a>
+  <a href="#visual" id="nav-visual">🪟 Visual Mental Model<small>Levels &amp; blocks</small></a>
+  <a href="#abstraction" id="nav-abstraction">🧠 Formal Abstraction<small>Associativity + idempotence</small></a>
+  <a href="#observations" id="nav-observations">🔍 Key Observations<small>Build vs query</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algorithm" id="nav-algorithm">⚙️ Algorithm Explanation<small>Build + query</small></a>
+  <div class="sub">
+    <a href="#build-tracer">Interactive Build Tracer</a>
+    <a href="#query-tracer">Interactive Query Tracer</a>
+  </div>
+  <a href="#invariants" id="nav-invariants">📐 Invariants<small>Build · transition · termination</small></a>
+  <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Induction on level</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(n log n) · O(1)</small></a>
+  <div class="groupTitle">Templates</div>
+  <a href="#philosophy" id="nav-philosophy">🧩 Template Philosophy<small>Unified family</small></a>
+  <a href="#template-1d" id="nav-t1d">📄 1D Master Template<small>Full C++ code</small></a>
+  <a href="#lineby1d" id="nav-lineby1d">🔬 Line-by-Line<small>Every statement explained</small></a>
+  <a href="#template-2d" id="nav-t2d">📄 2D Sparse Table<small>Rectangle queries</small></a>
+  <div class="sub">
+    <a href="#twod-tracer">2D Query Tracer</a>
+  </div>
+  <a href="#template-dst" id="nav-tdst">📄 Disjoint Sparse Table<small>Non-idempotent ops</small></a>
+  <div class="sub">
+    <a href="#dst-tracer">Disjoint Query Tracer</a>
+  </div>
+  <div class="groupTitle">Edges &amp; Recognition</div>
+  <a href="#edges" id="nav-edges">🧪 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>Bugs &amp; traps</small></a>
+  <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Recognition rules</small></a>
+  <a href="#variants" id="nav-variants">🔀 Variants &amp; Extensions<small>argmin · pair · clz</small></a>
+  <div class="groupTitle">Applications</div>
+  <a href="#app1" id="nav-app1">🚀 CSES Static RMQ<small>Pure min query</small></a>
+  <a href="#app2" id="nav-app2">🚀 SPOJ RMQSQ<small>0-based inclusive</small></a>
+  <a href="#app3" id="nav-app3">🚀 POJ-3264 Lineup<small>Min-max diff</small></a>
+  <a href="#app4" id="nav-app4">🚀 UVA-11235 Frequent Values<small>Block compression</small></a>
+  <a href="#app5" id="nav-app5">🚀 POJ-2559 Histogram<small>RMQ + D&amp;C</small></a>
+  <a href="#app6" id="nav-app6">🚀 LightOJ-1081 Rectangle<small>2D max</small></a>
+  <a href="#app7" id="nav-app7">🚀 SPOJ-GSS1 Max Subarray<small>Disjoint, associative</small></a>
+  <a href="#summary" id="nav-summary">🏁 Final Summary<small>Cheat sheet</small></a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🎓</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy</div>
+        <h1>Sparse Table · 2D · Disjoint</h1>
+        <div class="subtitle">Static range queries · O(n log n) build · O(1) query · associativity vs idempotence</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SECTION 1 — PROBLEM DEFINITION
+       ========================================================= -->
+  <section class="card" id="intro">
+    <h2>🧩 Problem Definition</h2>
+    <p>Given an array <code class="inlineCode">a[0..n-1]</code>, we receive many <b>range queries</b> of the form:</p>
+    <div class="chips">
+      <span class="chip">minimum on <code>[l, r]</code></span>
+      <span class="chip">maximum on <code>[l, r]</code></span>
+      <span class="chip">gcd on <code>[l, r]</code></span>
+      <span class="chip">bitwise AND / OR on <code>[l, r]</code></span>
+      <span class="chip warn">range sum / product (special — see Disjoint ST)</span>
+    </div>
+    <div class="grid2" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3>Concrete example</h3>
+<pre style="font-size:20px;"><code>a = [5, 2, 7, 3, 6, 1]
+
+query (minimum, l=1, r=4):
+    a[1..4] = 2, 7, 3, 6
+    minimum = 2</code></pre>
+      </div>
+      <div class="statusPanel">
+        <h3>Naïve solution</h3>
+<pre style="font-size:20px;"><code>int ans = a[l];
+for (int i = l + 1; i &lt;= r; i++)
+    ans = min(ans, a[i]);</code></pre>
+        <p style="margin-top:10px;">Cost per query: <b>O(r − l + 1)</b>. With <code>n = q = 10⁵</code>, total work reaches <b>10¹⁰</b> — far too slow.</p>
+      </div>
+    </div>
+    <p style="margin-top:14px;">We need <b>preprocessing</b> so that each query becomes essentially free. The Sparse Table family delivers exactly this:</p>
+    <div class="chips">
+      <span class="chip good">Build: O(n log n)</span>
+      <span class="chip good">Query: O(1)</span>
+      <span class="chip bad">No updates allowed</span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 2 — INTUITION FROM SCRATCH
+       ========================================================= -->
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch</h2>
+    <p>Think of three escalating ideas.</p>
+
+    <h3>Idea 1 — Memoize every interval</h3>
+    <p>Precompute the answer for <i>every</i> interval <code>[l, r]</code>. Each query is O(1), but we store <b>O(n²)</b> answers — too much memory for <code>n = 10⁵</code>.</p>
+
+    <h3>Idea 2 — Memoize only power-of-two intervals</h3>
+    <p>Store answers only for intervals whose <b>length is a power of two</b>: 1, 2, 4, 8, 16, …
+       That is only <b>O(n log n)</b> intervals. The question becomes: <i>can we still answer an arbitrary query in O(1)?</i></p>
+
+    <h3>Idea 3 — Cover any query with two power-of-two blocks</h3>
+    <p>Take a query of length <code>L</code>. Let <code>k = ⌊log₂(L)⌋</code>, so <code>2ᵏ ≤ L &lt; 2ᵏ⁺¹</code>. Place one block of length <code>2ᵏ</code> at the <b>left end</b> and another at the <b>right end</b>:</p>
+    <div class="statusPanel" style="margin-top:10px;">
+<pre style="font-size:19px;"><code>query of length 6  →  largest power of two ≤ 6 is 4
+
+indices:        0  1  2  3  4  5
+left  block:   [0  1  2  3]
+right block:         [2  3  4  5]
+                   overlap = {2, 3}</code></pre>
+    </div>
+    <p style="margin-top:10px;">The two blocks <b>cover the whole query</b>. They may overlap — and that is exactly where the deepest design choice of the data structure lives:</p>
+    <div class="chips">
+      <span class="chip good">For min / max / gcd / AND / OR — overlap is harmless</span>
+      <span class="chip bad">For sum / product — overlap double-counts</span>
+    </div>
+    <p style="margin-top:10px;">The first family is solved by the <b>classic Sparse Table</b>. The second is solved by the <b>Disjoint Sparse Table</b>, which trades the overlap trick for a clever per-block prefix/suffix layout.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 3 — VISUAL MENTAL MODEL
+       ========================================================= -->
+  <section class="card" id="visual">
+    <h2>🪟 Visual Mental Model</h2>
+    <p>The classic Sparse Table is a <b>2-D table</b> indexed by <code>(level k, starting index i)</code>:</p>
+    <div class="statusPanel">
+      <h3 style="margin-top:0;">Definition</h3>
+<pre style="font-size:20px;"><code>st[k][i]  =  answer for the block  [i, i + 2ᵏ)
+              i.e. positions  i, i+1, ..., i + 2ᵏ - 1</code></pre>
+    </div>
+
+    <h3>Stacked-level picture for a = [5, 2, 7, 3, 6, 1]</h3>
+    <div class="diagramWrap" id="staticLevels">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Levels of the Sparse Table (operation = min)</div>
+      </div>
+      <div id="staticLevelsBox"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--panel);"></span> level 0 (length 1)</span>
+        <span><span class="swatch" style="background:rgba(37,99,235,.10);border-color:var(--accent2);"></span> level 1 (length 2)</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.12);border-color:var(--good);"></span> level 2 (length 4)</span>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3>What each cell means</h3>
+        <p><code class="inlineCode">st[2][0]</code> stores the minimum of <code>a[0..3] = (5,2,7,3) = 2</code>.</p>
+        <p><code class="inlineCode">st[2][2]</code> stores the minimum of <code>a[2..5] = (7,3,6,1) = 1</code>.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>How a cell is built</h3>
+        <p>A block of length <code>2ᵏ</code> is the union of two adjacent half-blocks of length <code>2ᵏ⁻¹</code>:</p>
+<pre style="font-size:19px;"><code>st[k][i] = op( st[k-1][i],
+               st[k-1][i + 2ᵏ⁻¹] )</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 4 — FORMAL ABSTRACTION
+       ========================================================= -->
+  <section class="card" id="abstraction">
+    <h2>🧠 Formal Abstraction</h2>
+    <p>Sparse Table is a <b>monoid query</b> structure. The operation <code>op</code> must satisfy at least one of two algebraic properties.</p>
+
+    <h3>Property 1 — Associativity (always required)</h3>
+<pre><code>op( op(a, b), c )  =  op( a, op(b, c) )</code></pre>
+    <p>Associativity lets us build big intervals from smaller intervals — order of grouping does not matter. <b>All</b> Sparse Table variants need this.</p>
+
+    <h3>Property 2 — Idempotence (required for the classic 1D/2D Sparse Table)</h3>
+<pre><code>op( x, x )  =  x</code></pre>
+    <p>Idempotence means duplicating a value does not change the answer. This is what makes <b>overlap harmless</b>.</p>
+
+    <table>
+      <tr><th>Operation</th><th>Associative?</th><th>Idempotent?</th><th>Works with classic ST?</th></tr>
+      <tr><td>min</td><td>✓</td><td>✓ <span class="chip good" style="font-size:14px;">min(x,x)=x</span></td><td>✅ Yes</td></tr>
+      <tr><td>max</td><td>✓</td><td>✓</td><td>✅ Yes</td></tr>
+      <tr><td>gcd</td><td>✓</td><td>✓ <span class="chip good" style="font-size:14px;">gcd(x,x)=x</span></td><td>✅ Yes</td></tr>
+      <tr><td>bitwise AND</td><td>✓</td><td>✓</td><td>✅ Yes</td></tr>
+      <tr><td>bitwise OR</td><td>✓</td><td>✓</td><td>✅ Yes</td></tr>
+      <tr><td>sum (+)</td><td>✓</td><td>✗ <span class="chip bad" style="font-size:14px;">x+x ≠ x</span></td><td>❌ Need Disjoint ST</td></tr>
+      <tr><td>product (×)</td><td>✓</td><td>✗</td><td>❌ Need Disjoint ST</td></tr>
+      <tr><td>max-subarray merge</td><td>✓ (non-commutative)</td><td>✗</td><td>❌ Need Disjoint ST</td></tr>
+    </table>
+    <p style="margin-top:10px;" class="note">Idempotence is the litmus test. If <code>op(x,x) ≠ x</code>, the classic Sparse Table will <b>silently produce wrong answers</b> whenever the two query blocks overlap.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 5 — KEY OBSERVATIONS
+       ========================================================= -->
+  <section class="card" id="observations">
+    <h2>🔍 Key Observations</h2>
+
+    <div class="grid2">
+      <div class="statusPanel">
+        <h3>Observation 1 — Build uses disjoint halves</h3>
+        <p>When we build <code class="inlineCode">st[k][i]</code> from <code class="inlineCode">st[k-1][i]</code> and <code class="inlineCode">st[k-1][i + 2ᵏ⁻¹]</code>, the two halves sit side by side and do not overlap. Because of this, the build phase only ever requires associativity. It works correctly for sum, product, matrix multiplication, or any other associative merge — the operation never has to be idempotent.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Observation 2 — Query uses (possibly) overlapping blocks</h3>
+        <p>When we answer <code>[l, r)</code> with <code>k = ⌊log₂(r-l)⌋</code>, the left block <code>[l, l+2ᵏ)</code> and the right block <code>[r-2ᵏ, r)</code> may share elements in the middle. The query is correct only when <code>op</code> is idempotent so that those shared elements contribute the same whether they appear in one block or in both.</p>
+      </div>
+    </div>
+
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Observation 3 — The Disjoint Sparse Table escape hatch</h3>
+      <p>If we cannot afford overlap because our operation is not idempotent, we change the storage layout entirely. At each level we cut the array into blocks and store suffixes inside the left half of every block and prefixes inside the right half. Any query <code>[l, r]</code> straddles the midpoint of exactly one block, and we glue together one suffix and one prefix that are guaranteed to be disjoint. This is the trick that allows the Disjoint Sparse Table to handle any associative operation.</p>
+    </div>
+
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Observation 4 — log table beats <code>log2()</code></h3>
+      <p>Precomputing <code class="inlineCode">lg[i] = ⌊log₂(i)⌋</code> in pure integer arithmetic is both faster and safer than calling <code class="inlineCode">log2(double)</code>. The floating-point function can return <code>1.9999999</code> for an exact input of <code>2.0</code> and round down to <code>1</code> when we wanted <code>2</code>. This is a real and famous source of wrong-answer verdicts.</p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 6 — ALGORITHM EXPLANATION
+       ========================================================= -->
+  <section class="card" id="algorithm">
+    <h2>⚙️ Algorithm Explanation</h2>
+    <p>The Sparse Table algorithm has two phases that mirror each other. The <b>build</b> phase fills the table level by level using disjoint halves, and the <b>query</b> phase answers any range using two power-of-two blocks placed at the two ends of the range. Both phases share the same algebraic engine: the merge function <code>op</code>.</p>
+
+    <div class="grid2">
+      <div class="statusPanel">
+        <h3>Build (preprocessing)</h3>
+<pre style="font-size:19px;"><code>// level 0 = original array
+for i in 0..n:
+    st[0][i] = a[i]
+
+// climb levels
+for k in 1..⌊log₂ n⌋:
+    half = 2^(k-1)
+    for i in 0..n - 2^k:
+        st[k][i] = op( st[k-1][i],
+                       st[k-1][i + half] )</code></pre>
+        <p style="margin-top:10px;">Each level reuses the previous level's results. Building goes from short blocks to long blocks, and the work at level <code>k</code> touches at most <code>n − 2ᵏ + 1</code> cells.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Query (O(1) answer)</h3>
+<pre style="font-size:19px;"><code>// half-open: answer for [l, r)
+len = r - l
+k   = ⌊log₂ len⌋          // from lg[]
+blk = 1 &lt;&lt; k
+
+return op( st[k][l],
+           st[k][r - blk] )</code></pre>
+        <p style="margin-top:10px;">Only two table lookups and one merge operation. No loop, no branch, no recursion. This is the heart of the O(1) query.</p>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE BUILD TRACER -->
+    <h3 id="build-tracer">🎮 Interactive Build Tracer</h3>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Watch the table fill level by level (op = min)</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="buildReset">↺ Reset</button>
+          <button class="miniBtn" id="buildNext">▶ Next step</button>
+          <button class="miniBtn" id="buildAuto">⏵ Auto</button>
+        </div>
+      </div>
+      <div id="buildStage" style="padding:14px 6px;"></div>
+      <div class="traceLog" id="buildLog"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.10);border-color:var(--accent2);"></span> just-built cell</span>
+        <span><span class="swatch sw-left"></span> left half source</span>
+        <span><span class="swatch sw-right"></span> right half source</span>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE QUERY TRACER -->
+    <h3 id="query-tracer" style="margin-top:22px;">🎮 Interactive Query Tracer</h3>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Cover any query with two power-of-two blocks</div>
+        <div class="diagramTools">
+          <span class="pill" style="font-size:18px;">array: [5, 2, 7, 3, 6, 1, 8, 4]</span>
+          <span class="pill" style="font-size:18px;">l = <span id="qL">1</span></span>
+          <span class="pill" style="font-size:18px;">r (exclusive) = <span id="qR">7</span></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0;">
+        <button class="miniBtn" id="qLM">l −</button>
+        <button class="miniBtn" id="qLP">l +</button>
+        <button class="miniBtn" id="qRM">r −</button>
+        <button class="miniBtn" id="qRP">r +</button>
+      </div>
+      <div id="queryStage" style="padding:14px 6px;"></div>
+      <div id="queryExplain" class="traceLog"></div>
+      <div class="legend">
+        <span><span class="swatch sw-left"></span> left block [l, l+2ᵏ)</span>
+        <span><span class="swatch sw-right"></span> right block [r-2ᵏ, r)</span>
+        <span><span class="swatch sw-overlap"></span> overlap (idempotent ⇒ harmless)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 7 — INVARIANTS
+       ========================================================= -->
+  <section class="card" id="invariants">
+    <h2>📐 Invariants</h2>
+    <p>Every contest-grade data structure earns its correctness from a small set of <b>invariants</b> that hold at every moment of its life. Naming them keeps the implementation honest.</p>
+
+    <h3>A) State invariant — "what each cell means"</h3>
+    <div class="statusPanel">
+<pre><code>For every valid k and i,
+    st[k][i]  stores the correct answer for the half-open interval
+              [i, i + 2ᵏ)
+    where "valid" means  0 ≤ i  and  i + 2ᵏ ≤ n.</code></pre>
+    </div>
+
+    <h3>B) Transition invariant — "how a level is built"</h3>
+    <div class="statusPanel">
+<pre><code>If level k-1 is correct, then for every valid (k, i):
+    st[k][i] = op( st[k-1][i],  st[k-1][i + 2ᵏ⁻¹] )
+holds, and the two halves are disjoint and adjacent.</code></pre>
+    </div>
+
+    <h3>C) Termination invariant — "build stops at the largest needed level"</h3>
+    <div class="statusPanel">
+<pre><code>Let K = ⌊log₂ n⌋ + 1.
+The loop fills levels k = 1, 2, ..., K - 1.
+After it ends, every query length 1 ≤ L ≤ n maps to some level 0 ≤ k ≤ K - 1
+                     with  2ᵏ ≤ L &lt; 2ᵏ⁺¹.</code></pre>
+    </div>
+
+    <h3>D) Failure modes (when the invariants are violated)</h3>
+    <table>
+      <tr><th>Symptom</th><th>Root cause</th></tr>
+      <tr><td>Wrong answer on overlapping blocks for sum/product</td><td><b>Idempotence missing</b>. Use Disjoint ST.</td></tr>
+      <tr><td>Out-of-bounds read at high level</td><td>Built <code>st[k][i]</code> for invalid <code>i + 2ᵏ > n</code>.</td></tr>
+      <tr><td>Off-by-one on the right block</td><td>Forgot half-open vs inclusive. Use <code>query(l, r+1)</code> when the problem says <code>[l, r]</code>.</td></tr>
+      <tr><td>Silent wrong answer after an update</td><td>Sparse Table is <b>static</b>. Any update needs a rebuild or a different structure.</td></tr>
+      <tr><td>Crash on <code>__builtin_clz(0)</code></td><td>Empty query. Always guard <code>l &lt; r</code> before calling.</td></tr>
+    </table>
+  </section>
+
+  <!-- =========================================================
+       SECTION 8 — PROOF OF CORRECTNESS
+       ========================================================= -->
+  <section class="card" id="proof">
+    <h2>📜 Proof of Correctness</h2>
+
+    <h3>Theorem 1 — Build correctness</h3>
+    <p>For every valid <code>(k, i)</code>, after the build loop the cell <code>st[k][i]</code> equals the value of <code>op</code> applied to the multiset <code>a[i], a[i+1], …, a[i + 2ᵏ − 1]</code>.</p>
+
+    <details open>
+      <summary>Proof — induction on k <span class="rightHint">click to collapse</span></summary>
+      <div class="detailsBody">
+        <p><b>Base case (k = 0).</b> The interval has length <code>2⁰ = 1</code>. The code sets <code>st[0][i] = a[i]</code>, which is the unique element of the interval. The base case holds.</p>
+        <p><b>Inductive step.</b> Assume the claim holds for level <code>k − 1</code>. Consider the interval <code>[i, i + 2ᵏ)</code>. Split it into two adjacent halves:</p>
+<pre><code>L = [i, i + 2ᵏ⁻¹)
+R = [i + 2ᵏ⁻¹, i + 2ᵏ)</code></pre>
+        <p>By the inductive hypothesis, <code>st[k-1][i]</code> correctly reduces <code>L</code> and <code>st[k-1][i + 2ᵏ⁻¹]</code> correctly reduces <code>R</code>. Because <code>op</code> is <b>associative</b>, the reduction over <code>L ∪ R</code> equals <code>op(reduce(L), reduce(R))</code>. The build sets exactly that into <code>st[k][i]</code>. ∎</p>
+      </div>
+    </details>
+
+    <h3>Theorem 2 — Query correctness (classic Sparse Table)</h3>
+    <p>For every non-empty query <code>[l, r)</code> and <code>k = ⌊log₂(r − l)⌋</code>, the returned value <code>op(st[k][l], st[k][r − 2ᵏ])</code> equals the reduction of <code>op</code> over <code>a[l..r-1]</code>, provided <code>op</code> is idempotent.</p>
+
+    <details open>
+      <summary>Proof — coverage + idempotence <span class="rightHint">click to collapse</span></summary>
+      <div class="detailsBody">
+        <p>Let <code>L = [l, l + 2ᵏ)</code> and <code>R = [r − 2ᵏ, r)</code>. Both are valid intervals of length <code>2ᵏ ≤ r − l</code>, so Theorem 1 says they are correctly stored.</p>
+        <p><b>Coverage.</b> Every index <code>i ∈ [l, r)</code> lies in <code>L ∪ R</code>. If <code>i &lt; r − 2ᵏ</code>, then <code>i ∈ L</code> (since <code>L</code> extends up to <code>l + 2ᵏ − 1</code>, and <code>l + 2ᵏ − 1 ≥ r − 2ᵏ − 1</code> follows from <code>2 · 2ᵏ ≥ r − l</code>, i.e. <code>2ᵏ⁺¹ &gt; r − l − 1</code>, which is true by the choice of <code>k</code>). Otherwise <code>i ∈ R</code>.</p>
+        <p><b>Overlap is harmless.</b> The overlap <code>L ∩ R</code> may be non-empty, but its elements are present in both reductions. Because <code>op</code> is <b>idempotent</b>, duplicating a value during the final merge does not change the result. Therefore <code>op(reduce(L), reduce(R)) = reduce(L ∪ R) = reduce([l, r))</code>. ∎</p>
+      </div>
+    </details>
+
+    <h3>Theorem 3 — Why sum is not allowed in the classic table</h3>
+    <p>For sum, <code>op(x, x) = 2x ≠ x</code>. Whenever <code>L ∩ R ≠ ∅</code>, the overlap is counted twice, producing a strictly larger answer than the true sum. So the classic Sparse Table is <b>incorrect by construction</b> for sum — see Disjoint Sparse Table below.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 9 — COMPLEXITY ANALYSIS
+       ========================================================= -->
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+    <div class="grid3">
+      <div class="statusPanel">
+        <h3>Build</h3>
+        <p><b>O(n log n)</b> time and memory. Level <code>k</code> processes <code>n − 2ᵏ + 1</code> cells, and there are <code>⌊log₂ n⌋ + 1</code> levels.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Query</h3>
+        <p><b>O(1)</b> — one lookup in <code>lg[]</code>, two table reads, one merge.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Updates</h3>
+        <p><b>Not supported.</b> A single point update would require rebuilding all levels above it.</p>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:14px;">
+      <div class="statusPanel">
+        <h3>2D Sparse Table</h3>
+        <p>Build: <b>O(n · m · log n · log m)</b>. Query: <b>O(1)</b>. Memory dominates everything — be careful past <code>n, m ≈ 500</code>.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Disjoint Sparse Table</h3>
+        <p>Build: <b>O(n log n)</b>. Query: <b>O(1)</b>. Same asymptotics as classic ST; the constant factor is a touch higher.</p>
+      </div>
+      <div class="statusPanel">
+        <h3>Compared with Segment Tree</h3>
+        <p>Segment Tree: build <b>O(n)</b>, query/update <b>O(log n)</b>. Lose query speed, gain updates.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 10 — TEMPLATE PHILOSOPHY
+       ========================================================= -->
+  <section class="card" id="philosophy">
+    <h2>🧩 Core Template Philosophy</h2>
+    <p>Across the Coach Academy series we keep a unified template family so that every variant feels familiar after the first one is learned. The Sparse Table family follows the same discipline. The classic 1D and 2D tables share one shape, and the Disjoint Sparse Table is a sibling that swaps the storage strategy without changing the public surface of the data structure.</p>
+
+    <table>
+      <tr><th>Variant</th><th>What it stores</th><th>What stays the same</th><th>What changes</th></tr>
+      <tr><td>1D Sparse Table</td><td><code>st[k][i]</code> = reduction of <code>[i, i+2ᵏ)</code></td><td>operator <code>op</code>, log table, half-open queries</td><td>—</td></tr>
+      <tr><td>2D Sparse Table</td><td><code>st[kx][ky][x][y]</code> = reduction of a rectangle</td><td>same <code>op</code>, same query shape</td><td>four corner blocks instead of two endpoints</td></tr>
+      <tr><td>Disjoint Sparse Table</td><td><code>table[k][i]</code> = suffix or prefix inside a level-<code>k</code> block</td><td>same <code>op</code> contract, half-open queries</td><td>storage layout; query uses MSB of <code>l XOR r</code></td></tr>
+    </table>
+
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Rules of the family</h3>
+      <p>We always pass the operation as a small functor so the same struct can serve <code>min</code>, <code>max</code>, <code>gcd</code>, <code>argmin</code>, or any fully custom merge. We always use half-open intervals internally, so <code>query(l, r)</code> means <code>[l, r)</code>. We always precompute a log table rather than relying on <code>log2(double)</code>. And we name things consistently across files: <code>n</code>, <code>K</code>, <code>st</code>, <code>lg</code>, <code>op</code>. Adopting these names everywhere makes switching between tutorials cost-free.</p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 11 — 1D MASTER TEMPLATE
+       ========================================================= -->
+  <section class="card" id="template-1d">
+    <h2>📄 Master / Base Implementation — 1D Sparse Table</h2>
+    <p>The template below is the canonical 1D Sparse Table for the Coach Academy series. It uses half-open intervals throughout, so when a problem says "minimum over <code>[l, r]</code>" we call <code>query(l, r + 1)</code>. The merge is delegated to a tiny <code>Op</code> functor, so the same struct serves <code>min</code>, <code>max</code>, <code>gcd</code>, <code>AND</code>, <code>OR</code>, or any idempotent associative operation. The struct also keeps no global state, so it is safe to instantiate several copies in the same program (for example one min-table and one max-table on the same array).</p>
+
+    <details open>
+      <summary>Full C++ — 1D Sparse Table <span class="rightHint">click to expand/collapse</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+
+    SparseTable() {}
+
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) {
+        build(a);
+    }
+
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) {
+            lg[i] = lg[i / 2] + 1;
+        }
+
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+
+        st[0] = a;
+
+        for (int k = 1; k &lt; K; k++) {
+            int len  = 1 &lt;&lt; k;
+            int half = len &gt;&gt; 1;
+
+            for (int i = 0; i + len &lt;= n; i++) {
+                st[k][i] = op(st[k - 1][i],
+                              st[k - 1][i + half]);
+            }
+        }
+    }
+
+    // query the half-open interval [l, r) — must be non-empty.
+    T query(int l, int r) const {
+        int len   = r - l;
+        int k     = lg[len];
+        int block = 1 &lt;&lt; k;
+
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+
+struct MinOp { int operator()(int a, int b) const { return min(a, b); } };
+struct MaxOp { int operator()(int a, int b) const { return max(a, b); } };
+struct GcdOp { int operator()(int a, int b) const { return std::gcd(a, b); } };</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip">half-open <code>[l, r)</code></span>
+      <span class="chip">templated <code>T</code> and <code>Op</code></span>
+      <span class="chip good">no recursion · no I/O</span>
+      <span class="chip warn">do not call <code>query(l, l)</code></span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 12 — LINE-BY-LINE EXPLANATION
+       ========================================================= -->
+  <section class="card" id="lineby1d">
+    <h2>🔬 Line-by-Line Code Explanation</h2>
+    <p>To make every choice in the template explicit, we walk through it block by block. For each block we name what the code does, why it is written that way, and what would go wrong if that decision were changed.</p>
+
+    <h3>1. Template parameters</h3>
+<pre><code>template &lt;class T, class Op&gt;
+struct SparseTable</code></pre>
+    <p>The struct is generic in the element type <code>T</code> and the merge operation <code>Op</code>. This is what lets the same struct serve <code>int</code> arrays, <code>long long</code> arrays, <code>pair&lt;int,int&gt;</code> arrays, custom <code>Node</code> structs, and any merge that is associative plus (for the classic table) idempotent. If we removed templating, every new operation would require a full rewrite of the struct.</p>
+
+    <h3>2. Data members</h3>
+<pre><code>int n;
+vector&lt;int&gt; lg;
+vector&lt;vector&lt;T&gt;&gt; st;
+Op op;</code></pre>
+    <p>The integer <code>n</code> is the array length, <code>lg[i]</code> stores <code>⌊log₂ i⌋</code>, <code>st[k][i]</code> stores the answer for the block <code>[i, i + 2ᵏ)</code>, and <code>op</code> is the user-supplied merge functor. Keeping <code>lg</code> as a vector lets us answer every query in pure integer arithmetic without ever touching floating point. Reading <code>lg[0]</code> would be meaningless, but we never do because the query length is always at least one.</p>
+
+    <h3>3. Log table</h3>
+<pre><code>lg.assign(n + 1, 0);
+for (int i = 2; i &lt;= n; i++)
+    lg[i] = lg[i / 2] + 1;</code></pre>
+    <p>This computes <code>lg[i] = ⌊log₂ i⌋</code> using the recurrence <code>lg[i] = lg[i/2] + 1</code>, anchored by the manual values <code>lg[0] = lg[1] = 0</code>. Every query then needs <code>k = ⌊log₂(r − l)⌋</code> instantly. If we replaced this loop with a call to <code>log2(double)</code> we would risk getting back something like <code>1.9999999</code> for the integer input <code>2</code> and rounding down to the wrong level — a real source of wrong-answer verdicts.</p>
+
+    <h3>4. Number of levels</h3>
+<pre><code>int K = lg[n] + 1;
+st.assign(K, vector&lt;T&gt;(n));</code></pre>
+    <p>The largest block length we will ever need is the largest power of two not exceeding <code>n</code>, which is <code>2^lg[n]</code>. So we need levels <code>0, 1, …, lg[n]</code>, which is <code>lg[n] + 1</code> levels in total. We allocate width <code>n</code> at every level even though some high-level cells will not be filled, because uniform sizing keeps indexing simple and the memory cost is well within budget. An off-by-one here would cause the build loop to skip the top level or write out of bounds.</p>
+
+    <h3>5. Base level</h3>
+<pre><code>st[0] = a;</code></pre>
+    <p>Level zero stores intervals of length <code>2⁰ = 1</code>, which means each cell is exactly one array element. Whole-vector assignment is the clearest possible statement of the base case and lets the compiler emit a single memcpy.</p>
+
+    <h3>6. Climbing the levels</h3>
+<pre><code>for (int k = 1; k &lt; K; k++) {
+    int len  = 1 &lt;&lt; k;          // 2^k
+    int half = len &gt;&gt; 1;        // 2^(k-1)
+
+    for (int i = 0; i + len &lt;= n; i++) {
+        st[k][i] = op(st[k - 1][i],
+                      st[k - 1][i + half]);
+    }
+}</code></pre>
+    <p>For each level <code>k ≥ 1</code> we combine two side-by-side blocks of length <code>2ᵏ⁻¹</code> into one block of length <code>2ᵏ</code>. The bound <code>i + len ≤ n</code> ensures that the block <code>[i, i + 2ᵏ)</code> fits entirely inside the array. Loosening this bound would write past the boundary, corrupt neighbouring vectors, and produce wrong queries at the high end of the array.</p>
+
+    <h3>7. Query</h3>
+<pre><code>T query(int l, int r) const {
+    int len   = r - l;
+    int k     = lg[len];
+    int block = 1 &lt;&lt; k;
+    return op(st[k][l], st[k][r - block]);
+}</code></pre>
+    <p>We compute the highest power of two not exceeding <code>r − l</code>, look up the two endpoint blocks of that length, and merge them. The two blocks together cover every index of <code>[l, r)</code> (this is Theorem 2 above), and overlap is harmless under idempotence. Calling <code>query(l, l)</code> would set <code>len = 0</code>, then <code>lg[0] = 0</code>, then <code>block = 1</code>, then <code>r − block = l − 1</code>, and we would read garbage — so we always guard <code>l &lt; r</code> at the call site.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 13 — 2D SPARSE TABLE
+       ========================================================= -->
+  <section class="card" id="template-2d">
+    <h2>📄 2D Sparse Table</h2>
+    <p>When the input is a matrix and queries are rectangles, the same idea generalises naturally. A 1D table indexes blocks by their starting index <code>i</code> and their length <code>2ᵏ</code>. A 2D table indexes rectangles by their top-left corner <code>(x, y)</code> and their dimensions <code>2ᵏˣ × 2ᵏʸ</code>. The query splits a rectangle into <b>four</b> overlapping power-of-two rectangles, one anchored at each corner, and then merges all four.</p>
+
+    <h3>Storage</h3>
+    <p>The cell <code>st[kx][ky][x][y]</code> stores the reduction of the rectangle whose top-left corner is <code>(x, y)</code>, whose height is <code>2ᵏˣ</code>, and whose width is <code>2ᵏʸ</code>. The build proceeds in two independent dimensions: first we expand horizontally at <code>kx = 0</code>, then we expand vertically for every <code>kx ≥ 1</code> using the already-built lower row level.</p>
+
+    <h3>Query as four corners</h3>
+    <p>For a query rectangle <code>[x1, x2) × [y1, y2)</code> with <code>h = x2 − x1</code> and <code>w = y2 − y1</code>, we choose <code>kx = ⌊log₂ h⌋</code> and <code>ky = ⌊log₂ w⌋</code>. Then four rectangles of size <code>2ᵏˣ × 2ᵏʸ</code>, one in each corner of the query, together cover the entire query. They may overlap, but as in 1D the operation must be idempotent so that overlap is harmless.</p>
+
+    <!-- 2D INTERACTIVE TRACER -->
+    <h3 id="twod-tracer">🎮 Interactive 2D Query Tracer</h3>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Watch four corner rectangles cover a query</div>
+        <div class="diagramTools">
+          <span class="pill" style="font-size:18px;">matrix 6×8 (op = max)</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0;">
+        <span class="pill" style="font-size:18px;">x1 = <span id="qx1">1</span></span>
+        <span class="pill" style="font-size:18px;">y1 = <span id="qy1">2</span></span>
+        <span class="pill" style="font-size:18px;">x2 = <span id="qx2">5</span></span>
+        <span class="pill" style="font-size:18px;">y2 = <span id="qy2">7</span></span>
+        <button class="miniBtn" id="q2dPreset1">small 3×3</button>
+        <button class="miniBtn" id="q2dPreset2">tall 4×3</button>
+        <button class="miniBtn" id="q2dPreset3">wide 3×6</button>
+        <button class="miniBtn" id="q2dPreset4">full corner-cover</button>
+      </div>
+      <div id="twodStage" style="padding:10px 6px;"></div>
+      <div id="twodExplain" class="traceLog"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--left-tint);"></span> top-left corner block</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.20);"></span> top-right corner block</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20);"></span> bottom-left corner block</span>
+        <span><span class="swatch" style="background:rgba(37,99,235,.30);"></span> bottom-right corner block</span>
+        <span><span class="swatch sw-overlap"></span> covered by all four (overlap)</span>
+      </div>
+    </div>
+
+    <details>
+      <summary>Full C++ — 2D Sparse Table <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable2D {
+    int n, m;
+    vector&lt;int&gt; lgN, lgM;
+    vector&lt;vector&lt;vector&lt;vector&lt;T&gt;&gt;&gt;&gt; st;
+    Op op;
+
+    SparseTable2D() {}
+
+    SparseTable2D(const vector&lt;vector&lt;T&gt;&gt;&amp; a, Op op = Op()) : op(op) {
+        build(a);
+    }
+
+    void build(const vector&lt;vector&lt;T&gt;&gt;&amp; a) {
+        n = (int)a.size();
+        m = (int)a[0].size();
+
+        lgN.assign(n + 1, 0);
+        lgM.assign(m + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lgN[i] = lgN[i / 2] + 1;
+        for (int j = 2; j &lt;= m; j++) lgM[j] = lgM[j / 2] + 1;
+
+        int KX = lgN[n] + 1;
+        int KY = lgM[m] + 1;
+
+        st.assign(KX, vector&lt;vector&lt;vector&lt;T&gt;&gt;&gt;(
+                       KY, vector&lt;vector&lt;T&gt;&gt;(n, vector&lt;T&gt;(m))));
+
+        st[0][0] = a;
+
+        for (int kx = 0; kx &lt; KX; kx++) {
+            for (int ky = 0; ky &lt; KY; ky++) {
+                if (kx == 0 &amp;&amp; ky == 0) continue;
+
+                int height = 1 &lt;&lt; kx;
+                int width  = 1 &lt;&lt; ky;
+
+                if (kx == 0) {
+                    int half_w = width &gt;&gt; 1;
+                    for (int x = 0; x + height &lt;= n; x++)
+                        for (int y = 0; y + width &lt;= m; y++)
+                            st[kx][ky][x][y] =
+                                op(st[kx][ky - 1][x][y],
+                                   st[kx][ky - 1][x][y + half_w]);
+                } else {
+                    int half_h = height &gt;&gt; 1;
+                    for (int x = 0; x + height &lt;= n; x++)
+                        for (int y = 0; y + width &lt;= m; y++)
+                            st[kx][ky][x][y] =
+                                op(st[kx - 1][ky][x][y],
+                                   st[kx - 1][ky][x + half_h][y]);
+                }
+            }
+        }
+    }
+
+    // half-open rectangle [x1, x2) × [y1, y2)
+    T query(int x1, int y1, int x2, int y2) const {
+        int h = x2 - x1, w = y2 - y1;
+        int kx = lgN[h],  ky = lgM[w];
+        int H = 1 &lt;&lt; kx, W = 1 &lt;&lt; ky;
+
+        T a = st[kx][ky][x1][y1];
+        T b = st[kx][ky][x2 - H][y1];
+        T c = st[kx][ky][x1][y2 - W];
+        T d = st[kx][ky][x2 - H][y2 - W];
+        return op(op(a, b), op(c, d));
+    }
+};
+
+struct MaxOp { int operator()(int a, int b) const { return max(a, b); } };
+struct MinOp { int operator()(int a, int b) const { return min(a, b); } };</code></pre>
+      </div>
+    </details>
+
+    <div class="statusPanel" style="margin-top:14px;">
+      <h3>Memory caution</h3>
+      <p>The total number of stored cells is <code>n · m · log n · log m</code>. For <code>n = m = 1000</code> this approaches <code>10⁸</code> integers — roughly <code>400 MB</code> before any overhead. A 2D Sparse Table is powerful, but it must be sized carefully. When memory is tight, prefer 2D prefix sums (for sum) or a 2D segment tree (when updates are needed).</p>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 14 — DISJOINT SPARSE TABLE
+       ========================================================= -->
+  <section class="card" id="template-dst">
+    <h2>📄 Disjoint Sparse Table</h2>
+    <p>The Disjoint Sparse Table removes the idempotence requirement. It still answers queries in O(1) and still builds in O(n log n), but its trick is to make the two queried pieces <b>always disjoint</b>, so the operation only has to be associative — never idempotent. Examples that need this structure are range sum, range product, matrix multiplication, function composition, and the maximum-subarray merge state used in problems like SPOJ GSS1.</p>
+
+    <h3>The layout</h3>
+    <p>At level <code>k</code> we conceptually cut the array into blocks of length <code>2ᵏ⁺¹</code>. Each block has a left half (the first <code>2ᵏ</code> positions) and a right half (the last <code>2ᵏ</code> positions). Inside the left half we store, at every position <code>i</code>, the reduction of the suffix from <code>i</code> up to the midpoint inclusive. Inside the right half we store, at every position <code>j</code>, the reduction of the prefix from the midpoint up to <code>j</code> inclusive.</p>
+
+    <h3>How the query splits</h3>
+    <p>For a query <code>[l, r]</code> with <code>l ≠ r</code>, we look at the binary representations of <code>l</code> and <code>r</code> and find the most significant bit where they differ — call it <code>k</code>. At level <code>k</code> the indices <code>l</code> and <code>r</code> land in the same block of length <code>2ᵏ⁺¹</code>, with <code>l</code> in the left half and <code>r</code> in the right half. We then glue together the stored suffix at <code>l</code> and the stored prefix at <code>r</code>. The two pieces are disjoint by construction. The MSB calculation is done with <code>__builtin_clz</code> on <code>l XOR r</code>, which is a single CPU instruction.</p>
+
+    <!-- DST TRACER -->
+    <h3 id="dst-tracer">🎮 Interactive Disjoint Query Tracer</h3>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">See the level where <code>l</code> and <code>r</code> land in the same block</div>
+        <div class="diagramTools">
+          <span class="pill" style="font-size:18px;">array length 8 (op = sum)</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0;">
+        <span class="pill" style="font-size:18px;">l = <span id="dstL">2</span></span>
+        <span class="pill" style="font-size:18px;">r (inclusive) = <span id="dstR">6</span></span>
+        <button class="miniBtn" id="dstLM">l −</button>
+        <button class="miniBtn" id="dstLP">l +</button>
+        <button class="miniBtn" id="dstRM">r −</button>
+        <button class="miniBtn" id="dstRP">r +</button>
+      </div>
+      <div id="dstStage" style="padding:10px 6px;"></div>
+      <div id="dstExplain" class="traceLog"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.15);border-color:var(--accent2);"></span> suffix piece (left half)</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.15);border-color:var(--warn);"></span> prefix piece (right half)</span>
+      </div>
+    </div>
+
+    <details>
+      <summary>Full C++ — Disjoint Sparse Table <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct DisjointSparseTable {
+    int n;
+    int K;
+    vector&lt;T&gt; a;
+    vector&lt;vector&lt;T&gt;&gt; table;
+    Op op;
+
+    DisjointSparseTable() {}
+
+    DisjointSparseTable(const vector&lt;T&gt;&amp; values, Op op = Op()) : op(op) {
+        build(values);
+    }
+
+    void build(const vector&lt;T&gt;&amp; values) {
+        a = values;
+        n = (int)a.size();
+
+        K = 1;
+        while ((1 &lt;&lt; K) &lt; n) K++;
+
+        table.assign(K, vector&lt;T&gt;(n));
+
+        for (int k = 0; k &lt; K; k++) {
+            int half = 1 &lt;&lt; k;
+            int len  = half &lt;&lt; 1;
+
+            for (int block_start = 0; block_start &lt; n; block_start += len) {
+                int mid       = min(block_start + half, n);
+                int block_end = min(block_start + len,  n);
+
+                if (mid == block_start) continue;
+
+                // left half: suffixes ending at the midpoint
+                table[k][mid - 1] = a[mid - 1];
+                for (int i = mid - 2; i &gt;= block_start; i--)
+                    table[k][i] = op(a[i], table[k][i + 1]);
+
+                // right half: prefixes starting at the midpoint
+                if (mid &lt; block_end) {
+                    table[k][mid] = a[mid];
+                    for (int i = mid + 1; i &lt; block_end; i++)
+                        table[k][i] = op(table[k][i - 1], a[i]);
+                }
+            }
+        }
+    }
+
+    // half-open [l, r) — non-empty
+    T query(int l, int r) const {
+        if (r - l == 1) return a[l];
+
+        int left  = l;
+        int right = r - 1;
+        int k = 31 - __builtin_clz(left ^ right);
+
+        return op(table[k][left], table[k][right]);
+    }
+};</code></pre>
+      </div>
+    </details>
+
+    <div class="chips">
+      <span class="chip good">works for any associative op</span>
+      <span class="chip">order matters: <code>op(left, right)</code></span>
+      <span class="chip warn">single-element query short-circuits to <code>a[l]</code></span>
+      <span class="chip bad">do not call with <code>r == l</code></span>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       SECTION 15 — EDGE CASES (centralized)
+       ========================================================= -->
+  <section class="card" id="edges">
+    <h2>🧪 Edge Cases — Centralized Audit</h2>
+    <p>Edge cases are where Sparse Table implementations quietly fail in contest. The list below collects every boundary the structure can encounter, why it deserves attention, and what the template above does about it.</p>
+
+    <h3>Boundaries of the input array</h3>
+    <p>When <code>n = 1</code>, the build still works correctly: the log table holds <code>lg[1] = 0</code>, the number of levels is <code>K = 1</code>, and only level zero is filled. Any call to <code>query(0, 1)</code> returns <code>a[0]</code> after a single trivial merge. Implementations that index <code>lg</code> from <code>lg[2]</code> instead of <code>lg[1]</code> must double-check this case.</p>
+
+    <h3>Boundaries of the query</h3>
+    <p>The most common boundary is <code>query(l, l)</code>, which we never call because the structure assumes non-empty ranges. The next is <code>query(l, l+1)</code>, which sets <code>len = 1</code>, <code>k = lg[1] = 0</code>, <code>block = 1</code>, and returns <code>op(a[l], a[l])</code> — correct under idempotence and equal to <code>a[l]</code>. The full-array query <code>query(0, n)</code> uses level <code>lg[n]</code> and is always safe.</p>
+
+    <h3>Power-of-two lengths</h3>
+    <p>When the query length is exactly a power of two, the two endpoint blocks line up perfectly with no overlap. When the query length is just below a power of two (for example <code>2ᵏ − 1</code>) the two blocks have length <code>2ᵏ⁻¹</code> and they overlap by <code>2ᵏ − 2</code> indices. When the query length is just above a power of two (for example <code>2ᵏ + 1</code>) the two blocks have length <code>2ᵏ</code> and they overlap by <code>2ᵏ − 1</code> indices. In all three cases the math works out — there is no special handling required.</p>
+
+    <h3>Values</h3>
+    <p>Duplicate values, negative values, and large values are all handled by the underlying integer types. For 64-bit data make sure the template parameter <code>T</code> is <code>long long</code>. For <code>argmin</code>-style queries make sure ties are broken deterministically (return the smaller index) so that the same query always produces the same index.</p>
+
+    <h3>2D corners</h3>
+    <p>A query rectangle with height or width equal to one is valid: the corresponding <code>kx</code> or <code>ky</code> is zero, and the four corner rectangles collapse to two or one effective rectangles, but all four lookups are still well-defined. A query rectangle with height or width zero is empty and must never be passed in.</p>
+
+    <h3>Disjoint Sparse Table single-element queries</h3>
+    <p>When the query is a single element, the <code>l XOR r</code> trick degenerates because <code>l == r</code> and the XOR is zero. The template short-circuits this case explicitly by returning <code>a[l]</code>. Removing that guard causes <code>__builtin_clz(0)</code> to be invoked, whose behaviour is undefined.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 16 — COMMON PITFALLS
+       ========================================================= -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls and Bugs</h2>
+    <p>Each pitfall below has a one-line symptom and the actual cause behind it. Reading these once before an ICPC round saves real penalty time.</p>
+
+    <h3>Classic Sparse Table pitfalls</h3>
+    <table>
+      <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+      <tr><td>WA on range sum</td><td>Sum is not idempotent; the overlap is double-counted.</td><td>Use prefix sums or a Disjoint Sparse Table.</td></tr>
+      <tr><td>WA when query length is exactly a power of two minus one</td><td>Used <code>log2(double)</code> and rounded down due to floating-point error.</td><td>Use the integer <code>lg[]</code> table.</td></tr>
+      <tr><td>RE on tight cases</td><td>Built <code>st[k][i]</code> for <code>i + 2ᵏ > n</code>.</td><td>Keep the loop bound <code>i + len ≤ n</code> exact.</td></tr>
+      <tr><td>WA after an update</td><td>Tried to update an array element in place.</td><td>Sparse Table is static; rebuild or use a segment tree.</td></tr>
+      <tr><td>Off-by-one on every query</td><td>Used <code>[l, r]</code> inclusive when the template expects <code>[l, r)</code>.</td><td>Convert with <code>query(l, r + 1)</code>.</td></tr>
+      <tr><td>Crash on <code>query(l, l)</code></td><td>Empty range passed in.</td><td>Guard <code>l &lt; r</code> at the caller.</td></tr>
+    </table>
+
+    <h3>2D Sparse Table pitfalls</h3>
+    <table>
+      <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+      <tr><td>MLE on moderate matrices</td><td>Memory is <code>n · m · log n · log m</code>.</td><td>Use 2D prefix sums where possible.</td></tr>
+      <tr><td>WA on rectangle sum</td><td>Same idempotence trap as 1D.</td><td>2D prefix sum, not 2D Sparse Table.</td></tr>
+      <tr><td>WA on rectangles touching the boundary</td><td>Confusion between half-open and inclusive corners.</td><td>Pick one convention in the build and the query.</td></tr>
+      <tr><td>WA on 1×1 query</td><td>Some implementations special-case the corners incorrectly.</td><td>The four-corner formula handles 1×1 correctly when <code>kx = ky = 0</code>.</td></tr>
+    </table>
+
+    <h3>Disjoint Sparse Table pitfalls</h3>
+    <table>
+      <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+      <tr><td>WA on non-commutative operations</td><td>Swapped <code>op(table[k][left], table[k][right])</code>.</td><td>Always merge left before right.</td></tr>
+      <tr><td>Crash on length-one query</td><td>Called <code>__builtin_clz(0)</code>.</td><td>Short-circuit when <code>r − l == 1</code>.</td></tr>
+      <tr><td>WA on the rightmost block</td><td>Forgot that the last block may be truncated by <code>n</code>.</td><td>Use <code>min(block_start + half, n)</code> for the midpoint.</td></tr>
+      <tr><td>Used it for min when the classic table suffices</td><td>Over-engineered.</td><td>Disjoint ST has a slightly higher constant; prefer the classic ST when idempotence holds.</td></tr>
+    </table>
+  </section>
+
+  <!-- =========================================================
+       SECTION 17 — DECISION / RECOGNITION GUIDE
+       ========================================================= -->
+  <section class="card" id="decision">
+    <h2>🧭 Decision / Recognition Guide</h2>
+    <p>In a contest, recognition speed matters as much as implementation speed. The table and reflex rules below convert problem statements into a structure choice in under fifteen seconds.</p>
+
+    <h3>Decision table</h3>
+    <table>
+      <tr><th>What the problem looks like</th><th>Best structure</th><th>Why</th></tr>
+      <tr><td>Static array, many range min / max / gcd / AND / OR queries</td><td>1D Sparse Table</td><td>O(n log n) build, O(1) query, idempotent op</td></tr>
+      <tr><td>Static matrix, many rectangle min / max / gcd queries</td><td>2D Sparse Table</td><td>Same idea in two dimensions</td></tr>
+      <tr><td>Static array, many range <b>sum</b> queries</td><td>Prefix sum</td><td>O(n) memory, O(1) query, simpler</td></tr>
+      <tr><td>Static matrix, many rectangle <b>sum</b> queries</td><td>2D prefix sum</td><td>O(nm) memory, O(1) query, simpler</td></tr>
+      <tr><td>Static array, many queries with associative-but-not-idempotent custom merge (max-subarray, matrix mul)</td><td>Disjoint Sparse Table</td><td>Removes idempotence requirement</td></tr>
+      <tr><td>Array with point or range updates</td><td>Segment Tree (lazy if range updates)</td><td>Sparse Table cannot update</td></tr>
+      <tr><td>Array with point updates only, sum or XOR query</td><td>Fenwick Tree</td><td>Smaller constant than segment tree</td></tr>
+      <tr><td>Memory is tight, queries are not extreme</td><td>Sqrt decomposition</td><td>O(n) memory, O(√n) query</td></tr>
+    </table>
+
+    <h3>Quick reflex rules</h3>
+    <p>When you read a problem and want to commit to a structure within a few seconds, run through these checks in order. First, are there <b>any</b> updates? If yes, the Sparse Table family is out. Second, what is the operation? If it is one of <code>min</code>, <code>max</code>, <code>gcd</code>, <code>AND</code>, or <code>OR</code>, jump to the classic Sparse Table. Third, if the operation is <code>sum</code>, prefer prefix sums and forget the table. Fourth, if the operation is custom and only associative, reach for the Disjoint Sparse Table. Fifth, if memory is tight, fall back to a segment tree or sqrt decomposition.</p>
+
+    <h3>Common confusion note</h3>
+    <p>Beginners often reach for a Sparse Table the moment they see the words <i>range</i> and <i>query</i>. The first instinct should instead be the operation itself. A Sparse Table is the right answer for <b>static</b> queries with an <b>idempotent</b> merge. If either condition fails, look at a different structure first and use Disjoint or 2D Sparse Table only when the problem genuinely fits.</p>
+
+    <h3>Recognition triggers</h3>
+    <p>Phrases like <i>find the minimum in</i>, <i>find the gcd of</i>, <i>find the maximum value among</i> in a problem that says <i>the array is fixed</i> almost always point to a Sparse Table. Phrases like <i>find the sum</i> on a fixed array point to prefix sums. Phrases that combine custom merges, like <i>find the maximum sum of a contiguous subarray within</i>, point to either a segment tree or a Disjoint Sparse Table depending on whether updates appear.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 18 — VARIANTS &amp; EXTENSIONS
+       ========================================================= -->
+  <section class="card" id="variants">
+    <h2>🔀 Variants and Extensions</h2>
+    <p>The Sparse Table family supports a handful of small but useful extensions. Each one keeps the same outer interface and changes only the type or the comparison stored at each cell.</p>
+
+    <h3>Argmin / Argmax — store indices, not values</h3>
+    <p>When the problem asks for the position of the minimum (not its value), the table should store indices. We supply a tiny comparator that takes two indices and returns the one whose underlying value is smaller, with a deterministic tiebreaker on the index. This is how the histogram divide-and-conquer in Problem 5 works.</p>
+<pre><code>struct ArgMinOp {
+    const vector&lt;int&gt;* a;
+    int operator()(int i, int j) const {
+        if ((*a)[i] != (*a)[j]) return ((*a)[i] &lt; (*a)[j]) ? i : j;
+        return min(i, j);
+    }
+};</code></pre>
+
+    <h3>Pair table — min and max in one structure</h3>
+    <p>If the problem needs both the minimum and the maximum on every query (for example to compute their difference), we can store a small struct and reduce the two together. This halves the memory pressure compared with two separate tables.</p>
+<pre><code>struct MinMax {
+    int mn, mx;
+};
+struct MinMaxOp {
+    MinMax operator()(MinMax a, MinMax b) const {
+        return { min(a.mn, b.mn), max(a.mx, b.mx) };
+    }
+};</code></pre>
+
+    <h3>Skip the log table with <code>__builtin_clz</code></h3>
+    <p>Instead of storing <code>lg</code> we can compute the highest bit of <code>len</code> directly: <code>int k = 31 - __builtin_clz(len);</code> for 32-bit lengths and <code>63 - __builtin_clzll(len)</code> for 64-bit. The compiler emits a single CPU instruction. The catch is that calling these on zero is undefined behaviour, so the caller must still guarantee <code>l &lt; r</code>.</p>
+
+    <h3>Memory layout — <code>st[i][k]</code> versus <code>st[k][i]</code></h3>
+    <p>Both layouts are correct. We use <code>st[k][i]</code> in the family because the level is the outer dimension during teaching ("first all of level 1, then all of level 2") and because it lets us write <code>st[0] = a;</code> as a one-liner. Swapping the order can improve cache behaviour on very large inputs, at the cost of a slightly less didactic implementation.</p>
+
+    <h3>Custom associative merges with Disjoint Sparse Table</h3>
+    <p>The Disjoint Sparse Table accepts any operation that is associative. This includes matrix multiplication, function composition <code>f ∘ g</code>, and custom DP transitions where each "value" is a small struct containing several summary fields. The order of the merge must be preserved because such operations are usually non-commutative.</p>
+  </section>
+
+  <!-- =========================================================
+       SECTION 19 — PROBLEM-BASED APPLICATIONS
+       ========================================================= -->
+  <section class="card" id="app1">
+    <h2>🚀 Application 1 — CSES Static Range Minimum Queries</h2>
+    <p><b>Problem story.</b> You are given an array of <code>n</code> integers and <code>q</code> queries. Each query is a pair <code>(l, r)</code> with 1-based inclusive indices, and you must report the minimum value of the subarray <code>a[l..r]</code>. There are no updates between queries.</p>
+    <p><b>Abstraction.</b> This is a textbook static range-minimum problem. The operation is <code>min</code>, which is associative and idempotent, so the classic 1D Sparse Table is the perfect fit. The conversion from the 1-based inclusive input to the template's 0-based half-open interface is a simple shift.</p>
+    <p><b>Why it fits.</b> Static array, no updates, idempotent operation, large query count — every box is ticked. The asymptotic profile is also exactly what the time limits demand.</p>
+    <p><b>Algorithm choice.</b> Build a <code>SparseTable&lt;int, MinOp&gt;</code> once and answer each query in O(1) by calling <code>st.query(l - 1, r)</code> after the input shift.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+    SparseTable() {}
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lg[i] = lg[i / 2] + 1;
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+        st[0] = a;
+        for (int k = 1; k &lt; K; k++) {
+            int len = 1 &lt;&lt; k, half = len &gt;&gt; 1;
+            for (int i = 0; i + len &lt;= n; i++)
+                st[k][i] = op(st[k - 1][i], st[k - 1][i + half]);
+        }
+    }
+    T query(int l, int r) const {
+        int len = r - l, k = lg[len], block = 1 &lt;&lt; k;
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+struct MinOp { int operator()(int a, int b) const { return min(a, b); } };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SparseTable&lt;int, MinOp&gt; st(a);
+
+    while (q--) {
+        int l, r;
+        cin &gt;&gt; l &gt;&gt; r;
+        // CSES uses 1-based inclusive ranges.
+        --l; --r;
+        cout &lt;&lt; st.query(l, r + 1) &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> The build is <code>O(n log n)</code>, each query is <code>O(1)</code>, and the memory is <code>O(n log n)</code>. With <code>n, q ≤ 2·10⁵</code> this fits well within typical CSES limits.</p>
+    <p><b>Pitfalls specific to this problem.</b> CSES uses 1-based inclusive ranges, so we must shift both endpoints down by one and then convert to half-open by querying <code>r + 1</code> after the shift. Forgetting either step is a quiet wrong-answer source.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/CSES-1647" target="_blank">vjudge.net/problem/CSES-1647</a></p>
+  </section>
+
+  <section class="card" id="app2">
+    <h2>🚀 Application 2 — SPOJ RMQSQ</h2>
+    <p><b>Problem story.</b> The same task as CSES — range minimum queries on a fixed array — but with a different input convention. SPOJ RMQSQ uses zero-based indices and inclusive ranges.</p>
+    <p><b>Abstraction.</b> Again a static RMQ with the idempotent operation <code>min</code>. The only thing that changes is how we read the query bounds.</p>
+    <p><b>Why it fits.</b> Identical to Application 1.</p>
+    <p><b>Algorithm choice.</b> The exact same <code>SparseTable&lt;int, MinOp&gt;</code> template. The query call becomes <code>st.query(l, r + 1)</code> because <code>l</code> is already 0-based but <code>r</code> is inclusive.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+    SparseTable() {}
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lg[i] = lg[i / 2] + 1;
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+        st[0] = a;
+        for (int k = 1; k &lt; K; k++) {
+            int len = 1 &lt;&lt; k, half = len &gt;&gt; 1;
+            for (int i = 0; i + len &lt;= n; i++)
+                st[k][i] = op(st[k - 1][i], st[k - 1][i + half]);
+        }
+    }
+    T query(int l, int r) const {
+        int len = r - l, k = lg[len], block = 1 &lt;&lt; k;
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+struct MinOp { int operator()(int a, int b) const { return min(a, b); } };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+    SparseTable&lt;int, MinOp&gt; st(a);
+
+    int q;
+    cin &gt;&gt; q;
+    while (q--) {
+        int l, r;
+        cin &gt;&gt; l &gt;&gt; r;
+        // SPOJ RMQSQ uses 0-based inclusive ranges.
+        cout &lt;&lt; st.query(l, r + 1) &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> Same as Application 1 — <code>O(n log n)</code> build, <code>O(1)</code> per query, <code>O(n log n)</code> memory.</p>
+    <p><b>Pitfalls specific to this problem.</b> The temptation here is to skip the <code>+1</code> on <code>r</code> because the input is already 0-based. That mistake produces an off-by-one wrong answer that is hard to spot without small tests.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/SPOJ-RMQSQ" target="_blank">vjudge.net/problem/SPOJ-RMQSQ</a></p>
+  </section>
+
+  <section class="card" id="app3">
+    <h2>🚀 Application 3 — POJ-3264 Lineup</h2>
+    <p><b>Problem story.</b> You are given the heights of cows arranged in a line. Each query is a range, and the answer is the difference between the tallest and shortest cow in that range.</p>
+    <p><b>Abstraction.</b> Two range queries combined: one minimum and one maximum. Both are idempotent, so the classic Sparse Table fits both, and we instantiate two independent tables on the same array.</p>
+    <p><b>Why it fits.</b> Static array, two idempotent operations, no updates.</p>
+    <p><b>Algorithm choice.</b> Build a <code>SparseTable&lt;int, MinOp&gt;</code> and a <code>SparseTable&lt;int, MaxOp&gt;</code> on the height array, then answer each query by subtracting the two table results.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+    SparseTable() {}
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lg[i] = lg[i / 2] + 1;
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+        st[0] = a;
+        for (int k = 1; k &lt; K; k++) {
+            int len = 1 &lt;&lt; k, half = len &gt;&gt; 1;
+            for (int i = 0; i + len &lt;= n; i++)
+                st[k][i] = op(st[k - 1][i], st[k - 1][i + half]);
+        }
+    }
+    T query(int l, int r) const {
+        int len = r - l, k = lg[len], block = 1 &lt;&lt; k;
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+struct MinOp { int operator()(int a, int b) const { return min(a, b); } };
+struct MaxOp { int operator()(int a, int b) const { return max(a, b); } };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    cin &gt;&gt; n &gt;&gt; q;
+
+    vector&lt;int&gt; h(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; h[i];
+
+    SparseTable&lt;int, MinOp&gt; mn(h);
+    SparseTable&lt;int, MaxOp&gt; mx(h);
+
+    while (q--) {
+        int l, r;
+        cin &gt;&gt; l &gt;&gt; r;
+        // Input is 1-based inclusive.
+        --l; --r;
+        int lo = mn.query(l, r + 1);
+        int hi = mx.query(l, r + 1);
+        cout &lt;&lt; hi - lo &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> Building two tables doubles the constant but keeps the same asymptotic profile: <code>O(n log n)</code> total preprocessing, <code>O(1)</code> per query, <code>O(n log n)</code> memory.</p>
+    <p><b>Pitfalls specific to this problem.</b> The most common mistake is building only one table and then trying to recover the other extreme by scanning. A second mistake is trying to combine min and max into a single value type; that works (see Variants — pair table) but is not necessary here.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/POJ-3264" target="_blank">vjudge.net/problem/POJ-3264</a></p>
+  </section>
+
+  <section class="card" id="app4">
+    <h2>🚀 Application 4 — UVA-11235 Frequent Values</h2>
+    <p><b>Problem story.</b> You are given a non-decreasing array. For each query <code>[l, r]</code> you must find the maximum frequency of any single value within that subarray.</p>
+    <p><b>Abstraction.</b> A direct Sparse Table on values would not work — we are asked about frequencies, not values. But because the array is non-decreasing, equal values appear in contiguous blocks. We compress the array into runs of equal values, store the length of each run, and then a range-maximum Sparse Table on the run lengths handles the bulk of every query.</p>
+    <p><b>Why it fits.</b> The query splits into three parts: a partial left run, a partial right run, and a number of full runs in the middle. The middle part is exactly the range maximum of run lengths, and the two partial pieces are computed by direct arithmetic on the block boundaries.</p>
+    <p><b>Algorithm choice.</b> Compress the array into runs. Build a <code>SparseTable&lt;int, MaxOp&gt;</code> on the run lengths. For each query, identify the runs containing <code>l</code> and <code>r</code>, compute the lengths of the two partial pieces explicitly, and take the maximum of those two pieces with the table answer on the full middle runs (when any exist).</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+    SparseTable() {}
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lg[i] = lg[i / 2] + 1;
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+        if (n == 0) return;
+        st[0] = a;
+        for (int k = 1; k &lt; K; k++) {
+            int len = 1 &lt;&lt; k, half = len &gt;&gt; 1;
+            for (int i = 0; i + len &lt;= n; i++)
+                st[k][i] = op(st[k - 1][i], st[k - 1][i + half]);
+        }
+    }
+    T query(int l, int r) const {
+        int len = r - l, k = lg[len], block = 1 &lt;&lt; k;
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+struct MaxOp { int operator()(int a, int b) const { return max(a, b); } };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, q;
+    while (cin &gt;&gt; n &amp;&amp; n) {
+        cin &gt;&gt; q;
+        vector&lt;int&gt; a(n);
+        for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+        // Compress into runs of equal values (the array is non-decreasing).
+        vector&lt;int&gt; block_id(n), block_left, block_right, block_freq;
+        int id = -1;
+        for (int i = 0; i &lt; n; ) {
+            int j = i;
+            while (j &lt; n &amp;&amp; a[j] == a[i]) j++;
+            ++id;
+            block_left.push_back(i);
+            block_right.push_back(j - 1);
+            block_freq.push_back(j - i);
+            for (int k = i; k &lt; j; k++) block_id[k] = id;
+            i = j;
+        }
+
+        SparseTable&lt;int, MaxOp&gt; st(block_freq);
+
+        while (q--) {
+            int l, r;
+            cin &gt;&gt; l &gt;&gt; r;
+            // UVA uses 1-based inclusive indices.
+            --l; --r;
+
+            int lb = block_id[l], rb = block_id[r];
+            if (lb == rb) { cout &lt;&lt; r - l + 1 &lt;&lt; '\n'; continue; }
+
+            int leftPart  = block_right[lb] - l + 1;
+            int rightPart = r - block_left[rb] + 1;
+            int ans = max(leftPart, rightPart);
+
+            int firstFull = lb + 1, lastFull = rb - 1;
+            if (firstFull &lt;= lastFull)
+                ans = max(ans, st.query(firstFull, lastFull + 1));
+
+            cout &lt;&lt; ans &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> Let <code>b</code> be the number of runs. Compression is <code>O(n)</code>, the table build is <code>O(b log b)</code>, and each query is <code>O(1)</code>. Memory is <code>O(b log b)</code> for the table plus <code>O(n)</code> for the run metadata.</p>
+    <p><b>Pitfalls specific to this problem.</b> The technique relies on the array being non-decreasing. If equal values were scattered, the block compression would be invalid and the technique would fail. We also must guard against an empty middle range, since <code>firstFull &gt; lastFull</code> happens whenever <code>l</code> and <code>r</code> lie in adjacent blocks.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/UVA-11235" target="_blank">vjudge.net/problem/UVA-11235</a></p>
+  </section>
+
+  <section class="card" id="app5">
+    <h2>🚀 Application 5 — POJ-2559 Largest Rectangle in a Histogram (via RMQ)</h2>
+    <p><b>Problem story.</b> You are given the bar heights of a histogram and must find the largest axis-aligned rectangle that fits inside it.</p>
+    <p><b>Abstraction.</b> For any interval <code>[l, r)</code>, let <code>m</code> be the index of the minimum height in that interval. The best rectangle inside <code>[l, r)</code> is one of three options: a rectangle that spans the whole interval at height <code>h[m]</code>, the best rectangle in the left subinterval <code>[l, m)</code>, or the best rectangle in the right subinterval <code>[m + 1, r)</code>. This is a divide-and-conquer on the minimum position. A Sparse Table that stores <b>indices of minimum</b> gives the position in O(1) per query, making the whole algorithm O(n log n).</p>
+    <p><b>Why it fits.</b> The argmin operation is idempotent (with a deterministic tiebreak by index), so the classic Sparse Table works perfectly. The technique is not the simplest solution to histograms — a monotonic stack reaches O(n) — but it is a beautiful demonstration of how RMQ can guide divide-and-conquer.</p>
+    <p><b>Algorithm choice.</b> Store an array of indices <code>[0, 1, …, n-1]</code> and build a Sparse Table whose operation returns the index of the smaller-value element. Run an iterative divide-and-conquer (a stack of subintervals) to avoid recursion overflow on adversarial inputs.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable {
+    int n;
+    vector&lt;int&gt; lg;
+    vector&lt;vector&lt;T&gt;&gt; st;
+    Op op;
+    SparseTable() {}
+    SparseTable(const vector&lt;T&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+    void build(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        lg.assign(n + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lg[i] = lg[i / 2] + 1;
+        int K = lg[n] + 1;
+        st.assign(K, vector&lt;T&gt;(n));
+        st[0] = a;
+        for (int k = 1; k &lt; K; k++) {
+            int len = 1 &lt;&lt; k, half = len &gt;&gt; 1;
+            for (int i = 0; i + len &lt;= n; i++)
+                st[k][i] = op(st[k - 1][i], st[k - 1][i + half]);
+        }
+    }
+    T query(int l, int r) const {
+        int len = r - l, k = lg[len], block = 1 &lt;&lt; k;
+        return op(st[k][l], st[k][r - block]);
+    }
+};
+struct ArgMinOp {
+    const vector&lt;long long&gt;* h;
+    ArgMinOp(const vector&lt;long long&gt;* h = nullptr) : h(h) {}
+    int operator()(int i, int j) const {
+        if ((*h)[i] != (*h)[j]) return ((*h)[i] &lt; (*h)[j]) ? i : j;
+        return min(i, j);
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    while (cin &gt;&gt; n &amp;&amp; n) {
+        vector&lt;long long&gt; h(n);
+        for (int i = 0; i &lt; n; i++) cin &gt;&gt; h[i];
+
+        vector&lt;int&gt; idx(n);
+        iota(idx.begin(), idx.end(), 0);
+        SparseTable&lt;int, ArgMinOp&gt; rmq(idx, ArgMinOp(&amp;h));
+
+        long long answer = 0;
+        vector&lt;pair&lt;int,int&gt;&gt; ranges;
+        ranges.push_back({0, n});
+        while (!ranges.empty()) {
+            auto [l, r] = ranges.back();
+            ranges.pop_back();
+            if (l &gt;= r) continue;
+            int m = rmq.query(l, r);
+            long long area = h[m] * (long long)(r - l);
+            answer = max(answer, area);
+            ranges.push_back({l, m});
+            ranges.push_back({m + 1, r});
+        }
+        cout &lt;&lt; answer &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> The table build is <code>O(n log n)</code>, each argmin query is <code>O(1)</code>, and the divide-and-conquer processes <code>O(n)</code> subintervals, giving <code>O(n log n)</code> in total. Memory is <code>O(n log n)</code>.</p>
+    <p><b>Pitfalls specific to this problem.</b> The Sparse Table must store indices, not values, so that we can locate the minimum's position. Ties in heights must be broken deterministically by index, otherwise the divide-and-conquer can revisit the same subinterval and recurse forever. A recursive implementation is also a common source of stack overflow on sorted input — the iterative version above sidesteps that.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/POJ-2559" target="_blank">vjudge.net/problem/POJ-2559</a></p>
+  </section>
+
+  <section class="card" id="app6">
+    <h2>🚀 Application 6 — LightOJ-1081 A Easy Game (2D Rectangle Max)</h2>
+    <p><b>Problem story.</b> You are given a square matrix. Each query consists of a top-left corner and a square size, and you must report the maximum value inside that square.</p>
+    <p><b>Abstraction.</b> A static 2D rectangle maximum query. The operation <code>max</code> is associative and idempotent, so a 2D Sparse Table is the perfect match.</p>
+    <p><b>Why it fits.</b> The matrix never changes. Many queries arrive. The operation is idempotent. The 2D Sparse Table answers in O(1) per query after an O(n² log² n) build.</p>
+    <p><b>Algorithm choice.</b> Build a <code>SparseTable2D&lt;int, MaxOp&gt;</code> on the matrix. For each query, convert the 1-based corner and the size into a half-open rectangle and call <code>query(x, y, x + s, y + s)</code>.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+template &lt;class T, class Op&gt;
+struct SparseTable2D {
+    int n, m;
+    vector&lt;int&gt; lgN, lgM;
+    vector&lt;vector&lt;vector&lt;vector&lt;T&gt;&gt;&gt;&gt; st;
+    Op op;
+    SparseTable2D() {}
+    SparseTable2D(const vector&lt;vector&lt;T&gt;&gt;&amp; a, Op op = Op()) : op(op) { build(a); }
+
+    void build(const vector&lt;vector&lt;T&gt;&gt;&amp; a) {
+        n = (int)a.size();
+        m = (int)a[0].size();
+        lgN.assign(n + 1, 0);
+        lgM.assign(m + 1, 0);
+        for (int i = 2; i &lt;= n; i++) lgN[i] = lgN[i / 2] + 1;
+        for (int j = 2; j &lt;= m; j++) lgM[j] = lgM[j / 2] + 1;
+        int KX = lgN[n] + 1, KY = lgM[m] + 1;
+        st.assign(KX, vector&lt;vector&lt;vector&lt;T&gt;&gt;&gt;(
+                       KY, vector&lt;vector&lt;T&gt;&gt;(n, vector&lt;T&gt;(m))));
+        st[0][0] = a;
+        for (int kx = 0; kx &lt; KX; kx++) {
+            for (int ky = 0; ky &lt; KY; ky++) {
+                if (kx == 0 &amp;&amp; ky == 0) continue;
+                int H = 1 &lt;&lt; kx, W = 1 &lt;&lt; ky;
+                if (kx == 0) {
+                    int hw = W &gt;&gt; 1;
+                    for (int x = 0; x + H &lt;= n; x++)
+                        for (int y = 0; y + W &lt;= m; y++)
+                            st[kx][ky][x][y] =
+                                op(st[kx][ky - 1][x][y],
+                                   st[kx][ky - 1][x][y + hw]);
+                } else {
+                    int hh = H &gt;&gt; 1;
+                    for (int x = 0; x + H &lt;= n; x++)
+                        for (int y = 0; y + W &lt;= m; y++)
+                            st[kx][ky][x][y] =
+                                op(st[kx - 1][ky][x][y],
+                                   st[kx - 1][ky][x + hh][y]);
+                }
+            }
+        }
+    }
+
+    T query(int x1, int y1, int x2, int y2) const {
+        int h = x2 - x1, w = y2 - y1;
+        int kx = lgN[h], ky = lgM[w];
+        int H = 1 &lt;&lt; kx, W = 1 &lt;&lt; ky;
+        T a = st[kx][ky][x1][y1];
+        T b = st[kx][ky][x2 - H][y1];
+        T c = st[kx][ky][x1][y2 - W];
+        T d = st[kx][ky][x2 - H][y2 - W];
+        return op(op(a, b), op(c, d));
+    }
+};
+struct MaxOp { int operator()(int a, int b) const { return max(a, b); } };
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    for (int tc = 1; tc &lt;= T; tc++) {
+        int n, q;
+        cin &gt;&gt; n &gt;&gt; q;
+        vector&lt;vector&lt;int&gt;&gt; mat(n, vector&lt;int&gt;(n));
+        for (int i = 0; i &lt; n; i++)
+            for (int j = 0; j &lt; n; j++)
+                cin &gt;&gt; mat[i][j];
+
+        SparseTable2D&lt;int, MaxOp&gt; st(mat);
+
+        cout &lt;&lt; "Case " &lt;&lt; tc &lt;&lt; ":\n";
+        while (q--) {
+            int x, y, s;
+            cin &gt;&gt; x &gt;&gt; y &gt;&gt; s;
+            --x; --y;     // input is 1-based
+            cout &lt;&lt; st.query(x, y, x + s, y + s) &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> Build is <code>O(n² log² n)</code>, each query is <code>O(1)</code>, and memory is <code>O(n² log² n)</code>. The memory budget is the binding constraint here; in practice <code>n ≤ 500</code> is safe.</p>
+    <p><b>Pitfalls specific to this problem.</b> The biggest trap is memory limit exceeded — for larger <code>n</code> the table grows beyond what is reasonable. The other classic mistake is reusing a 2D Sparse Table for rectangle sums, where the four corner blocks overlap and double-count.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/LightOJ-1081" target="_blank">vjudge.net/problem/LightOJ-1081</a></p>
+  </section>
+
+  <section class="card" id="app7">
+    <h2>🚀 Application 7 — SPOJ-GSS1 Maximum Subarray Sum (Disjoint Sparse Table)</h2>
+    <p><b>Problem story.</b> You are given an array and asked, for each query <code>[l, r]</code>, for the maximum sum of any contiguous subarray that lies inside <code>[l, r]</code>. There are no updates.</p>
+    <p><b>Abstraction.</b> The merge state at each node is a small struct holding the total sum, the best prefix sum, the best suffix sum, and the best inner subarray sum. Merging two adjacent states is associative — combining three pieces from left to right gives the same result regardless of grouping — but it is not idempotent, because merging a state with itself doubles the totals. The classic Sparse Table would silently produce wrong answers on overlapping queries, so we use a Disjoint Sparse Table.</p>
+    <p><b>Why it fits.</b> The array is static, queries are numerous, and the merge is associative-but-not-idempotent. This is exactly the niche the Disjoint Sparse Table fills.</p>
+    <p><b>Algorithm choice.</b> Define a <code>Node</code> with <code>sum</code>, <code>pref</code>, <code>suff</code>, and <code>best</code>. Define an operation that combines two nodes preserving left-to-right order. Wrap it in a <code>DisjointSparseTable&lt;Node, MaxSubarrayOp&gt;</code> and answer each query by returning the <code>best</code> field of the result.</p>
+
+    <details>
+      <summary>Full AC-ready code <span class="rightHint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node {
+    long long sum, pref, suff, best;
+};
+struct MaxSubarrayOp {
+    Node operator()(const Node&amp; L, const Node&amp; R) const {
+        Node res;
+        res.sum  = L.sum + R.sum;
+        res.pref = max(L.pref, L.sum + R.pref);
+        res.suff = max(R.suff, R.sum + L.suff);
+        res.best = max({ L.best, R.best, L.suff + R.pref });
+        return res;
+    }
+};
+
+template &lt;class T, class Op&gt;
+struct DisjointSparseTable {
+    int n, K;
+    vector&lt;T&gt; a;
+    vector&lt;vector&lt;T&gt;&gt; table;
+    Op op;
+    DisjointSparseTable() {}
+    DisjointSparseTable(const vector&lt;T&gt;&amp; v, Op op = Op()) : op(op) { build(v); }
+
+    void build(const vector&lt;T&gt;&amp; v) {
+        a = v;
+        n = (int)a.size();
+        K = 1;
+        while ((1 &lt;&lt; K) &lt; n) K++;
+        table.assign(K, vector&lt;T&gt;(n));
+
+        for (int k = 0; k &lt; K; k++) {
+            int half = 1 &lt;&lt; k, len = half &lt;&lt; 1;
+            for (int bs = 0; bs &lt; n; bs += len) {
+                int mid = min(bs + half, n);
+                int be  = min(bs + len,  n);
+                if (mid == bs) continue;
+                table[k][mid - 1] = a[mid - 1];
+                for (int i = mid - 2; i &gt;= bs; i--)
+                    table[k][i] = op(a[i], table[k][i + 1]);
+                if (mid &lt; be) {
+                    table[k][mid] = a[mid];
+                    for (int i = mid + 1; i &lt; be; i++)
+                        table[k][i] = op(table[k][i - 1], a[i]);
+                }
+            }
+        }
+    }
+
+    T query(int l, int r) const {
+        if (r - l == 1) return a[l];
+        int left = l, right = r - 1;
+        int k = 31 - __builtin_clz(left ^ right);
+        return op(table[k][left], table[k][right]);
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;Node&gt; a(n);
+    for (int i = 0; i &lt; n; i++) {
+        long long x;
+        cin &gt;&gt; x;
+        a[i] = { x, x, x, x };
+    }
+
+    DisjointSparseTable&lt;Node, MaxSubarrayOp&gt; dst(a);
+
+    int q;
+    cin &gt;&gt; q;
+    while (q--) {
+        int l, r;
+        cin &gt;&gt; l &gt;&gt; r;
+        // SPOJ GSS1 uses 1-based inclusive queries.
+        --l; --r;
+        Node ans = dst.query(l, r + 1);
+        cout &lt;&lt; ans.best &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      </div>
+    </details>
+
+    <p><b>Complexity.</b> Build is <code>O(n log n)</code> with a small constant per merge, each query is <code>O(1)</code>, and memory is <code>O(n log n)</code>.</p>
+    <p><b>Pitfalls specific to this problem.</b> Order matters: the merge is not commutative, so we must always merge the left piece into the right piece, never the other way around. A single-element range must return the original element directly. And using a classic Sparse Table here is the classic mistake — it gives wrong answers as soon as the two query blocks share even one index.</p>
+    <p><b>Problem link.</b> <a href="https://vjudge.net/problem/SPOJ-GSS1" target="_blank">vjudge.net/problem/SPOJ-GSS1</a></p>
+  </section>
+
+  <!-- ============================================================
+       SECTION 19 — FINAL SUMMARY (cheat sheet)
+       ============================================================ -->
+  <section id="summary" class="card">
+    <h2>19. Final Summary — Cheat Sheet</h2>
+
+    <p>At the end of a long tutorial it helps to compress the whole landscape into one page that a contestant can re-read in two minutes before a round. The three structures we built share a single mental skeleton — preprocess answers for blocks whose lengths are powers of two, then answer any query in <code>O(1)</code> by gluing together a tiny constant number of those blocks — but they differ in <i>how</i> they glue, and the differences are dictated entirely by what kind of operation the problem asks about.</p>
+
+    <h3>The three structures at a glance</h3>
+    <div class="statusPanel" style="overflow-x:auto;">
+      <table>
+        <tr>
+          <th>Structure</th>
+          <th>Storage</th>
+          <th>Query mechanism</th>
+          <th>Op contract</th>
+          <th>Build · Query · Memory</th>
+        </tr>
+        <tr>
+          <td><b>Classic 1D Sparse Table</b></td>
+          <td><code>st[k][i]</code> = answer for <code>[i, i + 2ᵏ)</code></td>
+          <td>Two overlapping power-of-two blocks anchored at <code>l</code> and <code>r</code></td>
+          <td>Associative <b>and</b> idempotent</td>
+          <td><code>O(n log n)</code> · <code>O(1)</code> · <code>O(n log n)</code></td>
+        </tr>
+        <tr>
+          <td><b>2D Sparse Table</b></td>
+          <td><code>st[kx][ky][x][y]</code> = answer for <code>[x, x+2ᵏˣ) × [y, y+2ᵏʸ)</code></td>
+          <td>Four overlapping power-of-two rectangles, one anchored at each corner</td>
+          <td>Associative <b>and</b> idempotent</td>
+          <td><code>O(nm log n log m)</code> · <code>O(1)</code> · <code>O(nm log n log m)</code></td>
+        </tr>
+        <tr>
+          <td><b>Disjoint Sparse Table</b></td>
+          <td><code>table[k][i]</code> = suffix (left half) or prefix (right half) inside a level-<code>k</code> block</td>
+          <td>One suffix at <code>l</code> + one prefix at <code>r−1</code>, level chosen by <code>MSB(l XOR (r−1))</code></td>
+          <td>Associative only — idempotence is <b>not</b> required</td>
+          <td><code>O(n log n)</code> · <code>O(1)</code> · <code>O(n log n)</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>The decision in one paragraph</h3>
+    <p>If the array is fixed and the operation is one of <code>min</code>, <code>max</code>, <code>gcd</code>, bitwise <code>AND</code>, or bitwise <code>OR</code>, reach for the <b>classic 1D Sparse Table</b>. If the same kind of operation is asked over rectangles of a fixed matrix, switch to the <b>2D Sparse Table</b> — but first do a memory check, because <code>n · m · log n · log m</code> grows alarmingly fast. If the operation is custom — a struct merge, a maximum-subarray combine, matrix multiplication, function composition, anything that is associative but where <code>op(x, x) ≠ x</code> — switch to the <b>Disjoint Sparse Table</b>. If the operation is plain sum on a fixed array, do not use any of these at all: a <b>prefix sum</b> array is shorter, faster, and uses linear memory. And if there are any updates, the entire Sparse Table family is out — segment trees and Fenwick trees own that regime.</p>
+
+    <h3>Golden recipe — classic 1D Sparse Table</h3>
+    <p>Build a log table <code>lg[1..n]</code> using the recurrence <code>lg[i] = lg[i/2] + 1</code>. Allocate <code>st[K][n]</code> where <code>K = lg[n] + 1</code>, copy the input into <code>st[0]</code>, and fill higher levels with the relation <code>st[k][i] = op(st[k-1][i], st[k-1][i + 2ᵏ⁻¹])</code>. To answer a half-open query <code>[l, r)</code>, set <code>k = lg[r − l]</code> and return <code>op(st[k][l], st[k][r − 2ᵏ])</code>. The whole query is one log-table lookup, two table reads, one merge, and absolutely nothing else.</p>
+
+    <h3>Golden recipe — Disjoint Sparse Table</h3>
+    <p>At each level <code>k</code>, conceptually cut the array into blocks of length <code>2ᵏ⁺¹</code>. Inside each block, fill the left half from right to left with suffix reductions ending at the midpoint, and fill the right half from left to right with prefix reductions starting at the midpoint. To answer a half-open query <code>[l, r)</code>, set <code>k = ⌊log₂(l XOR (r − 1))⌋</code> (computed in one CPU instruction by <code>31 − __builtin_clz</code>), and return <code>op(table[k][l], table[k][r − 1])</code>. A single-element query bypasses the table and returns <code>a[l]</code> directly.</p>
+
+    <h3>The three pitfalls that bite even experienced contestants</h3>
+    <p>The first is using a <b>classic Sparse Table for sum</b>: the two query blocks overlap, sum is not idempotent, and the answer is silently wrong on any non-power-of-two length. The fix is either a prefix sum or a Disjoint Sparse Table. The second is forgetting that the template uses <b>half-open intervals</b>: inputs that hand you inclusive <code>[l, r]</code> must be converted to <code>query(l, r + 1)</code>, otherwise off-by-one errors corrupt every query. The third is <b>memory in 2D</b>: the four-dimensional table grows as the product of two logs times the matrix area, and a <code>1000 × 1000</code> matrix already pushes hundreds of megabytes — many problems that look like a 2D Sparse Table fit are actually 2D prefix sums in disguise.</p>
+
+    <p class="note">The Sparse Table family is a beautiful example of how a single idea — answers for power-of-two intervals — can be reshaped to answer many different question types. Once the mental model is locked in, recognising which variant a problem needs becomes almost instant, and the implementation collapses to a short, reusable template you can paste into any contest.</p>
+  </section>
+
+  <!-- Tooltip placeholder used by tracers (optional, kept for parity) -->
+  <div class="tooltip" id="tooltip" style="position:fixed;display:none;pointer-events:none;background:var(--panel);color:var(--text);border:2px solid var(--border);border-radius:10px;padding:8px 12px;font-weight:800;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.16);z-index:300;"></div>
+
+  <!-- Page footer (EXACT family branding) -->
+  <footer class="page-footer">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;">
+      <div class="logoBox" style="font-size:28px;width:54px;height:54px;border-radius:14px;">🎓</div>
+      <div style="text-align:left;">
+        <div class="footer-brand">Coach Academy</div>
+        <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      </div>
+    </div>
+    <div class="footer-copy">Sparse Table · 2D Sparse Table · Disjoint Sparse Table — static range queries</div>
+    <div class="footer-copy">Build <code>O(n log n)</code> · Query <code>O(1)</code> · Memory <code>O(n log n)</code></div>
+    <div class="footer-copy" style="margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp;
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a>
+    </div>
+  </footer>
+
+</main>
+</div><!-- .app -->
+
+<script>
+(function(){
+  'use strict';
+
+  // ============================================================
+  // 1. HELPERS
+  // ============================================================
+  const $  = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  function clearEl(el){ while (el && el.firstChild) el.removeChild(el.firstChild); }
+  function make(tag, opts){
+    const e = document.createElement(tag);
+    if (!opts) return e;
+    if (opts.cls)    e.className   = opts.cls;
+    if (opts.text != null)  e.textContent = opts.text;
+    if (opts.html != null)  e.innerHTML   = opts.html;
+    if (opts.style)  Object.assign(e.style, opts.style);
+    if (opts.attrs)  for (const k in opts.attrs) e.setAttribute(k, opts.attrs[k]);
+    return e;
+  }
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  // ============================================================
+  // 2. THEME TOGGLE
+  // ============================================================
+  (function themeModule(){
+    const KEY = 'sparse_theme';
+    const sw  = $('#themeSwitch');
+    if (!sw) return;
+
+    function apply(theme){
+      document.documentElement.setAttribute('data-theme', theme);
+      sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+      try { localStorage.setItem(KEY, theme); } catch(e){}
+    }
+
+    // Initial: stored preference, else system-dark, else light.
+    let initial = 'light';
+    try {
+      const stored = localStorage.getItem(KEY);
+      if (stored === 'dark' || stored === 'light') initial = stored;
+      else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) initial = 'dark';
+    } catch(e){}
+    apply(initial);
+
+    sw.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme') || 'light';
+      apply(cur === 'dark' ? 'light' : 'dark');
+    });
+  })();
+
+  // ============================================================
+  // 3. SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+  // ============================================================
+  (function sidebarModule(){
+    const sb  = $('#sidebar');
+    const tog = $('#sidebarToggle');
+    const ovl = $('#sidebarOverlay');
+    const app = $('#app');
+    if (!sb || !tog || !app) return;
+
+    let open = window.innerWidth > 1400;
+
+    function setSidebar(nextOpen){
+      open = nextOpen;
+
+      tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+      tog.classList.toggle('open', open);
+
+      if (open) {
+        sb.classList.remove('collapsed');
+
+        if (window.innerWidth > 1400) {
+          // Desktop: sidebar reclaims its grid column, no overlay needed.
+          app.classList.remove('sidebar-hidden');
+          if (ovl) ovl.classList.remove('show');
+        } else {
+          // Narrow: sidebar floats above content as an overlay.
+          app.classList.add('sidebar-hidden');
+          if (ovl) ovl.classList.add('show');
+        }
+      } else {
+        sb.classList.add('collapsed');
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    }
+
+    tog.addEventListener('click', () => {
+      setSidebar(!open);
+    });
+
+    if (ovl) {
+      ovl.addEventListener('click', () => {
+        setSidebar(false);
+      });
+    }
+
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+        setSidebar(false);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1400) {
+        setSidebar(true);
+      } else {
+        setSidebar(false);
+      }
+    });
+
+    setSidebar(open);
+  })();
+
+  // ============================================================
+  // 4. SCROLL-NAV ACTIVE HIGHLIGHT
+  // ============================================================
+  (function scrollNav(){
+    const content = $('.content');
+    if (!content) return;
+
+    const links = $$('.nav a[href^="#"]');
+    const map   = new Map();   // section id → link element
+    links.forEach(a => {
+      const id = a.getAttribute('href').slice(1);
+      if (id && !map.has(id)) map.set(id, a);
+    });
+
+    const ids = Array.from(map.keys()).filter(id => document.getElementById(id));
+
+    function update(){
+      const probe = content.scrollTop + 140;   // small offset so the heading sits at the top
+      let activeId = ids[0];
+      for (const id of ids){
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.offsetTop <= probe) activeId = id;
+        else break;
+      }
+      links.forEach(a => a.classList.remove('active'));
+      const link = map.get(activeId);
+      if (link) link.classList.add('active');
+    }
+
+    let ticking = false;
+    content.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { update(); ticking = false; });
+    });
+    update();
+  })();
+
+  // ============================================================
+  // 5. STATIC LEVELS BOX — array [5,2,7,3,6,1] across three min-levels
+  // ============================================================
+  (function staticLevels(){
+    const host = $('#staticLevelsBox');
+    if (!host) return;
+
+    const a = [5, 2, 7, 3, 6, 1];
+    const n = a.length;
+
+    function rowLabel(text, accent){
+      return make('div', { text, style: {
+        fontWeight: '950', fontSize: '17px',
+        color: 'var(--' + accent + ')', margin: '14px 0 6px 0',
+        fontFamily: 'ui-monospace,monospace'
+      }});
+    }
+
+    function renderRow(values, lvlClass){
+      const wrap = make('div', { style: { display: 'flex', flexWrap: 'wrap', marginTop: '14px' }});
+      values.forEach((v, idx) => {
+        const cell = make('div', { cls: 'arrCell ' + lvlClass, text: String(v) });
+        const tag  = make('span', { cls: 'idx', text: 'i=' + idx });
+        cell.appendChild(tag);
+        wrap.appendChild(cell);
+      });
+      return wrap;
+    }
+
+    clearEl(host);
+    host.appendChild(rowLabel('Level 0   ·   length 1   ·   st[0][i] = a[i]', 'muted'));
+    host.appendChild(renderRow(a, 'lvl0'));
+
+    const lvl1 = [];
+    for (let i = 0; i + 2 <= n; i++) lvl1.push(Math.min(a[i], a[i + 1]));
+    host.appendChild(rowLabel('Level 1   ·   length 2   ·   st[1][i] = min(a[i], a[i+1])', 'accent2'));
+    host.appendChild(renderRow(lvl1, 'lvl1'));
+
+    const lvl2 = [];
+    for (let i = 0; i + 4 <= n; i++) lvl2.push(Math.min(a[i], a[i + 1], a[i + 2], a[i + 3]));
+    host.appendChild(rowLabel('Level 2   ·   length 4   ·   st[2][i] = min over [i, i+4)', 'good'));
+    host.appendChild(renderRow(lvl2, 'lvl2'));
+  })();
+
+  // ============================================================
+  // 6. BUILD TRACER — step through Sparse Table construction
+  // ============================================================
+  (function buildTracer(){
+    const stage = $('#buildStage');
+    const log   = $('#buildLog');
+    const bReset = $('#buildReset');
+    const bNext  = $('#buildNext');
+    const bAuto  = $('#buildAuto');
+    if (!stage || !log) return;
+
+    const a = [5, 2, 7, 3, 6, 1];
+    const n = a.length;
+
+    // Precompute level values: levels[k][i] = min over [i, i + 2^k).
+    const levels = [a.slice()];
+    const K = 1 + Math.floor(Math.log2(n));
+    for (let k = 1; k < K; k++){
+      const half = 1 << (k - 1);
+      const len  = 1 << k;
+      const cur  = [];
+      for (let i = 0; i + len <= n; i++){
+        cur.push(Math.min(levels[k - 1][i], levels[k - 1][i + half]));
+      }
+      levels.push(cur);
+    }
+
+    // Build step list. First a "level0" populate, then each higher-level cell.
+    const steps = [];
+    steps.push({ kind: 'level0' });
+    for (let k = 1; k < K; k++){
+      const half = 1 << (k - 1);
+      const len  = 1 << k;
+      for (let i = 0; i + len <= n; i++){
+        steps.push({
+          kind: 'cell',
+          k, i,
+          srcL: { k: k - 1, i: i },
+          srcR: { k: k - 1, i: i + half },
+          value: levels[k][i]
+        });
+      }
+    }
+
+    let cursor = -1;   // index into steps; -1 = nothing rendered yet
+    let auto   = null;
+
+    function render(){
+      clearEl(stage);
+      clearEl(log);
+
+      // Which cells have been built up to `cursor`.
+      const filled = levels.map(row => row.map(() => false));
+      let curStep = null;
+
+      for (let s = 0; s <= cursor; s++){
+        const step = steps[s];
+        if (step.kind === 'level0'){
+          for (let i = 0; i < n; i++) filled[0][i] = true;
+        } else {
+          filled[step.k][step.i] = true;
+        }
+        if (s === cursor) curStep = step;
+      }
+
+      // Render each level row.
+      for (let k = 0; k < K; k++){
+        const wrap = make('div', { style: { display: 'flex', alignItems: 'center', marginTop: '12px' }});
+        const label = make('div', { text: 'st[' + k + ']  (len ' + (1 << k) + ')', style: {
+          fontFamily: 'ui-monospace,monospace', fontWeight: '950', fontSize: '17px',
+          minWidth: '160px', color: 'var(--muted)'
+        }});
+        wrap.appendChild(label);
+
+        const row = make('div', { style: { display: 'flex', flexWrap: 'wrap' }});
+        for (let i = 0; i + (1 << k) <= n; i++){
+          let cls = 'arrCell lvl' + Math.min(k, 3);
+          if (curStep && curStep.kind === 'cell'){
+            if (k === curStep.k && i === curStep.i) cls += ' cur';
+            if (curStep.srcL && k === curStep.srcL.k && i === curStep.srcL.i) cls += ' leftBlk';
+            if (curStep.srcR && k === curStep.srcR.k && i === curStep.srcR.i) cls += ' rightBlk';
+          }
+          const cell = make('div', { cls, text: filled[k][i] ? String(levels[k][i]) : '·' });
+          const tag  = make('span', { cls: 'idx', text: 'i=' + i });
+          cell.appendChild(tag);
+          row.appendChild(cell);
+        }
+        wrap.appendChild(row);
+        stage.appendChild(wrap);
+      }
+
+      // Build the running log.
+      if (cursor < 0){
+        log.appendChild(make('div', { cls: 'line', text: 'Press ▶ Next step to start the build.' }));
+      } else {
+        for (let s = 0; s <= cursor; s++){
+          const step = steps[s];
+          const line = make('div', { cls: 'line' + (s === cursor ? ' cur' : '') });
+          if (step.kind === 'level0'){
+            line.textContent = 'Level 0  — st[0] = a  (the input array).';
+          } else {
+            const vL = levels[step.srcL.k][step.srcL.i];
+            const vR = levels[step.srcR.k][step.srcR.i];
+            line.textContent =
+              'st[' + step.k + '][' + step.i + '] = min(' +
+              'st[' + step.srcL.k + '][' + step.srcL.i + '], ' +
+              'st[' + step.srcR.k + '][' + step.srcR.i + ']) = min(' +
+              vL + ', ' + vR + ') = ' + step.value + '.';
+          }
+          log.appendChild(line);
+        }
+      }
+    }
+
+    function next(){
+      if (cursor < steps.length - 1){ cursor++; render(); }
+      else if (auto){ stopAuto(); }
+    }
+    function reset(){ stopAuto(); cursor = -1; render(); }
+    function stopAuto(){
+      if (auto){ clearInterval(auto); auto = null; bAuto.textContent = '⏵ Auto'; }
+    }
+    function toggleAuto(){
+      if (auto){ stopAuto(); return; }
+      bAuto.textContent = '⏸ Pause';
+      auto = setInterval(next, 700);
+    }
+
+    bReset.addEventListener('click', reset);
+    bNext .addEventListener('click', next);
+    bAuto .addEventListener('click', toggleAuto);
+
+    render();
+  })();
+
+  // ============================================================
+  // 7. QUERY TRACER — array [5,2,7,3,6,1,8,4], adjustable [l, r)
+  // ============================================================
+  (function queryTracer(){
+    const stage   = $('#queryStage');
+    const explain = $('#queryExplain');
+    const qL = $('#qL'), qR = $('#qR');
+    const bLM = $('#qLM'), bLP = $('#qLP'), bRM = $('#qRM'), bRP = $('#qRP');
+    if (!stage || !explain) return;
+
+    const a = [5, 2, 7, 3, 6, 1, 8, 4];
+    const n = a.length;
+
+    const lg = new Array(n + 1).fill(0);
+    for (let i = 2; i <= n; i++) lg[i] = lg[i >> 1] + 1;
+
+    let l = 1, r = 7;   // half-open [l, r)
+
+    function render(){
+      clearEl(stage);
+      clearEl(explain);
+      qL.textContent = String(l);
+      qR.textContent = String(r);
+
+      const len   = r - l;
+      const k     = lg[len];
+      const block = 1 << k;
+      const lA = l,         rA = l + block;
+      const lB = r - block, rB = r;
+
+      const row = make('div', { style: { display: 'flex', flexWrap: 'wrap', marginTop: '10px' }});
+      for (let i = 0; i < n; i++){
+        const inQuery = (i >= l && i < r);
+        const inLeft  = (i >= lA && i < rA);
+        const inRight = (i >= lB && i < rB);
+        const inBoth  = inLeft && inRight;
+
+        let cls = 'arrCell lvl0';
+        if (inBoth) cls += ' overlap';
+        else if (inLeft) cls += ' leftBlk';
+        else if (inRight) cls += ' rightBlk';
+
+        const cell = make('div', { cls, text: String(a[i]) });
+        if (!inQuery) cell.style.opacity = '0.45';
+        const tag = make('span', { cls: 'idx', text: 'i=' + i });
+        cell.appendChild(tag);
+        row.appendChild(cell);
+      }
+      stage.appendChild(row);
+
+      const legend = make('div', { cls: 'legend', html:
+        '<span><span class="swatch sw-left"></span> left block st[' + k + '][' + lA + ')</span>' +
+        '<span><span class="swatch sw-right"></span> right block st[' + k + '][' + lB + ')</span>' +
+        '<span><span class="swatch sw-overlap"></span> overlap (idempotent ⇒ harmless)</span>'
+      });
+      stage.appendChild(legend);
+
+      const leftMin  = Math.min.apply(null, a.slice(lA, rA));
+      const rightMin = Math.min.apply(null, a.slice(lB, rB));
+      const trueMin  = Math.min.apply(null, a.slice(l,  r));
+
+      function L(text){ explain.appendChild(make('div', { cls: 'line', text })); }
+      L('len = r − l = ' + r + ' − ' + l + ' = ' + len + '.');
+      L('k = ⌊log₂(' + len + ')⌋ = ' + k + ', so block length = 2^' + k + ' = ' + block + '.');
+      L('left block  = [' + lA + ', ' + rA + ')  →  st[' + k + '][' + lA + '] = ' + leftMin + '.');
+      L('right block = [' + lB + ', ' + rB + ')  →  st[' + k + '][' + lB + '] = ' + rightMin + '.');
+      L('query result = min(' + leftMin + ', ' + rightMin + ') = ' + Math.min(leftMin, rightMin) + '.');
+      L('brute-force min over [' + l + ', ' + r + ') = ' + trueMin + '   ✓');
+    }
+
+    function set(newL, newR){
+      newL = clamp(newL, 0, n - 1);
+      newR = clamp(newR, 1, n);
+      if (newR <= newL) newR = newL + 1;
+      l = newL; r = newR;
+      render();
+    }
+
+    bLM.addEventListener('click', () => set(l - 1, r));
+    bLP.addEventListener('click', () => set(l + 1, r));
+    bRM.addEventListener('click', () => set(l, r - 1));
+    bRP.addEventListener('click', () => set(l, r + 1));
+
+    render();
+  })();
+
+  // ============================================================
+  // 8. 2D QUERY TRACER — 6×8 matrix, four-corner rectangle cover
+  // ============================================================
+  (function twoDTracer(){
+    const stage   = $('#twodStage');
+    const explain = $('#twodExplain');
+    const sx1 = $('#qx1'), sy1 = $('#qy1'), sx2 = $('#qx2'), sy2 = $('#qy2');
+    const p1 = $('#q2dPreset1'), p2 = $('#q2dPreset2'), p3 = $('#q2dPreset3'), p4 = $('#q2dPreset4');
+    if (!stage || !explain) return;
+
+    const mat = [
+      [3, 1, 4, 1, 5, 9, 2, 6],
+      [5, 3, 5, 8, 9, 7, 9, 3],
+      [2, 3, 8, 4, 6, 2, 6, 4],
+      [3, 3, 8, 3, 2, 7, 9, 5],
+      [0, 2, 8, 8, 4, 1, 9, 7],
+      [1, 6, 9, 3, 9, 9, 3, 7]
+    ];
+    const N = mat.length;
+    const M = mat[0].length;
+
+    const lgN = new Array(N + 1).fill(0);
+    for (let i = 2; i <= N; i++) lgN[i] = lgN[i >> 1] + 1;
+    const lgM = new Array(M + 1).fill(0);
+    for (let j = 2; j <= M; j++) lgM[j] = lgM[j >> 1] + 1;
+
+    let x1 = 1, y1 = 2, x2 = 5, y2 = 7;
+
+    function bruteMax(ax1, ay1, ax2, ay2){
+      let best = -Infinity;
+      for (let i = ax1; i < ax2; i++)
+        for (let j = ay1; j < ay2; j++)
+          if (mat[i][j] > best) best = mat[i][j];
+      return best;
+    }
+
+    function inRect(i, j, rx1, ry1, rx2, ry2){
+      return i >= rx1 && i < rx2 && j >= ry1 && j < ry2;
+    }
+
+    function render(){
+      clearEl(stage);
+      clearEl(explain);
+      sx1.textContent = x1; sy1.textContent = y1;
+      sx2.textContent = x2; sy2.textContent = y2;
+
+      const h = x2 - x1, w = y2 - y1;
+      const kx = lgN[h], ky = lgM[w];
+      const hb = 1 << kx, wb = 1 << ky;
+
+      const grid = make('div', { style: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(' + M + ', 54px)',
+        gridAutoRows: '54px',
+        border: '3px solid var(--border)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        marginTop: '12px',
+        width: 'fit-content',
+        maxWidth: '100%'
+      }});
+
+      for (let i = 0; i < N; i++){
+        for (let j = 0; j < M; j++){
+          const inQ = inRect(i, j, x1, y1, x2, y2);
+          const c1 = inRect(i, j, x1,      y1,      x1 + hb, y1 + wb);
+          const c2 = inRect(i, j, x1,      y2 - wb, x1 + hb, y2);
+          const c3 = inRect(i, j, x2 - hb, y1,      x2,      y1 + wb);
+          const c4 = inRect(i, j, x2 - hb, y2 - wb, x2,      y2);
+          const count = (c1?1:0) + (c2?1:0) + (c3?1:0) + (c4?1:0);
+
+          let cls = 'matrixCell';
+          if (count >= 2) cls += ' allCorner';
+          else if (c1) cls += ' corner1';
+          else if (c2) cls += ' corner2';
+          else if (c3) cls += ' corner3';
+          else if (c4) cls += ' corner4';
+          if (inQ) cls += ' query';
+
+          const cell = make('div', { cls, text: String(mat[i][j]) });
+          if (!inQ && count === 0) cell.style.opacity = '0.35';
+          if (i === N - 1) cell.style.borderBottom = 'none';
+          if (j === M - 1) cell.style.borderRight  = 'none';
+          grid.appendChild(cell);
+        }
+      }
+      stage.appendChild(grid);
+
+      const legend = make('div', { cls: 'legend', html:
+        '<span><span class="swatch sw-left"></span> one of the four corner rectangles</span>' +
+        '<span><span class="swatch sw-overlap"></span> covered by ≥ 2 corners (overlap)</span>'
+      });
+      stage.appendChild(legend);
+
+      const m1 = bruteMax(x1, y1, x1 + hb, y1 + wb);
+      const m2 = bruteMax(x1, y2 - wb, x1 + hb, y2);
+      const m3 = bruteMax(x2 - hb, y1, x2, y1 + wb);
+      const m4 = bruteMax(x2 - hb, y2 - wb, x2, y2);
+      const tot     = Math.max(m1, m2, m3, m4);
+      const trueMax = bruteMax(x1, y1, x2, y2);
+
+      function L(text){ explain.appendChild(make('div', { cls: 'line', text })); }
+      L('query rectangle = [' + x1 + ', ' + x2 + ') × [' + y1 + ', ' + y2 + ')   ·   h=' + h + ', w=' + w + '.');
+      L('kx = ⌊log₂ h⌋ = ' + kx + ', ky = ⌊log₂ w⌋ = ' + ky + ', block = 2^' + kx + ' × 2^' + ky + ' = ' + hb + '×' + wb + '.');
+      L('top-left     [' + x1 + ',' + (x1+hb) + ') × [' + y1 + ',' + (y1+wb) + ') ⇒ max = ' + m1 + '.');
+      L('top-right    [' + x1 + ',' + (x1+hb) + ') × [' + (y2-wb) + ',' + y2 + ') ⇒ max = ' + m2 + '.');
+      L('bottom-left  [' + (x2-hb) + ',' + x2 + ') × [' + y1 + ',' + (y1+wb) + ') ⇒ max = ' + m3 + '.');
+      L('bottom-right [' + (x2-hb) + ',' + x2 + ') × [' + (y2-wb) + ',' + y2 + ') ⇒ max = ' + m4 + '.');
+      L('answer = max(' + m1 + ', ' + m2 + ', ' + m3 + ', ' + m4 + ') = ' + tot + '.');
+      L('brute-force max over the query = ' + trueMax + '   ' + (trueMax === tot ? '✓' : '✗'));
+    }
+
+    function set(nx1, ny1, nx2, ny2){
+      nx1 = clamp(nx1, 0, N - 1); ny1 = clamp(ny1, 0, M - 1);
+      nx2 = clamp(nx2, 1, N);     ny2 = clamp(ny2, 1, M);
+      if (nx2 <= nx1) nx2 = nx1 + 1;
+      if (ny2 <= ny1) ny2 = ny1 + 1;
+      x1 = nx1; y1 = ny1; x2 = nx2; y2 = ny2;
+      render();
+    }
+
+    p1.addEventListener('click', () => set(1, 1, 4, 4));
+    p2.addEventListener('click', () => set(1, 2, 5, 5));
+    p3.addEventListener('click', () => set(2, 1, 5, 7));
+    p4.addEventListener('click', () => set(0, 0, 6, 8));
+
+    render();
+  })();
+
+  // ============================================================
+  // 9. DISJOINT SPARSE TABLE TRACER
+  //    Array of length 8, operation = sum, inclusive [l, r].
+  //    Highlights the suffix piece (left half of the chosen block)
+  //    and the prefix piece (right half).  Level k is the MSB of l XOR r.
+  // ============================================================
+  (function dstTracer(){
+    const stage   = $('#dstStage');
+    const explain = $('#dstExplain');
+    const sL = $('#dstL'), sR = $('#dstR');
+    const bLM = $('#dstLM'), bLP = $('#dstLP'), bRM = $('#dstRM'), bRP = $('#dstRP');
+    if (!stage || !explain) return;
+
+    const a = [3, 1, 4, 1, 5, 9, 2, 6];
+    const n = a.length;
+
+    let l = 2, r = 6;   // inclusive
+
+    function msb(x){
+      let p = -1;
+      while (x > 0){ p++; x >>= 1; }
+      return p;
+    }
+
+    function render(){
+      clearEl(stage);
+      clearEl(explain);
+      sL.textContent = l;
+      sR.textContent = r;
+
+      const row = make('div', { style: { display: 'flex', flexWrap: 'wrap', marginTop: '10px' }});
+
+      let k = null, blockLen, blockStart, mid;
+      let suffixL = -1, suffixR = -1, prefixL = -1, prefixR = -1;
+      let answer = a[l];
+
+      if (l === r){
+        // Single-element query.
+        for (let i = 0; i < n; i++){
+          let cls = 'dstBlock';
+          if (i === l) cls += ' cur';
+          const cell = make('div', { cls, text: String(a[i]) });
+          const tag  = make('span', { cls: 'idx', text: 'i=' + i });
+          cell.appendChild(tag);
+          if (i !== l) cell.style.opacity = '0.45';
+          row.appendChild(cell);
+        }
+      } else {
+        k          = msb(l ^ r);
+        blockLen   = 1 << (k + 1);
+        blockStart = (l >> (k + 1)) << (k + 1);
+        mid        = blockStart + (1 << k);   // first index of the right half
+        suffixL = l;       suffixR = mid - 1;
+        prefixL = mid;     prefixR = r;
+
+        let sSuf = 0; for (let i = suffixL; i <= suffixR; i++) sSuf += a[i];
+        let sPre = 0; for (let i = prefixL; i <= prefixR; i++) sPre += a[i];
+        answer = sSuf + sPre;
+
+        for (let i = 0; i < n; i++){
+          const inSuf = (i >= suffixL && i <= suffixR);
+          const inPre = (i >= prefixL && i <= prefixR);
+          let cls = 'dstBlock';
+          if (inSuf)      cls += ' suffix';
+          else if (inPre) cls += ' prefix';
+          if (i === mid)  cls += ' midLine';
+          const cell = make('div', { cls, text: String(a[i]) });
+          const tag  = make('span', { cls: 'idx', text: 'i=' + i });
+          cell.appendChild(tag);
+          if (!inSuf && !inPre) cell.style.opacity = '0.45';
+          row.appendChild(cell);
+        }
+      }
+      stage.appendChild(row);
+
+      const legend = make('div', { cls: 'legend', html:
+        '<span><span class="swatch" style="background:rgba(37,99,235,.15);border-color:var(--accent2);"></span> suffix piece (left half of the block)</span>' +
+        '<span><span class="swatch" style="background:rgba(180,83,9,.15);border-color:var(--warn);"></span> prefix piece (right half)</span>'
+      });
+      stage.appendChild(legend);
+
+      function L(text){ explain.appendChild(make('div', { cls: 'line', text })); }
+      L('query = [' + l + ', ' + r + ']   (inclusive)   ·   operation = sum.');
+
+      if (l === r){
+        L('Single-element range — bypass the table and return a[' + l + '] = ' + a[l] + '.');
+        L('brute-force sum = ' + a[l] + '   ✓');
+      } else {
+        L('l XOR r = ' + l + ' ^ ' + r + ' = ' + (l ^ r) + '   →   highest differing bit  k = ' + k + '.');
+        L('At level k = ' + k + ' the array is cut into blocks of length 2^(k+1) = ' + blockLen + '.');
+        L('l = ' + l + ' falls in block [' + blockStart + ', ' + (blockStart + blockLen) + ')   ·   midpoint = ' + mid + '.');
+        L('Suffix piece (left half)  =  a[' + suffixL + ' … ' + suffixR + ']  →  sum stored as table[' + k + '][' + l + '].');
+        L('Prefix piece (right half) =  a[' + prefixL + ' … ' + prefixR + ']  →  sum stored as table[' + k + '][' + r + '].');
+        L('answer = table[' + k + '][' + l + '] + table[' + k + '][' + r + '] = ' + answer + '.');
+        let brute = 0; for (let i = l; i <= r; i++) brute += a[i];
+        L('brute-force sum = ' + brute + '   ' + (brute === answer ? '✓' : '✗'));
+      }
+    }
+
+    function set(newL, newR){
+      newL = clamp(newL, 0, n - 1);
+      newR = clamp(newR, 0, n - 1);
+      if (newR < newL) newR = newL;
+      l = newL; r = newR;
+      render();
+    }
+
+    bLM.addEventListener('click', () => set(l - 1, r));
+    bLP.addEventListener('click', () => set(l + 1, r));
+    bRM.addEventListener('click', () => set(l, r - 1));
+    bRP.addEventListener('click', () => set(l, r + 1));
+
+    render();
+  })();
+
+})();
+</script>
+
+</body>
+</html>

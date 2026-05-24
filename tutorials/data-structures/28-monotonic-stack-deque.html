@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Monotonic Stack &amp; Monotonic Deque</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;--sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+p{margin:10px 0;line-height:1.6}ul,ol{line-height:1.7;padding-left:1.4rem}
+li{margin:.35rem 0}section{scroll-margin-top:16px}
+/* LAYOUT */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+/* SIDEBAR */
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:26px;flex:0 0 auto;letter-spacing:-.03em}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:rgba(37,99,235,.10);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+/* CARDS */
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+/* INFO BOXES */
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+/* CODE */
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+/* ACCORDION */
+details{border-radius:var(--radius);border:3px solid var(--border);
+  background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+/* TABLES */
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+/* DIAGRAM */
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+/* TRACER CONTROLS */
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.spd-row{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;
+  color:var(--muted);margin-bottom:10px}
+.spd-row input{flex:1;accent-color:var(--accent2)}
+.tside{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:14px;position:sticky;top:6px}
+.tracer-wrap{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.sp-phase{font-size:14px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;
+  color:var(--muted);margin-bottom:3px}
+.sp-round{font-weight:900;font-size:20px;margin-bottom:5px}
+.sp-exp{font-size:17px;font-weight:700;line-height:1.5;padding:9px 11px;
+  border-radius:9px;border-left:4px solid var(--border)}
+.sp-exp.ok{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07)}
+.sp-exp.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07)}
+.sp-exp.init{border-left-color:var(--accent2);background:rgba(37,99,235,.08)}
+.slog{max-height:150px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.sli{padding:3px 5px;border-radius:4px;color:#6b7280;line-height:1.4;cursor:pointer}
+.sli:hover{background:rgba(255,255,255,.07)}
+.sli.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.sli.ok{color:#34d399}.sli.warn{color:#fbbf24}.sli.bad{color:#fb7185}
+/* DIST BOX */
+.dist-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ditem{display:flex;flex-direction:column;align-items:center;background:var(--panel);
+  border:3px solid var(--border);border-radius:10px;padding:7px 10px;min-width:56px;transition:all .25s}
+.di-lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.di-val{font-size:18px;font-weight:900;font-family:ui-monospace,monospace}
+.ditem.art{border-color:var(--bad);background:rgba(185,28,28,.10)}
+.ditem.bridge{border-color:var(--warn);background:rgba(180,83,9,.09)}
+.ditem.ok{border-color:var(--good);background:rgba(15,118,110,.09)}
+.ditem.cur{border-color:#6d28d9;background:rgba(109,40,217,.10)}
+.ditem.popped{border-color:var(--bad);background:rgba(185,28,28,.10);opacity:.5}
+.ditem.stack{border-color:var(--accent2);background:rgba(37,99,235,.10)}
+@keyframes cellFlash{0%,100%{transform:scale(1)}40%{transform:scale(1.14)}}
+.ditem.flash{animation:cellFlash .5s ease}
+/* FORMULA */
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+/* TABS */
+.tab-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab-btn{padding:9px 16px;border-radius:999px;border:2.5px solid var(--border);
+  background:var(--panel);font-size:17px;font-weight:900;cursor:pointer;
+  transition:all .18s;color:var(--text)}
+.tab-btn:hover{border-color:var(--accent2)}
+.tab-btn.active{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;border-color:transparent}
+.tab-pane{display:none}.tab-pane.active{display:block}
+/* PROB CARD */
+.prob-card{border:3px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;margin:14px 0;background:var(--panel2)}
+.prob-title{font-weight:950;font-size:22px;margin-bottom:8px;display:flex;
+  align-items:center;gap:10px;flex-wrap:wrap}
+.prob-link{font-size:16px;font-weight:800;color:var(--link);
+  margin-left:auto;padding:6px 14px;border:2px solid var(--border);
+  border-radius:999px;background:var(--panel);white-space:nowrap}
+/* KS */
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+.must li{list-style:none;padding-left:0}.must li::before{content:"→ ";color:var(--accent2);font-weight:950}
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:18px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:7px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3)}
+.step-ctr{font-size:14px;font-weight:700;color:var(--muted);text-align:right;margin-top:4px}
+/* SIDEBAR FOOTER */
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+/* PAGE FOOTER */
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+/* RESPONSIVE */
+@media(max-width:1300px){
+  .tracer-wrap{grid-template-columns:1fr}.tside{position:static}
+  .grid2,.grid3,.ks-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}}
+</style>
+</head>
+<script>
+(function(){
+  var t=localStorage.getItem('ca-theme');
+  if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light';}
+  document.documentElement.setAttribute('data-theme',t);
+})();
+</script>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation sidebar" aria-controls="sidebar" aria-expanded="true">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">MS</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Monotonic Stack &amp; Deque</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations</div>
+    <a href="#s0">Overview<small>What you'll learn &amp; why it matters</small></a>
+    <a href="#s1">1. Problem Definition<small>What monotonic structures solve</small></a>
+    <a href="#s2">2. Intuition from Scratch<small>Why popping is safe</small></a>
+    <a href="#s3">3. Visual Mental Model<small>Candidate survival diagram</small></a>
+    <a href="#s4">4. Formal Abstraction<small>Vocabulary &amp; structure</small></a>
+    <a href="#s5">5. Key Observations<small>Two ways an answer appears</small></a>
+    <div class="grpTitle">Theory &amp; Proof</div>
+    <a href="#s6">6. Algorithm Explanation<small>Master template walkthrough</small></a>
+    <a href="#s7">7. Invariants<small>State, transition, termination</small></a>
+    <a href="#s8">8. Proof of Correctness<small>NGE proven from scratch</small></a>
+    <a href="#s9">9. Complexity Analysis<small>Why nested while is O(n)</small></a>
+    <div class="grpTitle">Implementation</div>
+    <a href="#s10">10. Template Philosophy<small>One family, four nearest variants</small></a>
+    <a href="#s11">11. Master Templates<small>Stack + Deque AC-ready code</small></a>
+    <a href="#s12">12. Line-by-Line<small>Every detail explained</small></a>
+    <a href="#s13">13. Edge Cases<small>Centralized audit</small></a>
+    <a href="#s14">14. Pitfalls<small>The bugs that break submissions</small></a>
+    <a href="#stracer">Stack Tracer<small>Step-by-step Next Greater Element</small></a>
+    <a href="#dtracer">Deque Tracer<small>Sliding window maximum live</small></a>
+    <div class="grpTitle">Decision &amp; Variants</div>
+    <a href="#s15">15. Decision Guide<small>Which tool for which problem?</small></a>
+    <a href="#s16">16. Variants &amp; Extensions<small>Value queue, two-stack queue, 2D, circular, online</small></a>
+    <div class="grpTitle">Problems</div>
+    <a href="#s17a">Stack Problems<small>NGE, Daily Temps, Histogram, Trap…</small></a>
+    <a href="#s17b">Contribution Problems<small>Subarray min/range sum</small></a>
+    <a href="#s17c">Greedy Stack Problems<small>Remove K Digits, Dup Letters…</small></a>
+    <a href="#s17d">Deque Problems<small>Sliding max, Jump VI, Shortest Sum…</small></a>
+    <a href="#summary">18. Final Summary &amp; Checklist</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br/><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Monotonic Stack &amp; Deque</h1>
+    <div class="subtitle">Stack &amp; Deque With Order Discipline — Complete Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- 0. OVERVIEW -->
+<section class="card" id="s0">
+  <h2>What You'll Learn</h2>
+  <p>A monotonic stack or monotonic deque is <strong>not</strong> a new magical data structure. It is an ordinary stack or deque used with one extra rule: <em>keep the stored candidates in increasing or decreasing order by removing candidates that are no longer useful</em>. From that single discipline emerge linear-time algorithms for an entire family of problems where naive scans are quadratic.</p>
+  <div class="grid2">
+    <div><div class="chips">
+      <span class="chip">Next/Previous Greater &amp; Smaller</span>
+      <span class="chip">Daily Temperatures</span>
+      <span class="chip">Histogram Rectangles</span>
+      <span class="chip">Trapping Rain Water</span>
+      <span class="chip">Subarray Min Contribution</span>
+      <span class="chip">132 Pattern · Width Ramp</span>
+    </div></div>
+    <div><div class="chips">
+      <span class="chip p">Sliding Window Max/Min</span>
+      <span class="chip p">Jump Game VI</span>
+      <span class="chip p">Shortest Subarray Sum ≥ K</span>
+      <span class="chip p">Longest Diff-Bounded Subarray</span>
+      <span class="chip w">Remove K Digits / Duplicate Letters</span>
+      <span class="chip g">CF Array Collapse (DP + stack)</span>
+    </div></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Family</th><th>Brute Force</th><th>Monotonic Tool</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>Nearest greater/smaller</td><td>Inner scan per index</td><td class="cy">Monotonic stack</td><td class="cy">O(n)</td></tr>
+      <tr><td>Boundary-of-rectangle</td><td>O(n²) per bar</td><td class="cy">Monotonic stack</td><td class="cy">O(n)</td></tr>
+      <tr><td>Subarray contribution</td><td>O(n²) subarrays</td><td class="cy">Two stacks (prev/next smaller)</td><td class="cy">O(n)</td></tr>
+      <tr><td>Sliding window max/min</td><td>O(nk) rescan</td><td class="cy">Monotonic deque</td><td class="cy">O(n)</td></tr>
+      <tr><td>DP over moving range</td><td>O(nk) DP</td><td class="cy">Monotonic deque</td><td class="cy">O(n)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-blue"><i>🔥</i><p><strong>Core Promise:</strong> Each element is pushed at most once and popped at most once. The "nested while" inside a "for" is amortized linear. You will leave this tutorial able to <em>recognize</em> a monotonic problem at sight, pick the correct strictness, and write the template from memory.</p></div>
+</section>
+
+
+<!-- 1. PROBLEM DEFINITION -->
+<section class="card" id="s1">
+  <h2>1. Problem Definition</h2>
+  <p>Monotonic structures are mainly used when the problem reduces to one of these patterns: <em>nearest greater element, nearest smaller element, previous greater/smaller, next greater/smaller, first warmer day, first cheaper or equal price, the boundary of a rectangle, visibility until a taller blocker, contribution of an element as minimum or maximum of subarrays, sliding-window maximum or minimum, DP transition over a moving range, or prefix-sum range optimization.</em></p>
+  <p>The reason they are powerful is that many brute-force solutions look like this:</p>
+<pre><code>for each i:
+    scan left or right until you find the first useful element</code></pre>
+  <p>That is often O(n²). A monotonic stack/deque keeps only the candidates that may still matter, so each element is inserted once and removed at most once, giving O(n).</p>
+  <h3>The two questions every monotonic problem asks</h3>
+  <div class="grid2">
+    <div class="ib ib-blue" style="flex-direction:column">
+      <strong style="font-size:19px">Question A — Direction &amp; relation</strong>
+      <p style="margin:6px 0 0">Are we looking <em>left or right</em>? Are we looking for something <em>greater or smaller</em>? These four combinations cover almost all stack problems.</p>
+    </div>
+    <div class="ib ib-purple" style="flex-direction:column">
+      <strong style="font-size:19px">Question B — Strictness</strong>
+      <p style="margin:6px 0 0">Does <em>equal</em> count? "Strictly greater" vs "greater or equal" decides whether the comparison uses <code class="ic">&lt;</code> or <code class="ic">&lt;=</code> in the pop condition. Subtle, but it changes correctness.</p>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Term</th><th>Equality allowed?</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>strictly increasing</td><td class="cr">No</td><td>[1,2,3]</td></tr>
+      <tr><td>non-decreasing</td><td class="cy">Yes</td><td>[1,2,2,3]</td></tr>
+      <tr><td>strictly decreasing</td><td class="cr">No</td><td>[5,4,3]</td></tr>
+      <tr><td>non-increasing</td><td class="cy">Yes</td><td>[5,4,4,2]</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>Vocabulary discipline:</strong> never say "strictly increasing including equal" — that is contradictory. Pick one of the four exact phrases above and stay consistent throughout the problem.</p></div>
+</section>
+
+<!-- 2. INTUITION FROM SCRATCH -->
+<section class="card" id="s2">
+  <h2>2. Intuition from Scratch</h2>
+  <h3>Ordinary stack vs monotonic stack</h3>
+  <p>An ordinary stack is LIFO — you push and pop without any rule about the values. A monotonic stack is still a stack, but <strong>before pushing a new element, we pop elements that break the desired order</strong>. That is the entire definition.</p>
+  <p>Suppose we want an <em>increasing stack</em> and the input is <code class="ic">[2,1,6,3,5,4,2]</code>. We process left to right:</p>
+<pre><code>push 2        stack = [2]
+1 pops 2      stack = [1]
+push 6        stack = [1, 6]
+3 pops 6      stack = [1, 3]
+push 5        stack = [1, 3, 5]
+4 pops 5      stack = [1, 3, 4]
+2 pops 4,3    stack = [1, 2]</code></pre>
+  <p>The final stack <code class="ic">[1,2]</code> is not the answer by itself. The important part is <em>what happened during popping</em>.</p>
+  <div class="ib ib-green"><i>💡</i><p><strong>Core teaching phrase:</strong> what pops you is your next answer on the right; what remains below you is your previous answer on the left.</p></div>
+  <h3>Why popping is safe — the deep intuition</h3>
+  <p>Suppose we are solving <em>Next Greater Element</em>: for every index <code class="ic">i</code>, we want the first index <code class="ic">j &gt; i</code> with <code class="ic">a[j] &gt; a[i]</code>. Brute force scans inwards from each <code class="ic">i</code> and is O(n²).</p>
+  <p>Now imagine scanning left to right and keeping unresolved elements on a stack. With <code class="ic">[5, 3, 2, 9, 4]</code>:</p>
+<pre><code>5 waits for a greater element
+3 waits for a greater element
+2 waits for a greater element
+Stack: [5, 3, 2]
+
+Now we see 9.
+9 &gt; 2  → 9 is the next greater for 2.
+9 &gt; 3  → 9 is the next greater for 3.
+9 &gt; 5  → 9 is the next greater for 5.
+After this, 9 itself waits for a future greater element.</code></pre>
+  <p>This is the magic moment: <strong>one current value can resolve many previous unresolved values in a single sweep</strong>. The total amount of work is bounded by the number of pushes plus the number of pops, both of which are at most <code class="ic">n</code>. That is the entire reason monotonic structures are linear.</p>
+</section>
+
+<!-- 3. VISUAL MENTAL MODEL -->
+<section class="card" id="s3">
+  <h2>3. Visual Mental Model</h2>
+  <p>Think of the stack as a <em>line of candidates waiting for help</em>. Each candidate stays only as long as it is still potentially useful. The moment a new element proves the candidate cannot be the answer for anyone again, the candidate is destroyed.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader"><div class="diagramTitle">Decreasing-stack snapshot for Next Greater Element</div></div>
+    <svg class="graphsvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arr-mm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#b91c1c"/>
+        </marker>
+      </defs>
+      <rect x="40" y="60" width="80" height="100" rx="10" fill="rgba(37,99,235,.15)" stroke="#2563eb" stroke-width="3"/>
+      <text x="80" y="115" text-anchor="middle" font-size="32" font-weight="900" fill="#2563eb">10</text>
+      <text x="80" y="180" text-anchor="middle" font-size="14" font-weight="800" fill="#334155">bottom</text>
+
+      <rect x="135" y="80" width="70" height="80" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="3"/>
+      <text x="170" y="130" text-anchor="middle" font-size="28" font-weight="900" fill="#2563eb">7</text>
+
+      <rect x="220" y="100" width="60" height="60" rx="10" fill="rgba(185,28,28,.15)" stroke="#b91c1c" stroke-width="3" stroke-dasharray="6,4"/>
+      <text x="250" y="140" text-anchor="middle" font-size="24" font-weight="900" fill="#b91c1c">3</text>
+      <text x="250" y="180" text-anchor="middle" font-size="14" font-weight="800" fill="#b91c1c">popped</text>
+
+      <line x1="430" y1="110" x2="295" y2="130" stroke="#b91c1c" stroke-width="3" marker-end="url(#arr-mm)"/>
+
+      <rect x="450" y="50" width="90" height="110" rx="10" fill="rgba(15,118,110,.15)" stroke="#0f766e" stroke-width="3"/>
+      <text x="495" y="115" text-anchor="middle" font-size="36" font-weight="900" fill="#0f766e">8</text>
+      <text x="495" y="180" text-anchor="middle" font-size="14" font-weight="800" fill="#0f766e">current i</text>
+
+      <text x="320" y="35" font-size="18" font-weight="900" fill="#334155">8 arrives → it pops 3 (and would pop 7 too)</text>
+    </svg>
+    <div class="legend">
+      <span><span class="swatch" style="background:#2563eb"></span>candidates still alive</span>
+      <span><span class="swatch" style="background:#b91c1c"></span>popped (resolved by current)</span>
+      <span><span class="swatch" style="background:#0f766e"></span>current element</span>
+    </div>
+  </div>
+  <p>What just happened in that snapshot:</p>
+<pre><code>stack before:  [10, 7, 3]    current = 8
+
+8 pops 3   →  3's next greater is 8
+8 pops 7   →  7's next greater is 8
+10 stays   →  10 is the previous greater of 8
+push 8
+
+stack after:   [10, 8]</code></pre>
+  <p>The popped elements got their answer from <em>the right</em> (the current element). The element that survived gave the new arrival its answer from <em>the left</em>. This is exactly the dual nature of the technique: <strong>the same single sweep simultaneously answers next-side and previous-side queries.</strong></p>
+</section>
+
+<!-- 4. FORMAL ABSTRACTION -->
+<section class="card" id="s4">
+  <h2>4. Formal Abstraction</h2>
+  <h3>The four canonical relations</h3>
+  <p>Almost every stack problem reduces to one of these four nearest-element queries. The pop condition is dictated by which one you want and whether equality counts. Memorize the structure, not the table.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Wanted answer</th><th>Pop condition (strict)</th><th>Pop condition (or-equal)</th><th>Meaning of pop</th></tr></thead>
+    <tbody>
+      <tr><td>Next Greater</td><td><code class="ic">a[top] &lt; a[i]</code></td><td><code class="ic">a[top] &lt;= a[i]</code></td><td>current is greater → resolves popped</td></tr>
+      <tr><td>Next Smaller</td><td><code class="ic">a[top] &gt; a[i]</code></td><td><code class="ic">a[top] &gt;= a[i]</code></td><td>current is smaller → resolves popped</td></tr>
+      <tr><td>Previous Greater</td><td><code class="ic">a[top] &lt;= a[i]</code></td><td><code class="ic">a[top] &lt; a[i]</code></td><td>top is invalid for current</td></tr>
+      <tr><td>Previous Smaller</td><td><code class="ic">a[top] &gt;= a[i]</code></td><td><code class="ic">a[top] &gt; a[i]</code></td><td>top is invalid for current</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-purple"><i>📐</i><p><strong>Why the asymmetry between Next-side and Previous-side rules?</strong> Next-side scans <em>resolve popped</em> indices, so you pop while the popped element <em>has not yet found its answer</em>. Previous-side scans <em>read</em> the top after cleanup, so you pop while the top <em>fails to be a valid answer for the current</em>. The two phrasings produce different comparison directions for the same problem.</p></div>
+  <h3>Two equivalent scan styles</h3>
+  <p>The same problem can be implemented two ways. Both are correct; pick the one whose mental model matches the question.</p>
+  <div class="grid2">
+    <div class="ks-block">
+      <h4>Style A — Query style (read from stack)</h4>
+      <p style="margin:0 0 8px;font-weight:700">For <em>previous greater</em>: scan left → right, pop until top is strictly greater than current, then read the top.</p>
+<pre><code>for (int i=0;i&lt;n;i++){
+    while(!st.empty() &amp;&amp; a[st.back()]&lt;=a[i])
+        st.pop_back();
+    ans[i] = st.empty()?-1:st.back();
+    st.push_back(i);
+}</code></pre>
+    </div>
+    <div class="ks-block">
+      <h4>Style B — Resolution style (current pops)</h4>
+      <p style="margin:0 0 8px;font-weight:700">For <em>next greater</em>: scan left → right, current pops smaller elements and writes their answer.</p>
+<pre><code>for (int i=0;i&lt;n;i++){
+    while(!st.empty() &amp;&amp; a[st.back()]&lt;a[i]){
+        ans[st.back()] = a[i];
+        st.pop_back();
+    }
+    st.push_back(i);
+}</code></pre>
+    </div>
+  </div>
+  <h3>Stack stores indices, not values</h3>
+  <p>By default, store indices. From an index you can recover the value, the position, the distance, the width, and you avoid duplicate-key collisions when values repeat. Store raw values only when (a) values are guaranteed unique and (b) the output is values, not positions — for example, the value-to-value map in LeetCode 496.</p>
+</section>
+
+<!-- 5. KEY OBSERVATIONS -->
+<section class="card" id="s5">
+  <h2>5. Key Observations — Two Ways an Answer Appears</h2>
+  <h3>5.1 Current resolves popped elements</h3>
+  <p>This is the natural style for next-side queries. The current element <code class="ic">i</code> is the first valid answer for everything it pops:</p>
+<pre><code>while (!st.empty() &amp;&amp; a[st.back()] &lt; a[i]) {
+    ans[st.back()] = a[i];   // i is the next greater for st.back()
+    st.pop_back();
+}
+st.push_back(i);</code></pre>
+  <h3>5.2 Current reads its own answer from the remaining top</h3>
+  <p>This is the natural style for previous-side queries. After cleaning up invalid candidates, the surviving top is the answer for <code class="ic">i</code>:</p>
+<pre><code>while (!st.empty() &amp;&amp; a[st.back()] &lt;= a[i]) {
+    st.pop_back();
+}
+ans[i] = st.empty() ? -1 : a[st.back()];   // nearest previous greater
+st.push_back(i);</code></pre>
+  <h3>5.3 The histogram pattern: pop yields BOTH boundaries at once</h3>
+  <p>For rectangle and contribution problems we exploit a beautiful trick: when the current bar pops a previous bar, the popped bar's <em>right boundary</em> is the current index, and the popped bar's <em>left boundary</em> is whatever is still on the stack underneath it. Two answers, one pop.</p>
+<pre><code>while (!st.empty() &amp;&amp; h[st.back()] &gt; h[i]) {
+    int mid   = st.back(); st.pop_back();
+    int left  = st.empty() ? -1 : st.back();   // previous smaller
+    int right = i;                             // next smaller (current)
+    long long width = right - left - 1;
+    long long area  = (long long)h[mid] * width;
+    best = max(best, area);
+}</code></pre>
+  <p>The same idea drives Trapping Rain Water, Largest Rectangle, and Sum of Subarray Minimums. Once you see "boundary on both sides as a popped element collapses", you have understood the deepest move in the entire technique.</p>
+</section>
+
+<!-- 6. ALGORITHM EXPLANATION -->
+<section class="card" id="s6">
+  <h2>6. Algorithm / Method Explanation</h2>
+  <h3>The master monotonic stack template</h3>
+<pre><code>vector&lt;int&gt; st; // stores indices
+
+for (int i = 0; i &lt; n; i++) {
+    while (!st.empty() &amp;&amp; condition(a[st.back()], a[i])) {
+        int idx = st.back();
+        st.pop_back();
+        // optionally process idx because current i resolved it
+    }
+    // optionally read st.back() as previous boundary/answer
+
+    st.push_back(i);
+}</code></pre>
+  <p>The skeleton is identical across <em>every</em> stack problem in this tutorial. You only change three things: the comparison operator (strict vs or-equal), what you do to a popped index, and what you read from the new top after popping. That's it.</p>
+  <h3>The master monotonic deque template</h3>
+  <p>A deque is needed when elements can <em>expire from the front</em> — that is, become invalid simply because the window has moved past them. A stack cannot remove its bottom efficiently, so we upgrade to a deque.</p>
+<pre><code>deque&lt;int&gt; dq; // stores indices, values monotone
+
+for (int i = 0; i &lt; n; i++) {
+    // (1) expire indices that fell out of the window
+    while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k)
+        dq.pop_front();
+
+    // (2) pop dominated candidates from the back
+    while (!dq.empty() &amp;&amp; a[dq.back()] &lt;= a[i])
+        dq.pop_back();
+
+    dq.push_back(i);
+
+    // (3) once the window is full, the front is the answer
+    if (i &gt;= k - 1)
+        ans.push_back(a[dq.front()]);
+}</code></pre>
+  <p>The three deque operations correspond to three logical jobs: <em>expire stale indices</em>, <em>kill dominated candidates</em>, and <em>read the answer from the front</em>. Every sliding-window monotonic problem is some recombination of these three jobs.</p>
+</section>
+
+<!-- 7. INVARIANTS -->
+<section class="card" id="s7">
+  <h2>7. Invariants</h2>
+  <p>An invariant is a property that holds <em>at every iteration boundary</em> of the algorithm. For monotonic structures, three invariants completely characterize correctness.</p>
+  <h3>7.1 State invariant — values are monotone</h3>
+  <p>For Next Greater (Style B), after each iteration the stack stores indices whose values are non-increasing from bottom to top:</p>
+  <div class="formula">a[st[0]] ≥ a[st[1]] ≥ … ≥ a[st.back()]</div>
+  <p>If the relation is "or-equal", duplicates are allowed; if it is "strict", duplicates are forbidden. Whichever choice you make, the invariant must hold after every iteration — including after a sequence of pops, before the push.</p>
+  <h3>7.2 Unresolved invariant — every stack element is still waiting</h3>
+  <p>In the resolution style, every index currently on the stack has <em>not yet found its next greater</em>. The moment an index finds its answer, it is popped. This is what makes the work amortized linear: an index pays a constant amount of work when it enters and a constant amount when it leaves, and it leaves at most once.</p>
+  <h3>7.3 Pop invariant — popping is always optimal</h3>
+  <p>When index <code class="ic">x</code> is popped by current index <code class="ic">i</code>, the current <code class="ic">i</code> is <em>the first</em> greater element to the right of <code class="ic">x</code>. Not "some" greater element, not "an eventual" greater element — <strong>the very first</strong>. The proof is given in the next section.</p>
+  <h3>7.4 Termination invariant — leftover elements have no answer</h3>
+  <p>At the end of the scan, every index still in the stack has no next greater element to the right. The empty-stack check at the end is therefore correct: those indices' answers are <code class="ic">-1</code> (or whatever sentinel you chose).</p>
+  <h3>7.5 Deque invariants</h3>
+  <p>For sliding window maximum the three invariants are: <em>(1) every index in the deque is inside the current window</em>, <em>(2) the values are decreasing from front to back</em>, and <em>(3) the front is the maximum of the window</em>. Each pop_front maintains (1), each pop_back maintains (2), and the conjunction implies (3).</p>
+</section>
+
+<!-- 8. PROOF OF CORRECTNESS -->
+<section class="card" id="s8">
+  <h2>8. Proof of Correctness — Next Greater Element</h2>
+  <p>We prove that the resolution-style algorithm correctly assigns the next greater element to every index.</p>
+  <details open>
+    <summary>Theorem &amp; proof <span class="hint">click to collapse</span></summary>
+    <div class="detailsBody">
+      <h3>Claim</h3>
+      <p>Let the algorithm process the array <code class="ic">a[0..n-1]</code> left to right with a stack of unresolved indices and pop condition <code class="ic">a[st.back()] &lt; a[i]</code>. Then for every index <code class="ic">x</code>: the value written to <code class="ic">ans[x]</code> equals the first index <code class="ic">j &gt; x</code> with <code class="ic">a[j] &gt; a[x]</code>, or <code class="ic">-1</code> if no such index exists.</p>
+      <h3>Step 1 — When ans[x] is written, it is a valid greater element</h3>
+      <p>Index <code class="ic">x</code> is popped exactly when some current index <code class="ic">i</code> satisfies <code class="ic">a[i] &gt; a[x]</code> (the strict pop condition). So whatever value gets assigned to <code class="ic">ans[x]</code>, it is greater than <code class="ic">a[x]</code> and lies to the right.</p>
+      <h3>Step 2 — It is the FIRST such element</h3>
+      <p>Suppose, for contradiction, that there exists an index <code class="ic">k</code> with <code class="ic">x &lt; k &lt; i</code> and <code class="ic">a[k] &gt; a[x]</code>. Consider the moment the scan reached <code class="ic">k</code>. At that moment <code class="ic">x</code> was still on the stack (since it remained until <code class="ic">i</code> by assumption). The pop condition would have triggered: <code class="ic">a[x] &lt; a[k]</code> means we pop <code class="ic">x</code> at iteration <code class="ic">k</code>, contradicting "x stayed until i". Therefore no such <code class="ic">k</code> exists, and <code class="ic">i</code> is the first greater element to the right of <code class="ic">x</code>. ∎</p>
+      <h3>Step 3 — Indices that are never popped have no answer</h3>
+      <p>If index <code class="ic">x</code> remains on the stack at the end, then for every <code class="ic">j &gt; x</code> the pop condition <code class="ic">a[x] &lt; a[j]</code> never triggered (otherwise <code class="ic">x</code> would have been popped). Hence no <code class="ic">j &gt; x</code> satisfies <code class="ic">a[j] &gt; a[x]</code>, and <code class="ic">ans[x] = -1</code> is correct.</p>
+      <h3>Conclusion</h3>
+      <p>Together, Steps 1–3 establish that <code class="ic">ans[x]</code> equals the first index with a strictly greater value to the right, for every <code class="ic">x</code>. The same argument, with reversed comparisons or scanning direction, proves the other three nearest-relation variants.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 9. COMPLEXITY -->
+<section class="card" id="s9">
+  <h2>9. Complexity Analysis</h2>
+  <h3>Why nested while is still O(n)</h3>
+  <p>The code looks like this:</p>
+<pre><code>for (int i = 0; i &lt; n; i++) {
+    while (!st.empty() &amp;&amp; condition) {
+        st.pop_back();
+    }
+    st.push_back(i);
+}</code></pre>
+  <p>At first glance the nested <code class="ic">while</code> inside a <code class="ic">for</code> looks like O(n²). It is not. The trick is to <strong>count operations on the stack rather than nesting depth</strong>:</p>
+  <div class="formula">total work ≤ n pushes + n pops = 2n = O(n)</div>
+  <p>Each index is pushed exactly once. Each index is popped at most once. Therefore the total number of inner-loop iterations across the entire run is at most <code class="ic">n</code>, regardless of how the iterations distribute across outer steps. The technique behind this argument is called <em>amortized analysis</em> — specifically, the aggregate method.</p>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>"Average case" vs "amortized":</strong> these are not the same. Average case requires a probability distribution over inputs. Amortized analysis is a worst-case statement about a sequence of operations. Monotonic stacks are <strong>worst-case amortized O(n)</strong>, not "average O(n)".</p></div>
+  <h3>Deque complexity</h3>
+  <p>The same argument applies. Each index is push_back-ed once and removed once (either by pop_back during dominance pruning or by pop_front during expiry). Total work is bounded by 2n.</p>
+  <h3>Space</h3>
+  <p>Both structures use O(n) auxiliary space in the worst case (think strictly increasing input for a "next greater" stack, or a strictly increasing window for sliding-max deque).</p>
+</section>
+
+<!-- 10. TEMPLATE PHILOSOPHY -->
+<section class="card" id="s10">
+  <h2>10. Core Template Philosophy</h2>
+  <h3>One family, four nearest variants</h3>
+  <p>Rather than memorizing four separate algorithms, treat them as <em>four configurations of one template</em>. The skeleton is shared; the differences are surgical. This is the same philosophy that runs through Coach Academy's Dijkstra and DSU tutorials: <strong>internalize the shape, not the special cases</strong>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Variant</th><th>Scan</th><th>Stack monotonicity</th><th>Pop while</th><th>Read answer from</th></tr></thead>
+    <tbody>
+      <tr><td>Previous Greater</td><td class="cy">left → right</td><td>decreasing</td><td><code class="ic">a[top] &lt;= a[i]</code></td><td>remaining top</td></tr>
+      <tr><td>Previous Smaller</td><td class="cy">left → right</td><td>increasing</td><td><code class="ic">a[top] &gt;= a[i]</code></td><td>remaining top</td></tr>
+      <tr><td>Next Greater</td><td class="cy">right → left</td><td>decreasing</td><td><code class="ic">a[top] &lt;= a[i]</code></td><td>remaining top</td></tr>
+      <tr><td>Next Smaller</td><td class="cy">right → left</td><td>increasing</td><td><code class="ic">a[top] &gt;= a[i]</code></td><td>remaining top</td></tr>
+    </tbody>
+  </table></div>
+  <p>Notice the perfect symmetry: <em>previous</em> and <em>next</em> simply reverse the scan direction; <em>greater</em> and <em>smaller</em> simply flip the comparison. Once you see this, you stop memorizing and start deriving.</p>
+  <div class="ib ib-blue"><i>🧭</i><p><strong>Naming conventions used everywhere in this tutorial:</strong> <code class="ic">a[]</code> for the input, <code class="ic">st</code> for the stack of indices, <code class="ic">dq</code> for the monotonic deque, <code class="ic">ans[]</code> for the output, and <code class="ic">i</code> for the current index. Keeping naming consistent is half of being able to write these from memory in a contest.</p></div>
+</section>
+
+<!-- 11. MASTER TEMPLATES -->
+<section class="card" id="s11">
+  <h2>11. Master Implementations</h2>
+  <h3>11.1 Stack: four nearest-element templates</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// Returns indices; -1 if no answer.
+vector&lt;int&gt; previousGreaterIndex(const vector&lt;int&gt;&amp; a) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans(n, -1), st;
+    for (int i = 0; i &lt; n; i++) {
+        while (!st.empty() &amp;&amp; a[st.back()] &lt;= a[i])
+            st.pop_back();
+        if (!st.empty()) ans[i] = st.back();
+        st.push_back(i);
+    }
+    return ans;
+}
+
+vector&lt;int&gt; previousSmallerIndex(const vector&lt;int&gt;&amp; a) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans(n, -1), st;
+    for (int i = 0; i &lt; n; i++) {
+        while (!st.empty() &amp;&amp; a[st.back()] &gt;= a[i])
+            st.pop_back();
+        if (!st.empty()) ans[i] = st.back();
+        st.push_back(i);
+    }
+    return ans;
+}
+
+vector&lt;int&gt; nextGreaterIndex(const vector&lt;int&gt;&amp; a) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans(n, -1), st;
+    for (int i = n - 1; i &gt;= 0; i--) {
+        while (!st.empty() &amp;&amp; a[st.back()] &lt;= a[i])
+            st.pop_back();
+        if (!st.empty()) ans[i] = st.back();
+        st.push_back(i);
+    }
+    return ans;
+}
+
+vector&lt;int&gt; nextSmallerIndex(const vector&lt;int&gt;&amp; a) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans(n, -1), st;
+    for (int i = n - 1; i &gt;= 0; i--) {
+        while (!st.empty() &amp;&amp; a[st.back()] &gt;= a[i])
+            st.pop_back();
+        if (!st.empty()) ans[i] = st.back();
+        st.push_back(i);
+    }
+    return ans;
+}</code></pre>
+
+  <h3>11.2 Deque: sliding window maximum and minimum</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; slidingWindowMaximum(const vector&lt;int&gt;&amp; a, int k) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans;
+    deque&lt;int&gt; dq; // indices, values strictly decreasing-or-equal-aware
+
+    for (int i = 0; i &lt; n; i++) {
+        // (1) expire from the front
+        while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k)
+            dq.pop_front();
+        // (2) dominance prune from the back
+        while (!dq.empty() &amp;&amp; a[dq.back()] &lt;= a[i])
+            dq.pop_back();
+        dq.push_back(i);
+        // (3) emit answer once the window is full
+        if (i &gt;= k - 1)
+            ans.push_back(a[dq.front()]);
+    }
+    return ans;
+}
+
+vector&lt;int&gt; slidingWindowMinimum(const vector&lt;int&gt;&amp; a, int k) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans;
+    deque&lt;int&gt; dq; // values increasing
+
+    for (int i = 0; i &lt; n; i++) {
+        while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k)
+            dq.pop_front();
+        while (!dq.empty() &amp;&amp; a[dq.back()] &gt;= a[i])
+            dq.pop_back();
+        dq.push_back(i);
+        if (i &gt;= k - 1)
+            ans.push_back(a[dq.front()]);
+    }
+    return ans;
+}</code></pre>
+</section>
+
+<!-- 12. LINE-BY-LINE -->
+<section class="card" id="s12">
+  <h2>12. Line-by-Line Code Explanation</h2>
+  <h3>The stack template, decoded</h3>
+<pre><code>vector&lt;int&gt; ans(n, -1), st;</code></pre>
+  <p>Two vectors: the answer is initialized to <code class="ic">-1</code> (the "no valid answer" sentinel), and <code class="ic">st</code> stores indices, never values. Storing indices gives access to value, position, distance, width, expiry, and avoids any aliasing trouble when values repeat.</p>
+<pre><code>while (!st.empty() &amp;&amp; a[st.back()] &lt;= a[i])
+    st.pop_back();</code></pre>
+  <p>This is the "kill invalid candidates" step. For <em>previous greater</em>, any value less than or equal to the current cannot be the previous greater for the current — and crucially, it cannot be the previous greater for any future element that the current dominates either. Removing it now costs nothing later.</p>
+<pre><code>if (!st.empty()) ans[i] = st.back();</code></pre>
+  <p>After cleanup, the surviving top is the nearest previous greater. If the stack is empty, there is no such element and we leave the sentinel.</p>
+<pre><code>st.push_back(i);</code></pre>
+  <p>The current index becomes a candidate for future elements.</p>
+  <h3>The deque template, decoded</h3>
+<pre><code>while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k)
+    dq.pop_front();</code></pre>
+  <p>Indices older than <code class="ic">i - k + 1</code> are outside the window of size <code class="ic">k</code> and must go. The condition <code class="ic">dq.front() &lt;= i - k</code> means "front is at position <code class="ic">i - k</code> or earlier", i.e. strictly before the window, so it must be discarded.</p>
+<pre><code>while (!dq.empty() &amp;&amp; a[dq.back()] &lt;= a[i])
+    dq.pop_back();</code></pre>
+  <p>Any value at the back that is less than or equal to the new value is <em>dominated</em>: the new index is both newer and at least as good, so the old back can never again be the maximum of any window where the new element is also present.</p>
+<pre><code>if (i &gt;= k - 1) ans.push_back(a[dq.front()]);</code></pre>
+  <p>Once the first full window has formed (at index <code class="ic">k - 1</code>), every subsequent step yields an answer. The front of the deque is, by the invariant, the maximum of the current window.</p>
+</section>
+
+<!-- 13. EDGE CASES -->
+<section class="card" id="s13">
+  <h2>13. Edge Cases — Centralized Audit</h2>
+  <h3>Stack edge cases</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Edge case</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td>empty array</td><td>Return empty answer; the for-loop naturally does nothing.</td></tr>
+      <tr><td>one element</td><td>No next/previous answer exists; sentinel stays.</td></tr>
+      <tr><td>strictly increasing input</td><td>For "next greater": many pops late; for "previous greater": all answers are <code class="ic">-1</code>.</td></tr>
+      <tr><td>strictly decreasing input</td><td>For "next greater": all answers are <code class="ic">-1</code>; for "previous greater": every answer is the immediate predecessor.</td></tr>
+      <tr><td>all equal values</td><td>Strictness <em>flips</em> the result entirely. Decide whether equal counts.</td></tr>
+      <tr><td>duplicates anywhere</td><td><code class="ic">&lt;</code> vs <code class="ic">&lt;=</code> matters — choose one and document it.</td></tr>
+      <tr><td>large area / product</td><td>Use <code class="ic">long long</code>. Histogram and contribution problems overflow <code class="ic">int</code> easily.</td></tr>
+      <tr><td>circular array</td><td>Use <code class="ic">i % n</code> over a doubled scan; in unresolved-style templates, push only during the first pass to avoid duplicates.</td></tr>
+      <tr><td>output type</td><td>Distinguish value, index, distance, count — they are NOT the same answer.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Deque edge cases</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Edge case</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td><code class="ic">k = 1</code></td><td>Every element is its own window; answer equals the input.</td></tr>
+      <tr><td><code class="ic">k = n</code></td><td>One answer: the global max/min.</td></tr>
+      <tr><td><code class="ic">k &gt; n</code></td><td>No full window; define behavior explicitly (often: return empty).</td></tr>
+      <tr><td>duplicates</td><td>Use <code class="ic">&lt;</code> or <code class="ic">&lt;=</code> consistently in dominance pruning.</td></tr>
+      <tr><td>stale index</td><td>Always expire the front BEFORE reading the answer, never after.</td></tr>
+      <tr><td>negative values</td><td>No issue — comparisons work the same.</td></tr>
+      <tr><td>large DP values</td><td>Use <code class="ic">long long</code> if accumulating sums or scores.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>The duplicate policy for contribution problems</h3>
+  <p>This deserves its own warning. For "Sum of Subarray Minimums" and similar problems, exactly <em>one</em> side should own equality. Two valid configurations exist:</p>
+  <div class="tw"><table>
+    <thead><tr><th>Policy</th><th>Left boundary</th><th>Right boundary</th></tr></thead>
+    <tbody>
+      <tr><td>Option A</td><td>previous strictly smaller</td><td>next smaller-or-equal</td></tr>
+      <tr><td>Option B</td><td>previous smaller-or-equal</td><td>next strictly smaller</td></tr>
+    </tbody>
+  </table></div>
+  <p>If both sides are strict, you under-count by missing subarrays whose minimum repeats. If both sides are non-strict, you over-count by counting the same subarray once for each occurrence of the minimum. The asymmetry is essential.</p>
+</section>
+
+<!-- 14. PITFALLS -->
+<section class="card" id="s14">
+  <h2>14. Common Pitfalls / Bugs</h2>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>⚠ Stack pitfalls</h4>
+      <ul class="mistake">
+        <li>Storing values when output requires indices or distances.</li>
+        <li>Using <code class="ic">&lt;=</code> when "equal" is not a valid answer (or vice versa).</li>
+        <li>Forgetting to initialize <code class="ic">ans</code> with <code class="ic">-1</code> (or whatever your sentinel is).</li>
+        <li>Forgetting <code class="ic">long long</code> on histogram/contribution multiplications.</li>
+        <li>In circular templates, pushing during both passes — leads to duplicate unresolved entries.</li>
+        <li>Pushing in the wrong place (must be after pops, not before).</li>
+        <li>Confusing "next" with "previous" — "next" always means right, "previous" always means left.</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠ Deque pitfalls</h4>
+      <ul class="mistake">
+        <li>Forgetting to expire stale indices from the front before reading the answer.</li>
+        <li>Mixing the dominance comparator (<code class="ic">&lt;</code> vs <code class="ic">&lt;=</code>) — pick one, stay consistent.</li>
+        <li>Reading <code class="ic">dq.front()</code> before the window is full (use <code class="ic">i &gt;= k - 1</code> guard).</li>
+        <li>Using a plain queue when you also need to remove dominated candidates from the back.</li>
+        <li>Using a plain stack when oldest elements must expire — that's the deque-only signal.</li>
+        <li>Forgetting that <code class="ic">dp[dq.front()]</code> reads from <code class="ic">dp</code>, not <code class="ic">a</code>, in DP-over-deque problems.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE STACK TRACER -->
+<section class="card" id="stracer">
+  <h2>Interactive Tracer — Next Greater Element on a Monotonic Stack</h2>
+  <p>Watch a decreasing-stack-of-indices process the array <code class="ic">[5, 3, 2, 9, 4]</code>. Each step shows the comparison the algorithm makes, what gets pushed, what gets popped, and which answers are written. The popping moments are the heart of the technique.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Array: [5, 3, 2, 9, 4] — find next greater element for each</div>
+    </div>
+    <div class="tracer-wrap">
+      <div>
+        <svg id="trSvgS" class="graphsvg" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="ctrl-row">
+          <button class="cbtn" id="trRstS" title="Reset">⟲</button>
+          <button class="cbtn" id="trPrvS" title="Step back">◀</button>
+          <button class="cbtn" id="trPlyS" title="Play / Pause">▶</button>
+          <button class="cbtn" id="trNxtS" title="Step forward">▶|</button>
+          <button class="cbtn" id="trSkpS" title="Skip to end">⏭</button>
+        </div>
+        <div class="spd-row">
+          <span>Speed</span>
+          <input type="range" id="trSpdS" min="0" max="4" step="1" value="2" />
+          <span id="trSpdLblS">1.5×</span>
+        </div>
+        <div class="step-ctr" id="trCtrS">Step 1 / 1</div>
+      </div>
+      <div class="tside">
+        <div class="sp-phase" id="trPhaseS">Init</div>
+        <div class="sp-round" id="trRoundS">→ ready</div>
+        <div class="sp-exp init" id="trExpS">Press ▶ to step through Next Greater Element on [5, 3, 2, 9, 4].</div>
+        <div class="dist-items" id="trAnsS"></div>
+        <div class="slog" id="trLogS"></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#2563eb"></span>currently in stack</span>
+      <span><span class="swatch" style="background:#0f766e"></span>processed (got answer)</span>
+      <span><span class="swatch" style="background:#b91c1c"></span>just popped</span>
+      <span><span class="swatch" style="background:#6d28d9"></span>current index i</span>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEQUE TRACER -->
+<section class="card" id="dtracer">
+  <h2>Interactive Tracer — Sliding Window Maximum on a Monotonic Deque</h2>
+  <p>The deque maintains indices whose values are strictly decreasing from front to back. Watch <code class="ic">[1, 3, -1, -3, 5, 3, 6, 7]</code> with window size <code class="ic">k = 3</code>. Three things happen at each step: stale indices expire from the front, dominated indices die from the back, and the new index pushes in.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Array: [1, 3, -1, -3, 5, 3, 6, 7] · Window k = 3</div>
+    </div>
+    <div class="tracer-wrap">
+      <div>
+        <svg id="trSvgD" class="graphsvg" viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="ctrl-row">
+          <button class="cbtn" id="trRstD" title="Reset">⟲</button>
+          <button class="cbtn" id="trPrvD" title="Step back">◀</button>
+          <button class="cbtn" id="trPlyD" title="Play / Pause">▶</button>
+          <button class="cbtn" id="trNxtD" title="Step forward">▶|</button>
+          <button class="cbtn" id="trSkpD" title="Skip to end">⏭</button>
+        </div>
+        <div class="spd-row">
+          <span>Speed</span>
+          <input type="range" id="trSpdD" min="0" max="4" step="1" value="2" />
+          <span id="trSpdLblD">1.5×</span>
+        </div>
+        <div class="step-ctr" id="trCtrD">Step 1 / 1</div>
+      </div>
+      <div class="tside">
+        <div class="sp-phase" id="trPhaseD">Init</div>
+        <div class="sp-round" id="trRoundD">→ ready</div>
+        <div class="sp-exp init" id="trExpD">Press ▶ to step through Sliding Window Maximum.</div>
+        <div class="dist-items" id="trAnsD"></div>
+        <div class="slog" id="trLogD"></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#2563eb"></span>in deque (alive)</span>
+      <span><span class="swatch" style="background:#0f766e"></span>window front (answer)</span>
+      <span><span class="swatch" style="background:#b91c1c"></span>just popped/expired</span>
+      <span><span class="swatch" style="background:#6d28d9"></span>current index i</span>
+    </div>
+  </div>
+</section>
+
+<!-- 15. DECISION GUIDE -->
+<section class="card" id="s15">
+  <h2>15. Decision / Recognition Guide</h2>
+  <p>Before writing any code, ask yourself the questions in the table below. The answer in the right column tells you exactly which tool to reach for. After enough practice you stop consciously asking — recognition becomes instant.</p>
+  <h3>Quick reflex rules</h3>
+  <div class="tw"><table>
+    <thead><tr><th>If you see…</th><th>Reach for…</th></tr></thead>
+    <tbody>
+      <tr><td>"first / nearest greater on the right"</td><td class="cy">monotonic stack (resolution style)</td></tr>
+      <tr><td>"first / nearest smaller on the left"</td><td class="cy">monotonic stack (query style)</td></tr>
+      <tr><td>"warmer day", "cheaper price", "next taller", "first cheaper-or-equal"</td><td class="cy">monotonic stack — adjust strictness</td></tr>
+      <tr><td>"largest rectangle / boundary until smaller"</td><td class="cy">increasing stack with sentinel flush</td></tr>
+      <tr><td>"contribution as min/max of subarrays"</td><td class="cy">two stacks: prev + next smaller (or greater)</td></tr>
+      <tr><td>"sliding window of size k, max or min"</td><td class="cp">monotonic deque</td></tr>
+      <tr><td>"DP transition over last k states"</td><td class="cp">monotonic deque (read from front)</td></tr>
+      <tr><td>"prefix sum + shortest/longest subarray with sum constraint"</td><td class="cp">monotonic deque on prefix sums</td></tr>
+      <tr><td>"lexicographically smallest subsequence"</td><td class="cp">greedy monotonic stack</td></tr>
+      <tr><td>"circular next greater"</td><td class="cy">virtual doubled scan (i % n)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>The full decision matrix</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Question</th><th>Use</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Need nearest greater/smaller?</td><td>monotonic stack</td><td>O(n) amortized; naive is O(n²)</td></tr>
+      <tr><td>Need current window max/min?</td><td>monotonic deque</td><td>Beats heap's O(n log k)</td></tr>
+      <tr><td>Need DP max/min over last k?</td><td>monotonic deque</td><td>Reduces O(nk) DP to O(n)</td></tr>
+      <tr><td>Need arbitrary range min/max many times?</td><td class="cb">sparse table</td><td>O(1) query after O(n log n) build</td></tr>
+      <tr><td>Need point updates with range queries?</td><td class="cb">segment tree / Fenwick</td><td>Updates need a tree, not a stack</td></tr>
+      <tr><td>Need ALL greater elements (not just nearest)?</td><td class="cr">don't use stack</td><td>Output is potentially Θ(n²)</td></tr>
+      <tr><td>Histogram rectangle?</td><td>increasing stack</td><td>Pop yields both boundaries</td></tr>
+      <tr><td>Prefix sums + "shortest subarray with sum ≥ k"?</td><td class="cp">deque on prefix array</td><td>Negative numbers break two-pointer</td></tr>
+      <tr><td>Trapping Rain Water?</td><td>decreasing-then-pop stack</td><td>Each popped bar is a valley bottom</td></tr>
+      <tr><td>Sorted global order needed?</td><td class="cb">balanced tree / heap</td><td>Stacks preserve original positions</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Common confusion note</h3>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>"Increasing stack" depends on orientation.</strong> Always say <em>"values from bottom to top are non-decreasing"</em> rather than vague "increasing stack". The same physical stack can be called increasing or decreasing depending on which end you look from. Be explicit.</p></div>
+  <div class="ib ib-orange"><i>⚠</i><p><strong>Stack vs deque:</strong> if any element can become invalid simply because <em>time passed</em> (i.e., the window moved past it), you cannot use a stack. The signal is the word <em>window</em> or any phrase like "last k", "within distance d", or "while xj − xi ≤ k".</p></div>
+</section>
+
+<!-- 16. VARIANTS & EXTENSIONS -->
+<section class="card" id="s16">
+  <h2>16. Variants &amp; Extensions</h2>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('vTabs','vt1',this)">A · Value-based monotonic queue</button>
+    <button class="tab-btn" onclick="showTab('vTabs','vt2',this)">B · Two-stack queue with min/max</button>
+    <button class="tab-btn" onclick="showTab('vTabs','vt3',this)">C · 2D sliding window minimum</button>
+    <button class="tab-btn" onclick="showTab('vTabs','vt4',this)">D · Circular next greater</button>
+    <button class="tab-btn" onclick="showTab('vTabs','vt5',this)">E · Online / streaming patterns</button>
+  </div>
+  <div id="vTabs">
+
+    <div id="vt1" class="tab-pane active">
+      <h3>A. Value-based monotonic queue with FIFO pop</h3>
+      <p>Sometimes you know the outgoing value exactly (a true FIFO stream). Then a value-based monotonic queue works without storing indices. This is the right tool for a streaming maximum where elements expire by FIFO order, not by sliding-window index distance.</p>
+<pre><code>struct MonotonicMaxQueue {
+    queue&lt;int&gt; q;
+    deque&lt;int&gt; dq;
+
+    void push(int x) {
+        q.push(x);
+        while (!dq.empty() &amp;&amp; dq.back() &lt; x) dq.pop_back();
+        dq.push_back(x);
+    }
+    void pop() {
+        if (q.empty()) return;
+        if (!dq.empty() &amp;&amp; q.front() == dq.front()) dq.pop_front();
+        q.pop();
+    }
+    int maxValue() const { return dq.front(); }
+};</code></pre>
+      <p><strong>When to use:</strong> elements pop in exact FIFO order, you do not need indices, distances, or positions. <strong>When NOT to use:</strong> classical sliding-window problems — there, the index deque is preferred because it handles duplicates and expiry by position automatically.</p>
+    </div>
+
+    <div id="vt2" class="tab-pane">
+      <h3>B. Queue with two monotonic stacks</h3>
+      <p>This supports queue max/min with amortized O(1) movement, useful for problems where you need a queue aggregate but the structure is not a simple sliding window. The trick: each stack tracks its own max as it is pushed, and the queue is two stacks (in/out) joined together.</p>
+<pre><code>struct MaxStack {
+    vector&lt;pair&lt;int,int&gt;&gt; st; // (value, running max)
+    void push(int x) {
+        int mx = st.empty() ? x : max(x, st.back().second);
+        st.push_back({x, mx});
+    }
+    void pop()         { st.pop_back(); }
+    bool empty() const { return st.empty(); }
+    int  top()   const { return st.back().first; }
+    int  getMax()const { return st.back().second; }
+};
+
+struct MaxQueue {
+    MaxStack in, out;
+    void move() {
+        if (!out.empty()) return;
+        while (!in.empty()) { int x = in.top(); in.pop(); out.push(x); }
+    }
+    void push(int x) { in.push(x); }
+    void pop()       { move(); out.pop(); }
+    int  getMax() {
+        if (in.empty())  return out.getMax();
+        if (out.empty()) return in.getMax();
+        return max(in.getMax(), out.getMax());
+    }
+};</code></pre>
+      <p>Each element moves at most twice (push to in, then once to out), so total work is amortized O(1) per operation across any sequence.</p>
+    </div>
+
+    <div id="vt3" class="tab-pane">
+      <h3>C. 2D sliding window minimum</h3>
+      <p>Given an n × m matrix, find the minimum in every a × b submatrix. Reduce to two passes: first apply 1D sliding-min along each row with width <code class="ic">b</code>, then apply 1D sliding-min along each column of the result with height <code class="ic">a</code>. Total time O(n · m).</p>
+<pre><code>vector&lt;int&gt; windowMin1D(const vector&lt;int&gt;&amp; row, int k) {
+    int n = (int)row.size();
+    vector&lt;int&gt; ans;
+    deque&lt;int&gt; dq;
+    for (int i = 0; i &lt; n; i++) {
+        while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k) dq.pop_front();
+        while (!dq.empty() &amp;&amp; row[dq.back()] &gt;= row[i]) dq.pop_back();
+        dq.push_back(i);
+        if (i &gt;= k - 1) ans.push_back(row[dq.front()]);
+    }
+    return ans;
+}
+
+vector&lt;vector&lt;int&gt;&gt; submatrixMinimums(const vector&lt;vector&lt;int&gt;&gt;&amp; mat, int a, int b) {
+    int n = (int)mat.size(), m = (int)mat[0].size();
+    vector&lt;vector&lt;int&gt;&gt; rowMin(n);
+    for (int i = 0; i &lt; n; i++) rowMin[i] = windowMin1D(mat[i], b);
+
+    int newM = m - b + 1;
+    vector&lt;vector&lt;int&gt;&gt; ans(n - a + 1, vector&lt;int&gt;(newM));
+    for (int col = 0; col &lt; newM; col++) {
+        deque&lt;int&gt; dq;
+        for (int row = 0; row &lt; n; row++) {
+            while (!dq.empty() &amp;&amp; dq.front() &lt;= row - a) dq.pop_front();
+            while (!dq.empty() &amp;&amp; rowMin[dq.back()][col] &gt;= rowMin[row][col]) dq.pop_back();
+            dq.push_back(row);
+            if (row &gt;= a - 1) ans[row - a + 1][col] = rowMin[dq.front()][col];
+        }
+    }
+    return ans;
+}</code></pre>
+    </div>
+
+    <div id="vt4" class="tab-pane">
+      <h3>D. Circular next greater (virtual doubling)</h3>
+      <p>For a circular array, every index <code class="ic">i</code> can search up to <code class="ic">2n − 1</code> virtual positions before wrapping all the way around. Use <code class="ic">i % n</code> on a doubled scan. The careful bit: in the unresolved-style template, push only during the first pass (or your stack will fill with duplicates).</p>
+<pre><code>// Right-to-left candidate-stack version (push during both halves is fine here):
+class Solution {
+public:
+    vector&lt;int&gt; nextGreaterElements(vector&lt;int&gt;&amp; nums) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; ans(n, -1), st;
+        for (int t = 2 * n - 1; t &gt;= 0; t--) {
+            int i = t % n;
+            while (!st.empty() &amp;&amp; nums[st.back()] &lt;= nums[i]) st.pop_back();
+            if (t &lt; n &amp;&amp; !st.empty()) ans[i] = nums[st.back()];
+            st.push_back(i);
+        }
+        return ans;
+    }
+};</code></pre>
+    </div>
+
+    <div id="vt5" class="tab-pane">
+      <h3>E. Online / streaming patterns — when there is no array to index</h3>
+      <p>Every template above assumed you have the full input upfront and can store <em>indices</em> on the stack. In an online or streaming setting that assumption breaks: values arrive one at a time, you must answer each query immediately, and there is no permanent array to point into. The monotonic logic still works — you just shift what the stack stores.</p>
+      <p>The classic example is <strong>Online Stock Spanner</strong> (LeetCode 901). The query at each new price is "how many consecutive prior days, including today, had a price less than or equal to today?" — a textbook left-extending span until a strictly greater previous price. Offline this is "previous strictly greater" on a monotonic stack of indices. Online, we have no indices to store, so we store <code class="ic">{value, span_count}</code> pairs instead: when the new price dominates an old top, we add the popped entry's span into our own span and discard it. The popped entry is permanently absorbed into the new entry's span, so its individual value is no longer needed.</p>
+<pre><code>class StockSpanner {
+    // Each pair: {price, span ending at that price}.
+    // Stack is strictly decreasing in price from bottom to top.
+    vector&lt;pair&lt;int,int&gt;&gt; st;
+public:
+    int next(int price) {
+        int span = 1;                      // today itself counts as 1
+        while (!st.empty() &amp;&amp; st.back().first &lt;= price) {
+            span += st.back().second;      // absorb the popped entry's span
+            st.pop_back();                 // it is now dominated forever
+        }
+        st.push_back({price, span});       // push the merged candidate
+        return span;
+    }
+};</code></pre>
+      <p>The amortized analysis is identical to the offline case: every price is pushed exactly once and popped at most once, so a long run of <code class="ic">next()</code> calls runs in total linear time even though a single call can occasionally do a lot of pops. The same compression trick — <em>store the aggregate, not the individual indices</em> — generalizes to any online problem where popped elements can be safely merged into the survivor: streaming "next greater so far", running maximum-of-tail, and online range queries with a known monotone window.</p>
+      <div class="ib ib-blue"><i>📡</i><p><strong>Recognition cue.</strong> If the problem says "design a class with a method that is called once per element" or "values arrive one at a time and each query must be answered immediately", you cannot use indices into a future-unknown array. Switch to <code class="ic">{value, aggregate}</code> pairs and let domination merge them.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 17a. STACK PROBLEMS -->
+<section class="card" id="s17a">
+  <h2>17a. Problem-Based Applications — Classical Stack Problems</h2>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 1 — Next Greater Element (foundation) <a class="prob-link" href="https://vjudge.net/problem/LeetCode-496" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> For every number, find the first greater number to its right.</p>
+    <p><strong>Why monotonic stack fits.</strong> If the current value is greater than the stack top, it resolves that index. Each unresolved index waits on the stack until a future greater value arrives.</p>
+<pre><code>vector&lt;int&gt; nextGreaterValues(const vector&lt;int&gt;&amp; a) {
+    int n = (int)a.size();
+    vector&lt;int&gt; ans(n, -1), st;
+    for (int i = 0; i &lt; n; i++) {
+        while (!st.empty() &amp;&amp; a[st.back()] &lt; a[i]) {
+            ans[st.back()] = a[i];
+            st.pop_back();
+        }
+        st.push_back(i);
+    }
+    return ans;
+}</code></pre>
+    <p><strong>Complexity.</strong> O(n) time, O(n) space. <strong>Pitfall:</strong> using <code class="ic">&lt;=</code> when "equal" is not greater; storing values when the output requires indices.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 2 — LeetCode 496: NGE I (subset query) <a class="prob-link" href="https://vjudge.net/problem/LeetCode-496" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Given <code class="ic">nums2</code> (full, unique values) and <code class="ic">nums1</code> (subset), find the next greater value in <code class="ic">nums2</code> for each value in <code class="ic">nums1</code>.</p>
+    <p><strong>Approach.</strong> Preprocess <code class="ic">nums2</code> with a value-to-NGE map (uniqueness of values makes value-keying safe), then answer each query in O(1).</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; nextGreaterElement(vector&lt;int&gt;&amp; nums1, vector&lt;int&gt;&amp; nums2) {
+        unordered_map&lt;int,int&gt; nxt;
+        vector&lt;int&gt; st; // values are safe here because nums2 is unique
+        for (int x : nums2) {
+            while (!st.empty() &amp;&amp; st.back() &lt; x) {
+                nxt[st.back()] = x;
+                st.pop_back();
+            }
+            st.push_back(x);
+        }
+        while (!st.empty()) { nxt[st.back()] = -1; st.pop_back(); }
+
+        vector&lt;int&gt; ans;
+        for (int x : nums1) ans.push_back(nxt[x]);
+        return ans;
+    }
+};</code></pre>
+    <p><strong>Complexity.</strong> O(|nums1| + |nums2|). <strong>Pitfall:</strong> if values are not unique, switch to indices.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 3 — Daily Temperatures <a class="prob-link" href="https://vjudge.net/problem/LeetCode-739" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> For each day, return how many days until a strictly warmer temperature; 0 if none.</p>
+    <p><strong>Why <code class="ic">&lt;</code> not <code class="ic">&lt;=</code>?</strong> Equal temperature is not warmer, so equal does not resolve a waiting index.</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; dailyTemperatures(vector&lt;int&gt;&amp; temperatures) {
+        int n = (int)temperatures.size();
+        vector&lt;int&gt; ans(n, 0), st;
+        for (int i = 0; i &lt; n; i++) {
+            while (!st.empty() &amp;&amp; temperatures[st.back()] &lt; temperatures[i]) {
+                int j = st.back(); st.pop_back();
+                ans[j] = i - j;
+            }
+            st.push_back(i);
+        }
+        return ans;
+    }
+};</code></pre>
+    <p><strong>Complexity.</strong> O(n) time, O(n) space.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 4 — Final Prices With a Special Discount <a class="prob-link" href="https://vjudge.net/problem/LeetCode-1475" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> For each <code class="ic">prices[i]</code> find the first <code class="ic">prices[j]</code> to the right with <code class="ic">prices[j] &lt;= prices[i]</code>. Subtract it.</p>
+    <p><strong>Why <code class="ic">&gt;</code> not <code class="ic">&gt;=</code>?</strong> Equal price IS a valid discount, so we must NOT pop equal values during the right-to-left scan.</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; finalPrices(vector&lt;int&gt;&amp; prices) {
+        int n = (int)prices.size();
+        vector&lt;int&gt; ans(n), st;
+        for (int i = n - 1; i &gt;= 0; i--) {
+            while (!st.empty() &amp;&amp; prices[st.back()] &gt; prices[i])
+                st.pop_back();
+            int discount = st.empty() ? 0 : prices[st.back()];
+            ans[i] = prices[i] - discount;
+            st.push_back(i);
+        }
+        return ans;
+    }
+};</code></pre>
+    <p><strong>Complexity.</strong> O(n) time, O(n) space.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 5 — Circular Next Greater Element <a class="prob-link" href="https://vjudge.net/problem/LeetCode-503" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> The array is circular: after the last element, we continue from the first.</p>
+    <p><strong>Approach.</strong> Iterate <code class="ic">2n − 1</code> virtual positions, mapping <code class="ic">i = t % n</code>. For this right-to-left candidate-stack template, pushing during both halves is correct because we are storing candidates, not unresolved indices.</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; nextGreaterElements(vector&lt;int&gt;&amp; nums) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; ans(n, -1), st;
+        for (int t = 2 * n - 1; t &gt;= 0; t--) {
+            int i = t % n;
+            while (!st.empty() &amp;&amp; nums[st.back()] &lt;= nums[i])
+                st.pop_back();
+            if (t &lt; n &amp;&amp; !st.empty()) ans[i] = nums[st.back()];
+            st.push_back(i);
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 6 — Largest Rectangle in Histogram <a class="prob-link" href="https://vjudge.net/problem/LeetCode-84" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Given bar heights, find the largest axis-aligned rectangle that fits inside the histogram.</p>
+    <p><strong>Why monotonic stack fits.</strong> For every bar <code class="ic">i</code>, the rectangle limited by <code class="ic">h[i]</code> can extend until the first <em>smaller</em> bar on each side. The pop event of an increasing-stack template hands you both boundaries simultaneously: the right boundary is the current index (because it forced the pop), and the left boundary is whatever sits below the popped element on the stack.</p>
+<pre><code>class Solution {
+public:
+    int largestRectangleArea(vector&lt;int&gt;&amp; heights) {
+        vector&lt;int&gt; h = heights;
+        h.push_back(0); // Sentinel value: forces all remaining bars to be popped and the stack to flush at the end.
+        vector&lt;int&gt; st;
+        long long best = 0;
+        for (int i = 0; i &lt; (int)h.size(); i++) {
+            while (!st.empty() &amp;&amp; h[st.back()] &gt; h[i]) {
+                int mid = st.back(); st.pop_back();
+                int left  = st.empty() ? -1 : st.back();
+                int right = i;
+                long long width = right - left - 1;
+                long long area  = (long long)h[mid] * width;
+                best = max(best, area);
+            }
+            st.push_back(i);
+        }
+        return (int)best;
+    }
+};</code></pre>
+    <p><strong>Complexity.</strong> O(n) time, O(n) space.</p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 7 — SPOJ HISTOGRA <a class="prob-link" href="https://vjudge.net/problem/SPOJ-HISTOGRA" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Multiple test cases; for each histogram output the largest rectangle area. Width × height can overflow <code class="ic">int</code> for large inputs, so the entire computation runs in <code class="ic">long long</code>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+long long largestRectangleArea(const vector&lt;long long&gt;&amp; h) {
+    int n = (int)h.size();
+    vector&lt;int&gt; st;
+    long long best = 0;
+    for (int i = 0; i &lt;= n; i++) {
+        long long cur = (i == n ? 0 : h[i]); // virtual zero sentinel
+        while (!st.empty() &amp;&amp; h[st.back()] &gt; cur) {
+            int mid = st.back(); st.pop_back();
+            int left  = st.empty() ? -1 : st.back();
+            int right = i;
+            long long width = right - left - 1;
+            best = max(best, h[mid] * width);
+        }
+        st.push_back(i);
+    }
+    return best;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n;
+    while (cin &gt;&gt; n &amp;&amp; n) {
+        vector&lt;long long&gt; h(n);
+        for (int i = 0; i &lt; n; i++) cin &gt;&gt; h[i];
+        cout &lt;&lt; largestRectangleArea(h) &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 8 — Trapping Rain Water <a class="prob-link" href="https://vjudge.net/problem/LeetCode-42" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Given bar heights, compute trapped water above the bars.</p>
+    <p><strong>Approach.</strong> When the current bar is taller than the stack top, the popped bar is the bottom of a valley. The new stack top is the left wall, the current bar is the right wall, and the water above the bottom is bounded by <code class="ic">min(left, right) − height[bottom]</code>.</p>
+<pre><code>class Solution {
+public:
+    int trap(vector&lt;int&gt;&amp; height) {
+        int n = (int)height.size();
+        vector&lt;int&gt; st;
+        long long water = 0;
+        for (int i = 0; i &lt; n; i++) {
+            while (!st.empty() &amp;&amp; height[i] &gt; height[st.back()]) {
+                int bottom = st.back(); st.pop_back();
+                if (st.empty()) break;
+                int left = st.back();
+                int width = i - left - 1;
+                int boundedHeight = min(height[left], height[i]) - height[bottom];
+                if (boundedHeight &gt; 0)
+                    water += (long long)width * boundedHeight;
+            }
+            st.push_back(i);
+        }
+        return (int)water;
+    }
+};</code></pre>
+  </div>
+</section>
+
+<!-- 17b. CONTRIBUTION PROBLEMS -->
+<section class="card" id="s17b">
+  <h2>17b. Problem-Based Applications — Contribution Problems</h2>
+  <p>The contribution trick is a viewpoint shift. Rather than enumerating all O(n²) subarrays and computing each minimum, we ask: <em>for how many subarrays is each element the minimum?</em> Each element contributes <code class="ic">value × L × R</code>, where <code class="ic">L</code> and <code class="ic">R</code> are the left and right reach until a bound. The two reaches come from two monotonic stacks.</p>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 9 — Sum of Subarray Minimums <a class="prob-link" href="https://vjudge.net/problem/LeetCode-907" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Sum the minimums of every contiguous subarray, modulo 10⁹ + 7.</p>
+    <p><strong>Duplicate policy.</strong> Use <em>previous strictly smaller</em> and <em>next smaller-or-equal</em>. This asymmetry assigns each subarray's minimum to the rightmost occurrence among equal minima, preventing double counting when the minimum repeats.</p>
+<pre><code>class Solution {
+public:
+    int sumSubarrayMins(vector&lt;int&gt;&amp; arr) {
+        const long long MOD = 1000000007LL;
+        int n = (int)arr.size();
+        vector&lt;int&gt; left(n), right(n), st;
+
+        // previous strictly smaller — left reach
+        for (int i = 0; i &lt; n; i++) {
+            while (!st.empty() &amp;&amp; arr[st.back()] &gt;= arr[i]) st.pop_back();
+            left[i] = st.empty() ? i + 1 : i - st.back();
+            st.push_back(i);
+        }
+        st.clear();
+        // next smaller-or-equal — right reach
+        for (int i = n - 1; i &gt;= 0; i--) {
+            while (!st.empty() &amp;&amp; arr[st.back()] &gt; arr[i]) st.pop_back();
+            right[i] = st.empty() ? n - i : st.back() - i;
+            st.push_back(i);
+        }
+
+        long long ans = 0;
+        for (int i = 0; i &lt; n; i++)
+            ans = (ans + (long long)arr[i] * left[i] % MOD * right[i]) % MOD;
+        return (int)ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 10 — Sum of Subarray Ranges <a class="prob-link" href="https://vjudge.net/problem/LeetCode-2104" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Sum <code class="ic">(max − min)</code> across all subarrays. <strong>Trick.</strong> Sum of ranges equals sum of "max contributions" minus sum of "min contributions" — two independent contribution computations. Same asymmetric strictness rule applies, mirrored for max.</p>
+<pre><code>class Solution {
+public:
+    long long subArrayRanges(vector&lt;int&gt;&amp; nums) {
+        int n = (int)nums.size();
+
+        auto contributionAsMax = [&amp;](){
+            vector&lt;int&gt; left(n), right(n), st;
+            for (int i = 0; i &lt; n; i++) {
+                while (!st.empty() &amp;&amp; nums[st.back()] &lt;= nums[i]) st.pop_back();
+                left[i] = st.empty() ? i + 1 : i - st.back();
+                st.push_back(i);
+            }
+            st.clear();
+            for (int i = n - 1; i &gt;= 0; i--) {
+                while (!st.empty() &amp;&amp; nums[st.back()] &lt; nums[i]) st.pop_back();
+                right[i] = st.empty() ? n - i : st.back() - i;
+                st.push_back(i);
+            }
+            long long s = 0;
+            for (int i = 0; i &lt; n; i++) s += (long long)nums[i] * left[i] * right[i];
+            return s;
+        };
+        auto contributionAsMin = [&amp;](){
+            vector&lt;int&gt; left(n), right(n), st;
+            for (int i = 0; i &lt; n; i++) {
+                while (!st.empty() &amp;&amp; nums[st.back()] &gt;= nums[i]) st.pop_back();
+                left[i] = st.empty() ? i + 1 : i - st.back();
+                st.push_back(i);
+            }
+            st.clear();
+            for (int i = n - 1; i &gt;= 0; i--) {
+                while (!st.empty() &amp;&amp; nums[st.back()] &gt; nums[i]) st.pop_back();
+                right[i] = st.empty() ? n - i : st.back() - i;
+                st.push_back(i);
+            }
+            long long s = 0;
+            for (int i = 0; i &lt; n; i++) s += (long long)nums[i] * left[i] * right[i];
+            return s;
+        };
+
+        return contributionAsMax() - contributionAsMin();
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 11 — Codeforces 1913D Array Collapse <a class="prob-link" href="https://vjudge.net/problem/CodeForces-1913D" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> The array has distinct values. One operation replaces a chosen subarray by its minimum. Count the number of distinct arrays reachable after any sequence of operations, modulo a prime.</p>
+    <p><strong>Approach.</strong> Define <code class="ic">dp[i]</code> as the number of reachable arrays whose last surviving element is <code class="ic">a[i]</code>. To place some <code class="ic">j</code> immediately before <code class="ic">i</code> in the final result, the subarray <code class="ic">a[j..i]</code> must have a <em>terminal minimum</em> — its min must lie at <code class="ic">j</code> or at <code class="ic">i</code>; an interior minimum would refuse to vanish. The two cases give a sum over the monotonic-increasing stack (where each element is a possible left terminal minimum) and a sum over the range strictly between the previous smaller and <code class="ic">i</code> (where <code class="ic">i</code> itself is the terminal minimum). Maintaining a running stack-sum and a prefix sum of <code class="ic">dp</code> reduces both queries to O(1) and gives an O(n) overall solution. <strong>What <code class="ic">sumStack</code> really is:</strong> it is the running sum of <code class="ic">dp</code> values for exactly the elements currently surviving on the monotonic stack — every push adds <code class="ic">dp[i]</code> into <code class="ic">sumStack</code> and every pop subtracts the popped <code class="ic">dp</code> value back out, so it always equals the answer to "sum of <code class="ic">dp[j]</code> over all <code class="ic">j</code> still in the stack". That is precisely the left-terminal-minimum query, computed in O(1) instead of O(stack depth) — the single trick that turns an O(n²) DP transition into O(n). The final answer counts only suffix minima, which are exactly the final-position candidates.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const long long MOD = 998244353;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int T; cin &gt;&gt; T;
+    while (T--) {
+        int n; cin &gt;&gt; n;
+        vector&lt;int&gt; a(n);
+        for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+        vector&lt;long long&gt; dp(n, 0), pref(n + 1, 0);
+        vector&lt;int&gt; st;
+        long long sumStack = 0;
+        int prefMin = INT_MAX;
+
+        for (int i = 0; i &lt; n; i++) {
+            while (!st.empty() &amp;&amp; a[st.back()] &gt; a[i]) {
+                sumStack = (sumStack - dp[st.back()] + MOD) % MOD;
+                st.pop_back();
+            }
+            int prevSmaller = st.empty() ? -1 : st.back();
+
+            long long rightTerminal = 0;
+            int L = prevSmaller + 1, R = i - 1;
+            if (L &lt;= R) rightTerminal = (pref[R + 1] - pref[L] + MOD) % MOD;
+
+            long long leftTerminal = sumStack;
+            dp[i] = (rightTerminal + leftTerminal) % MOD;
+            if (a[i] &lt; prefMin) dp[i] = (dp[i] + 1) % MOD;
+            prefMin = min(prefMin, a[i]);
+
+            st.push_back(i);
+            sumStack    = (sumStack + dp[i]) % MOD;
+            pref[i + 1] = (pref[i] + dp[i]) % MOD;
+        }
+
+        long long ans = 0;
+        int suffixMin = INT_MAX;
+        for (int i = n - 1; i &gt;= 0; i--) {
+            if (a[i] &lt; suffixMin) ans = (ans + dp[i]) % MOD;
+            suffixMin = min(suffixMin, a[i]);
+        }
+        cout &lt;&lt; ans % MOD &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+    <div class="ib ib-orange"><i>⚠</i><p><strong>Teach this last.</strong> The Array Collapse trick layers four ideas — monotonic stack, contribution counting, prefix-sum DP optimization, and suffix-minimum filtering. Each prerequisite must be solid first.</p></div>
+  </div>
+</section>
+
+<!-- 17c. GREEDY STACK PROBLEMS -->
+<section class="card" id="s17c">
+  <h2>17c. Problem-Based Applications — Greedy Monotonic Stack</h2>
+  <p>A different family: not "find nearest" but "build the lexicographically best output". The stack stores a partial answer, and we pop whenever a previous choice is strictly worse than what is now possible. The bookkeeping (counter limits, repetition tracking) varies per problem, but the core idea — pop while the top is dominated by the new arrival — is the same.</p>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 12 — Remove K Digits <a class="prob-link" href="https://vjudge.net/problem/LeetCode-402" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Remove exactly <code class="ic">k</code> digits from a numeric string so the remaining number is smallest.</p>
+    <p><strong>Why monotonic stack fits.</strong> To make a number small, the leftmost digits should be as small as possible. Whenever a previously kept digit is larger than the next digit, removing it improves the result. After processing, if removals remain, drop them from the end (which hurts least once digits are non-decreasing). Strip leading zeros at the end.</p>
+<pre><code>class Solution {
+public:
+    string removeKdigits(string num, int k) {
+        string st;
+        for (char c : num) {
+            while (!st.empty() &amp;&amp; k &gt; 0 &amp;&amp; st.back() &gt; c) {
+                st.pop_back(); k--;
+            }
+            st.push_back(c);
+        }
+        while (!st.empty() &amp;&amp; k &gt; 0) { st.pop_back(); k--; }
+        int pos = 0;
+        while (pos &lt; (int)st.size() &amp;&amp; st[pos] == '0') pos++;
+        string ans = st.substr(pos);
+        return ans.empty() ? "0" : ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 13 — Remove Duplicate Letters <a class="prob-link" href="https://vjudge.net/problem/LeetCode-316" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Remove duplicate letters so each letter appears once and the result is lexicographically smallest.</p>
+    <p><strong>Extra conditions.</strong> A character may be popped only if it appears again later (otherwise removing it loses it forever) and the current character is not already used. Track <code class="ic">remaining[c]</code> and <code class="ic">used[c]</code> alongside the stack.</p>
+<pre><code>class Solution {
+public:
+    string removeDuplicateLetters(string s) {
+        vector&lt;int&gt; remaining(256, 0);
+        vector&lt;bool&gt; used(256, false);
+        for (char c : s) remaining[c]++;
+        string st;
+        for (char c : s) {
+            remaining[c]--;
+            if (used[c]) continue;
+            while (!st.empty() &amp;&amp; st.back() &gt; c &amp;&amp; remaining[st.back()] &gt; 0) {
+                used[st.back()] = false;
+                st.pop_back();
+            }
+            st.push_back(c);
+            used[c] = true;
+        }
+        return st;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 14 — Maximum Width Ramp <a class="prob-link" href="https://vjudge.net/problem/LeetCode-962" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Find the maximum <code class="ic">j − i</code> with <code class="ic">i ≤ j</code> and <code class="ic">nums[i] ≤ nums[j]</code>.</p>
+    <p><strong>Why monotonic stack fits.</strong> Only strictly decreasing left-candidates matter — any element that is greater than or equal to an earlier value is a worse left endpoint. Build the candidate stack in one forward pass, then scan from the right; whenever the right element can pair with the top, that is the farthest possible right for that left, so pop it.</p>
+<pre><code>class Solution {
+public:
+    int maxWidthRamp(vector&lt;int&gt;&amp; nums) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; st;
+        for (int i = 0; i &lt; n; i++)
+            if (st.empty() || nums[i] &lt; nums[st.back()]) st.push_back(i);
+
+        int ans = 0;
+        for (int j = n - 1; j &gt;= 0; j--) {
+            while (!st.empty() &amp;&amp; nums[st.back()] &lt;= nums[j]) {
+                ans = max(ans, j - st.back());
+                st.pop_back();
+            }
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 15 — 132 Pattern <a class="prob-link" href="https://vjudge.net/problem/LeetCode-456" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Decide whether there exist <code class="ic">i &lt; j &lt; k</code> with <code class="ic">nums[i] &lt; nums[k] &lt; nums[j]</code>.</p>
+    <p><strong>Approach.</strong> Scan right to left, maintaining a decreasing stack of candidates for the "3" value. A separate variable <code class="ic">candidate2</code> stores the best "2" value found so far (the largest value ever popped). If a current value falls below <code class="ic">candidate2</code>, we have found the "1".</p>
+<pre><code>class Solution {
+public:
+    bool find132pattern(vector&lt;int&gt;&amp; nums) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; st;
+        int candidate2 = INT_MIN;
+        for (int i = n - 1; i &gt;= 0; i--) {
+            if (nums[i] &lt; candidate2) return true;
+            while (!st.empty() &amp;&amp; nums[i] &gt; st.back()) {
+                candidate2 = max(candidate2, st.back());
+                st.pop_back();
+            }
+            st.push_back(nums[i]);
+        }
+        return false;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 16 — Number of Visible People in a Queue <a class="prob-link" href="https://vjudge.net/problem/LeetCode-1944" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> A person sees shorter people to their right until a taller-or-equal blocker, who is also visible. <strong>Approach.</strong> Right-to-left scan with a monotonic stack of strictly decreasing heights. The popped people are visible; if anyone remains after popping, that one taller-or-equal blocker is also visible.</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; canSeePersonsCount(vector&lt;int&gt;&amp; heights) {
+        int n = (int)heights.size();
+        vector&lt;int&gt; ans(n, 0), st;
+        for (int i = n - 1; i &gt;= 0; i--) {
+            while (!st.empty() &amp;&amp; st.back() &lt; heights[i]) {
+                ans[i]++;
+                st.pop_back();
+            }
+            if (!st.empty()) ans[i]++;
+            st.push_back(heights[i]);
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+</section>
+
+<!-- 17d. DEQUE PROBLEMS -->
+<section class="card" id="s17d">
+  <h2>17d. Problem-Based Applications — Monotonic Deque</h2>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 17 — Sliding Window Maximum <a class="prob-link" href="https://vjudge.net/problem/LeetCode-239" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> For every window of size <code class="ic">k</code>, return its maximum. <strong>Why deque, not heap?</strong> A heap with lazy deletion is O(n log k); the monotonic deque is true O(n). The deque also has trivially small constants — no log factors, no allocator churn.</p>
+<pre><code>class Solution {
+public:
+    vector&lt;int&gt; maxSlidingWindow(vector&lt;int&gt;&amp; nums, int k) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; ans;
+        deque&lt;int&gt; dq;
+        for (int i = 0; i &lt; n; i++) {
+            while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k) dq.pop_front();
+            while (!dq.empty() &amp;&amp; nums[dq.back()] &lt;= nums[i]) dq.pop_back();
+            dq.push_back(i);
+            if (i &gt;= k - 1) ans.push_back(nums[dq.front()]);
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 18 — Sliding Window Minimum (template)</div>
+    <p>Identical to maximum with the dominance comparator flipped.</p>
+<pre><code>vector&lt;int&gt; minSlidingWindow(const vector&lt;int&gt;&amp; nums, int k) {
+    int n = (int)nums.size();
+    vector&lt;int&gt; ans;
+    deque&lt;int&gt; dq;
+    for (int i = 0; i &lt; n; i++) {
+        while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k) dq.pop_front();
+        while (!dq.empty() &amp;&amp; nums[dq.back()] &gt;= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if (i &gt;= k - 1) ans.push_back(nums[dq.front()]);
+    }
+    return ans;
+}</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 19 — HackerRank Queries With Fixed Length <a class="prob-link" href="https://vjudge.net/problem/HackerRank-queries-with-fixed-length" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> For each query <code class="ic">d</code>, compute the maximum of every window of length <code class="ic">d</code>, then return the minimum among those maximums.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+vector&lt;int&gt; solveQueries(const vector&lt;int&gt;&amp; a, const vector&lt;int&gt;&amp; queries) {
+    int n = (int)a.size();
+    vector&lt;int&gt; output;
+    for (int k : queries) {
+        deque&lt;int&gt; dq;
+        int best = INT_MAX;
+        for (int i = 0; i &lt; n; i++) {
+            while (!dq.empty() &amp;&amp; dq.front() &lt;= i - k) dq.pop_front();
+            while (!dq.empty() &amp;&amp; a[dq.back()] &lt;= a[i]) dq.pop_back();
+            dq.push_back(i);
+            if (i &gt;= k - 1) best = min(best, a[dq.front()]);
+        }
+        output.push_back(best);
+    }
+    return output;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    int n, q; cin &gt;&gt; n &gt;&gt; q;
+    vector&lt;int&gt; a(n);
+    for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+    vector&lt;int&gt; queries(q);
+    for (int i = 0; i &lt; q; i++) cin &gt;&gt; queries[i];
+    vector&lt;int&gt; ans = solveQueries(a, queries);
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 20 — Jump Game VI <a class="prob-link" href="https://vjudge.net/problem/LeetCode-1696" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> From index <code class="ic">i</code> you can jump to any of <code class="ic">i + 1, …, i + k</code>. Maximize the sum of values collected from <code class="ic">0</code> to <code class="ic">n − 1</code>.</p>
+    <p><strong>DP.</strong> <code class="ic">dp[i] = nums[i] + max(dp[j])</code> for <code class="ic">i − k ≤ j &lt; i</code>. The "max over a window of size k of past dp values" is exactly sliding-window maximum. The deque stores indices with decreasing <code class="ic">dp</code> values, and the front is the best previous state.</p>
+<pre><code>class Solution {
+public:
+    int maxResult(vector&lt;int&gt;&amp; nums, int k) {
+        int n = (int)nums.size();
+        vector&lt;int&gt; dp(n);
+        deque&lt;int&gt; dq;
+        dp[0] = nums[0];
+        dq.push_back(0);
+        for (int i = 1; i &lt; n; i++) {
+            while (!dq.empty() &amp;&amp; dq.front() &lt; i - k) dq.pop_front();
+            dp[i] = nums[i] + dp[dq.front()];
+            while (!dq.empty() &amp;&amp; dp[dq.back()] &lt;= dp[i]) dq.pop_back();
+            dq.push_back(i);
+        }
+        return dp[n - 1];
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 21 — Shortest Subarray With Sum at Least K <a class="prob-link" href="https://vjudge.net/problem/LeetCode-862" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Possibly negative numbers, find the shortest subarray with sum at least <code class="ic">k</code>. Plain sliding-window fails because expanding/shrinking is no longer monotonic with negatives.</p>
+    <p><strong>Trick.</strong> Use prefix sums: a subarray sum is <code class="ic">pref[r] − pref[l]</code>. For each right endpoint <code class="ic">r</code>, we want some <code class="ic">l &lt; r</code> with <code class="ic">pref[l] ≤ pref[r] − k</code> minimizing <code class="ic">r − l</code>. A deque of candidate prefix indices, kept increasing in <code class="ic">pref</code> values from front to back, supports both pops correctly. <em>Front pop:</em> when <code class="ic">pref[r] − pref[dq.front()] ≥ k</code>, the front already yields a valid subarray ending at <code class="ic">r</code>; we record its length and pop it because the front is the oldest index in the deque, and for any future <code class="ic">r' &gt; r</code> the same front would only produce a longer subarray <code class="ic">r' − front ≥ r − front</code>, never a better one — so it can be safely retired. <em>Back pop:</em> when <code class="ic">pref[dq.back()] ≥ pref[r]</code>, the new index <code class="ic">r</code> dominates the old back: <code class="ic">r</code> is later and has a smaller-or-equal prefix sum, so as a future left endpoint it will satisfy the threshold sooner and produce a strictly shorter subarray. The old back is therefore useless from now on.</p>
+<pre><code>class Solution {
+public:
+    int shortestSubarray(vector&lt;int&gt;&amp; nums, int k) {
+        int n = (int)nums.size();
+        vector&lt;long long&gt; pref(n + 1, 0);
+        for (int i = 0; i &lt; n; i++) pref[i + 1] = pref[i] + nums[i];
+        deque&lt;int&gt; dq;
+        int ans = n + 1;
+        for (int r = 0; r &lt;= n; r++) {
+            while (!dq.empty() &amp;&amp; pref[r] - pref[dq.front()] &gt;= k) {
+                ans = min(ans, r - dq.front());
+                dq.pop_front();
+            }
+            while (!dq.empty() &amp;&amp; pref[dq.back()] &gt;= pref[r])
+                dq.pop_back();
+            dq.push_back(r);
+        }
+        return ans == n + 1 ? -1 : ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 22 — Longest Continuous Subarray With Absolute Diff ≤ Limit <a class="prob-link" href="https://vjudge.net/problem/LeetCode-1438" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Find the longest subarray with <code class="ic">max − min ≤ limit</code>. <strong>Approach.</strong> Two deques — a decreasing one for max, an increasing one for min. Slide the right endpoint, and whenever the constraint is violated, advance the left endpoint and synchronize both deques.</p>
+<pre><code>class Solution {
+public:
+    int longestSubarray(vector&lt;int&gt;&amp; nums, int limit) {
+        int n = (int)nums.size();
+        deque&lt;int&gt; maxDq, minDq;
+        int l = 0, ans = 0;
+        for (int r = 0; r &lt; n; r++) {
+            while (!maxDq.empty() &amp;&amp; nums[maxDq.back()] &lt;= nums[r]) maxDq.pop_back();
+            maxDq.push_back(r);
+            while (!minDq.empty() &amp;&amp; nums[minDq.back()] &gt;= nums[r]) minDq.pop_back();
+            minDq.push_back(r);
+            while (!maxDq.empty() &amp;&amp; !minDq.empty() &amp;&amp;
+                   nums[maxDq.front()] - nums[minDq.front()] &gt; limit) {
+                if (maxDq.front() == l) maxDq.pop_front();
+                if (minDq.front() == l) minDq.pop_front();
+                l++;
+            }
+            ans = max(ans, r - l + 1);
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 23 — Max Value of Equation <a class="prob-link" href="https://vjudge.net/problem/LeetCode-1499" target="_blank">VJudge</a></div>
+    <p><strong>Story.</strong> Points sorted by <code class="ic">x</code>, maximize <code class="ic">yi + yj + |xi − xj|</code> with <code class="ic">xj − xi ≤ k</code> and <code class="ic">i &lt; j</code>.</p>
+    <p><strong>Decomposition.</strong> Since <code class="ic">xj &gt; xi</code>, the expression equals <code class="ic">(yi − xi) + (yj + xj)</code>. For each current point <code class="ic">j</code>, we want the maximum of <code class="ic">(yi − xi)</code> among earlier points within distance <code class="ic">k</code> in <code class="ic">x</code>. That is sliding-window maximum on the value <code class="ic">y − x</code>, with the window expressed in <code class="ic">x</code>-distance rather than index distance.</p>
+<pre><code>class Solution {
+public:
+    int findMaxValueOfEquation(vector&lt;vector&lt;int&gt;&gt;&amp; points, int k) {
+        deque&lt;int&gt; dq;
+        int ans = INT_MIN;
+        for (int j = 0; j &lt; (int)points.size(); j++) {
+            int xj = points[j][0], yj = points[j][1];
+            while (!dq.empty() &amp;&amp; xj - points[dq.front()][0] &gt; k) dq.pop_front();
+            if (!dq.empty()) {
+                int i = dq.front();
+                ans = max(ans, yj + xj + points[i][1] - points[i][0]);
+            }
+            int valJ = yj - xj;
+            while (!dq.empty()) {
+                int back = dq.back();
+                int valBack = points[back][1] - points[back][0];
+                if (valBack &gt;= valJ) break;
+                dq.pop_back();
+            }
+            dq.push_back(j);
+        }
+        return ans;
+    }
+};</code></pre>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">Problem 24 — 2D Sliding Window Minimum (a × b submatrix)</div>
+    <p>The 2D version: see <a href="#vt3" onclick="document.querySelectorAll('#vTabs .tab-btn')[2].click();">Variant C</a> above for the full code. Two passes of 1D deque: first along rows with width <code class="ic">b</code>, then along columns of the result with height <code class="ic">a</code>. Total O(n · m).</p>
+  </div>
+</section>
+
+<!-- 18. SUMMARY -->
+<section class="card" id="summary">
+  <h2>18. Final Summary &amp; Checklist</h2>
+  <p>Monotonic stack and monotonic deque are not exotic data structures. They are ordinary stacks and deques used with one extra discipline: <em>candidate survival</em>. A candidate stays only as long as it can still become an answer for someone. The instant the current element proves that the candidate is forever dominated, the candidate is destroyed. This single rule produces linear-time algorithms across an enormous range of problems that look quadratic at first glance.</p>
+  <h3>The questions to ask before any monotonic problem</h3>
+  <p>The recognition reflex you should drill is a sequence of seven small decisions. <em>What is each element trying to find?</em> Decides whether you need a stack at all. <em>Is the answer on the left or right?</em> Decides scan direction. <em>Greater or smaller?</em> Decides the comparison direction. <em>Does equality count?</em> Decides strict vs or-equal. <em>Does the window expire old elements over time?</em> Decides stack vs deque. <em>What output do I need — value, index, distance, width, area, or count?</em> Decides what you store and how you read. <em>What does a popped element mean? What does the surviving top mean?</em> Decides where you write the answer.</p>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✓ Pre-submit checklist</h4>
+      <ul class="checklist">
+        <li>Stored indices, not values</li>
+        <li>Initialized <code class="ic">ans</code> with the right sentinel</li>
+        <li>Comparison strictness is correct for the problem</li>
+        <li>Equality handling is consistent on both sides for contribution</li>
+        <li>Scan direction matches "next" vs "previous"</li>
+        <li>Used deque (not stack) when window expires</li>
+        <li>Removed expired indices from the front before reading the answer</li>
+        <li>Handled <code class="ic">k = 1</code>, <code class="ic">k = n</code>, empty input</li>
+        <li>Used <code class="ic">long long</code> for area/contribution arithmetic</li>
+        <li>Avoided duplicate pushes in circular unresolved-style templates</li>
+        <li>Handled empty result for Remove K Digits and similar</li>
+        <li>Final stack/deque drain processed if the algorithm requires it</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>→ Core phrases to remember</h4>
+      <ul class="must">
+        <li>Current resolves popped elements (next-side)</li>
+        <li>Remaining stack top is the nearest previous valid candidate (prev-side)</li>
+        <li>Deque front is the current window's answer</li>
+        <li>Pop dominated candidates from the back</li>
+        <li>Expire invalid old candidates from the front</li>
+        <li>Count total pushes and pops, not nested loop shape</li>
+        <li>For rectangles: pop yields BOTH left and right boundary at once</li>
+        <li>For contribution: one side strict, the other or-equal — never both the same</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-green"><i>🏁</i><p><strong>Mastery test.</strong> If you can look at "Find the largest rectangle in a histogram", "Trapping Rain Water", "Sum of Subarray Minimums", and "Sliding Window Maximum" and instantly say which template applies, what the strictness should be, and what each pop means — you have internalized the framework. Everything else is local variations on the same skeleton.</p></div>
+</section>
+
+<!-- PAGE FOOTER -->
+<footer class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-copy">Monotonic Stack &amp; Deque · Complete Tutorial · Competitive Programming Series</div>
+</footer>
+</div>
+
+<script>
+/* ── SIDEBAR + THEME ─────────────────────────────── */
+(function(){
+  var sidebar=document.getElementById('sidebar');
+  var overlay=document.getElementById('sidebarOverlay');
+  var toggle=document.getElementById('sidebarToggle');
+  var body=document.body;
+
+  function setOpen(open){
+    if(open){
+      sidebar.classList.remove('collapsed');
+      body.classList.remove('sb-closed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      if(window.innerWidth<=1300) overlay.classList.add('show');
+    } else {
+      sidebar.classList.add('collapsed');
+      body.classList.add('sb-closed');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      overlay.classList.remove('show');
+    }
+  }
+  /* Initial: open on desktop, closed on small screens */
+  if(window.innerWidth<=1300){ setOpen(false); } else { setOpen(true); }
+
+  toggle.addEventListener('click',function(){
+    var isOpen=!sidebar.classList.contains('collapsed');
+    setOpen(!isOpen);
+  });
+  overlay.addEventListener('click',function(){ setOpen(false); });
+
+  /* Close sidebar when a nav link is clicked on small screens */
+  document.querySelectorAll('.nav a').forEach(function(a){
+    a.addEventListener('click',function(){
+      if(window.innerWidth<=1300) setOpen(false);
+    });
+  });
+
+  /* THEME TOGGLE */
+  var sw=document.getElementById('themeSwitch');
+  function syncSwitch(){
+    var t=document.documentElement.getAttribute('data-theme');
+    sw.setAttribute('aria-checked', t==='dark' ? 'true' : 'false');
+  }
+  syncSwitch();
+  function flip(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var nxt=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',nxt);
+    localStorage.setItem('ca-theme',nxt);
+    syncSwitch();
+  }
+  sw.addEventListener('click',flip);
+  sw.addEventListener('keydown',function(e){
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); flip(); }
+  });
+})();
+
+/* ── ACTIVE SECTION HIGHLIGHT ────────────────────── */
+(function(){
+  var links=document.querySelectorAll('.nav a');
+  var byHash={};
+  links.forEach(function(a){ byHash[a.getAttribute('href')]=a; });
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var id='#'+en.target.id;
+        var a=byHash[id];
+        if(a){
+          links.forEach(function(x){x.classList.remove('active');});
+          a.classList.add('active');
+        }
+      }
+    });
+  },{rootMargin:'-20% 0px -65% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(function(s){obs.observe(s);});
+})();
+
+/* ── TAB SWITCHING ───────────────────────────────── */
+function showTab(cid,tid,btn){
+  document.getElementById(cid).querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(tid).classList.add('active');
+  btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+/* ── INTERACTIVE STACK TRACER (Next Greater Element) ── */
+(function(){
+  /* Array: [5, 3, 2, 9, 4] — pop condition: a[top] < a[i], unresolved style */
+  var ARR=[5,3,2,9,4];
+  var BX=70, BY=200, BW=80, GAP=10; /* bar layout for input strip */
+
+  /* Each step: i, stack, ans, popped (just-popped index for highlighting), phase, exp, cls */
+  var steps=[
+    {ph:'Init',i:-1,stk:[],ans:[-1,-1,-1,-1,-1],pop:-1,exp:'Initial state. Array = [5,3,2,9,4]. ans = [-1,-1,-1,-1,-1]. Stack empty. Pop condition: a[st.top()] < a[i] (strict).',cls:'init'},
+    {ph:'Push',i:0,stk:[0],ans:[-1,-1,-1,-1,-1],pop:-1,exp:'i=0, a[0]=5. Stack empty → no pops. Push index 0. Stack = [0] (values 5).',cls:'init'},
+    {ph:'Push',i:1,stk:[0,1],ans:[-1,-1,-1,-1,-1],pop:-1,exp:'i=1, a[1]=3. a[top]=5, 5<3? NO. Push 1. Stack = [0,1] (values 5,3) — strictly decreasing ✓.',cls:'init'},
+    {ph:'Push',i:2,stk:[0,1,2],ans:[-1,-1,-1,-1,-1],pop:-1,exp:'i=2, a[2]=2. a[top]=3, 3<2? NO. Push 2. Stack = [0,1,2] (values 5,3,2). Three indices waiting.',cls:'init'},
+    {ph:'Pop!',i:3,stk:[0,1],ans:[-1,-1,9,-1,-1],pop:2,exp:'i=3, a[3]=9. a[top]=2, 2<9? YES → 9 resolves index 2: ans[2]=9. Pop.',cls:'bad'},
+    {ph:'Pop!',i:3,stk:[0],ans:[-1,9,9,-1,-1],pop:1,exp:'Continue: a[top]=3, 3<9? YES → ans[1]=9. Pop.',cls:'bad'},
+    {ph:'Pop!',i:3,stk:[],ans:[9,9,9,-1,-1],pop:0,exp:'Continue: a[top]=5, 5<9? YES → ans[0]=9. Pop. Three indices resolved by ONE current value — this is the linear-time magic.',cls:'bad'},
+    {ph:'Push',i:3,stk:[3],ans:[9,9,9,-1,-1],pop:-1,exp:'Stack empty. Push 3. Stack = [3] (value 9).',cls:'ok'},
+    {ph:'Push',i:4,stk:[3,4],ans:[9,9,9,-1,-1],pop:-1,exp:'i=4, a[4]=4. a[top]=9, 9<4? NO. Push 4. Stack = [3,4] (values 9,4).',cls:'init'},
+    {ph:'Done ✓',i:-1,stk:[3,4],ans:[9,9,9,-1,-1],pop:-1,exp:'Scan complete. Indices 3 and 4 remain on the stack — they have no greater element to the right, so ans[3]=-1, ans[4]=-1. Final ans = [9,9,9,-1,-1].',cls:'ok'}
+  ];
+
+  var cur=0,playing=false,tmr;
+  var svg=document.getElementById('trSvgS');
+  var spdMap=[2000,1400,900,550,280];
+
+  function spd(){ return spdMap[parseInt(document.getElementById('trSpdS').value,10)]; }
+
+  function render(){
+    var s=steps[cur];
+    svg.innerHTML='';
+    /* Title bar */
+    var tt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tt.setAttribute('x','320'); tt.setAttribute('y','22'); tt.setAttribute('text-anchor','middle');
+    tt.setAttribute('fill','var(--muted)'); tt.setAttribute('font-size','15'); tt.setAttribute('font-weight','800');
+    tt.textContent='Input array (top) · Stack from bottom→top (right)'; svg.appendChild(tt);
+
+    /* Draw input strip */
+    for(var k=0;k<ARR.length;k++){
+      var x=BX+k*(BW+GAP);
+      var fill='var(--panel)', stroke='var(--border)', txtc='var(--text)';
+      if(s.pop===k){ fill='rgba(185,28,28,.20)'; stroke='#b91c1c'; txtc='#b91c1c'; }
+      else if(s.i===k){ fill='rgba(109,40,217,.20)'; stroke='#6d28d9'; txtc='#6d28d9'; }
+      else if(s.stk.indexOf(k)>=0){ fill='rgba(37,99,235,.18)'; stroke='#2563eb'; txtc='#2563eb'; }
+      else if(s.ans[k]!==-1){ fill='rgba(15,118,110,.18)'; stroke='#0f766e'; txtc='#0f766e'; }
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',x); r.setAttribute('y',40); r.setAttribute('width',BW); r.setAttribute('height',60);
+      r.setAttribute('rx','10'); r.setAttribute('fill',fill); r.setAttribute('stroke',stroke); r.setAttribute('stroke-width','3');
+      svg.appendChild(r);
+      var tv=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tv.setAttribute('x',x+BW/2); tv.setAttribute('y',78); tv.setAttribute('text-anchor','middle');
+      tv.setAttribute('fill',txtc); tv.setAttribute('font-size','26'); tv.setAttribute('font-weight','900');
+      tv.textContent=ARR[k]; svg.appendChild(tv);
+      /* index label */
+      var ti=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ti.setAttribute('x',x+BW/2); ti.setAttribute('y',118); ti.setAttribute('text-anchor','middle');
+      ti.setAttribute('fill','var(--muted)'); ti.setAttribute('font-size','13'); ti.setAttribute('font-weight','800');
+      ti.textContent='i='+k; svg.appendChild(ti);
+      /* ans label */
+      if(s.ans[k]!==-1){
+        var ta=document.createElementNS('http://www.w3.org/2000/svg','text');
+        ta.setAttribute('x',x+BW/2); ta.setAttribute('y',135); ta.setAttribute('text-anchor','middle');
+        ta.setAttribute('fill','#0f766e'); ta.setAttribute('font-size','13'); ta.setAttribute('font-weight','900');
+        ta.textContent='ans='+s.ans[k]; svg.appendChild(ta);
+      }
+    }
+    /* arrow pointing to current i */
+    if(s.i>=0){
+      var ax=BX+s.i*(BW+GAP)+BW/2;
+      var ar=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ar.setAttribute('x',ax); ar.setAttribute('y',158); ar.setAttribute('text-anchor','middle');
+      ar.setAttribute('fill','#6d28d9'); ar.setAttribute('font-size','22'); ar.setAttribute('font-weight','900');
+      ar.textContent='▲'; svg.appendChild(ar);
+      var aL=document.createElementNS('http://www.w3.org/2000/svg','text');
+      aL.setAttribute('x',ax); aL.setAttribute('y',178); aL.setAttribute('text-anchor','middle');
+      aL.setAttribute('fill','#6d28d9'); aL.setAttribute('font-size','13'); aL.setAttribute('font-weight','900');
+      aL.textContent='current'; svg.appendChild(aL);
+    }
+    /* Stack visualization (right side, vertical, bottom→top) */
+    var SX=470, SBY=240; /* stack bottom y */
+    var sLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    sLbl.setAttribute('x',SX+40); sLbl.setAttribute('y',158); sLbl.setAttribute('text-anchor','middle');
+    sLbl.setAttribute('fill','var(--muted)'); sLbl.setAttribute('font-size','14'); sLbl.setAttribute('font-weight','800');
+    sLbl.textContent='STACK'; svg.appendChild(sLbl);
+    if(s.stk.length===0){
+      var em=document.createElementNS('http://www.w3.org/2000/svg','text');
+      em.setAttribute('x',SX+40); em.setAttribute('y',195); em.setAttribute('text-anchor','middle');
+      em.setAttribute('fill','var(--muted)'); em.setAttribute('font-size','15'); em.setAttribute('font-weight','800');
+      em.textContent='(empty)'; svg.appendChild(em);
+    }
+    for(var sj=0;sj<s.stk.length;sj++){
+      var idx=s.stk[sj];
+      var sy=SBY-30-sj*40; /* bottom-up layout */
+      var sr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      sr.setAttribute('x',SX); sr.setAttribute('y',sy); sr.setAttribute('width',80); sr.setAttribute('height',34);
+      sr.setAttribute('rx','7'); sr.setAttribute('fill','rgba(37,99,235,.18)'); sr.setAttribute('stroke','#2563eb'); sr.setAttribute('stroke-width','3');
+      svg.appendChild(sr);
+      var sv=document.createElementNS('http://www.w3.org/2000/svg','text');
+      sv.setAttribute('x',SX+40); sv.setAttribute('y',sy+22); sv.setAttribute('text-anchor','middle');
+      sv.setAttribute('fill','#2563eb'); sv.setAttribute('font-size','17'); sv.setAttribute('font-weight','900');
+      sv.textContent='idx='+idx+' (v='+ARR[idx]+')'; svg.appendChild(sv);
+      if(sj===s.stk.length-1){
+        var tp=document.createElementNS('http://www.w3.org/2000/svg','text');
+        tp.setAttribute('x',SX+90); tp.setAttribute('y',sy+22); tp.setAttribute('fill','var(--muted)');
+        tp.setAttribute('font-size','13'); tp.setAttribute('font-weight','900'); tp.textContent='← top'; svg.appendChild(tp);
+      }
+      if(sj===0){
+        var bt=document.createElementNS('http://www.w3.org/2000/svg','text');
+        bt.setAttribute('x',SX+90); bt.setAttribute('y',sy+22); bt.setAttribute('fill','var(--muted)');
+        bt.setAttribute('font-size','13'); bt.setAttribute('font-weight','900'); bt.textContent='← bottom'; svg.appendChild(bt);
+      }
+    }
+
+    /* Side panel */
+    document.getElementById('trPhaseS').textContent=s.ph;
+    var rl=s.i>=0 ? ('i='+s.i+' (a[i]='+ARR[s.i]+')') : '—';
+    document.getElementById('trRoundS').textContent='→ '+rl;
+    var ee=document.getElementById('trExpS');
+    ee.textContent=s.exp;
+    ee.className='sp-exp '+(s.cls==='ok'?'ok':s.cls==='bad'?'bad':s.cls==='warn'?'warn':'init');
+    /* Answer box */
+    var ab=document.getElementById('trAnsS'); ab.innerHTML='';
+    for(var ai=0;ai<ARR.length;ai++){
+      var c=document.createElement('div');
+      var cls='ditem';
+      if(s.ans[ai]!==-1) cls+=' ok';
+      else if(s.stk.indexOf(ai)>=0) cls+=' stack';
+      c.className=cls;
+      c.innerHTML='<div class="di-lbl">i='+ai+'</div><div class="di-val">a='+ARR[ai]+'<br>ans='+(s.ans[ai]===-1?'-1':s.ans[ai])+'</div>';
+      ab.appendChild(c);
+    }
+    /* Log */
+    var log=document.getElementById('trLogS'); log.innerHTML='';
+    for(var ii=Math.max(0,cur-8);ii<=cur;ii++){
+      var li=document.createElement('div');
+      li.className='sli'+(ii===cur?' cur':'')+(steps[ii].cls==='ok'?' ok':steps[ii].cls==='bad'?' bad':steps[ii].cls==='warn'?' warn':'');
+      li.textContent='['+ii+'] '+steps[ii].ph;
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('trCtrS').textContent='Step '+(cur+1)+' / '+steps.length;
+    document.getElementById('trPrvS').disabled=cur===0;
+    document.getElementById('trNxtS').disabled=cur>=steps.length-1;
+    document.getElementById('trSkpS').disabled=cur>=steps.length-1;
+  }
+
+  function startPlay(){
+    if(playing) return; playing=true;
+    document.getElementById('trPlyS').textContent='⏸';
+    document.getElementById('trPlyS').classList.add('playing');
+    function tick(){
+      if(!playing||cur>=steps.length-1){ stopPlay(); return; }
+      cur++; render(); tmr=setTimeout(tick,spd());
+    }
+    tmr=setTimeout(tick,spd());
+  }
+  function stopPlay(){
+    playing=false; clearTimeout(tmr);
+    document.getElementById('trPlyS').textContent='▶';
+    document.getElementById('trPlyS').classList.remove('playing');
+  }
+  document.getElementById('trRstS').addEventListener('click',function(){ stopPlay(); cur=0; render(); });
+  document.getElementById('trPrvS').addEventListener('click',function(){ stopPlay(); if(cur>0){cur--;render();} });
+  document.getElementById('trNxtS').addEventListener('click',function(){ stopPlay(); if(cur<steps.length-1){cur++;render();} });
+  document.getElementById('trSkpS').addEventListener('click',function(){ stopPlay(); cur=steps.length-1; render(); });
+  document.getElementById('trPlyS').addEventListener('click',function(){ if(playing) stopPlay(); else startPlay(); });
+  var labelsS=['0.5×','1×','1.5×','2×','3×'];
+  document.getElementById('trSpdS').addEventListener('input',function(){
+    document.getElementById('trSpdLblS').textContent=labelsS[parseInt(this.value,10)];
+  });
+  document.getElementById('trSpdLblS').textContent=labelsS[parseInt(document.getElementById('trSpdS').value,10)];
+  render();
+})();
+
+/* ── INTERACTIVE DEQUE TRACER (Sliding Window Maximum) ── */
+(function(){
+  /* Array: [1, 3, -1, -3, 5, 3, 6, 7], window k = 3.
+     Steps mirror the master template:
+       (1) expire from the front
+       (2) dominance pop from the back
+       (3) push i; if window full, emit a[dq.front()]. */
+  var ARR=[1,3,-1,-3,5,3,6,7];
+  var K=3;
+  var BX=40, BW=70, GAP=10; /* layout for the input strip */
+
+  /* Hand-curated steps for [1,3,-1,-3,5,3,6,7], k=3.
+     Each step: i (current), dq (indices, front..back), ans (emitted so far),
+     pop (just-popped index, -1 if none), popKind ('front'|'back'|null),
+     phase, exp, cls. */
+  var steps=[
+    {ph:'Init',i:-1,dq:[],ans:[],pop:-1,popKind:null,
+     exp:'Initial state. Array=[1,3,-1,-3,5,3,6,7], k=3. Deque empty. Pop rule: dominance from back (a[back] ≤ a[i]); expiry from front (front ≤ i−k).',cls:'init'},
+
+    {ph:'Push',i:0,dq:[0],ans:[],pop:-1,popKind:null,
+     exp:'i=0, a[0]=1. No expiry (deque empty), no back-pop. Push 0. Deque indices=[0] → values [1]. Window not full yet.',cls:'init'},
+
+    {ph:'Pop back',i:1,dq:[],ans:[],pop:0,popKind:'back',
+     exp:'i=1, a[1]=3. Back is index 0 (value 1). 1 ≤ 3 → 0 is dominated. Pop back. Deque empty.',cls:'bad'},
+
+    {ph:'Push',i:1,dq:[1],ans:[],pop:-1,popKind:null,
+     exp:'Push 1. Deque indices=[1] → values [3]. Window still not full (need i ≥ k−1=2).',cls:'init'},
+
+    {ph:'Push + emit',i:2,dq:[1,2],ans:[3],pop:-1,popKind:null,
+     exp:'i=2, a[2]=−1. No expiry. Back is index 1 (value 3). 3 ≤ −1? NO → keep. Push 2. Deque=[1,2] → values [3,−1]. i ≥ 2 → first window full. Emit a[front]=a[1]=3.',cls:'ok'},
+
+    {ph:'Push + emit',i:3,dq:[1,2,3],ans:[3,3],pop:-1,popKind:null,
+     exp:'i=3, a[3]=−3. front=1, 1 ≤ 3−3=0? NO, no expiry. Back is index 2 (value −1). −1 ≤ −3? NO. Push 3. Deque=[1,2,3] → values [3,−1,−3]. Emit a[front]=a[1]=3.',cls:'ok'},
+
+    {ph:'Expire',i:4,dq:[2,3],ans:[3,3],pop:1,popKind:'front',
+     exp:'i=4, a[4]=5. front=1, 1 ≤ 4−3=1? YES → expired. Pop front.',cls:'bad'},
+
+    {ph:'Pop back',i:4,dq:[2],ans:[3,3],pop:3,popKind:'back',
+     exp:'Back is index 3 (value −3). −3 ≤ 5? YES → dominated. Pop back.',cls:'bad'},
+
+    {ph:'Pop back',i:4,dq:[],ans:[3,3],pop:2,popKind:'back',
+     exp:'Continue: back is index 2 (value −1). −1 ≤ 5? YES → dominated. Pop back. Deque now empty — 5 wiped out the entire deque, the classic dominance event.',cls:'bad'},
+
+    {ph:'Push + emit',i:4,dq:[4],ans:[3,3,5],pop:-1,popKind:null,
+     exp:'Push 4. Deque=[4] → values [5]. Emit a[front]=a[4]=5.',cls:'ok'},
+
+    {ph:'Push + emit',i:5,dq:[4,5],ans:[3,3,5,5],pop:-1,popKind:null,
+     exp:'i=5, a[5]=3. front=4, 4 ≤ 5−3=2? NO. Back=4, value 5. 5 ≤ 3? NO. Push 5. Deque=[4,5] → values [5,3]. Emit a[front]=a[4]=5.',cls:'ok'},
+
+    {ph:'Pop back',i:6,dq:[4],ans:[3,3,5,5],pop:5,popKind:'back',
+     exp:'i=6, a[6]=6. front=4, 4 ≤ 6−3=3? NO. Back=5 (value 3). 3 ≤ 6? YES → dominated. Pop back.',cls:'bad'},
+
+    {ph:'Pop back',i:6,dq:[],ans:[3,3,5,5],pop:4,popKind:'back',
+     exp:'Continue: back=4 (value 5). 5 ≤ 6? YES → dominated. Pop back. Deque empty.',cls:'bad'},
+
+    {ph:'Push + emit',i:6,dq:[6],ans:[3,3,5,5,6],pop:-1,popKind:null,
+     exp:'Push 6. Deque=[6] → values [6]. Emit a[front]=a[6]=6.',cls:'ok'},
+
+    {ph:'Pop back',i:7,dq:[],ans:[3,3,5,5,6],pop:6,popKind:'back',
+     exp:'i=7, a[7]=7. front=6, 6 ≤ 7−3=4? NO. Back=6 (value 6). 6 ≤ 7? YES → dominated. Pop back.',cls:'bad'},
+
+    {ph:'Push + emit',i:7,dq:[7],ans:[3,3,5,5,6,7],pop:-1,popKind:null,
+     exp:'Push 7. Deque=[7] → values [7]. Emit a[front]=a[7]=7.',cls:'ok'},
+
+    {ph:'Done ✓',i:-1,dq:[7],ans:[3,3,5,5,6,7],pop:-1,popKind:null,
+     exp:'Scan complete. Final answer = [3, 3, 5, 5, 6, 7]. Total work: 8 pushes + 7 pops over 8 steps — strictly linear in the input length, exactly as the amortized argument predicts.',cls:'ok'}
+  ];
+
+  var cur=0,playing=false,tmr;
+  var svg=document.getElementById('trSvgD');
+  var spdMap=[2000,1400,900,550,280];
+
+  function spd(){ return spdMap[parseInt(document.getElementById('trSpdD').value,10)]; }
+
+  function render(){
+    var s=steps[cur];
+    svg.innerHTML='';
+
+    /* Title */
+    var tt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    tt.setAttribute('x','360'); tt.setAttribute('y','20'); tt.setAttribute('text-anchor','middle');
+    tt.setAttribute('fill','var(--muted)'); tt.setAttribute('font-size','15'); tt.setAttribute('font-weight','800');
+    tt.textContent='Input array (top) · Deque (bottom, front → back)'; svg.appendChild(tt);
+
+    /* Window range visualization (above the strip) */
+    if(s.i>=0){
+      var L=Math.max(0,s.i-K+1), R=s.i;
+      var wx1=BX+L*(BW+GAP);
+      var wx2=BX+R*(BW+GAP)+BW;
+      var wb=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      wb.setAttribute('x',wx1-3); wb.setAttribute('y',32); wb.setAttribute('width',wx2-wx1+6); wb.setAttribute('height',86);
+      wb.setAttribute('rx','12'); wb.setAttribute('fill','none');
+      wb.setAttribute('stroke','#7c3aed'); wb.setAttribute('stroke-width','2.5'); wb.setAttribute('stroke-dasharray','7,5');
+      svg.appendChild(wb);
+      var wl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      wl.setAttribute('x',(wx1+wx2)/2); wl.setAttribute('y',46); wl.setAttribute('text-anchor','middle');
+      wl.setAttribute('fill','#7c3aed'); wl.setAttribute('font-size','13'); wl.setAttribute('font-weight','900');
+      wl.textContent='window'; svg.appendChild(wl);
+    }
+
+    /* Input strip */
+    for(var k=0;k<ARR.length;k++){
+      var x=BX+k*(BW+GAP);
+      var fill='var(--panel)', stroke='var(--border)', txtc='var(--text)';
+      if(s.pop===k){ fill='rgba(185,28,28,.20)'; stroke='#b91c1c'; txtc='#b91c1c'; }
+      else if(s.i===k){ fill='rgba(109,40,217,.20)'; stroke='#6d28d9'; txtc='#6d28d9'; }
+      else if(s.dq.length>0 && s.dq[0]===k){ fill='rgba(15,118,110,.20)'; stroke='#0f766e'; txtc='#0f766e'; }
+      else if(s.dq.indexOf(k)>=0){ fill='rgba(37,99,235,.18)'; stroke='#2563eb'; txtc='#2563eb'; }
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',x); r.setAttribute('y',58); r.setAttribute('width',BW); r.setAttribute('height',56);
+      r.setAttribute('rx','9'); r.setAttribute('fill',fill); r.setAttribute('stroke',stroke); r.setAttribute('stroke-width','3');
+      svg.appendChild(r);
+      var tv=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tv.setAttribute('x',x+BW/2); tv.setAttribute('y',93); tv.setAttribute('text-anchor','middle');
+      tv.setAttribute('fill',txtc); tv.setAttribute('font-size','22'); tv.setAttribute('font-weight','900');
+      tv.textContent=ARR[k]; svg.appendChild(tv);
+      var ti=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ti.setAttribute('x',x+BW/2); ti.setAttribute('y',130); ti.setAttribute('text-anchor','middle');
+      ti.setAttribute('fill','var(--muted)'); ti.setAttribute('font-size','12'); ti.setAttribute('font-weight','800');
+      ti.textContent='i='+k; svg.appendChild(ti);
+    }
+
+    /* current arrow */
+    if(s.i>=0){
+      var ax=BX+s.i*(BW+GAP)+BW/2;
+      var ar=document.createElementNS('http://www.w3.org/2000/svg','text');
+      ar.setAttribute('x',ax); ar.setAttribute('y',150); ar.setAttribute('text-anchor','middle');
+      ar.setAttribute('fill','#6d28d9'); ar.setAttribute('font-size','20'); ar.setAttribute('font-weight','900');
+      ar.textContent='▲'; svg.appendChild(ar);
+      var aL=document.createElementNS('http://www.w3.org/2000/svg','text');
+      aL.setAttribute('x',ax); aL.setAttribute('y',168); aL.setAttribute('text-anchor','middle');
+      aL.setAttribute('fill','#6d28d9'); aL.setAttribute('font-size','12'); aL.setAttribute('font-weight','900');
+      aL.textContent='current'; svg.appendChild(aL);
+    }
+
+    /* Deque visualization (horizontal, front on the left) */
+    var DY=192;
+    var dLbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    dLbl.setAttribute('x',BX); dLbl.setAttribute('y',184); dLbl.setAttribute('fill','var(--muted)');
+    dLbl.setAttribute('font-size','13'); dLbl.setAttribute('font-weight','800');
+    dLbl.textContent='DEQUE (front → back):'; svg.appendChild(dLbl);
+    if(s.dq.length===0){
+      var em=document.createElementNS('http://www.w3.org/2000/svg','text');
+      em.setAttribute('x',BX+170); em.setAttribute('y',218); em.setAttribute('fill','var(--muted)');
+      em.setAttribute('font-size','15'); em.setAttribute('font-weight','800'); em.textContent='(empty)'; svg.appendChild(em);
+    } else {
+      var dx=BX+170;
+      for(var dj=0;dj<s.dq.length;dj++){
+        var idx=s.dq[dj];
+        var fc=(dj===0)?'rgba(15,118,110,.20)':'rgba(37,99,235,.18)';
+        var sc=(dj===0)?'#0f766e':'#2563eb';
+        var tc=(dj===0)?'#0f766e':'#2563eb';
+        var dr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+        dr.setAttribute('x',dx); dr.setAttribute('y',DY); dr.setAttribute('width',95); dr.setAttribute('height',36);
+        dr.setAttribute('rx','7'); dr.setAttribute('fill',fc); dr.setAttribute('stroke',sc); dr.setAttribute('stroke-width','3');
+        svg.appendChild(dr);
+        var dv=document.createElementNS('http://www.w3.org/2000/svg','text');
+        dv.setAttribute('x',dx+47); dv.setAttribute('y',DY+23); dv.setAttribute('text-anchor','middle');
+        dv.setAttribute('fill',tc); dv.setAttribute('font-size','15'); dv.setAttribute('font-weight','900');
+        dv.textContent='i='+idx+' v='+ARR[idx]; svg.appendChild(dv);
+        if(dj===0){
+          var ftl=document.createElementNS('http://www.w3.org/2000/svg','text');
+          ftl.setAttribute('x',dx+47); ftl.setAttribute('y',DY+50); ftl.setAttribute('text-anchor','middle');
+          ftl.setAttribute('fill','#0f766e'); ftl.setAttribute('font-size','11'); ftl.setAttribute('font-weight','900');
+          ftl.textContent='FRONT (answer)'; svg.appendChild(ftl);
+        }
+        if(dj===s.dq.length-1 && s.dq.length>1){
+          var bkl=document.createElementNS('http://www.w3.org/2000/svg','text');
+          bkl.setAttribute('x',dx+47); bkl.setAttribute('y',DY+50); bkl.setAttribute('text-anchor','middle');
+          bkl.setAttribute('fill','var(--muted)'); bkl.setAttribute('font-size','11'); bkl.setAttribute('font-weight','900');
+          bkl.textContent='BACK'; svg.appendChild(bkl);
+        }
+        dx+=105;
+      }
+    }
+
+    /* Side panel */
+    document.getElementById('trPhaseD').textContent=s.ph;
+    var rl=s.i>=0 ? ('i='+s.i+' (a[i]='+ARR[s.i]+')') : '—';
+    document.getElementById('trRoundD').textContent='→ '+rl;
+    var ee=document.getElementById('trExpD');
+    ee.textContent=s.exp;
+    ee.className='sp-exp '+(s.cls==='ok'?'ok':s.cls==='bad'?'bad':s.cls==='warn'?'warn':'init');
+
+    /* Answer chips (emitted maxima so far) */
+    var ab=document.getElementById('trAnsD'); ab.innerHTML='';
+    var lblHead=document.createElement('div');
+    lblHead.style.cssText='font-size:13px;font-weight:900;color:var(--muted);width:100%;margin-bottom:4px';
+    lblHead.textContent='Emitted answers ('+s.ans.length+'/'+(ARR.length-K+1)+'):';
+    ab.appendChild(lblHead);
+    if(s.ans.length===0){
+      var em2=document.createElement('div');
+      em2.style.cssText='font-size:14px;color:var(--muted);font-weight:700';
+      em2.textContent='(none yet — window not full)';
+      ab.appendChild(em2);
+    } else {
+      for(var ai=0;ai<s.ans.length;ai++){
+        var c=document.createElement('div');
+        c.className='ditem ok';
+        c.innerHTML='<div class="di-lbl">w'+ai+'</div><div class="di-val">'+s.ans[ai]+'</div>';
+        ab.appendChild(c);
+      }
+    }
+
+    /* Log */
+    var log=document.getElementById('trLogD'); log.innerHTML='';
+    for(var ii=Math.max(0,cur-8);ii<=cur;ii++){
+      var li=document.createElement('div');
+      li.className='sli'+(ii===cur?' cur':'')+(steps[ii].cls==='ok'?' ok':steps[ii].cls==='bad'?' bad':steps[ii].cls==='warn'?' warn':'');
+      li.textContent='['+ii+'] '+steps[ii].ph;
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('trCtrD').textContent='Step '+(cur+1)+' / '+steps.length;
+    document.getElementById('trPrvD').disabled=cur===0;
+    document.getElementById('trNxtD').disabled=cur>=steps.length-1;
+    document.getElementById('trSkpD').disabled=cur>=steps.length-1;
+  }
+
+  function startPlay(){
+    if(playing) return; playing=true;
+    document.getElementById('trPlyD').textContent='⏸';
+    document.getElementById('trPlyD').classList.add('playing');
+    function tick(){
+      if(!playing||cur>=steps.length-1){ stopPlay(); return; }
+      cur++; render(); tmr=setTimeout(tick,spd());
+    }
+    tmr=setTimeout(tick,spd());
+  }
+  function stopPlay(){
+    playing=false; clearTimeout(tmr);
+    document.getElementById('trPlyD').textContent='▶';
+    document.getElementById('trPlyD').classList.remove('playing');
+  }
+  document.getElementById('trRstD').addEventListener('click',function(){ stopPlay(); cur=0; render(); });
+  document.getElementById('trPrvD').addEventListener('click',function(){ stopPlay(); if(cur>0){cur--;render();} });
+  document.getElementById('trNxtD').addEventListener('click',function(){ stopPlay(); if(cur<steps.length-1){cur++;render();} });
+  document.getElementById('trSkpD').addEventListener('click',function(){ stopPlay(); cur=steps.length-1; render(); });
+  document.getElementById('trPlyD').addEventListener('click',function(){ if(playing) stopPlay(); else startPlay(); });
+  var labelsD=['0.5×','1×','1.5×','2×','3×'];
+  document.getElementById('trSpdD').addEventListener('input',function(){
+    document.getElementById('trSpdLblD').textContent=labelsD[parseInt(this.value,10)];
+  });
+  document.getElementById('trSpdLblD').textContent=labelsD[parseInt(document.getElementById('trSpdD').value,10)];
+  render();
+})();
+</script>
+</body>
+</html>

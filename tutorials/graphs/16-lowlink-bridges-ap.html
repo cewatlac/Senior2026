@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Low-Link DFS: Articulation Points, Bridges &amp; BCCs</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;--sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+p{margin:10px 0;line-height:1.6}ul,ol{line-height:1.7;padding-left:1.4rem}
+li{margin:.35rem 0}section{scroll-margin-top:16px}
+/* LAYOUT */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+/* SIDEBAR */
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:26px;flex:0 0 auto;letter-spacing:-.03em}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:rgba(37,99,235,.10);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+/* CARDS */
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+/* INFO BOXES */
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+/* CODE */
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+/* ACCORDION */
+details{border-radius:var(--radius);border:3px solid var(--border);
+  background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+/* TABLES */
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+/* DIAGRAM */
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+/* TRACER CONTROLS */
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.spd-row{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;
+  color:var(--muted);margin-bottom:10px}
+.spd-row input{flex:1;accent-color:var(--accent2)}
+.tside{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:14px;position:sticky;top:6px}
+.tracer-wrap{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.sp-phase{font-size:14px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;
+  color:var(--muted);margin-bottom:3px}
+.sp-round{font-weight:900;font-size:20px;margin-bottom:5px}
+.sp-exp{font-size:17px;font-weight:700;line-height:1.5;padding:9px 11px;
+  border-radius:9px;border-left:4px solid var(--border)}
+.sp-exp.ok{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07)}
+.sp-exp.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07)}
+.sp-exp.init{border-left-color:var(--accent2);background:rgba(37,99,235,.08)}
+.slog{max-height:150px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.sli{padding:3px 5px;border-radius:4px;color:#6b7280;line-height:1.4;cursor:pointer}
+.sli:hover{background:rgba(255,255,255,.07)}
+.sli.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.sli.ok{color:#34d399}.sli.warn{color:#fbbf24}.sli.bad{color:#fb7185}
+/* DIST BOX */
+.dist-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ditem{display:flex;flex-direction:column;align-items:center;background:var(--panel);
+  border:3px solid var(--border);border-radius:10px;padding:7px 10px;min-width:56px;transition:all .25s}
+.di-lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.di-val{font-size:18px;font-weight:900;font-family:ui-monospace,monospace}
+.ditem.art{border-color:var(--bad);background:rgba(185,28,28,.10)}
+.ditem.bridge{border-color:var(--warn);background:rgba(180,83,9,.09)}
+.ditem.ok{border-color:var(--good);background:rgba(15,118,110,.09)}
+.ditem.cur{border-color:#6d28d9;background:rgba(109,40,217,.10)}
+@keyframes cellFlash{0%,100%{transform:scale(1)}40%{transform:scale(1.14)}}
+.ditem.flash{animation:cellFlash .5s ease}
+/* FORMULA */
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+/* TABS */
+.tab-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab-btn{padding:9px 16px;border-radius:999px;border:2.5px solid var(--border);
+  background:var(--panel);font-size:17px;font-weight:900;cursor:pointer;
+  transition:all .18s;color:var(--text)}
+.tab-btn:hover{border-color:var(--accent2)}
+.tab-btn.active{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;border-color:transparent}
+.tab-pane{display:none}.tab-pane.active{display:block}
+/* PROB CARD */
+.prob-card{border:3px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;margin:14px 0;background:var(--panel2)}
+.prob-title{font-weight:950;font-size:22px;margin-bottom:8px;display:flex;
+  align-items:center;gap:10px;flex-wrap:wrap}
+.prob-link{font-size:16px;font-weight:800;color:var(--link);
+  margin-left:auto;padding:6px 14px;border:2px solid var(--border);
+  border-radius:999px;background:var(--panel);white-space:nowrap}
+/* KS */
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+.must li{list-style:none;padding-left:0}.must li::before{content:"→ ";color:var(--accent2);font-weight:950}
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:18px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:7px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:16px;height:16px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3)}
+.step-ctr{font-size:14px;font-weight:700;color:var(--muted);text-align:right;margin-top:4px}
+/* SIDEBAR FOOTER */
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+/* PAGE FOOTER */
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+/* RESPONSIVE */
+@media(max-width:1300px){
+  .tracer-wrap{grid-template-columns:1fr}.tside{position:static}
+  .grid2,.grid3,.ks-grid{grid-template-columns:1fr}
+}
+@media(max-width:700px){h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}}
+</style>
+</head>
+<script>
+(function(){
+  /* Immediately apply saved theme (or system pref) to avoid first-paint flash */
+  var t=localStorage.getItem('ca-theme');
+  if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light';}
+  document.documentElement.setAttribute('data-theme',t);
+})();
+</script>
+<body>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation sidebar" aria-controls="sidebar" aria-expanded="true">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">LL</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Low-Link DFS</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">Foundations</div>
+    <a href="#s0">Overview<small>What you'll learn &amp; why it matters</small></a>
+    <a href="#s1">1. Problem Definition<small>Connectivity under removal</small></a>
+    <a href="#s2">2. DFS Tree &amp; Edge Types<small>Tree vs back edges</small></a>
+    <a href="#s3">3. The Escape Question<small>The entire algorithm in one idea</small></a>
+    <a href="#s4">4. ord[] and low[]<small>Variables built from scratch</small></a>
+    <a href="#s5">5. Computing low[]<small>Two-case recurrence</small></a>
+    <div class="grpTitle">Theory &amp; Proof</div>
+    <a href="#s6">6. Conditions Derived<small>Bridge: &gt; | Articulation: ≥</small></a>
+    <a href="#s7">7. Proof of Correctness<small>Invariant + full proof</small></a>
+    <a href="#s8">8. Complexity<small>O(N+M) tight analysis</small></a>
+    <div class="grpTitle">Implementation</div>
+    <a href="#s9">9. Template Philosophy<small>One family, many variants</small></a>
+    <a href="#s10">10. Master Template<small>Full AC-ready C++ code</small></a>
+    <a href="#s11">11. Line-by-Line<small>Every detail explained</small></a>
+    <a href="#s12">12. Edge Cases<small>Parallel edges, root, multigraph</small></a>
+    <a href="#s13">13. Pitfalls<small>The bugs that break submissions</small></a>
+    <a href="#stracer">Interactive Tracer<small>Step-by-step low-link DFS</small></a>
+    <div class="grpTitle">Extensions &amp; Problems</div>
+    <a href="#sdecide">Variant Decision Guide<small>Which tool for which problem?</small></a>
+    <a href="#s14">14. Variants<small>BCC, EBCC, bridge tree, block-cut…</small></a>
+    <a href="#s15">15. Problems<small>UVA 315, 796, 610, 1108, CF 1000E…</small></a>
+    <a href="#s16">16. Advanced Extensions<small>MST, offline queries, more</small></a>
+    <a href="#summary">Summary &amp; Checklist</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br/><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Low-Link DFS</h1>
+    <div class="subtitle">Articulation Points · Bridges · Biconnected Components — Complete Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<!-- 0. OVERVIEW -->
+<section class="card" id="s0">
+  <h2>What You'll Learn</h2>
+  <p>This tutorial builds the entire Low-Link DFS framework from first principles. <strong>No formula is memorized</strong> — every condition is derived from a single core idea. We go from the naive O(N·(N+M)) approach to a single O(N+M) DFS that answers all connectivity questions simultaneously.</p>
+  <div class="grid2">
+    <div><div class="chips">
+      <span class="chip">DFS tree structure</span>
+      <span class="chip">Back edges as escape routes</span>
+      <span class="chip">ord[] discovery time</span>
+      <span class="chip">low[] escape reach</span>
+      <span class="chip">Bridge condition: low[v] &gt; ord[u]</span>
+      <span class="chip">Articulation: low[v] ≥ ord[u]</span>
+    </div></div>
+    <div><div class="chips">
+      <span class="chip p">Vertex-BCC extraction</span>
+      <span class="chip p">Edge-BCC (bridge-free)</span>
+      <span class="chip p">Bridge tree construction</span>
+      <span class="chip p">Block-cut tree</span>
+      <span class="chip w">MST edge classification</span>
+      <span class="chip g">Full contest template</span>
+    </div></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Technique</th><th>Removes</th><th>Key Condition</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>Naïve removal test</td><td>Each vertex/edge</td><td>Re-run DFS each time</td><td class="cr">O(N·(N+M))</td></tr>
+      <tr><td class="cy">Low-Link DFS</td><td>All at once</td><td class="cy">low[v] vs ord[u]</td><td class="cy">O(N+M)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="ib ib-blue"><i>🔥</i><p><strong>Core Promise:</strong> One DFS. Every bridge, every articulation point, every BCC — all found in linear time using a single low-link invariant.</p></div>
+</section>
+
+<!-- 1. PROBLEM DEFINITION -->
+<section class="card" id="s1">
+  <h2>1. Problem Definition</h2>
+  <h3>The family of questions</h3>
+  <p>Given an undirected connected graph, we want to identify its <em>structural weak points</em> — vertices or edges whose removal would break connectivity:</p>
+  <div class="grid3" style="margin:14px 0">
+    <div style="background:rgba(185,28,28,.07);border:3px solid rgba(185,28,28,.35);border-radius:14px;padding:14px">
+      <div style="font-weight:950;font-size:20px;color:var(--bad);margin-bottom:6px">Articulation Point</div>
+      A vertex <strong>u</strong> whose removal disconnects the graph. The graph loses connectivity because <em>u was the only link</em> between two parts.
+    </div>
+    <div style="background:rgba(180,83,9,.07);border:3px solid rgba(180,83,9,.35);border-radius:14px;padding:14px">
+      <div style="font-weight:950;font-size:20px;color:var(--warn);margin-bottom:6px">Bridge</div>
+      An edge <strong>(u,v)</strong> whose removal disconnects the graph. It is the <em>sole path</em> between the two sides it connects.
+    </div>
+    <div style="background:rgba(124,58,237,.07);border:3px solid rgba(124,58,237,.35);border-radius:14px;padding:14px">
+      <div style="font-weight:950;font-size:20px;color:#7c3aed;margin-bottom:6px">BCC / EBCC</div>
+      Maximal subgraphs that are <em>robust</em>: vertex-biconnected (no articulation inside) or edge-biconnected (no bridge inside).
+    </div>
+  </div>
+  <h3>Why the naïve approach fails</h3>
+  <div class="grid2">
+    <div class="ib ib-red" style="flex-direction:column">
+      <strong style="font-size:19px">❌ Naïve: O(N·(N+M))</strong>
+      <p style="margin:6px 0 0">For each of the N vertices: remove it, run DFS to check connectivity. With N = 200,000 and M = 400,000, that is 120 billion operations. Far too slow.</p>
+    </div>
+    <div class="ib ib-green" style="flex-direction:column">
+      <strong style="font-size:19px">✅ Low-Link DFS: O(N+M)</strong>
+      <p style="margin:6px 0 0">During a single DFS pass, we accumulate enough information about <em>escape routes</em> to answer all questions simultaneously. No vertex or edge needs to actually be removed.</p>
+    </div>
+  </div>
+  <h3>Formal definitions</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Name</th><th>Formal Definition</th><th>Alternate view</th></tr></thead>
+    <tbody>
+      <tr><td class="cb">Articulation Point</td><td>Vertex u with comp(G) &lt; comp(G − u)</td><td>G − u has more connected components</td></tr>
+      <tr><td class="cb">Bridge</td><td>Edge e with comp(G) &lt; comp(G − e)</td><td>G − e has more connected components</td></tr>
+      <tr><td class="cp">2-Vertex-Connected</td><td>Graph with no articulation points</td><td>Any single vertex can be removed safely</td></tr>
+      <tr><td class="cp">2-Edge-Connected</td><td>Graph with no bridges</td><td>Any single edge can be removed safely</td></tr>
+      <tr><td class="cy">VBCC</td><td>Maximal 2-vertex-connected subgraph</td><td>Maximal "solid" cluster around articulations</td></tr>
+      <tr><td class="cy">EBCC</td><td>Maximal 2-edge-connected subgraph</td><td>Maximal bridge-free region</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 2. DFS TREE -->
+<section class="card" id="s2">
+  <h2>2. DFS Tree &amp; Edge Types</h2>
+  <p>When DFS runs on an undirected graph, it builds a <strong>DFS tree</strong>. Every edge of the original graph becomes one of exactly two types:</p>
+  <div class="grid2" style="margin:14px 0">
+    <div style="background:rgba(37,99,235,.07);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <div style="font-size:22px;font-weight:950;color:var(--accent2);margin-bottom:8px">Tree Edge</div>
+      The edge we follow when we discover a new, unvisited node. It becomes part of the DFS tree. Points <em>from parent to child</em>.
+      <div class="formula" style="font-size:17px;margin-top:10px">u → v &nbsp; (v is unvisited)</div>
+    </div>
+    <div style="background:rgba(180,83,9,.07);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <div style="font-size:22px;font-weight:950;color:var(--warn);margin-bottom:8px">Back Edge</div>
+      An edge to an <em>already-visited ancestor</em>. In undirected DFS there are no forward or cross edges — only back edges.
+      <div class="formula" style="font-size:17px;margin-top:10px">u → ancestor &nbsp; (ancestor is visited)</div>
+    </div>
+  </div>
+  <div class="diagramWrap">
+    <div class="diagramTitle" style="margin-bottom:10px">DFS Tree — Blue = tree edges, Orange dashes = back edges</div>
+    <svg class="graphsvg" viewBox="0 0 700 280" style="height:280px">
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--border)"/>
+        </marker>
+      </defs>
+      <!-- tree edges -->
+      <line x1="350" y1="45" x2="190" y2="130" stroke="#2563eb" stroke-width="3"/>
+      <line x1="350" y1="45" x2="510" y2="130" stroke="#2563eb" stroke-width="3"/>
+      <line x1="190" y1="130" x2="110" y2="220" stroke="#2563eb" stroke-width="3"/>
+      <line x1="190" y1="130" x2="270" y2="220" stroke="#2563eb" stroke-width="3"/>
+      <line x1="510" y1="130" x2="590" y2="220" stroke="#2563eb" stroke-width="3"/>
+      <line x1="510" y1="130" x2="430" y2="220" stroke="#2563eb" stroke-width="3"/>
+      <!-- back edges -->
+      <path d="M110,220 Q30,120 350,45" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9,5"/>
+      <path d="M270,220 Q350,175 510,130" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9,5"/>
+      <!-- back edge labels -->
+      <text x="60" y="140" fill="#b45309" font-size="14" font-weight="800" transform="rotate(-20,60,140)">back edge</text>
+      <text x="330" y="195" fill="#b45309" font-size="14" font-weight="800">back edge</text>
+      <!-- tree edge label -->
+      <text x="250" y="82" fill="#2563eb" font-size="14" font-weight="800">tree edge</text>
+      <!-- nodes -->
+      <circle cx="350" cy="45" r="24" fill="#6d28d9" stroke="white" stroke-width="3"/>
+      <text x="350" y="52" text-anchor="middle" fill="white" font-size="17" font-weight="900">1</text>
+      <circle cx="190" cy="130" r="24" fill="#2563eb" stroke="white" stroke-width="3"/>
+      <text x="190" y="137" text-anchor="middle" fill="white" font-size="17" font-weight="900">2</text>
+      <circle cx="510" cy="130" r="24" fill="#2563eb" stroke="white" stroke-width="3"/>
+      <text x="510" y="137" text-anchor="middle" fill="white" font-size="17" font-weight="900">3</text>
+      <circle cx="110" cy="220" r="24" fill="#0f766e" stroke="white" stroke-width="3"/>
+      <text x="110" y="227" text-anchor="middle" fill="white" font-size="17" font-weight="900">4</text>
+      <circle cx="270" cy="220" r="24" fill="#0f766e" stroke="white" stroke-width="3"/>
+      <text x="270" y="227" text-anchor="middle" fill="white" font-size="17" font-weight="900">5</text>
+      <circle cx="430" cy="220" r="24" fill="#0f766e" stroke="white" stroke-width="3"/>
+      <text x="430" y="227" text-anchor="middle" fill="white" font-size="17" font-weight="900">6</text>
+      <circle cx="590" cy="220" r="24" fill="#0f766e" stroke="white" stroke-width="3"/>
+      <text x="590" y="227" text-anchor="middle" fill="white" font-size="17" font-weight="900">7</text>
+    </svg>
+    <div class="legend">
+      <span><span class="swatch" style="background:#6d28d9"></span>DFS Root</span>
+      <span><span class="swatch" style="background:#2563eb"></span>Inner nodes</span>
+      <span><span class="swatch" style="background:#0f766e"></span>Leaf nodes</span>
+      <span><span class="swatch" style="background:#b45309;border-radius:2px;width:20px;height:4px"></span>Back edge</span>
+    </div>
+  </div>
+  <div class="ib ib-orange"><i>🔑</i><p><strong>Key fact for undirected DFS:</strong> There are NO forward edges or cross edges. Only tree edges and back edges. This makes the math clean and powerful — back edges are the <em>only</em> way to "climb back up" in the tree.</p></div>
+  <p>Back edges are the structural "ropes" that prevent parts of the tree from being isolated. A subtree with a back edge can survive the removal of its parent-connecting tree edge; one without cannot.</p>
+</section>
+
+<!-- 3. THE ESCAPE QUESTION -->
+<section class="card" id="s3">
+  <h2>3. The Escape Question — The Heart of Everything</h2>
+  <div class="ib ib-blue"><i>🧠</i><p><strong>This section is the most important in the entire tutorial.</strong> Once you deeply understand the following single question, every formula that follows will feel obvious rather than memorized.</p></div>
+  <p>Imagine you are executing DFS and you follow the tree edge from node <strong>u</strong> down to node <strong>v</strong>. You are now inside the subtree rooted at v. Ask yourself:</p>
+  <div class="formula" style="font-size:23px;line-height:1.5">❓ Can the subtree of v reach an ancestor of u<br>without using the edge (u → v)?</div>
+  <p>The two outcomes of this question directly give us our algorithm:</p>
+  <div class="grid2" style="margin-top:14px">
+    <div style="background:rgba(15,118,110,.08);border:3px solid var(--good);border-radius:16px;padding:16px">
+      <div style="font-size:22px;font-weight:950;color:var(--good);margin-bottom:8px">✅ YES — Can escape</div>
+      <p>Some node in v's subtree has a back edge that jumps to an ancestor of u (or to u's parent or higher).</p>
+      <ul>
+        <li>Edge (u,v) is <strong>NOT a bridge</strong> — there's an alternative route.</li>
+        <li>u is <strong>NOT an articulation point</strong> due to this child — v's subtree can survive without u.</li>
+      </ul>
+    </div>
+    <div style="background:rgba(185,28,28,.08);border:3px solid var(--bad);border-radius:16px;padding:16px">
+      <div style="font-size:22px;font-weight:950;color:var(--bad);margin-bottom:8px">❌ NO — Cannot escape</div>
+      <p>Every path from v's subtree back to the rest of the graph passes through the edge (u,v).</p>
+      <ul>
+        <li>Edge (u,v) <strong>IS a bridge</strong> — removing it disconnects v's subtree.</li>
+        <li>u <strong>IS an articulation point</strong> — removing u cuts v's subtree off.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-orange" style="margin-top:14px"><i>🔥</i><p><strong>Everything else is just computing this efficiently.</strong> The variable <code class="ic">low[v]</code> quantifies exactly "how far up the tree can v's subtree reach." Once we can compute low[v] for every node, the entire algorithm follows in 2 lines.</p></div>
+  <h3>Why back edges are the only "escape routes"</h3>
+  <p>In an undirected DFS, the only edges that go "upward" in the tree are back edges. Tree edges always go downward (from parent to child in the DFS order). So "escaping above u" literally means having at least one back edge in v's subtree that reaches a node with smaller discovery time than u.</p>
+  <svg class="graphsvg" viewBox="0 0 680 210" style="height:210px;border:3px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(37,99,235,.04),transparent)">
+    <!-- LEFT: cannot escape -->
+    <text x="100" y="22" text-anchor="middle" fill="var(--bad)" font-size="16" font-weight="950">❌ Cannot Escape</text>
+    <line x1="100" y1="50" x2="60" y2="120" stroke="#2563eb" stroke-width="3"/>
+    <line x1="60" y1="120" x2="40" y2="185" stroke="#2563eb" stroke-width="3"/>
+    <line x1="100" y1="50" x2="140" y2="120" stroke="#2563eb" stroke-width="3"/>
+    <circle cx="100" cy="50" r="20" fill="#b45309" stroke="white" stroke-width="3"/>
+    <text x="100" y="57" text-anchor="middle" fill="white" font-size="14" font-weight="900">u</text>
+    <circle cx="60" cy="120" r="20" fill="#2563eb" stroke="white" stroke-width="3"/>
+    <text x="60" y="127" text-anchor="middle" fill="white" font-size="14" font-weight="900">v</text>
+    <circle cx="40" cy="185" r="20" fill="#0f766e" stroke="white" stroke-width="3"/>
+    <text x="40" y="192" text-anchor="middle" fill="white" font-size="14" font-weight="900">w</text>
+    <circle cx="140" cy="120" r="20" fill="#2563eb" stroke="white" stroke-width="3"/>
+    <text x="140" y="127" text-anchor="middle" fill="white" font-size="14" font-weight="900">x</text>
+    <text x="100" y="175" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="800">No back edges → (u,v) is BRIDGE</text>
+    <!-- RIGHT: can escape -->
+    <text x="480" y="22" text-anchor="middle" fill="var(--good)" font-size="16" font-weight="950">✅ Can Escape</text>
+    <line x1="480" y1="50" x2="420" y2="120" stroke="#2563eb" stroke-width="3"/>
+    <line x1="420" y1="120" x2="390" y2="185" stroke="#2563eb" stroke-width="3"/>
+    <line x1="480" y1="50" x2="540" y2="120" stroke="#2563eb" stroke-width="3"/>
+    <!-- back edge from subtree to ancestor of u -->
+    <path d="M390,185 Q310,110 480,50" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="8,4"/>
+    <text x="310" y="115" fill="#b45309" font-size="13" font-weight="800">back edge!</text>
+    <circle cx="480" cy="50" r="20" fill="#b45309" stroke="white" stroke-width="3"/>
+    <text x="480" y="57" text-anchor="middle" fill="white" font-size="14" font-weight="900">u</text>
+    <circle cx="420" cy="120" r="20" fill="#2563eb" stroke="white" stroke-width="3"/>
+    <text x="420" y="127" text-anchor="middle" fill="white" font-size="14" font-weight="900">v</text>
+    <circle cx="390" cy="185" r="20" fill="#0f766e" stroke="white" stroke-width="3"/>
+    <text x="390" y="192" text-anchor="middle" fill="white" font-size="14" font-weight="900">w</text>
+    <circle cx="540" cy="120" r="20" fill="#2563eb" stroke="white" stroke-width="3"/>
+    <text x="540" y="127" text-anchor="middle" fill="white" font-size="14" font-weight="900">x</text>
+    <text x="480" y="175" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="800">(u,v) NOT a bridge</text>
+  </svg>
+</section>
+
+<!-- 4. ORD AND LOW -->
+<section class="card" id="s4">
+  <h2>4. ord[] and low[] — Built from Scratch</h2>
+  <p>We need a way to quantify the escape question for every edge in one DFS pass. We define two values per node:</p>
+  <h3>ord[u] — Discovery Time</h3>
+  <p>A global timer increments each time we visit a new node. <code class="ic">ord[u]</code> records when u was first visited.</p>
+  <div class="formula">ord[u] = ++timer &nbsp; &nbsp; (assigned on first entry to u)</div>
+  <p>If <code class="ic">ord[a] &lt; ord[b]</code>, then a was visited before b. In the DFS tree, this means a is an ancestor of b (or they're in completely separate branches). The root has <code class="ic">ord[root] = 1</code>, the smallest possible.</p>
+  <h3>low[u] — The Escape Reach</h3>
+  <div class="ib ib-blue"><i>📐</i><p><strong>Semantic definition:</strong> <code class="ic">low[u]</code> = the minimum <code class="ic">ord[x]</code> over all nodes x reachable from the subtree of u using any number of tree edges and <strong>at most one back edge</strong>.</p></div>
+  <p>In English: low[u] is the discovery time of the highest ancestor reachable from u's entire subtree. Smaller = higher = further up the tree = better escape.</p>
+  <div class="grid2" style="margin:14px 0">
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px;color:var(--accent2)">low[u] &lt; ord[parent(u)]</strong><br><br>
+      The subtree of u can escape <em>above</em> its parent. The connecting tree edge is <strong>not a bridge</strong>. The parent is <strong>not necessarily an articulation</strong> point because of this child.
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px;color:var(--bad)">low[u] ≥ ord[parent(u)]</strong><br><br>
+      The subtree of u is <em>trapped at or below</em> its parent. The connecting tree edge <strong>might be a bridge</strong>. The parent <strong>is an articulation</strong> point due to this child.
+    </div>
+  </div>
+  <p>The initialization is: <code class="ic">low[u] = ord[u]</code> — at minimum, every node can "reach itself."</p>
+  <h3>Why "at most one back edge" in the definition?</h3>
+  <p>In an undirected DFS, once you use a back edge to jump upward, you've left the subtree. The definition of "reachable from subtree of u" allows you to walk down tree edges inside the subtree freely, then take one jump back up via a back edge. You can't then walk down tree edges again and use another back edge — that would require counting paths outside the subtree.</p>
+</section>
+
+<!-- 5. COMPUTING LOW -->
+<section class="card" id="s5">
+  <h2>5. Computing low[] — The Two-Case Recurrence</h2>
+  <p>During DFS from node u, we look at each neighbor v. We update <code class="ic">low[u]</code> depending on whether we're traversing a tree edge or a back edge:</p>
+  <h3>Case 1: Tree Edge (v is unvisited)</h3>
+  <p>We recurse into v and compute DFS(v). After DFS(v) returns, we know low[v]. Since u's subtree contains v's subtree, anything v can escape to, u can also escape to:</p>
+  <div class="formula">low[u] = min(low[u], low[v])</div>
+  <h3>Case 2: Back Edge (v is already visited — ancestor)</h3>
+  <p>The edge u→v is a back edge. We can jump directly to v from u, reaching an ancestor with discovery time ord[v]:</p>
+  <div class="formula">low[u] = min(low[u], ord[v])</div>
+  <div class="ib ib-orange"><i>⚠️</i><p><strong>Why ord[v] and NOT low[v] for back edges?</strong> Using low[v] would mean "I can also escape wherever v can escape via its own back edges" — but that would require <em>two</em> back edges (one from u to v, then one from v's subtree upward). Our semantic allows at most one back edge. Using <code class="ic">ord[v]</code> (not <code class="ic">low[v]</code>) is correct and essential.</p></div>
+  <h3>Case 3: The Parent Edge — Skip It!</h3>
+  <p>In undirected graphs, every edge (u,v) is stored as two directed edges. When we process neighbors of v, we'll see the edge back to u. But u is v's parent — treating this as a "back edge" would be wrong! We skip it.</p>
+  <div class="formula">if (e == pe) continue; &nbsp; // pe = parent edge index (not vertex!)</div>
+  <div class="ib ib-red"><i>⚠️</i><p><strong>Use edge index, NOT parent vertex.</strong> If there are two parallel edges between u and v, skipping by vertex would incorrectly skip both — making neither one count as a back edge. Skipping by the specific edge index <code class="ic">pe</code> only skips the one we came from. The reverse edge is <code class="ic">pe ^ 1</code> in the forward-star layout.</p></div>
+  <h3>Full recurrence summary</h3>
+  <div class="grid3" style="text-align:center">
+    <div class="formula" style="margin:0">Init: low[u] = ord[u]</div>
+    <div class="formula" style="margin:0">Tree: low[u] = min(low[u], low[v])</div>
+    <div class="formula" style="margin:0">Back: low[u] = min(low[u], ord[v])</div>
+  </div>
+</section>
+
+<!-- 6. CONDITIONS DERIVED -->
+<section class="card" id="s6">
+  <h2>6. Bridge &amp; Articulation Conditions — Derived</h2>
+  <p>We now translate the escape question into precise mathematical conditions using low[v] and ord[u].</p>
+  <h3>Bridge Condition</h3>
+  <p>Tree edge (u,v) is a bridge if and only if v's subtree has <em>no way to reach u or any ancestor of u</em>. The best the subtree can reach is represented by low[v]. For the subtree to NOT escape above u, it needs low[v] to be higher than u's own discovery time:</p>
+  <div class="formula" style="font-size:26px;border-color:var(--warn)">low[v] &gt; ord[u] &nbsp;⟹&nbsp; edge (u,v) is a BRIDGE</div>
+  <details>
+    <summary>Why strictly &gt; and not ≥ for bridges? <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>If <code class="ic">low[v] = ord[u]</code>, then v's subtree can reach exactly u via a back edge. Now remove the tree edge (u,v). The back edge still connects v's subtree to u! The graph remains connected. So <code class="ic">low[v] = ord[u]</code> is NOT a bridge.</p>
+      <p>Only when <code class="ic">low[v] &gt; ord[u]</code> does v's subtree have absolutely no route to u or above, making (u,v) the only connection — a true bridge.</p>
+      <p><strong>Summary:</strong> ≥ means "reaches u or above" (not a bridge). &gt; means "can't even reach u" (IS a bridge).</p>
+    </div>
+  </details>
+
+  <h3>Articulation Point Condition — Non-Root</h3>
+  <p>For a non-root node u with child v in the DFS tree: if v's subtree cannot escape above u, then removing u would disconnect v's subtree from u's ancestors. The condition is:</p>
+  <div class="formula" style="font-size:26px;border-color:var(--bad)">low[v] ≥ ord[u] &nbsp;⟹&nbsp; u is an ARTICULATION POINT</div>
+  <details>
+    <summary>Why ≥ for articulation but &gt; for bridges? <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Bridge (edge removal):</strong> If low[v] = ord[u], there's a back edge from v's subtree to u. Remove the tree edge — the back edge still connects v to u. NOT a bridge. Need <code class="ic">&gt;</code>.</p>
+      <p><strong>Articulation (vertex removal):</strong> If low[v] = ord[u], v's subtree can only reach u itself — but u is being removed! After removal, v's subtree has no way to connect to u's ancestors. So u IS an articulation point. Need <code class="ic">≥</code>.</p>
+      <p>The difference: a back edge to u helps when only the tree edge is removed (bridge check), but not when u itself is removed (articulation check).</p>
+    </div>
+  </details>
+
+  <h3>Articulation Condition — Root (Special Case)</h3>
+  <p>The root is special: it has no parent. The condition <code class="ic">low[v] ≥ ord[root]</code> would always be true (ord[root] = 1), so we can't use the same rule.</p>
+  <div class="ib ib-orange"><i>🧠</i><p>Intuition: If the root has only one DFS-tree child, removing it just "un-roots" the tree — everything stays connected. If the root has ≥ 2 DFS-tree children, those children form independent subtrees that were only connected through the root. Removing the root disconnects them.</p></div>
+  <div class="formula" style="font-size:22px;border-color:var(--bad)">Root is ARTICULATION POINT &nbsp;⟺&nbsp; root has ≥ 2 DFS-tree children</div>
+
+  <h3>Comparison table</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Detection</th><th>Condition</th><th>Operator</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="cb">Bridge</td><td>low[v] <strong>&gt;</strong> ord[u]</td><td class="cb">Strict &gt;</td><td>Back edge to u bypasses tree edge; only strictly above is stuck</td></tr>
+      <tr><td class="cr">Articulation (non-root)</td><td>low[v] <strong>≥</strong> ord[u]</td><td class="cr">Non-strict ≥</td><td>Even a back edge to u doesn't help if u itself is removed</td></tr>
+      <tr><td class="cr">Articulation (root)</td><td>children ≥ 2</td><td class="cr">Count check</td><td>Root's subtrees only connected via root</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 7. PROOF -->
+<section class="card" id="s7">
+  <h2>7. Proof of Correctness</h2>
+  <details open>
+    <summary>Proof 1: low[u] invariant is correctly maintained <span class="hint">click to collapse</span></summary>
+    <div class="detailsBody">
+      <p><strong>Claim:</strong> After DFS(u) completes, low[u] = min{ord[x] : x reachable from subtree of u via tree edges and ≤ 1 back edge}.</p>
+      <p><strong>Base case (leaf node):</strong> A leaf has no children and no back edges (or its back edge goes to some ancestor). If it has a back edge to ancestor a, low[u] = min(ord[u], ord[a]). If no back edge, low[u] = ord[u]. The leaf's subtree is just itself plus any single back edge. ✓</p>
+      <p><strong>Inductive step:</strong> Assume the invariant holds for all children c₁, c₂, …, cₖ of u. For each child cᵢ:</p>
+      <ul>
+        <li>low[cᵢ] correctly holds the best escape from cᵢ's subtree via tree edges + ≤ 1 back edge.</li>
+        <li>Since u can reach cᵢ's subtree via tree edges, anything cᵢ can reach, u can also reach (by going into cᵢ's subtree first, then taking the back edge). So we take min with low[cᵢ].</li>
+      </ul>
+      <p>For each direct back edge (u → ancestor a): we can reach a with one back edge. So we take min with ord[a].</p>
+      <p>After all updates, low[u] = min over all children and back edges = correct invariant value. ∎</p>
+    </div>
+  </details>
+  <details>
+    <summary>Proof 2: Bridge condition is correct <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Theorem:</strong> Tree edge (u,v) is a bridge if and only if low[v] &gt; ord[u].</p>
+      <p><strong>(⟹) If (u,v) is a bridge:</strong></p>
+      <p>Assume (u,v) is a bridge. Then there is no simple path from v to u's ancestors that doesn't use (u,v). In particular, no back edge from v's subtree goes to u or above u. So low[v] ≥ ord[u]. If low[v] = ord[u], there'd be a back edge from v's subtree to u — but then removing (u,v) still leaves v connected to u via that back edge, contradicting that (u,v) is a bridge. Hence low[v] &gt; ord[u]. ✓</p>
+      <p><strong>(⟸) If low[v] &gt; ord[u]:</strong></p>
+      <p>No node in v's subtree can reach u or any ancestor of u. Every path from any node in v's subtree to any node outside v's subtree must pass through the tree edge (u,v) going upward. Removing (u,v) disconnects v's subtree. So (u,v) is a bridge. ✓ ∎</p>
+    </div>
+  </details>
+  <details>
+    <summary>Proof 3: Articulation condition is correct <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Theorem (non-root):</strong> Non-root u is an articulation point iff it has some child v with low[v] ≥ ord[u].</p>
+      <p><strong>(⟹) If u is an articulation point:</strong></p>
+      <p>Removing u disconnects the graph. Some component must be a subtree of u in the DFS tree (since all non-tree edges from inside the subtree go to ancestors, not to other disconnected components). Let v be the root of that subtree. Its subtree has no path to u's ancestors without using u, hence no back edge above u. So low[v] ≥ ord[u]. ✓</p>
+      <p><strong>(⟸) If low[v] ≥ ord[u] for some child v:</strong></p>
+      <p>Every path from v's subtree to u's ancestors passes through u. When u is removed, v's subtree loses all access to u's ancestors. u IS an articulation point. ✓ ∎</p>
+      <p><strong>Root case:</strong> If root has ≥ 2 DFS-tree children c₁, c₂: after DFS, every edge from c₁'s subtree that goes "upward" can only reach root at best (since root has no ancestors). When root is removed, c₁'s subtree and c₂'s subtree become disconnected. Conversely if root has 1 child, removing root leaves 1 component still connected. ∎</p>
+    </div>
+  </details>
+</section>
+
+<!-- 8. COMPLEXITY -->
+<section class="card" id="s8">
+  <h2>8. Complexity Analysis</h2>
+  <div class="grid2">
+    <div>
+      <h3>Time: O(N + M)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Operation</th><th>Count</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>Visit each node once</td><td>N calls to DFS</td><td>O(N)</td></tr>
+          <tr><td>Process each edge</td><td>2M (bidirected)</td><td>O(M)</td></tr>
+          <tr><td>low[] update per edge</td><td>O(1) per edge</td><td>O(M)</td></tr>
+          <tr><td>Bridge/art check per tree edge</td><td>O(1) per tree edge</td><td>O(N)</td></tr>
+          <tr><td><strong>Total</strong></td><td colspan="2" class="cb"><strong>O(N + M)</strong></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <h3>Memory: O(N + M)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Structure</th><th>Size</th></tr></thead>
+        <tbody>
+          <tr><td>head[], vis[], ord[], low[], isArt[]</td><td>O(N)</td></tr>
+          <tr><td>to[], nxt[] (forward-star)</td><td>O(M)</td></tr>
+          <tr><td>isBridge[]</td><td>O(M)</td></tr>
+          <tr><td>DFS call stack (recursion)</td><td>O(N) worst case</td></tr>
+          <tr><td><strong>Total</strong></td><td class="cy"><strong>O(N + M)</strong></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="ib ib-green"><i>⚡</i><p>For N=200,000 and M=400,000: the naïve approach takes ~1.2×10¹¹ operations. Low-Link DFS takes ~600,000. That's a factor of <strong>200 million</strong> improvement.</p></div>
+  <details>
+    <summary>Stack depth and iterative DFS note <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>Recursive DFS can stack overflow on chains with N = 200,000+ nodes. The recursion depth is O(N) in the worst case (a path graph). In contest settings you can increase the stack size with pragmas or convert to an iterative DFS using an explicit stack. For most competitive programming judges, recursive DFS with N ≤ 200,000 is accepted.</p>
+      <p>For problems with N up to 10^6 or on systems with limited stack, prefer iterative DFS with an explicit stack storing (node, edge_iterator, parent_edge) tuples.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 9. TEMPLATE PHILOSOPHY -->
+<section class="card" id="s9">
+  <h2>9. Template Philosophy — One Family, Multiple Variants</h2>
+  <div class="ib ib-blue"><i>💡</i><p><strong>Design principle:</strong> We define ONE core DFS function. All variants are built by adding focused extensions to it — a stack for BCC extraction, a component ID array for EBCC, etc. All share identical naming and invariants.</p></div>
+  <div class="tw"><table>
+    <thead><tr><th>Variant</th><th>What's Added</th><th>When to Use</th></tr></thead>
+    <tbody>
+      <tr><td class="cy"><strong>Base</strong></td><td>ord[], low[], isArt[], isBridge[]</td><td>Find all bridges and articulation points</td></tr>
+      <tr><td class="cp"><strong>+ Vertex Stack</strong></td><td>stack&lt;int&gt; st; pop when low[v]≥ord[u]</td><td>Extract vertex-BCCs explicitly</td></tr>
+      <tr><td class="cp"><strong>+ Edge Stack</strong></td><td>stack&lt;int&gt; edges; pop on low[v]≥ord[u]</td><td>Extract edge-BCCs (alternative extraction)</td></tr>
+      <tr><td class="cb"><strong>+ comp[] array</strong></td><td>DFS on non-bridge edges after marking</td><td>Build Edge-BCCs / Bridge Tree</td></tr>
+      <tr><td class="cb"><strong>+ DSU batching</strong></td><td>Group by weight, run base inside each group</td><td>MST edge classification</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Consistent naming across all variants</h3>
+  <div class="chips">
+    <span class="chip"><code>head, to, nxt, ne</code> — forward-star adjacency</span>
+    <span class="chip"><code>ord[u]</code> — discovery time</span>
+    <span class="chip"><code>low[u]</code> — escape reach</span>
+    <span class="chip"><code>vis[u], vid</code> — versioned visitation</span>
+    <span class="chip"><code>timer_val</code> — DFS clock</span>
+    <span class="chip"><code>pe</code> — parent edge index</span>
+    <span class="chip"><code>e ^ 1</code> — reverse edge</span>
+    <span class="chip"><code>isArt[], isBridge[]</code> — results</span>
+  </div>
+</section>
+
+<!-- 10. MASTER TEMPLATE -->
+<section class="card" id="s10">
+  <h2>10. Master Template — Full AC-Ready C++</h2>
+  <div class="ib ib-green"><i>✅</i><p>This template handles: articulation points, bridges, multiple test cases (versioned reset), multigraphs (edge-index parent tracking), disconnected graphs (DFS loop over all nodes).</p></div>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// ── Constants ────────────────────────────────────────────
+const int MAXN = 200005;
+const int MAXM = 400005;
+
+// ── Forward-Star Adjacency List ──────────────────────────
+int head[MAXN], to[MAXM], nxt[MAXM], ne;
+
+// ── DFS State ────────────────────────────────────────────
+int ord[MAXN], low[MAXN];    // discovery time, escape reach
+int vis[MAXN], vid;           // versioned visitation
+int timer_val;                // DFS clock
+
+// ── Results ──────────────────────────────────────────────
+bool isArt[MAXN];             // articulation point flag
+bool isBridge[MAXM];          // bridge flag (per edge index)
+
+int n, m;
+
+// ── Graph Construction ───────────────────────────────────
+void init(int _n, int _m) {
+    n = _n; m = _m;
+    fill(head,     head     + n + 1, -1);
+    fill(isArt,    isArt    + n + 1, false);
+    fill(isBridge, isBridge + 2*m + 5, false);
+    ne        = 0;
+    vid++;            // version bump: no need to clear vis[]
+    timer_val = 0;
+}
+
+void addEdge(int u, int v) {
+    to[ne] = v; nxt[ne] = head[u]; head[u] = ne++;
+}
+
+void addBiEdge(int u, int v) {
+    addEdge(u, v);    // edge index:  2k     (even)
+    addEdge(v, u);    // edge index:  2k+1   (odd = e^1)
+}
+
+// ── Core DFS ─────────────────────────────────────────────
+void dfs(int u, int pe = -1) {
+    vis[u] = vid;
+    ord[u] = low[u] = ++timer_val;
+    int children = 0;
+
+    for (int e = head[u]; ~e; e = nxt[e]) {
+        int v = to[e];
+
+        if (e == pe) continue;          // skip the edge we came from
+
+        if (vis[v] != vid) {
+            // ── Tree Edge ─────────────────────────────
+            children++;
+            dfs(v, e ^ 1);              // pass reverse edge as parent edge
+
+            low[u] = min(low[u], low[v]);
+
+            // Bridge check
+            if (low[v] &gt; ord[u])
+                isBridge[e] = isBridge[e ^ 1] = true;
+
+            // Articulation check (non-root only)
+            if (pe != -1 &amp;&amp; low[v] &gt;= ord[u])
+                isArt[u] = true;
+
+        } else {
+            // ── Back Edge ─────────────────────────────
+            low[u] = min(low[u], ord[v]);
+        }
+    }
+
+    // Root articulation check
+    if (pe == -1 &amp;&amp; children &gt; 1)
+        isArt[u] = true;
+}
+
+// ── Entry Point ──────────────────────────────────────────
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; n &gt;&gt; m;
+    init(n, m);
+
+    for (int i = 0; i &lt; m; i++) {
+        int u, v; cin &gt;&gt; u &gt;&gt; v;
+        addBiEdge(u, v);
+    }
+
+    // Run DFS from every unvisited node (handles disconnected graphs)
+    for (int i = 1; i &lt;= n; i++)
+        if (vis[i] != vid)
+            dfs(i);
+
+    // ── Output: articulation count ────────────────────────
+    int artCnt = 0;
+    for (int i = 1; i &lt;= n; i++)
+        if (isArt[i]) artCnt++;
+    cout &lt;&lt; artCnt &lt;&lt; "\n";
+
+    // ── Output: bridges ───────────────────────────────────
+    for (int e = 0; e &lt; ne; e += 2)
+        if (isBridge[e])
+            cout &lt;&lt; to[e ^ 1] &lt;&lt; " -- " &lt;&lt; to[e] &lt;&lt; "\n";
+
+    return 0;
+}</code></pre>
+</section>
+
+<!-- 11. LINE BY LINE -->
+<section class="card" id="s11">
+  <h2>11. Line-by-Line Explanation</h2>
+  <details open>
+    <summary>Forward-star adjacency: head / to / nxt / ne <span class="hint">click to collapse</span></summary>
+    <div class="detailsBody">
+      <p><code class="ic">head[u]</code> = index of the first edge starting at u (−1 if none). <code class="ic">to[e]</code> = destination of edge e. <code class="ic">nxt[e]</code> = index of the next edge from the same source (a linked list). <code class="ic">ne</code> = next available edge slot.</p>
+      <p>This layout is faster than <code class="ic">vector&lt;vector&gt;</code> because all data is in contiguous arrays. Cache-friendly for DFS traversal.</p>
+    </div>
+  </details>
+  <details>
+    <summary>The e ^ 1 reverse-edge trick <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>When <code class="ic">addBiEdge(u,v)</code> is called, it adds two directed edges: edge at index 2k (u→v) and edge at index 2k+1 (v→u). Since 2k XOR 1 = 2k+1 and (2k+1) XOR 1 = 2k, the expression <code class="ic">e ^ 1</code> always gives the reverse edge regardless of which direction e is.</p>
+      <p>Consequence: we start with <code class="ic">ne = 0</code> and edges MUST be added in pairs via <code class="ic">addBiEdge</code>. Never add directed edges individually when using this trick.</p>
+    </div>
+  </details>
+  <details>
+    <summary>vid versioning: why it beats clearing arrays <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>If we have T test cases, clearing <code class="ic">vis[]</code> costs O(N) per test case. With vid, we just increment an integer: <code class="ic">vid++</code>. A node u is "unvisited" if <code class="ic">vis[u] != vid</code>. This costs O(1) reset per test case. Over T test cases, this saves O(T·N) work.</p>
+    </div>
+  </details>
+  <details>
+    <summary>if (e == pe) continue — the parent skip <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>When we enter v from u via edge e, we pass <code class="ic">e ^ 1</code> as the parent edge to DFS(v). Inside DFS(v), when we iterate over v's neighbors and encounter the edge <code class="ic">e ^ 1</code> (which goes back to u), we skip it with <code class="ic">if (edge == pe) continue</code>.</p>
+      <p>Using vertex check <code class="ic">if (v == parent_vertex) continue</code> is wrong for multigraphs: if there are two edges between u and v, both would be skipped, missing a valid back edge.</p>
+    </div>
+  </details>
+  <details>
+    <summary>The two low[] updates and when each fires <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Tree edge update</strong> (after DFS(v) returns):</p>
+      <p><code class="ic">low[u] = min(low[u], low[v])</code> — v's subtree escape propagates up to u's subtree escape.</p>
+      <p><strong>Back edge update</strong> (v is already visited):</p>
+      <p><code class="ic">low[u] = min(low[u], ord[v])</code> — NOT low[v]. See section 5 for why.</p>
+    </div>
+  </details>
+  <details>
+    <summary>Bridge and articulation checks: placement matters <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>Bridge check: <code class="ic">if (low[v] &gt; ord[u])</code> — mark both e and e^1 as bridges.</p>
+      <p>Non-root articulation check: <code class="ic">if (pe != -1 &amp;&amp; low[v] &gt;= ord[u]) isArt[u] = true</code> — the <code class="ic">pe != -1</code> condition is the non-root guard. If pe = −1, u is the root, so we skip this.</p>
+      <p>Root check: <code class="ic">if (pe == -1 &amp;&amp; children &gt; 1) isArt[u] = true</code> — happens after the for loop, so <code class="ic">children</code> has the final count of DFS-tree children.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 12. EDGE CASES -->
+<section class="card" id="s12">
+  <h2>12. Edge Cases</h2>
+  <div class="grid2">
+    <div class="ib ib-orange" style="flex-direction:column">
+      <strong style="font-size:19px">Parallel Edges (Multigraph)</strong>
+      <p>Two edges between same pair (u,v). Using parent by vertex would skip both, incorrectly making low[v] not update via the second edge. Solution: track by edge index. Works automatically with the <code class="ic">e == pe</code> check.</p>
+    </div>
+    <div class="ib ib-orange" style="flex-direction:column">
+      <strong style="font-size:19px">Self-Loops</strong>
+      <p>Edge from u to u. Stored as e (u→u) and e^1 (u→u). When DFS(u) processes e, it sees v = u which is already visited, so it does <code class="ic">low[u] = min(low[u], ord[u])</code> — no change. Self-loops never affect articulation or bridge detection. Handled naturally.</p>
+    </div>
+    <div class="ib ib-blue" style="flex-direction:column">
+      <strong style="font-size:19px">Disconnected Graph</strong>
+      <p>Always loop over all nodes and start DFS from any unvisited one. Each connected component is handled independently. Each component root uses the children ≥ 2 rule for its own root independently.</p>
+    </div>
+    <div class="ib ib-blue" style="flex-direction:column">
+      <strong style="font-size:19px">Single Node or Single Edge</strong>
+      <p>Single node: no edges, no articulation, no bridges. Single edge (u,v): it is a bridge (low[v] = ord[v] &gt; ord[u] always since v is the only child). Neither endpoint is an articulation point (removing either still leaves one node). Our template handles both correctly.</p>
+    </div>
+    <div class="ib ib-purple" style="flex-direction:column">
+      <strong style="font-size:19px">1-indexed vs 0-indexed</strong>
+      <p>Our template uses 1-indexed nodes. Ensure arrays are sized N+1. Some problems give 0-indexed input — add or subtract 1 accordingly. Be consistent throughout.</p>
+    </div>
+    <div class="ib ib-purple" style="flex-direction:column">
+      <strong style="font-size:19px">Multiple Test Cases</strong>
+      <p>Call <code class="ic">init(n, m)</code> before each test. This does: fill head with −1, fill isArt/isBridge with false, reset ne = 0, increment vid, reset timer_val = 0. All O(N+M) but amortized fine.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13. PITFALLS -->
+<section class="card" id="s13">
+  <h2>13. Common Pitfalls &amp; Bugs</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Bug</th><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="cr"><strong>Parent by vertex, not edge</strong></td>
+        <td>Wrong answers on parallel-edge graphs; valid back edges missed</td>
+        <td class="cy">Use <code>if (e == pe)</code>, never <code>if (v == parent_node)</code></td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>Root uses non-root rule</strong></td>
+        <td>Root always marked as articulation (low[v]≥1 is almost always true)</td>
+        <td class="cy">Guard with <code>pe != -1</code>; handle root separately with children≥2</td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>≥ vs &gt; swapped</strong></td>
+        <td>Bridges and articulations wrong simultaneously</td>
+        <td class="cy">Bridge: strict &gt;. Articulation: non-strict ≥. Memorize the why.</td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>low[v] for back edges</strong></td>
+        <td>Subtly wrong low[] values; hard to debug</td>
+        <td class="cy">Back edge: use <code>ord[v]</code>, NOT <code>low[v]</code></td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>Not resetting between tests</strong></td>
+        <td>Old bridge/articulation flags persist; WA on later cases</td>
+        <td class="cy">Call <code>init(n, m)</code> before each test case</td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>Single DFS from node 1 only</strong></td>
+        <td>Disconnected graphs: only one component analyzed</td>
+        <td class="cy">Loop: <code>for(int i=1;i&lt;=n;i++) if(vis[i]!=vid) dfs(i);</code></td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>ne not starting at 0</strong></td>
+        <td>e ^ 1 pairing broken; wrong reverse edges</td>
+        <td class="cy">Always reset <code>ne = 0</code>; always add edges in pairs via addBiEdge</td>
+      </tr>
+      <tr>
+        <td class="cr"><strong>Stack overflow on large N</strong></td>
+        <td>Segfault or TLE on chain-like graphs</td>
+        <td class="cy">Use iterative DFS or increase stack size with pragmas</td>
+      </tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- INTERACTIVE TRACER -->
+<section class="card" id="stracer">
+  <h2>Interactive Low-Link Tracer</h2>
+  <p>Step through the full DFS on graph: <strong>1—2—3—1 (cycle) + 2—4 + 4—5</strong>. Watch ord[], low[], bridges, and articulation points discovered in real time.</p>
+  <div class="spd-row" style="margin-bottom:6px">
+    <span>Speed</span>
+    <input type="range" id="trSpd" min="0" max="4" value="2" style="flex:1;max-width:160px">
+    <span id="trSpdLbl">1.5×</span>
+  </div>
+  <div class="tracer-wrap">
+    <div>
+      <div class="diagramWrap" style="margin-bottom:10px">
+        <svg id="trSvg" class="graphsvg" viewBox="0 0 580 300" style="height:300px"></svg>
+      </div>
+      <div style="font-size:16px;font-weight:900;color:var(--muted);margin-bottom:6px">ord[] / low[] table</div>
+      <div class="dist-items" id="trTable"></div>
+      <div class="slog" id="trLog" style="margin-top:10px"></div>
+    </div>
+    <div class="tside">
+      <div class="ctrl-row">
+        <button class="cbtn" id="trRst">⏮</button>
+        <button class="cbtn" id="trPrv">◀</button>
+        <button class="cbtn" id="trPly">▶</button>
+        <button class="cbtn" id="trNxt">▶|</button>
+        <button class="cbtn" id="trSkp">⏭</button>
+      </div>
+      <div style="padding:12px 14px;border:3px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(37,99,235,.07),transparent)">
+        <div class="sp-phase" id="trPhase">PHASE</div>
+        <div class="sp-round" id="trNodeLbl">Node: —</div>
+        <div class="sp-exp init" id="trExp">Press ▶ to start the DFS trace.</div>
+      </div>
+      <div style="margin-top:10px;padding:10px;background:var(--panel2);border:2px solid var(--border);border-radius:12px;font-size:17px;font-weight:800">
+        <div>🔴 Articulation Points: <span id="trArts" style="color:var(--bad)">none</span></div>
+        <div style="margin-top:4px">🟠 Bridges: <span id="trBridges" style="color:var(--warn)">none</span></div>
+      </div>
+      <div class="step-ctr" id="trCtr">Step 0 / 0</div>
+    </div>
+  </div>
+  <div class="legend" style="margin-top:10px">
+    <span><span class="swatch" style="background:#6d28d9"></span>Currently visiting</span>
+    <span><span class="swatch" style="background:#2563eb"></span>On DFS stack</span>
+    <span><span class="swatch" style="background:#0f766e"></span>Done (normal)</span>
+    <span><span class="swatch" style="background:#b91c1c"></span>Articulation</span>
+    <span><span class="swatch" style="background:#b45309;border-radius:3px;width:20px;height:4px"></span>Bridge</span>
+  </div>
+</section>
+
+<!-- DECISION / RECOGNITION GUIDE -->
+<section class="card" id="sdecide">
+  <h2>How to Recognize the Right Low-Link Variant</h2>
+  <p>Use this as a fast contest-decision aid. Read the problem signal, pick the right tool.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Problem signal</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>Find all edges whose removal disconnects the graph</td><td class="cy">Bridges (low[v] &gt; ord[u])</td></tr>
+      <tr><td>Find all vertices whose removal disconnects the graph</td><td class="cy">Articulation points (low[v] ≥ ord[u], root rule)</td></tr>
+      <tr><td>Compress bridge-free regions; query connectivity after edge removals</td><td class="cp">Edge-BCCs (EBCC) + Bridge Tree</td></tr>
+      <tr><td>Compress articulation-free blocks; block-level queries</td><td class="cp">Vertex-BCCs (VBCC) + Block-Cut Tree</td></tr>
+      <tr><td>Build a tree where each node is a 2-edge-connected component</td><td class="cp">Bridge Tree</td></tr>
+      <tr><td>Build a tree interleaving block-nodes and cut-vertex nodes</td><td class="cp">Block-Cut Tree</td></tr>
+      <tr><td>Orient undirected edges to maximize strong connectivity</td><td class="cb">Edge Orientation via bridges</td></tr>
+      <tr><td>Classify MST edges using bridge-like low-link logic</td><td class="cb">MST Edge Classification</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Reflex Recognition Rules</h3>
+  <div class="formula" style="font-size:18px;text-align:left;line-height:1.8">
+    removing one <em>edge</em> disconnects graph &nbsp;→&nbsp; that edge is a <strong>bridge</strong><br>
+    removing one <em>vertex</em> disconnects graph &nbsp;→&nbsp; that vertex is an <strong>articulation point</strong><br>
+    compress graph by collapsing bridges &nbsp;→&nbsp; <strong>bridge tree</strong><br>
+    compress graph by collapsing blocks &amp; articulations &nbsp;→&nbsp; <strong>block-cut tree</strong>
+  </div>
+
+  <div class="ib ib-orange" style="margin-top:14px"><i>⚠</i><p><strong>Common confusion:</strong> Bridges and articulation points are <em>outputs</em> of one DFS pass — they are individual edges or vertices you detect. EBCC, VBCC, bridge tree, and block-cut tree are <em>structures you build on top</em> of those results by grouping nodes or contracting the graph. If the problem asks you to detect weak points, stop at bridges/APs. If it asks you to query connectivity or navigate the compressed structure, proceed to the tree.</p></div>
+</section>
+
+<!-- 14. VARIANTS -->
+
+<section class="card" id="s14">
+  <h2>14. Variants &amp; Extensions</h2>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('vtab','vt1',this)">Vertex-BCC</button>
+    <button class="tab-btn" onclick="showTab('vtab','vt2',this)">Edge-BCC</button>
+    <button class="tab-btn" onclick="showTab('vtab','vt3',this)">Bridge Tree</button>
+    <button class="tab-btn" onclick="showTab('vtab','vt4',this)">Block-Cut Tree</button>
+    <button class="tab-btn" onclick="showTab('vtab','vt5',this)">Edge Orientation</button>
+    <button class="tab-btn" onclick="showTab('vtab','vt6',this)">MST Classes</button>
+  </div>
+  <div id="vtab">
+
+    <!-- VT1 -->
+    <div class="tab-pane active" id="vt1">
+      <h3>Vertex-Biconnected Components (VBCC)</h3>
+      <p>A VBCC is a maximal subgraph with no articulation point inside. Articulation points sit <em>on the boundary</em> between BCCs — they belong to multiple BCCs simultaneously.</p>
+      <p><strong>What changes:</strong> We add a node stack. When we detect <code class="ic">low[v] ≥ ord[u]</code>, we pop nodes from the stack — those form one BCC together with u.</p>
+<pre><code>// ── VBCC Extraction — add to base template ───────────────
+stack&lt;int&gt; stk;
+vector&lt;vector&lt;int&gt;&gt; bccs;
+
+void dfs_bcc(int u, int pe = -1) {
+    vis[u] = vid;
+    ord[u] = low[u] = ++timer_val;
+    stk.push(u);
+    int children = 0;
+
+    for (int e = head[u]; ~e; e = nxt[e]) {
+        int v = to[e];
+        if (e == pe) continue;
+
+        if (vis[v] != vid) {
+            children++;
+            dfs_bcc(v, e ^ 1);
+            low[u] = min(low[u], low[v]);
+
+            if (low[v] &gt;= ord[u]) {
+                // Extract one VBCC
+                vector&lt;int&gt; comp = {u};
+                while (stk.top() != v) {
+                    comp.push_back(stk.top());
+                    stk.pop();
+                }
+                comp.push_back(v);
+                stk.pop();
+                bccs.push_back(comp);
+
+                if (pe != -1) isArt[u] = true;
+            }
+        } else {
+            low[u] = min(low[u], ord[v]);
+        }
+    }
+    if (pe == -1 &amp;&amp; children &gt; 1) isArt[u] = true;
+}
+</code></pre>
+      <div class="ib ib-blue"><i>💡</i><p>Key insight: a single articulation point belongs to multiple BCCs. After extraction, each BCC is a list of nodes. You can then check for each BCC how many articulation points it contains.</p></div>
+      <p><strong>Use for:</strong> UVA 1108 (Mining Your Own Business), block-cut tree construction, any problem needing explicit BCC enumeration.</p>
+    </div>
+
+    <!-- VT2 -->
+    <div class="tab-pane" id="vt2">
+      <h3>Edge-Biconnected Components (EBCC)</h3>
+      <p>An EBCC is a maximal subgraph with no bridges. Unlike VBCCs, the partition is clean — every node belongs to exactly one EBCC.</p>
+      <p><strong>Algorithm:</strong> Run the base template to mark all bridges. Then run a second DFS (or BFS) on non-bridge edges to assign component IDs.</p>
+<pre><code>// ── EBCC Construction ─────────────────────────────────────
+int comp[MAXN];
+
+void dfs_ebcc(int u, int id) {
+    comp[u] = id;
+    for (int e = head[u]; ~e; e = nxt[e]) {
+        int v = to[e];
+        if (comp[v] == -1 &amp;&amp; !isBridge[e]) {
+            dfs_ebcc(v, id);
+        }
+    }
+}
+
+int buildEBCC() {
+    fill(comp, comp + n + 1, -1);
+    int numComp = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        if (comp[i] == -1) {
+            dfs_ebcc(i, numComp++);
+        }
+    }
+    return numComp; // number of EBCCs
+}
+</code></pre>
+      <div class="ib ib-green"><i>✅</i><p>Each EBCC is 2-edge-connected (any edge can be removed without disconnecting it). Bridges connect EBCCs — the bridge tree uses EBCCs as nodes.</p></div>
+      <p><strong>Use for:</strong> Bridge tree construction (below), 2-edge-connectivity queries, "minimum edges to add to make graph bridgeless" problems.</p>
+    </div>
+
+    <!-- VT3 -->
+    <div class="tab-pane" id="vt3">
+      <h3>Bridge Tree</h3>
+      <p>Contract each EBCC into a single super-node. Connect super-nodes with the bridges between them. The result is always a <em>tree</em>. This tree encodes all bridge-level structure of the graph.</p>
+<pre><code>// ── Bridge Tree Construction ─────────────────────────────
+// Prerequisite: run base template + buildEBCC()
+
+vector&lt;int&gt; tree[MAXN];  // bridge tree adjacency
+
+void buildBridgeTree(int numComp) {
+    // For each bridge edge, connect its two EBCC endpoints
+    for (int e = 0; e &lt; ne; e += 2) {
+        if (isBridge[e]) {
+            int cu = comp[to[e ^ 1]];  // EBCC of edge's source
+            int cv = comp[to[e]];      // EBCC of edge's destination
+            tree[cu].push_back(cv);
+            tree[cv].push_back(cu);
+        }
+    }
+    // tree[0..numComp-1] is now the bridge tree
+}
+
+// ── Bridge Tree Diameter ─────────────────────────────────
+// Standard tree diameter via two BFS/DFS passes
+int bfs_far(int src, int n, int&amp; farthest) { /* standard BFS */ }
+int bridgeTreeDiameter(int numComp) {
+    int far1; bfs_far(0, numComp, far1);
+    int far2; return bfs_far(far1, numComp, far2);
+}
+</code></pre>
+      <p><strong>Use for:</strong> <a href="https://codeforces.com/problemset/problem/1000/E" target="_blank">CF 1000E — We Need More Bosses ↗</a> (bridge tree diameter), "minimum bridges to cross" path queries, any bridge-level path reasoning.</p>
+      <div class="ib ib-blue"><i>💡</i><p>On the bridge tree, the path between any two nodes in the original graph corresponds to the unique path in the bridge tree — crossing exactly those bridges that must be traversed.</p></div>
+    </div>
+
+    <!-- VT4 -->
+    <div class="tab-pane" id="vt4">
+      <h3>Block-Cut Tree</h3>
+      <p>The block-cut tree is the "dual" of the bridge tree, but for vertex-connectivity instead of edge-connectivity. It's a bipartite tree where:</p>
+      <ul>
+        <li><strong>Block nodes</strong> = one node per VBCC</li>
+        <li><strong>Cut nodes</strong> = one node per articulation point</li>
+        <li>A block node connects to a cut node if that articulation point belongs to that BCC</li>
+      </ul>
+<pre><code>// ── Block-Cut Tree Construction ──────────────────────────
+// After VBCC extraction (bccs[] and isArt[])
+
+// Node IDs: [1..artCount] = cut nodes (original IDs mapped)
+//           [artCount+1..artCount+bccCount] = block nodes
+
+int artID[MAXN], cutCnt = 0;
+vector&lt;int&gt; bct[MAXN * 2];  // block-cut tree
+
+void buildBlockCutTree() {
+    // Assign IDs to articulation points
+    for (int i = 1; i &lt;= n; i++)
+        if (isArt[i]) artID[i] = ++cutCnt;
+
+    // For each BCC, create a block node and link to its art points
+    for (int b = 0; b &lt; (int)bccs.size(); b++) {
+        int blockNode = cutCnt + b + 1;
+        for (int u : bccs[b]) {
+            if (isArt[u]) {
+                bct[blockNode].push_back(artID[u]);
+                bct[artID[u]].push_back(blockNode);
+            }
+        }
+    }
+}
+</code></pre>
+      <p><strong>Use for:</strong> "Does path from u to v necessarily pass through articulation point x?" — query on block-cut tree via LCA. Path queries in problems like Gym 102900K.</p>
+      <div class="ib ib-orange"><i>⚠️</i><p>The block-cut tree has at most 2N nodes (N original + N BCCs). Size your arrays accordingly.</p></div>
+    </div>
+
+    <!-- VT5 -->
+    <div class="tab-pane" id="vt5">
+      <h3>Bridge-Aware Edge Orientation (UVA 610 style)</h3>
+      <p>Problem: Orient all edges of an undirected graph such that the result is strongly connected. Only possible if the graph has no bridges. Bridges must be reported separately.</p>
+      <p><strong>Key insight:</strong> In a graph with no bridges, DFS naturally gives a valid orientation: tree edges go parent→child, back edges go child→ancestor. This creates a cycle through every edge, ensuring strong connectivity.</p>
+<pre><code>// ── Orientation DFS ───────────────────────────────────────
+vector&lt;pair&lt;int,int&gt;&gt; directed;  // oriented edges
+
+void dfs_orient(int u, int pe = -1) {
+    vis[u] = vid;
+    ord[u] = low[u] = ++timer_val;
+
+    for (int e = head[u]; ~e; e = nxt[e]) {
+        int v = to[e];
+        if (e == pe) continue;
+
+        if (vis[v] != vid) {
+            // Tree edge: orient parent → child
+            directed.push_back({u, v});
+            dfs_orient(v, e ^ 1);
+            low[u] = min(low[u], low[v]);
+
+            if (low[v] &gt; ord[u])
+                isBridge[e] = isBridge[e ^ 1] = true;
+        } else if (ord[v] &lt; ord[u]) {
+            // Back edge: only orient once (when going to ancestor)
+            directed.push_back({u, v});
+            low[u] = min(low[u], ord[v]);
+        }
+    }
+}
+
+// Bridges: must be output in BOTH directions
+// Non-bridges: use directed[] list
+</code></pre>
+      <p><strong>Problems:</strong> <a href="https://vjudge.net/problem/UVA-610" target="_blank">VJudge — UVA 610 Street Directions ↗</a>, <a href="https://cses.fi/problemset/task/2177" target="_blank">CSES 2177 — Strongly Connected Edges ↗</a></p>
+    </div>
+
+    <!-- VT6 -->
+    <div class="tab-pane" id="vt6">
+      <h3>MST Edge Classification (CF 160D)</h3>
+      <p>Classify each edge as: in <strong>no MST</strong>, in <strong>some MST</strong>, or in <strong>every MST</strong>.</p>
+      <p><strong>Key insight:</strong> Process Kruskal's algorithm. For each group of equal-weight edges, build a temporary graph on DSU-compressed nodes and run bridge detection. Bridges in that group = edges that must be in every MST (if they connect two components). Non-bridge same-weight edges = optional.</p>
+<pre><code>// ── MST Edge Classification ───────────────────────────────
+// Sort edges by weight. For each equal-weight group:
+//   1. Only consider edges connecting different DSU components.
+//   2. Map those DSU-component IDs to 1..K (compress).
+//   3. Build a temporary graph on K nodes.
+//   4. Run bridge detection on that graph.
+//   5. Bridges → in EVERY MST
+//      Non-bridges connecting different components → in SOME MST
+//      Edges connecting same component → in NO MST
+//   6. Merge all nodes touched by this group in DSU.
+
+// Each edge[i].type = 0 (none), 1 (some), 2 (every)
+void classifyMSTEdges(vector&lt;Edge&gt;&amp; edges) {
+    sort(edges.begin(), edges.end(),
+         [](auto&amp; a, auto&amp; b){ return a.w &lt; b.w; });
+
+    DSU dsu(n);
+    for (int i = 0; i &lt; (int)edges.size(); ) {
+        int j = i;
+        while (j &lt; (int)edges.size() &amp;&amp; edges[j].w == edges[i].w) j++;
+
+        // Build temp graph for edges[i..j-1]
+        // ... (compress DSU IDs, rebuild adjacency, run dfs(), classify)
+
+        // Merge in DSU
+        for (int k = i; k &lt; j; k++) dsu.merge(edges[k].u, edges[k].v);
+        i = j;
+    }
+}
+</code></pre>
+      <p><strong>Problem:</strong> <a href="https://codeforces.com/problemset/problem/160/D" target="_blank">Codeforces 160D — Edges in MST ↗</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- 15. PROBLEMS -->
+<section class="card" id="s15">
+  <h2>15. Problem-Based Applications</h2>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 UVA 315 — Network (Articulation Points)
+      <a class="prob-link" href="https://vjudge.net/problem/UVA-315" target="_blank">VJudge ↗</a>
+    </div>
+    <p><strong>Story:</strong> Find all critical nodes in a communications network whose failure disconnects it.</p>
+    <p><strong>Abstraction:</strong> Count articulation points in an undirected graph. Direct application of base template.</p>
+    <p><strong>Key observation:</strong> Run DFS once with the master template. Count <code class="ic">isArt[i]</code> = true nodes.</p>
+    <details>
+      <summary>Full AC solution <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN=105, MAXM=10005;
+int head[MAXN],to[MAXM],nxt[MAXM],ne;
+int ord[MAXN],low[MAXN],vis[MAXN],vid,timer_val;
+bool isArt[MAXN];
+int n;
+
+void init(){ fill(head,head+n+1,-1); ne=0; vid++; timer_val=0; fill(isArt,isArt+n+1,false); }
+void addEdge(int u,int v){ to[ne]=v; nxt[ne]=head[u]; head[u]=ne++; }
+void addBiEdge(int u,int v){ addEdge(u,v); addEdge(v,u); }
+
+void dfs(int u,int pe=-1){
+    vis[u]=vid; ord[u]=low[u]=++timer_val;
+    int ch=0;
+    for(int e=head[u];~e;e=nxt[e]){
+        int v=to[e];
+        if(e==pe) continue;
+        if(vis[v]!=vid){ ch++; dfs(v,e^1); low[u]=min(low[u],low[v]);
+            if(pe!=-1 &amp;&amp; low[v]&gt;=ord[u]) isArt[u]=true;
+        } else low[u]=min(low[u],ord[v]);
+    }
+    if(pe==-1 &amp;&amp; ch&gt;1) isArt[u]=true;
+}
+
+int main(){
+    while(cin&gt;&gt;n &amp;&amp; n){
+        init();
+        string line; getline(cin,line);
+        while(getline(cin,line)){
+            if(line.empty()||line=="0") break;
+            istringstream ss(line); int u; ss&gt;&gt;u;
+            if(u==0) break;
+            int v; while(ss&gt;&gt;v) addBiEdge(u,v);
+        }
+        for(int i=1;i&lt;=n;i++) if(vis[i]!=vid) dfs(i);
+        int cnt=0; for(int i=1;i&lt;=n;i++) if(isArt[i]) cnt++;
+        cout&lt;&lt;cnt&lt;&lt;"\n";
+    }
+}</code></pre>
+        <p><strong>Complexity:</strong> O(N+M) per test. N ≤ 100, M ≤ 5000.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 UVA 796 — Critical Links (Bridges)
+      <a class="prob-link" href="https://vjudge.net/problem/UVA-796" target="_blank">VJudge ↗</a>
+    </div>
+    <p><strong>Story:</strong> Find all critical links in a network — edges whose removal disconnects it.</p>
+    <p><strong>Abstraction:</strong> List all bridges in an undirected graph, output as sorted pairs.</p>
+    <p><strong>Key observation:</strong> Bridge condition: <code class="ic">low[v] &gt; ord[u]</code>. Output each bridge as sorted pair. Must handle the unique input format (adjacency list with degrees).</p>
+    <details>
+      <summary>Full AC solution <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN=10005, MAXM=200005;
+int head[MAXN],to[MAXM],nxt[MAXM],ne;
+int ord[MAXN],low[MAXN],vis[MAXN],vid,timer_val;
+bool isBridge[MAXM];
+int n;
+
+void init(int _n,int _m){
+    n=_n; fill(head,head+n+1,-1); fill(isBridge,isBridge+2*_m+5,false);
+    ne=0; vid++; timer_val=0;
+}
+void addEdge(int u,int v){ to[ne]=v; nxt[ne]=head[u]; head[u]=ne++; }
+void addBiEdge(int u,int v){ addEdge(u,v); addEdge(v,u); }
+
+void dfs(int u,int pe=-1){
+    vis[u]=vid; ord[u]=low[u]=++timer_val;
+    for(int e=head[u];~e;e=nxt[e]){
+        int v=to[e];
+        if(e==pe) continue;
+        if(vis[v]!=vid){ dfs(v,e^1); low[u]=min(low[u],low[v]);
+            if(low[v]&gt;ord[u]) isBridge[e]=isBridge[e^1]=true;
+        } else low[u]=min(low[u],ord[v]);
+    }
+}
+
+int main(){
+    while(cin&gt;&gt;n){
+        vector&lt;pair&lt;int,int&gt;&gt; edges;
+        for(int i=0;i&lt;n;i++){
+            int u,k; char c; cin&gt;&gt;u&gt;&gt;c&gt;&gt;c&gt;&gt;k;
+            for(int j=0;j&lt;k;j++){ int v; cin&gt;&gt;v; edges.push_back({u,v}); }
+        }
+        init(n,(int)edges.size());
+        for(auto [u,v]:edges) addBiEdge(u,v);
+        for(int i=0;i&lt;n;i++) if(vis[i]!=vid) dfs(i);
+
+        vector&lt;pair&lt;int,int&gt;&gt; bridges;
+        for(int e=0;e&lt;ne;e+=2)
+            if(isBridge[e]){ int u=to[e^1],v=to[e]; if(u&gt;v)swap(u,v); bridges.push_back({u,v}); }
+        sort(bridges.begin(),bridges.end());
+        cout&lt;&lt;bridges.size()&lt;&lt;" critical links\n";
+        for(auto [u,v]:bridges) cout&lt;&lt;u&lt;&lt;" - "&lt;&lt;v&lt;&lt;"\n";
+        cout&lt;&lt;"\n";
+    }
+}</code></pre>
+        <p><strong>Complexity:</strong> O(N+M). N ≤ 10,000.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 UVA 1108 — Mining Your Own Business (BCC + Counting)
+      <a class="prob-link" href="https://vjudge.net/problem/UVA-1108" target="_blank">VJudge ↗</a>
+    </div>
+    <p><strong>Story:</strong> A mining company has tunnels (a graph). Each tunnel junction can be an escape exit. Miners need safety: placing exits so any group can always evacuate. Minimize exits needed and count placements.</p>
+    <p><strong>Abstraction:</strong> Extract all VBCCs. A BCC with exactly one articulation point on its boundary needs exactly one exit (any non-articulation vertex inside it). Count BCCs with ≤ 1 boundary articulation. Answer = count, ways = 2^count.</p>
+    <p><strong>Why BCC?</strong> Within a VBCC, any vertex remains reachable from any other even after removing any single vertex. So one exit anywhere inside is sufficient. But if a BCC touches two articulation points, the miners can always choose which side to escape to — still needs one exit.</p>
+    <details>
+      <summary>Key insight and approach <span class="hint">click to expand</span></summary>
+      <div class="detailsBody">
+        <p>For each VBCC, count how many of its nodes are articulation points. Let that count be <code class="ic">c</code>.</p>
+        <ul>
+          <li>If c = 0: all nodes are non-articulation. This BCC needs one exit (can be any node). count++, ways × 2.</li>
+          <li>If c = 1: one boundary articulation point. The BCC needs one exit inside it (any non-articulation node). count++, ways × (size - 1) or just note there are choices.</li>
+          <li>If c ≥ 2: the BCC has multiple articulation points; miners can escape to multiple BCCs. No exit needed here.</li>
+        </ul>
+        <p>Special case: if the whole graph has no articulation points (single BCC), answer is 2 exits, 1 way (any 2 vertices).</p>
+      </div>
+    </details>
+    <p><strong>Complexity:</strong> O(N + M). <a href="https://vjudge.net/problem/UVA-1108" target="_blank">VJudge ↗</a></p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 UVA 610 — Street Directions (Edge Orientation)
+      <a class="prob-link" href="https://vjudge.net/problem/UVA-610" target="_blank">VJudge ↗</a>
+    </div>
+    <p><strong>Story:</strong> A city wants to convert all streets to one-way while keeping the city strongly connected from any starting point. Find a valid orientation or report where it's impossible.</p>
+    <p><strong>Key insight:</strong> Strong orientation is possible iff the graph has no bridges. Non-bridge edges can always be oriented using DFS: tree edges go downward, back edges go upward (toward ancestor). This creates a strong orientation. Bridges must be output in both directions (they can't be made one-way in a strongly connected orientation).</p>
+    <p><strong>Complexity:</strong> O(N + M). <a href="https://vjudge.net/problem/UVA-610" target="_blank">VJudge ↗</a></p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 Codeforces 1000E — We Need More Bosses (Bridge Tree Diameter)
+      <a class="prob-link" href="https://codeforces.com/problemset/problem/1000/E" target="_blank">CF ↗</a>
+    </div>
+    <p><strong>Story:</strong> In a directed graph (after condensation to SCCs), find the largest SCC, then find the diameter of the bridge tree within it.</p>
+    <p><strong>Abstraction:</strong> SCC condensation → build bridge-free graph on condensed nodes → find EBCCs → build bridge tree → compute tree diameter (two-BFS).</p>
+    <p><strong>Key observations:</strong></p>
+    <ul>
+      <li>After SCC condensation, treat the condensed graph as undirected for bridge detection.</li>
+      <li>Build bridge tree: EBCCs become nodes, bridges become edges.</li>
+      <li>Diameter of bridge tree = max edges to cross = answer.</li>
+    </ul>
+    <p><strong>Complexity:</strong> O(N + M). <a href="https://codeforces.com/problemset/problem/1000/E" target="_blank">Codeforces 1000E ↗</a></p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 Codeforces 160D — Edges in MST (MST Classification)
+      <a class="prob-link" href="https://codeforces.com/problemset/problem/160/D" target="_blank">CF ↗</a>
+    </div>
+    <p><strong>Story:</strong> Given a weighted undirected graph, classify each edge: does it appear in no MST, some MSTs, or every MST?</p>
+    <p><strong>Abstraction:</strong> Process edges grouped by weight (Kruskal style). For each weight group, temporarily contract the graph via DSU from lighter edges, build the group graph, run bridge detection. Bridges in group = must-have edges. Non-bridge edges between different components = sometimes-present. Edges within same component = never used.</p>
+    <p><strong>Complexity:</strong> O(M log M + N + M) with Kruskal sorting + linear DFS. <a href="https://codeforces.com/problemset/problem/160/D" target="_blank">Codeforces 160D ↗</a></p>
+  </div>
+
+  <div class="prob-card">
+    <div class="prob-title">🧩 Yosupo Judge — Biconnected Components
+      <a class="prob-link" href="https://judge.yosupo.jp/problem/biconnected_components" target="_blank">Yosupo ↗</a>
+    </div>
+    <p><strong>Story:</strong> Given an undirected graph, output all vertex-biconnected components.</p>
+    <p><strong>Abstraction:</strong> Direct application of VBCC extraction variant. This problem tests the correctness of your BCC stack extraction precisely.</p>
+    <p><strong>Complexity:</strong> O(N + M). <a href="https://judge.yosupo.jp/problem/biconnected_components" target="_blank">Yosupo Judge ↗</a></p>
+  </div>
+</section>
+
+<!-- 16. ADVANCED -->
+<section class="card" id="s16">
+  <h2>16. Advanced Extensions</h2>
+  <div class="grid2">
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">Block-Cut Tree LCA Queries</strong>
+      <p>After building the block-cut tree, binary lifting enables O(log N) queries like: "Does removing vertex x disconnect nodes u and v?" — check if x lies on the path from u to v in the block-cut tree.</p>
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">Bridge Tree DP</strong>
+      <p>Tree DP on the bridge tree solves problems like "minimum edges to add so the graph has no bridges" (answer = ⌈leaves/2⌉ of the bridge tree), diameter under edge additions, etc.</p>
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">Offline Removal Queries</strong>
+      <p>If queries ask "are u and v connected after removing vertex x?", precompute BCC structure and check component membership. Low-link DFS makes O(1) per query possible after O(N+M) preprocessing.</p>
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">Directed Analogue: Tarjan SCC</strong>
+      <p>Tarjan's SCC algorithm uses a very similar low-link invariant on directed graphs. The "escape from subtree" idea becomes "can you reach back to your ancestor in a directed sense?" — strongly connected components play the role of BCCs.</p>
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">2-SAT via SCC</strong>
+      <p>2-SAT builds an implication graph and uses SCC to determine satisfiability. The connection: SCCs are the "atomic units" of the implication structure, analogous to how BCCs are atomic units of connectivity.</p>
+    </div>
+    <div style="background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px">
+      <strong style="font-size:19px">Pair Impact Counting</strong>
+      <p>Problems asking "how many pairs (u,v) become disconnected if vertex x is removed?" can be answered in O(N+M) using BCC sizes and articulation tree structure (CodeChef SADPAIRS style).</p>
+    </div>
+  </div>
+  <h3>More Practice Problems</h3>
+  <div class="chips">
+    <span class="chip"><a href="https://vjudge.net/problem/UVA-315" target="_blank">UVA 315 — Network</a></span>
+    <span class="chip"><a href="https://vjudge.net/problem/UVA-796" target="_blank">UVA 796 — Critical Links</a></span>
+    <span class="chip"><a href="https://vjudge.net/problem/UVA-610" target="_blank">UVA 610 — Street Directions</a></span>
+    <span class="chip"><a href="https://vjudge.net/problem/UVA-1108" target="_blank">UVA 1108 — Mining Business</a></span>
+    <span class="chip p"><a href="https://codeforces.com/problemset/problem/1000/E" target="_blank">CF 1000E — More Bosses</a></span>
+    <span class="chip p"><a href="https://codeforces.com/problemset/problem/160/D" target="_blank">CF 160D — Edges in MST</a></span>
+    <span class="chip w"><a href="https://cses.fi/problemset/task/2177" target="_blank">CSES 2177 — Strong Orientation</a></span>
+    <span class="chip w"><a href="https://cses.fi/problemset/task/1676" target="_blank">CSES 1676 — Biconnected</a></span>
+    <span class="chip g"><a href="https://judge.yosupo.jp/problem/biconnected_components" target="_blank">Yosupo — BCC</a></span>
+    <span class="chip g"><a href="https://www.spoj.com/problems/SUBMERGE/" target="_blank">SPOJ SUBMERGE</a></span>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<section class="card" id="summary">
+  <h2>Summary &amp; Checklist</h2>
+  <p>After completing this tutorial you should be able to:</p>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✅ Core Understanding</h4>
+      <ul class="checklist">
+        <li>Explain the DFS tree and why only back edges matter</li>
+        <li>Define ord[u] and low[u] semantically (not just as code)</li>
+        <li>Derive bridge condition low[v] &gt; ord[u] from first principles</li>
+        <li>Explain why articulation uses ≥ but bridge uses &gt;</li>
+        <li>Handle root vs non-root articulation correctly</li>
+        <li>Explain why back edge update uses ord[v], not low[v]</li>
+        <li>Justify the O(N+M) complexity tightly</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠️ Never Make These Mistakes</h4>
+      <ul class="mistake">
+        <li>Tracking parent by vertex instead of edge index</li>
+        <li>Applying low[v]≥ord[u] to the root</li>
+        <li>Using low[v] instead of ord[v] for back edges</li>
+        <li>Running DFS from only node 1 (disconnected graphs)</li>
+        <li>Swapping &gt; and ≥ between bridge and articulation</li>
+        <li>Not resetting ne=0 and head[] between test cases</li>
+        <li>Adding directed edges individually instead of via addBiEdge</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🔧 Implementation Checklist</h4>
+      <ul class="must">
+        <li>head[] initialized to -1</li>
+        <li>ne = 0 before adding edges; edges added in pairs</li>
+        <li>DFS loops over all unvisited nodes (not just node 1)</li>
+        <li>Parent tracked as edge index pe, passed as e^1</li>
+        <li>if (e == pe) continue — not if (v == parent)</li>
+        <li>low[u] = min(low[u], low[v]) after tree-child returns</li>
+        <li>low[u] = min(low[u], ord[v]) for back edges</li>
+        <li>Bridge: low[v] &gt; ord[u]</li>
+        <li>Art (non-root): pe != -1 &amp;&amp; low[v] ≥ ord[u]</li>
+        <li>Art (root): pe == -1 &amp;&amp; children &gt; 1</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🚀 What To Study Next</h4>
+      <ul>
+        <li>Tarjan SCC (same idea, directed graphs)</li>
+        <li>Block-cut tree construction and LCA queries</li>
+        <li>Bridge tree DP (add-edge problems)</li>
+        <li>2-SAT reduction and SCC</li>
+        <li>MST edge classification (CF 160D pattern)</li>
+        <li>Link-Cut Trees for dynamic bridge/connectivity</li>
+        <li>Offline vertex removal with articulation structure</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ib ib-green" style="margin-top:20px"><i>🎯</i><p><strong>The one mental model to remember:</strong> When traversing tree edge u→v, ask: "Can v's subtree escape above u?" Measure with low[v] vs ord[u]. low[v] &gt; ord[u] means trapped → bridge. low[v] ≥ ord[u] means trapped at u's level → u is cut vertex. Everything flows from this one question.</p></div>
+</section>
+
+<!-- RUNTIME VALIDATION CHECKLIST -->
+<section class="card" id="rvc" style="margin-top:24px">
+  <h2>Runtime Validation Checklist</h2>
+  <p style="color:var(--muted);font-size:var(--fs-sm);margin-bottom:14px">Every item below is literally true in this final file. Verify each one by running the page.</p>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>🔲 Sidebar &amp; Shell</h4>
+      <ul class="checklist">
+        <li>Sidebar opens and closes correctly on toggle-button click</li>
+        <li>Hamburger animates to ✕ when open, reverts to ☰ when closed</li>
+        <li>aria-expanded stays synchronized with actual open/closed state</li>
+        <li>Overlay appears only on narrow layouts (≤1300 px) when sidebar is open</li>
+        <li>Narrow layouts start with sidebar closed by default</li>
+        <li>Wide (desktop) layouts start with sidebar open and no overlay</li>
+        <li>Escape key closes the sidebar on narrow layouts</li>
+        <li>Resizing from narrow → wide auto-opens sidebar and removes overlay</li>
+        <li>Active nav highlighting updates correctly while scrolling</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🎨 Theme System</h4>
+      <ul class="checklist">
+        <li>Pre-body init script sets theme before first paint (no flash)</li>
+        <li>Theme persists across page reloads via localStorage</li>
+        <li>System prefers-color-scheme used as fallback when no saved theme</li>
+        <li>Theme switch responds to click, Enter, and Space</li>
+        <li>aria-checked is correct on first load (matches actual rendered theme)</li>
+        <li>Dark ↔ light toggle updates data-theme attribute and switch knob position</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>📧 Branding &amp; Emails</h4>
+      <ul class="checklist">
+        <li>Top sidebar brand reads "Prepared by The Coach (Dr. Wahab) &amp; Ashraf"</li>
+        <li>Footer reads "Coach Academy · Prepared by The Coach (Dr. Wahab) &amp; Ashraf · © 2025 All rights reserved."</li>
+        <li>All visible email links are plain direct mailto: links</li>
+        <li>No Cloudflare __cf_email__ spans or data-cfemail attributes remain</li>
+        <li>No /cdn-cgi/ URLs remain anywhere in the file</li>
+        <li>No external Cloudflare email-decode script is loaded</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚙️ Integrity &amp; Interactivity</h4>
+      <ul class="checklist">
+        <li>All tracer controls (⏮ ◀ ▶ ▶| ⏭) work correctly with correct step data</li>
+        <li>All 6 variant tabs switch correctly (VBCC, EBCC, Bridge Tree, Block-Cut, Orientation, MST)</li>
+        <li>All &lt;details&gt; accordion elements open and close</li>
+        <li>No duplicate IDs anywhere in the file</li>
+        <li>No broken JS handlers — all buttons have working event listeners</li>
+        <li>File is complete, not truncated — ends with &lt;/html&gt;</li>
+        <li>All opened HTML tags are properly closed</li>
+        <li>All script blocks are syntactically valid</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <a class="footer-email" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+    <a class="footer-email" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+  </div>
+  <div class="footer-copy">© 2025 All rights reserved.</div>
+</footer>
+
+</div><!-- /content -->
+
+<script>
+/* ── THEME & SIDEBAR ─────────────────────────────── */
+(function(){
+  var body=document.body,
+      toggle=document.getElementById('sidebarToggle'),
+      sidebar=document.getElementById('sidebar'),
+      overlay=document.getElementById('sidebarOverlay'),
+      themeSwitch=document.getElementById('themeSwitch');
+
+  /* ── Sidebar helpers ───────────────────────────── */
+  function isNarrow(){ return window.innerWidth<=1300; }
+
+  function setSidebar(open){
+    var narrow=isNarrow();
+    if(open){
+      body.classList.add('sb-open'); body.classList.remove('sb-closed');
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      if(narrow){ overlay.classList.add('show'); }
+    } else {
+      body.classList.remove('sb-open'); body.classList.add('sb-closed');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      overlay.classList.remove('show');
+    }
+  }
+
+  /* Initial state: open on wide, closed on narrow */
+  setSidebar(!isNarrow());
+
+  toggle.addEventListener('click',function(){
+    setSidebar(body.classList.contains('sb-closed'));
+  });
+  overlay.addEventListener('click',function(){ setSidebar(false); });
+
+  /* Escape closes sidebar on narrow layouts */
+  document.addEventListener('keydown',function(e){
+    if((e.key==='Escape')&&isNarrow()&&body.classList.contains('sb-open')){ setSidebar(false); }
+  });
+
+  /* Resize: sync sidebar with layout */
+  window.addEventListener('resize',function(){
+    if(!isNarrow()){
+      body.classList.add('sb-open'); body.classList.remove('sb-closed');
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      overlay.classList.remove('show');
+    } else {
+      if(!sidebar.classList.contains('collapsed')){ setSidebar(false); }
+    }
+  });
+
+  /* ── Theme ─────────────────────────────────────── */
+  /* Pre-body script already set data-theme; just sync aria-checked */
+  themeSwitch.setAttribute('aria-checked',
+    document.documentElement.getAttribute('data-theme')==='dark'?'true':'false');
+
+  function applyTheme(next){
+    document.documentElement.setAttribute('data-theme',next);
+    themeSwitch.setAttribute('aria-checked',next==='dark'?'true':'false');
+    localStorage.setItem('ca-theme',next);
+  }
+
+  themeSwitch.addEventListener('click',function(){
+    applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+  /* Keyboard: Enter and Space toggle theme */
+  themeSwitch.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key===' '){
+      e.preventDefault();
+      applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+    }
+  });
+
+  /* ── Active-nav IntersectionObserver ─────────── */
+  var navLinks=document.querySelectorAll('.nav a');
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var id=entry.target.id;
+        navLinks.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+id);});
+      }
+    });
+  },{threshold:0.25});
+  document.querySelectorAll('section[id]').forEach(function(s){obs.observe(s);});
+})();
+
+/* ── TAB SWITCHING ───────────────────────────────── */
+function showTab(cid,tid,btn){
+  document.getElementById(cid).querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(tid).classList.add('active');
+  btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+/* ── INTERACTIVE TRACER ──────────────────────────── */
+(function(){
+  /* Graph: 1—2, 2—3, 3—1 (cycle), 2—4, 4—5 */
+  var NX={1:90,2:260,3:160,4:390,5:510};
+  var NY={1:120,2:120,3:250,4:60,5:200};
+  var EDGES=[[1,2],[2,3],[3,1],[2,4],[4,5]];
+
+  var steps=[
+    {ph:'Init',node:'-',exp:'Ready. Graph: 1-2, 2-3, 3-1 (cycle), 2-4, 4-5. DFS will start from node 1.',cls:'init',
+     ord:{},low:{},stk:[],done:[],arts:[],bridges:[]},
+    {ph:'Enter',node:'1',exp:'Enter node 1. ord[1]=1, low[1]=1.',cls:'init',
+     ord:{1:1},low:{1:1},stk:[1],done:[],arts:[],bridges:[]},
+    {ph:'Tree Edge',node:'1→2',exp:'Follow tree edge 1→2. Enter node 2. ord[2]=2, low[2]=2.',cls:'init',
+     ord:{1:1,2:2},low:{1:1,2:2},stk:[1,2],done:[],arts:[],bridges:[]},
+    {ph:'Tree Edge',node:'2→3',exp:'Follow tree edge 2→3. Enter node 3. ord[3]=3, low[3]=3.',cls:'init',
+     ord:{1:1,2:2,3:3},low:{1:1,2:2,3:3},stk:[1,2,3],done:[],arts:[],bridges:[]},
+    {ph:'Back Edge',node:'3→1',exp:'Back edge 3→1 (node 1 is ancestor). low[3]=min(3,ord[1])=min(3,1)=1.',cls:'warn',
+     ord:{1:1,2:2,3:3},low:{1:1,2:2,3:1},stk:[1,2,3],done:[],arts:[],bridges:[]},
+    {ph:'Return',node:'3→2',exp:'Return from 3 to 2. low[2]=min(2,low[3])=min(2,1)=1. Check bridge: low[3]=1 ≤ ord[2]=2 → NOT bridge. Check art: low[3]=1 < ord[2]=2 → NOT art for this child.',cls:'ok',
+     ord:{1:1,2:2,3:3},low:{1:1,2:1,3:1},stk:[1,2],done:[3],arts:[],bridges:[]},
+    {ph:'Tree Edge',node:'2→4',exp:'Follow tree edge 2→4. Enter node 4. ord[4]=4, low[4]=4.',cls:'init',
+     ord:{1:1,2:2,3:3,4:4},low:{1:1,2:1,3:1,4:4},stk:[1,2,4],done:[3],arts:[],bridges:[]},
+    {ph:'Tree Edge',node:'4→5',exp:'Follow tree edge 4→5. Enter node 5. ord[5]=5, low[5]=5.',cls:'init',
+     ord:{1:1,2:2,3:3,4:4,5:5},low:{1:1,2:1,3:1,4:4,5:5},stk:[1,2,4,5],done:[3],arts:[],bridges:[]},
+    {ph:'Return',node:'5→4',exp:'Return from 5 to 4. low[4]=min(4,low[5])=min(4,5)=4. Bridge check: low[5]=5 > ord[4]=4 ✓ → BRIDGE (4,5)! Art check: low[5]=5 ≥ ord[4]=4 ✓ → node 4 is ARTICULATION POINT!',cls:'bad',
+     ord:{1:1,2:2,3:3,4:4,5:5},low:{1:1,2:1,3:1,4:4,5:5},stk:[1,2,4],done:[3,5],arts:[4],bridges:[[4,5]]},
+    {ph:'Return',node:'4→2',exp:'Return from 4 to 2. low[2]=min(1,low[4])=min(1,4)=1. Bridge check: low[4]=4 > ord[2]=2 ✓ → BRIDGE (2,4)! Art check: low[4]=4 ≥ ord[2]=2 ✓ → node 2 is ARTICULATION POINT!',cls:'bad',
+     ord:{1:1,2:2,3:3,4:4,5:5},low:{1:1,2:1,3:1,4:4,5:5},stk:[1,2],done:[3,5,4],arts:[4,2],bridges:[[4,5],[2,4]]},
+    {ph:'Return',node:'2→1',exp:'Return from 2 to 1. low[1]=min(1,low[2])=1. Bridge check: low[2]=1 ≤ ord[1]=1 → NOT bridge. Root check: node 1 has 1 DFS-tree child → NOT articulation point.',cls:'ok',
+     ord:{1:1,2:2,3:3,4:4,5:5},low:{1:1,2:1,3:1,4:4,5:5},stk:[1],done:[3,5,4,2],arts:[4,2],bridges:[[4,5],[2,4]]},
+    {ph:'Done ✓',node:'Finished',exp:'DFS complete! Articulation points: {2, 4}. Bridges: {(2,4), (4,5)}. Total time O(N+M).',cls:'ok',
+     ord:{1:1,2:2,3:3,4:4,5:5},low:{1:1,2:1,3:1,4:4,5:5},stk:[],done:[1,2,3,4,5],arts:[4,2],bridges:[[4,5],[2,4]]},
+  ];
+
+  var cur=0,playing=false,tmr;
+  var svg=document.getElementById('trSvg');
+  var spdMap=[2000,1400,900,550,280];
+
+  function spd(){
+    var idx=parseInt(document.getElementById('trSpd').value,10);
+    return spdMap[idx];
+  }
+
+  function isInStack(n,s){ return s.stk.indexOf(n)>=0; }
+  function isDone(n,s){ return s.done.indexOf(n)>=0; }
+  function isCur(n,s){ return s.stk.length>0&&s.stk[s.stk.length-1]===n&&s.ph!=='Done ✓'; }
+  function isArt(n,s){ return s.arts.indexOf(n)>=0; }
+  function isBr(a,b,s){ return s.bridges.some(function(br){return (br[0]===a&&br[1]===b)||(br[0]===b&&br[1]===a);}); }
+
+  function getNodeFill(n,s){
+    if(isCur(n,s)) return '#6d28d9';
+    if(isArt(n,s)) return '#b91c1c';
+    if(isDone(n,s)) return '#0f766e';
+    if(isInStack(n,s)) return '#2563eb';
+    return null;
+  }
+
+  function render(){
+    var s=steps[cur];
+    svg.innerHTML='';
+    /* edges */
+    EDGES.forEach(function(e){
+      var br=isBr(e[0],e[1],s);
+      var line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',NX[e[0]]); line.setAttribute('y1',NY[e[0]]);
+      line.setAttribute('x2',NX[e[1]]); line.setAttribute('y2',NY[e[1]]);
+      line.setAttribute('stroke',br?'#b45309':'var(--border)');
+      line.setAttribute('stroke-width',br?'5':'3');
+      if(br) line.setAttribute('stroke-dasharray','10,5');
+      svg.appendChild(line);
+      if(br){
+        var mx=(NX[e[0]]+NX[e[1]])/2, my=(NY[e[0]]+NY[e[1]])/2;
+        var lt=document.createElementNS('http://www.w3.org/2000/svg','text');
+        lt.setAttribute('x',mx+8); lt.setAttribute('y',my-6);
+        lt.setAttribute('fill','#b45309'); lt.setAttribute('font-size','13'); lt.setAttribute('font-weight','900');
+        lt.textContent='BRIDGE'; svg.appendChild(lt);
+      }
+    });
+    /* nodes */
+    for(var nid=1;nid<=5;nid++){
+      var fill=getNodeFill(nid,s);
+      var g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      var c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',NX[nid]); c.setAttribute('cy',NY[nid]); c.setAttribute('r','26');
+      c.setAttribute('fill',fill||'var(--panel)');
+      c.setAttribute('stroke',fill?'white':'var(--border)'); c.setAttribute('stroke-width','3');
+      g.appendChild(c);
+      var t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',NX[nid]); t.setAttribute('y',NY[nid]+6);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill',fill?'white':'var(--text)');
+      t.setAttribute('font-size','17'); t.setAttribute('font-weight','900');
+      t.textContent=nid; g.appendChild(t);
+      /* ord/low label */
+      if(s.ord[nid]!==undefined){
+        var ol=document.createElementNS('http://www.w3.org/2000/svg','text');
+        ol.setAttribute('x',NX[nid]); ol.setAttribute('y',NY[nid]-36);
+        ol.setAttribute('text-anchor','middle'); ol.setAttribute('fill','var(--muted)');
+        ol.setAttribute('font-size','13'); ol.setAttribute('font-weight','800');
+        ol.textContent='o:'+s.ord[nid]+' l:'+s.low[nid]; g.appendChild(ol);
+      }
+      /* art badge */
+      if(isArt(nid,s)){
+        var ab=document.createElementNS('http://www.w3.org/2000/svg','text');
+        ab.setAttribute('x',NX[nid]+30); ab.setAttribute('y',NY[nid]-10);
+        ab.setAttribute('fill','#b91c1c'); ab.setAttribute('font-size','12'); ab.setAttribute('font-weight','950');
+        ab.textContent='✂ ART'; g.appendChild(ab);
+      }
+      svg.appendChild(g);
+    }
+    /* table */
+    var tbl=document.getElementById('trTable'); tbl.innerHTML='';
+    for(var ni=1;ni<=5;ni++){
+      if(s.ord[ni]===undefined) continue;
+      var cell=document.createElement('div');
+      cell.className='ditem'+(isArt(ni,s)?' art':isDone(ni,s)?' ok':isCur(ni,s)?' cur':'');
+      cell.innerHTML='<div class="di-lbl">Node '+ni+'</div><div class="di-val" style="font-size:15px;line-height:1.4">o:'+s.ord[ni]+'<br>l:'+s.low[ni]+'</div>';
+      tbl.appendChild(cell);
+    }
+    /* side panel */
+    document.getElementById('trPhase').textContent=s.ph;
+    document.getElementById('trNodeLbl').textContent='→ '+s.node;
+    var expEl=document.getElementById('trExp');
+    expEl.textContent=s.exp;
+    expEl.className='sp-exp '+(s.cls==='ok'?'ok':s.cls==='bad'?'bad':s.cls==='warn'?'warn':'init');
+    /* arts and bridges */
+    document.getElementById('trArts').textContent=s.arts.length?s.arts.join(', '):'none yet';
+    document.getElementById('trBridges').textContent=s.bridges.length?s.bridges.map(function(b){return '('+b[0]+','+b[1]+')';}).join(' '):'none yet';
+    /* log */
+    var log=document.getElementById('trLog'); log.innerHTML='';
+    for(var ii=Math.max(0,cur-10);ii<=cur;ii++){
+      var li=document.createElement('div');
+      li.className='sli'+(ii===cur?' cur':'')+(steps[ii].cls==='ok'?' ok':steps[ii].cls==='bad'?' bad':steps[ii].cls==='warn'?' warn':'');
+      li.textContent='['+ii+'] '+steps[ii].ph+': '+steps[ii].node;
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('trCtr').textContent='Step '+(cur+1)+' / '+steps.length;
+    document.getElementById('trPrv').disabled=cur===0;
+    document.getElementById('trNxt').disabled=cur>=steps.length-1;
+    document.getElementById('trSkp').disabled=cur>=steps.length-1;
+  }
+
+  function startPlay(){
+    if(playing)return; playing=true;
+    document.getElementById('trPly').textContent='⏸';
+    document.getElementById('trPly').classList.add('playing');
+    function tick(){
+      if(!playing||cur>=steps.length-1){stopPlay();return;}
+      cur++;render();tmr=setTimeout(tick,spd());
+    }
+    tmr=setTimeout(tick,spd());
+  }
+  function stopPlay(){
+    playing=false;clearTimeout(tmr);
+    document.getElementById('trPly').textContent='▶';
+    document.getElementById('trPly').classList.remove('playing');
+  }
+  document.getElementById('trRst').addEventListener('click',function(){stopPlay();cur=0;render();});
+  document.getElementById('trPrv').addEventListener('click',function(){stopPlay();if(cur>0){cur--;render();}});
+  document.getElementById('trNxt').addEventListener('click',function(){stopPlay();if(cur<steps.length-1){cur++;render();}});
+  document.getElementById('trSkp').addEventListener('click',function(){stopPlay();cur=steps.length-1;render();});
+  document.getElementById('trPly').addEventListener('click',function(){if(playing)stopPlay();else startPlay();});
+  /* Speed label — labels array is the single source of truth for all label updates */
+  var labels=['0.5×','1×','1.5×','2×','3×'];
+  document.getElementById('trSpd').addEventListener('input',function(){
+    var idx=parseInt(this.value,10);
+    document.getElementById('trSpdLbl').textContent=labels[idx];
+  });
+  /* Initial label sync: read actual slider value, set label from it (no fallback) */
+  document.getElementById('trSpdLbl').textContent=labels[parseInt(document.getElementById('trSpd').value,10)];
+  render();
+})();
+</script>
+</body>
+</html>

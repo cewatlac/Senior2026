@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — BST → BBST → AVL → Red-Black</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --link:#1d4ed8;
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --node-blue:#2563eb; --node-green:#0f766e; --node-amber:#b45309; --node-red:#b91c1c; --node-purple:#7c3aed;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --link:#93c5fd;
+      --node-blue:#4f8cff; --node-green:#34d399; --node-amber:#fbbf24; --node-red:#fb7185; --node-purple:#a78bfa;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;cursor:pointer;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";float:right;font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:17px;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;white-space:pre;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .goodRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--good);border-radius:0 var(--radius) var(--radius) 0;background:rgba(15,118,110,.08);}
+    .gLabel{font-weight:950;font-size:24px;color:var(--good);margin-bottom:6px;}
+    .gDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .plink{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:8px 12px;border-radius:12px;font-weight:900;font-size:18px;color:var(--accent2);margin-top:6px;}
+
+    /* ===== Interactive stepper framework ===== */
+    .stepper{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;margin:18px 0;box-shadow:var(--shadow);}
+    .stepper-title{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:10px;}
+    .stepper-svg{width:100%;height:auto;display:block;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+    .stepper-desc{margin-top:14px;padding:14px 18px;background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;font-weight:800;font-size:21px;line-height:1.4;color:var(--text);min-height:70px;}
+    .stepper-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+    .stepper-btn{padding:10px 18px;border-radius:12px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:18px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .stepper-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(37,99,235,.08);}
+    .stepper-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .stepper-btn.primary{background:var(--accent2);color:white;border-color:var(--accent2);}
+    .stepper-btn.primary:hover:not(:disabled){background:var(--accent);}
+    .stepper-counter{font-weight:900;font-size:20px;color:var(--muted);min-width:120px;text-align:center;}
+    .tree-edge{stroke:var(--muted);stroke-width:2.5;fill:none;transition:all .35s ease;}
+    .tree-edge.path{stroke:var(--accent2);stroke-width:5;}
+    .tree-edge.new{stroke:var(--good);stroke-width:5;}
+    .tree-edge.faded{stroke:var(--border);stroke-width:2;opacity:.4;}
+    .tree-node circle{stroke:var(--panel);stroke-width:3;transition:all .35s ease;}
+    .tree-node text{fill:white;text-anchor:middle;font-family:system-ui,sans-serif;font-weight:900;dominant-baseline:central;}
+    .tree-node.highlight circle{stroke:var(--accent2);stroke-width:6;}
+    .tree-node.target circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.doomed circle{stroke:var(--bad);stroke-width:6;stroke-dasharray:5,3;}
+    .tree-node.new-node circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.faded{opacity:.4;}
+    .tree-label{fill:var(--text);text-anchor:middle;font-weight:800;font-size:18px;font-family:system-ui,sans-serif;}
+    .tree-caption{fill:var(--muted);text-anchor:middle;font-weight:750;font-size:14px;font-family:system-ui,sans-serif;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle"><span></span><span></span><span></span></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">BST → BBST → AVL → Red-Black</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundations</div>
+    <a class="navlink active" onclick="navTo('problem')">01 · Problem Definition<small>Ordered set</small></a>
+    <a class="navlink" onclick="navTo('intuition')">02 · Intuition from Scratch<small>Sorted array vs tree</small></a>
+    <a class="navlink" onclick="navTo('visual')">03 · Visual Mental Model<small>Binary search tree shape</small></a>
+    <a class="navlink" onclick="navTo('formal')">04 · Formal Abstraction<small>BST invariant</small></a>
+    <a class="navlink" onclick="navTo('observations')">05 · Key Observations<small>Why naive BST fails</small></a>
+    <div class="groupTitle">BST Operations</div>
+    <a class="navlink" onclick="navTo('insertion')">06 · BST Insertion<small>Walk down, attach</small></a>
+    <a class="navlink" onclick="navTo('deletion')">07 · BST Deletion<small>Three cases</small></a>
+    <a class="navlink" onclick="navTo('rotation')">08 · Rotations<small>The repair primitive</small></a>
+    <div class="groupTitle">Balanced BSTs</div>
+    <a class="navlink" onclick="navTo('avl')">09 · AVL Tree<small>Height balance ±1</small></a>
+    <a class="navlink" onclick="navTo('rb')">10 · Red-Black Tree<small>Color invariants</small></a>
+    <a class="navlink" onclick="navTo('compare')">11 · Comparison<small>AVL vs RB vs Treap</small></a>
+    <div class="groupTitle">Mastery</div>
+    <a class="navlink" onclick="navTo('complexity')">12 · Complexity<small>Heights and proofs</small></a>
+    <a class="navlink" onclick="navTo('proof')">13 · Correctness Proofs<small>Invariants preserved</small></a>
+    <a class="navlink" onclick="navTo('edges')">14 · Edge Cases<small>Audit</small></a>
+    <a class="navlink" onclick="navTo('pitfalls')">15 · Common Pitfalls<small>Classic bugs</small></a>
+    <a class="navlink" onclick="navTo('decision')">16 · Decision Guide<small>Which BBST</small></a>
+    <a class="navlink" onclick="navTo('problems')">17 · Problem Set<small>VJudge-ready</small></a>
+    <a class="navlink" onclick="navTo('summary')">18 · Final Summary<small>One-page recap</small></a>
+    <a class="navlink" onclick="navTo('contact')">19 · Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">
+      Coach Academy<br>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br>© 2026 All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>BST → BBST → AVL → Red-Black</h1>
+      <div class="subtitle">From the plain Binary Search Tree to its balanced descendants. Why naive BST collapses on sorted input, how rotations repair the height, and how AVL and Red-Black trees automate that repair with two different bookkeeping schemes.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill">Theme<div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div></div>
+    </div>
+  </div>
+
+  <div id="sec-problem" class="section">
+  <section id="problem" class="card scroll-reveal">
+    <h2>📌 01 · Problem Definition</h2>
+    <p class="note">Maintain an ordered set (or multiset) of comparable elements under arbitrary update sequences and answer the standard menu of ordered-set queries efficiently. Specifically, the structure must support insertion of a new element, deletion of an existing element, membership tests, and the order-statistic family of queries: predecessor and successor of a given value, the k-th smallest element, and the rank of a value defined as the number of elements strictly less than it. Every operation should run in O(log n) time, where n is the current size of the set, and the structure must remain robust against any input order that an adversarial user might supply, including sorted or reverse-sorted sequences.</p>
+    <p class="note">A plain sorted array gives O(log n) search via binary search, but insertion and deletion are O(n) because we must shift the tail. A linked list gives O(1) insertion at a known position but O(n) search. A hash table gives O(1) average insert and lookup but no order-statistic queries at all. The balanced binary search tree resolves the tension by giving O(log n) for the whole menu of operations, including the order-statistic ones.</p>
+  </section>
+  </div>
+
+  <div id="sec-intuition" class="section">
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 02 · Intuition from Scratch</h2>
+    <p class="note">Imagine we want to search for a number in a sorted array. Binary search visits the middle element, compares, and recurses into either the left half or the right half. The recursion tree of binary search is itself a binary tree, where each internal node represents a comparison and the children represent the two possible directions. The binary search tree is the same idea reified into a data structure: we make the comparisons explicit by storing them as nodes, and we maintain the invariant that at every node, everything in the left subtree is smaller and everything in the right subtree is larger.</p>
+    <p class="note">The advantage over a sorted array is that we no longer need contiguous memory or position-based indexing. Insertion does not have to shift elements; we just walk down the tree to find the right leaf and attach the new node there. Deletion does not have to compact the array; we just rewire pointers locally. As long as the tree stays roughly balanced — meaning its height is close to log of the number of elements — every operation takes the same logarithmic time as binary search on a sorted array, while allowing dynamic updates.</p>
+    <p class="note">The danger, which the rest of this tutorial spends most of its energy addressing, is that a plain BST does not automatically stay balanced. Adversarial input orders such as inserting elements in already-sorted sequence produce a chain-shaped tree whose height equals n, reducing every operation to O(n). Balanced BSTs add some bookkeeping that detects when the tree is becoming too tall and repairs it through local restructuring called rotations.</p>
+  </section>
+  </div>
+
+  <div id="sec-visual" class="section">
+  <section id="visual" class="card scroll-reveal">
+    <h2>🎨 03 · Visual Mental Model</h2>
+    <p class="note">A binary search tree is drawn with the root at the top, smaller values descending to the left, larger values descending to the right. Reading the values in inorder traversal (left subtree, then current node, then right subtree) produces them in sorted order. Below is a small balanced BST for the set <code>{2, 4, 5, 7, 8}</code>, followed by the same five values inserted in sorted order, which produces a worst-case chain. Both trees satisfy the BST invariant, but only the first one supports fast operations.</p>
+
+    <div class="stepper" id="bst-shapes">
+      <div class="stepper-title">Two BSTs holding the same five values</div>
+      <svg class="stepper-svg" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <p class="note">The left tree has height 2; any descent from root to leaf visits at most three nodes. The right tree, born from the sorted insertion order <code>2, 4, 5, 7, 8</code>, has height 4. Even though both store exactly the same set and both satisfy the BST invariant, their performance profiles differ by an entire complexity class. The job of a balanced BST is to refuse to look like the second tree no matter what order the user supplies.</p>
+  </section>
+  </div>
+
+  <div id="sec-formal" class="section">
+  <section id="formal" class="card scroll-reveal">
+    <h2>📐 04 · Formal Abstraction</h2>
+
+    <h3>The node and the BST invariant</h3>
+    <p class="note">A binary search tree is a binary tree where every node carries a key drawn from a totally ordered universe. The BST invariant states that for every node, every key in its left subtree compares strictly less than the node's key, and every key in its right subtree compares strictly greater. We will say strictly less and strictly greater throughout; if the structure must accept duplicates as separate elements, we either break ties with a secondary key such as insertion order, or we collapse duplicates into a single node with a frequency counter (the approach the key treap takes in tutorial 27).</p>
+
+    <div class="formula">For every node u in the tree:
+    every node v in subtree(u.left):  v.key < u.key
+    every node v in subtree(u.right): v.key > u.key
+
+Consequence: inorder traversal produces the keys in sorted order.</div>
+
+    <h3>Augmentation: subtree size</h3>
+    <p class="note">A useful augmentation is to store at every node the size of its subtree, which is the number of nodes that descend from it including itself. This single extra integer per node enables the order-statistic queries: the k-th smallest descent uses subtree sizes to decide left or right at each step, and the rank query <code>order_of_key</code> uses subtree sizes to count elements strictly less than a given value during the descent. We will adopt this augmentation throughout the rest of the tutorial.</p>
+
+    <div class="formula">For every node u in the tree:
+    u.sz = sz(u.left) + 1 + sz(u.right)</div>
+
+    <p class="note">When duplicates collapse into a single node with a frequency counter, the formula becomes <code>u.sz = sz(u.left) + u.frq + sz(u.right)</code>, and the k-th descent and the rank query both work in terms of occurrences rather than distinct values. This is the form the key treap uses.</p>
+  </section>
+  </div>
+
+  <div id="sec-observations" class="section">
+  <section id="observations" class="card scroll-reveal">
+    <h2>🔍 05 · Key Observations</h2>
+    <div class="goodRow"><div class="gLabel">Inorder is the sorted order</div><div class="gDesc">The BST invariant is exactly the condition needed for inorder traversal to produce the keys in sorted order. This is the basis of all order-statistic queries.</div></div>
+    <div class="goodRow"><div class="gLabel">Every operation walks one root-to-leaf path</div><div class="gDesc">Insert, delete, find, predecessor, successor, kth, and rank all descend from the root following a single path that is at most h levels deep, where h is the height of the tree. So the cost of every operation is O(h).</div></div>
+    <div class="warnRow"><div class="wLabel">Height can be Θ(n) on adversarial input</div><div class="wDesc">A naive BST built by inserting elements in sorted order becomes a chain of length n. Every operation then degrades to O(n), which is no better than a linked list.</div></div>
+    <div class="goodRow"><div class="gLabel">Rotations preserve inorder</div><div class="gDesc">A rotation is a local restructuring that swaps a parent with one of its children while preserving the BST invariant globally. Rotations are the elementary repair operation used by every balanced BST.</div></div>
+    <div class="goodRow"><div class="gLabel">Balanced BSTs maintain height O(log n)</div><div class="gDesc">By detecting imbalance after each insert or delete and performing a small number of rotations, balanced BSTs guarantee that the height never grows beyond a constant factor of log n. Every operation then runs in O(log n) worst-case time.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-insertion" class="section">
+  <section id="insertion" class="card scroll-reveal">
+    <h2>⚙️ 06 · BST Insertion</h2>
+    <p class="note">To insert a key x into a BST, we start at the root and walk downward. At each node we compare x with the node's key. If x is smaller we descend into the left child, otherwise we descend into the right child. When we reach a null pointer, that null pointer is where the new node belongs. We allocate a fresh leaf carrying the key x and link it in place of the null pointer. The descent is at most h levels deep, so insertion costs O(h) time.</p>
+
+    <p class="note">The stepper below illustrates inserting the sequence <code>5, 3, 8, 4, 9</code> into an initially empty tree. At each step the highlighted node is the one we are currently comparing against, and the green outline marks the newly inserted leaf.</p>
+
+    <div class="stepper" id="bst-insert">
+      <div class="stepper-title">Building a BST by inserting 5, 3, 8, 4, 9</div>
+      <svg class="stepper-svg" viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <p class="note">Notice that the final shape of the tree depends entirely on the order in which the keys arrive. Inserting the same five values in the order <code>3, 4, 5, 8, 9</code> would have produced a right-leaning chain of depth 4. This is the fundamental fragility of the plain BST: the user, not the data structure, controls the shape.</p>
+  </section>
+  </div>
+
+  <div id="sec-deletion" class="section">
+  <section id="deletion" class="card scroll-reveal">
+    <h2>🗑️ 07 · BST Deletion</h2>
+    <p class="note">Deletion is more involved than insertion because removing an internal node leaves a hole in the tree that has to be filled in a way that preserves the BST invariant. There are three cases to consider, depending on how many children the doomed node has. We walk through them in increasing order of complexity.</p>
+
+    <h3>Case 1: doomed node is a leaf</h3>
+    <p class="note">If the node we want to delete has no children, we simply detach it by setting its parent's child pointer to null. There is no other rearrangement to do; the BST invariant is preserved trivially because we removed a value from a position that the invariant did not constrain beyond emptiness.</p>
+
+    <h3>Case 2: doomed node has exactly one child</h3>
+    <p class="note">If the doomed node has one child (whether left or right), we splice the child up into the doomed node's position. That is, we set the doomed node's parent to point at the doomed node's only child instead of at the doomed node itself. The subtree rooted at that child remains a valid BST, and the BST invariant continues to hold with respect to the parent because every key in the surviving subtree was already on the correct side of the parent's key — it was on the correct side of the doomed node's key, and the doomed node's key was on the correct side of the parent's.</p>
+
+    <h3>Case 3: doomed node has two children</h3>
+    <p class="note">The hard case. We cannot simply splice up either child because doing so would leave the other child without a parent slot. Instead, we replace the doomed node's key with the smallest key in its right subtree (the inorder successor) and then recursively delete that successor from the right subtree. The successor is guaranteed to have at most one child (it is the leftmost node of the right subtree, so it has no left child), so the recursive deletion falls into Case 1 or Case 2 and terminates immediately. A symmetric approach uses the largest key in the left subtree (the inorder predecessor); both choices are equally valid.</p>
+
+    <div class="stepper" id="bst-delete">
+      <div class="stepper-title">BST deletion: the three cases in sequence</div>
+      <svg class="stepper-svg" viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-rotation" class="section">
+  <section id="rotation" class="card scroll-reveal">
+    <h2>🔄 08 · Rotations: The Repair Primitive</h2>
+    <p class="note">A rotation is a local restructuring that moves a child up over its parent without changing the inorder of the tree. Rotations are the elementary repair operation used by every self-balancing BST: AVL trees use rotations to restore the height balance, red-black trees use them to restore the color invariants, and treaps use them to restore the heap-on-priority invariant. Understanding what a rotation does and why it preserves inorder is the foundation for understanding all three.</p>
+
+    <h3>Right rotation</h3>
+    <p class="note">A right rotation is performed at a node <code>p</code> whose left child is <code>c</code>. After the rotation, <code>c</code> becomes the parent and <code>p</code> becomes <code>c</code>'s right child. The middle subtree, which was <code>c</code>'s right subtree before the rotation, becomes <code>p</code>'s new left subtree. The left rotation is the mirror image: it is performed at a node whose right child becomes the new parent.</p>
+
+    <div class="stepper" id="bst-rotation">
+      <div class="stepper-title">Right rotation step-by-step</div>
+      <svg class="stepper-svg" viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Why rotation preserves inorder</h3>
+    <p class="note">Consider the right rotation we just visualised. Before the rotation, the inorder of the subtree at <code>p</code> is <code>inorder(A), c, inorder(B), p, inorder(C)</code>, where A, B, C are the three subtrees that hang off c and p. After the rotation, the inorder of the subtree at <code>c</code> is <code>inorder(A), c, inorder(B), p, inorder(C)</code> — exactly the same sequence. The BST invariant, which depends only on inorder, is preserved automatically. The rotation has changed the depths of nodes but not their order.</p>
+
+    <h3>Cost of one rotation</h3>
+    <p class="note">A rotation only rewires three child pointers (and, if we maintain them, three parent pointers and updates to subtree size on the two affected nodes). It is therefore an O(1) operation. Balanced BSTs perform at most a constant number of rotations per insert or delete, so the total work after an update is O(log n) for the descent plus O(1) for the rotations, giving O(log n) overall.</p>
+  </section>
+  </div>
+
+  <div id="sec-avl" class="section">
+  <section id="avl" class="card scroll-reveal">
+    <h2>🌲 09 · AVL Tree</h2>
+    <p class="note">The AVL tree is the first self-balancing BST in the literature, published by Adelson-Velsky and Landis in 1962. It maintains a strict height-balance invariant: at every node, the heights of the left and right subtrees differ by at most one. The difference (left height minus right height) is called the balance factor and must always lie in the set <code>{-1, 0, +1}</code>. When an insertion or deletion temporarily makes some node's balance factor equal to <code>+2</code> or <code>-2</code>, the AVL repair procedure performs one or two rotations at that node to restore the invariant.</p>
+
+    <h3>Why the height stays O(log n)</h3>
+    <p class="note">The minimum number of nodes in an AVL tree of height h obeys the recurrence <code>N(h) = N(h-1) + N(h-2) + 1</code>, with base cases <code>N(0) = 1</code> and <code>N(1) = 2</code>. This is essentially the Fibonacci recurrence offset by one, so <code>N(h)</code> grows like <code>φ^h</code> where φ is the golden ratio. Inverting the inequality, an AVL tree of n nodes has height at most about <code>1.44 log₂(n+2)</code>, which means every operation costs O(log n) in the worst case.</p>
+
+    <h3>The four imbalance cases</h3>
+    <p class="note">After an insertion, exactly one node along the path from the new leaf back to the root may have its balance factor jump to <code>±2</code>. We call that node <code>u</code>. The repair depends on where the new node was inserted relative to <code>u</code>'s grandchildren, giving four cases: left-left (LL), left-right (LR), right-right (RR), and right-left (RL). LL and RR are mirror images of each other and need a single rotation; LR and RL are mirror images and need a double rotation, which is a rotation at the child followed by a rotation at <code>u</code>.</p>
+
+    <div class="stepper" id="avl-cases">
+      <div class="stepper-title">AVL imbalance cases LL, RR, LR, RL</div>
+      <svg class="stepper-svg" viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Bookkeeping</h3>
+    <p class="note">Each AVL node stores either the subtree height or just the balance factor; both work, and the choice is mostly a matter of taste. After an insert the rebalance procedure walks back up from the new leaf, updating heights at each ancestor, and stops at the first ancestor whose balance factor reaches <code>±2</code> — that is where one of the four repair cases applies. After a delete the rebalance procedure must continue up to the root, because deletions can propagate balance changes upward, occasionally requiring multiple rotations along the path.</p>
+  </section>
+  </div>
+
+  <div id="sec-rb" class="section">
+  <section id="rb" class="card scroll-reveal">
+    <h2>🎨 10 · Red-Black Tree</h2>
+    <p class="note">The red-black tree relaxes the strict AVL height balance into a softer color-based invariant. Every node carries a single bit of information, its color, which is either red or black. The five red-black properties guarantee that the longest root-to-leaf path is at most twice as long as the shortest one, which is enough to bound the height by <code>2 log₂(n+1)</code>. The trade-off is that red-black trees are typically taller in practice than AVL trees (because they allow more imbalance), but they rebalance with fewer rotations on average — usually at most three rotations per insert or delete, versus up to log n rotations for AVL.</p>
+
+    <h3>The five red-black properties</h3>
+    <p class="note">First, every node is either red or black. Second, the root is black. Third, every leaf (the conventional null sentinel that terminates each branch) is black. Fourth, no red node has a red child; equivalently, if a node is red then both of its children are black. Fifth, every path from a given node down to any descendant null leaf contains the same number of black nodes; this number, counted excluding the starting node, is called the black-height of the node.</p>
+
+    <h3>Why the height is bounded</h3>
+    <p class="note">The fifth property forces every root-to-leaf path to have the same number of black nodes, call it bh. The fourth property forbids two reds in a row, so at most half the nodes on any path can be red. The total path length is therefore at most <code>2 bh</code>. A standard counting argument shows that any subtree of black-height bh has at least <code>2^bh − 1</code> internal nodes, so <code>bh ≤ log₂(n+1)</code> and the total height is at most <code>2 log₂(n+1)</code>.</p>
+
+    <h3>Why we describe rebalance without showing code</h3>
+    <p class="note">Red-black rebalance has many cases (the textbook treatment has five distinct insert cases and six delete cases), and writing them out fully would consume more space than it deserves in a foundations tutorial. The practical takeaway is that most major C++ standard-library implementations use red-black-tree-like structures for <code>std::set</code> and <code>std::map</code>, although the C++ standard specifies behavior and complexity requirements rather than mandating a specific tree type; either way, any time you reach for these containers you are already benefiting from a balanced ordered structure with logarithmic operations. For contest purposes the relevant facts are the height bound, the choice between AVL and red-black being a constant-factor trade-off, and the fact that the policy-based data structure (PBDS) ordered set is a red-black tree augmented with subtree-size information to support order-statistic queries.</p>
+  </section>
+  </div>
+
+  <div id="sec-compare" class="section">
+  <section id="compare" class="card scroll-reveal">
+    <h2>⚖️ 11 · AVL vs Red-Black vs Treap</h2>
+    <p class="note">Each balanced BST flavor makes a different trade-off between height, rotation count, and implementation complexity. Below is a quick comparison of the three approaches you will see most often in practice.</p>
+
+    <table>
+      <tr><th>Property</th><th>AVL</th><th>Red-Black</th><th>Treap</th></tr>
+      <tr><td>Height bound</td><td>≈ 1.44 log₂(n)</td><td>≤ 2 log₂(n+1)</td><td>expected ≈ 2 ln n</td></tr>
+      <tr><td>Rotations per insert</td><td>O(1) amortized; up to log n in the worst case after deletes</td><td>at most 3 per insert, at most 3 per delete</td><td>O(log n) expected, one per level of rebalance</td></tr>
+      <tr><td>Search latency</td><td>fastest in practice on read-heavy workloads</td><td>middle</td><td>middle</td></tr>
+      <tr><td>Code volume</td><td>medium (one balance factor, four imbalance cases)</td><td>large (five insert cases plus six delete cases)</td><td>small (random priority handles everything)</td></tr>
+      <tr><td>Production use</td><td>databases that read heavily</td><td>most STL <code>std::set</code> / <code>std::map</code> implementations, Linux scheduler</td><td>competitive programming, online algorithms</td></tr>
+      <tr><td>Best for contests</td><td>rarely written from scratch</td><td>accessed through PBDS</td><td>preferred when you need a hand-rolled BBST</td></tr>
+    </table>
+
+    <p class="note">For contest use the rule of thumb is straightforward. When the standard library's <code>std::set</code> or <code>std::map</code> already gives you what you need, use it. When you also need order-statistic queries (k-th element or rank-of-value), reach for the policy-based data structure <code>tree</code> from <code>__gnu_pbds</code>, which is a red-black tree internally with subtree sizes attached. When you need anything more exotic, such as set merge and split, range reverse on a sequence, or persistence, hand-roll a treap; the code is shorter than AVL or red-black and the family extends naturally to all the variants covered in tutorials 27 through 29.</p>
+  </section>
+  </div>
+
+  <div id="sec-complexity" class="section">
+  <section id="complexity" class="card scroll-reveal">
+    <h2>⏱️ 12 · Complexity Analysis</h2>
+    <p class="note">All three balanced BSTs achieve the same asymptotic guarantees on the standard ordered-set operations, but the constants differ. The table below summarises the worst-case (or expected, for the treap) cost of each operation.</p>
+
+    <table>
+      <tr><th>Operation</th><th>Plain BST</th><th>AVL / RB</th><th>Treap</th></tr>
+      <tr><td>insert(x)</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>erase(x)</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>find(x)</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>predecessor / successor</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>kth(k) with subtree size</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>order_of_key(x) with subtree size</td><td>O(h)</td><td>O(log n)</td><td>O(log n) expected</td></tr>
+      <tr><td>worst-case height h</td><td>n</td><td>≈ 2 log₂ n</td><td>O(log n) expected</td></tr>
+      <tr><td>memory</td><td>O(n)</td><td>O(n)</td><td>O(n)</td></tr>
+    </table>
+
+    <p class="note">The plain BST shares the same asymptotic formulas but with <code>h</code> in place of <code>log n</code>, where <code>h</code> can be as bad as <code>n</code> on adversarial input. The whole point of self-balancing is to eliminate the gap between average and worst case.</p>
+  </section>
+  </div>
+
+  <div id="sec-proof" class="section">
+  <section id="proof" class="card scroll-reveal">
+    <h2>📜 13 · Correctness Proofs</h2>
+    <p class="note">For a BST, correctness reduces to showing that every operation preserves the BST invariant on every node. For a balanced BST, we additionally show that the balance invariant is preserved and that the height bound follows from the balance invariant.</p>
+
+    <h3>BST insertion preserves the invariant</h3>
+    <p class="note">The insertion descent visits each node and goes left if the new key is smaller, right if larger. At the moment the descent reaches a null pointer, every ancestor on the path has been compared with the new key and the descent direction was consistent with the BST invariant. Attaching the new leaf at the null pointer places it in a position where the invariant holds at every ancestor: it is smaller than every ancestor we descended right from and larger than every ancestor we descended left from. The local invariant at the new leaf is vacuous because it has no children.</p>
+
+    <h3>BST deletion preserves the invariant</h3>
+    <p class="note">Case 1 (leaf) removes a value that the invariant only constrained through emptiness, so the invariant is preserved trivially. Case 2 (one child) splices the surviving subtree up; the BST invariant continues to hold because the surviving subtree was already on the correct side of every ancestor of the doomed node. Case 3 (two children) is handled by reducing it to Case 1 or Case 2 via the inorder successor substitution; the substitution preserves the BST invariant because the successor was the smallest key in the right subtree, hence still strictly greater than every key in the left subtree.</p>
+
+    <h3>Rotations preserve inorder</h3>
+    <p class="note">We sketched this in section 8. A right rotation at a parent <code>p</code> with left child <code>c</code> transforms a subtree whose inorder is <code>inorder(A), c, inorder(B), p, inorder(C)</code> into a subtree whose inorder is the same string with the same A, B, C, c, p. Because the inorder is unchanged, the BST invariant (which is equivalent to the inorder being sorted) is preserved globally.</p>
+
+    <h3>AVL height bound</h3>
+    <p class="note">Let <code>N(h)</code> be the minimum number of nodes in an AVL tree of height <code>h</code>. By the balance invariant the two subtrees of the root differ in height by at most one, so the shorter subtree has height at least <code>h − 2</code> and the taller has height <code>h − 1</code>. The minimum is therefore <code>N(h) = 1 + N(h-1) + N(h-2)</code>, with <code>N(0) = 1</code> and <code>N(1) = 2</code>. This is essentially the Fibonacci recurrence, giving <code>N(h) ≥ φ^h</code> for the golden ratio φ. Inverting, <code>h ≤ log_φ(n) ≈ 1.44 log₂ n</code>.</p>
+
+    <h3>Red-Black height bound</h3>
+    <p class="note">By the black-height counting argument we sketched in section 10, the height of a red-black tree of <code>n</code> internal nodes is at most <code>2 log₂(n+1)</code>. The fact that red-black rebalancing performs at most three rotations per update is a non-trivial case analysis that we omit; it is covered in any standard textbook treatment.</p>
+  </section>
+  </div>
+
+  <div id="sec-edges" class="section">
+  <section id="edges" class="card scroll-reveal">
+    <h2>🧩 14 · Edge Cases (Centralized Audit)</h2>
+    <p class="note">A consolidated list of the boundary conditions every BBST implementation must handle correctly. Most contest bugs in tree code trace back to missing one of these.</p>
+    <ul class="checklist">
+      <li><b>Empty tree.</b> The root is null. Find returns nothing, insert creates the root, delete returns immediately.</li>
+      <li><b>Insert into empty tree.</b> The new node becomes the root and may or may not need to be coloured (red-black) or have its balance factor initialised (AVL).</li>
+      <li><b>Delete the root.</b> Special care because the root has no parent; the rebalance must update the root pointer afterward.</li>
+      <li><b>Insert a duplicate.</b> Either reject, attach as a right child (treating equal as greater), or bump a frequency counter — pick one convention and document it.</li>
+      <li><b>Delete a key that is not present.</b> Walk to a null pointer and return; the tree is unchanged.</li>
+      <li><b>Delete a node with two children where the inorder successor is the immediate right child.</b> The recursive successor-substitution must still update the right pointer correctly; an unguarded swap can leave a dangling pointer.</li>
+      <li><b>kth(k) with k out of range.</b> Either return a sentinel value or assert; never silently walk off the tree into a null child.</li>
+      <li><b>Predecessor of the minimum or successor of the maximum.</b> Returns "nothing"; callers must check.</li>
+      <li><b>All keys identical when duplicates are stored.</b> The tree degenerates to a chain or to a single node with a large frequency; either is fine but tests must cover it.</li>
+      <li><b>Insert-then-immediately-delete the same key.</b> Memory must be freed; pointers must not dangle.</li>
+      <li><b>Long sorted-insert sequence into a plain BST.</b> Produces a chain. Useful as a stress test to verify that a balanced BST stays shallow under this adversary.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="sec-pitfalls" class="section">
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>🪲 15 · Common Pitfalls and Bugs</h2>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 1 — Forgetting to update the parent pointer after a rotation</div><div class="wDesc">A rotation rewires three child pointers but also two parent pointers, plus a possible update at the grandparent's child slot. Any one of these forgotten leaves the tree in an inconsistent state that may not crash until much later, when an unrelated descent walks through a stale link.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 2 — Forgetting to update subtree size or height after every mutation</div><div class="wDesc">If you maintain subtree size for order-statistic queries or height for AVL balance, every place that changes a child pointer must also update the parent's augmentation. Routing all mutations through a single <code>link(p, c, dir)</code> helper that also calls <code>pull(p)</code> is the cleanest fix.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 3 — Using <code>≤</code> in BST descent when you intended distinct keys</div><div class="wDesc">If your descent goes left on <code>x ≤ u-&gt;key</code> instead of strict less-than, equal keys go to the left subtree and the resulting tree no longer satisfies the strict BST invariant. Subsequent operations may produce wrong answers in subtle ways. Pick a convention and stick to it everywhere.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 4 — Deleting the inorder successor without removing the original</div><div class="wDesc">In Case 3 of BST deletion, after copying the successor's key into the doomed node, you must recursively delete the successor from the right subtree. Forgetting the second step leaves the successor's value in two places at once, breaking the invariant immediately.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 5 — Stack overflow on deep recursion</div><div class="wDesc">A plain BST on adversarial sorted input has depth n. Recursive operations may blow the stack on n = 10^6 even though the algorithm is technically O(n). Either iterate, or switch to a balanced BST so the height stays O(log n).</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 6 — Confusing the inorder successor with the in-place "next"</div><div class="wDesc">For Case 3 we want the smallest key in the right subtree, which is found by going right once and then left until a null is reached. A surprisingly common bug is to go left immediately instead, which returns either the doomed node itself or a node from the wrong subtree.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 7 — Returning a stale pointer after rebalance</div><div class="wDesc">After a rotation at a node <code>u</code>, the new root of the local subtree may be different from <code>u</code>. Recursive insert and delete must return the new root so the caller can update its child pointer. Returning <code>u</code> blindly leaves the parent pointing at the wrong subtree root.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-decision" class="section">
+  <section id="decision" class="card scroll-reveal">
+    <h2>🧭 16 · Decision Guide</h2>
+    <div class="decisionBox">
+      <h3>Which balanced BST should I reach for?</h3>
+      <div class="ruleBox">
+        <div><span class="cond">just insert / find / lower_bound</span> <span class="arrow">⇒</span> <code>std::set</code> (typically a balanced BBST, red-black-like in major implementations)</div>
+        <div><span class="cond">kth-smallest or rank-of-value</span> <span class="arrow">⇒</span> PBDS <code>tree</code> or hand-rolled key treap</div>
+        <div><span class="cond">multiset duplicates with frequency counts</span> <span class="arrow">⇒</span> key treap with <code>frq</code> (tutorial 27)</div>
+        <div><span class="cond">sequence operations (insert at position, range reverse)</span> <span class="arrow">⇒</span> implicit treap (tutorial 28)</div>
+        <div><span class="cond">historical versions / persistence</span> <span class="arrow">⇒</span> persistent treap (tutorial 29)</div>
+        <div><span class="cond">need set merge / split</span> <span class="arrow">⇒</span> treap with split / merge primitives</div>
+        <div><span class="cond">teaching / writing from scratch</span> <span class="arrow">⇒</span> AVL is the cleanest to derive; treap is the shortest to code</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-problems" class="section">
+  <section id="problems" class="card scroll-reveal">
+    <h2>🏆 17 · Problem-Based Applications</h2>
+    <p class="note">Classical ordered-set problems that exercise the BBST menu. VJudge mirrors are preferred when available.</p>
+
+    <details open>
+      <summary>P1 · Order Statistic Set — SPOJ ORDERSET (the canonical problem)</summary>
+      <div class="detailsBody">
+        <p>Maintain a set under four operations: insert, delete, k-th smallest, and rank-of-value. Every BBST tutorial in the family points back at this as the first stress test. Solvable with PBDS in a few lines or with the key treap in around 200.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ORDERSET" target="_blank" rel="noopener">VJudge — SPOJ ORDERSET</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P2 · Distinct Numbers — CSES 1621</summary>
+      <div class="detailsBody">
+        <p>Count distinct elements in an array. Hash set is the canonical solution, but <code>std::set</code> works just as well and is a clean BBST warmup.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1621" target="_blank" rel="noopener">VJudge — CSES 1621</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P3 · Concert Tickets — CSES 1091 (multiset with upper_bound)</summary>
+      <div class="detailsBody">
+        <p>Customers walk in with maximum prices they will pay; for each customer, sell them the most expensive ticket that does not exceed their budget. The natural solution is a <code>std::multiset</code> with <code>upper_bound</code>.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1091" target="_blank" rel="noopener">VJudge — CSES 1091</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P4 · Sum of Two Values — CSES 1640</summary>
+      <div class="detailsBody">
+        <p>Find two indices in an array whose values sum to a target. Two-pointer or hash table solves it; <code>std::set</code> also works as a teaching example.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1640" target="_blank" rel="noopener">VJudge — CSES 1640</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P5 · Towers — CSES 1073 (lower_bound chain)</summary>
+      <div class="detailsBody">
+        <p>Stack blocks into towers; each new block must go on a strictly larger top. Maintain the multiset of current tower tops and use <code>upper_bound</code> to find the smallest top that the incoming block can replace.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1073" target="_blank" rel="noopener">VJudge — CSES 1073</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P6 · Ultra-QuickSort — UVA 10810 (count inversions)</summary>
+      <div class="detailsBody">
+        <p>Count inversions in an array. Both Fenwick tree and order-statistic BBST solve it; the BBST version is a clean exercise for <code>order_of_key</code>.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-10810" target="_blank" rel="noopener">VJudge — UVA 10810</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P7 · Salary Queries — CSES 1144</summary>
+      <div class="detailsBody">
+        <p>Employees with salaries; updates change one employee's salary, range queries ask how many salaries lie in a band. Range count is <code>order_of_key(b+1) − order_of_key(a)</code>.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1144" target="_blank" rel="noopener">VJudge — CSES 1144</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P8 · Nested Ranges Check — CSES 1078</summary>
+      <div class="detailsBody">
+        <p>For each range, decide whether it contains another range and whether it is contained by another. Sweep with a BBST keyed by endpoints.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1078" target="_blank" rel="noopener">VJudge — CSES 1078</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P9 · Validate Binary Search Tree — LeetCode 98</summary>
+      <div class="detailsBody">
+        <p>Given a binary tree, decide whether it satisfies the BST invariant. The straightforward solution recurses with min and max bounds; an alternative does an inorder walk and checks that the values are strictly increasing.</p>
+        <a class="plink" href="https://leetcode.com/problems/validate-binary-search-tree/" target="_blank" rel="noopener">LeetCode 98 — Validate BST</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P10 · Range Queries and Copies — CSES 1737 (persistence as a stretch goal)</summary>
+      <div class="detailsBody">
+        <p>Array supporting point updates, range sums, and the ability to clone an entire array as a snapshot. Persistent segment tree is canonical; a persistent BBST also works and previews tutorial 29.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1737" target="_blank" rel="noopener">VJudge — CSES 1737</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P11 · Codeforces 863D — Yet Another Array Queries Problem</summary>
+      <div class="detailsBody">
+        <p>Cyclic shift of a range plus point query. An implicit treap solves it directly; offline reverse-processing with a BIT is the alternative. Listed here as a forward reference to tutorial 28.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-863D" target="_blank" rel="noopener">VJudge — Codeforces 863D</a>
+      </div>
+    </details>
+  </section>
+  </div>
+
+  <div id="sec-summary" class="section">
+  <section id="summary" class="card scroll-reveal">
+    <h2>🎯 18 · Final Summary</h2>
+    <p class="note" style="font-size:24px"><b>One sentence:</b> a binary search tree gives O(h) for every ordered-set operation, where h depends on insertion order; balanced BSTs use rotations to keep h at O(log n) regardless of input.</p>
+
+    <h3>Five things to remember</h3>
+    <p class="note">First, the BST invariant says left subtree is strictly smaller, right subtree is strictly larger, and inorder traversal is sorted. Second, every operation walks one root-to-leaf path, so the cost is exactly O(h). Third, the height of a plain BST is whatever the user's input order makes it; sorted input gives a chain of height n. Fourth, rotations are the elementary repair operation: they preserve inorder while changing depths. Fifth, AVL maintains strict height balance ±1 with a tighter height bound, red-black uses softer color invariants with fewer rotations, and treap uses random priorities to make balance probabilistic — each is a different way to enforce O(log n) height.</p>
+
+    <h3>Mastery checklist</h3>
+    <ul class="checklist">
+      <li>I can write BST insert, find, and the three cases of delete from scratch in under ten minutes.</li>
+      <li>I can perform a right rotation by hand on a small tree and verify that inorder is preserved.</li>
+      <li>I can recognise which of the four AVL imbalance cases applies given the position of the new leaf.</li>
+      <li>I can recite the five red-black properties and explain why they bound the height by 2 log₂(n+1).</li>
+      <li>I know when to reach for <code>std::set</code>, when for PBDS, and when to hand-roll a treap.</li>
+      <li>I can prove that BST insertion and the three deletion cases preserve the BST invariant.</li>
+    </ul>
+
+    <h3>What is next</h3>
+    <div class="tipBox">Tutorial 27 — Key Treap. We pick up exactly where this tutorial ends: by adding a random priority to each node and maintaining a max-heap on the priorities, we get a balanced BST in fewer than 250 lines of code, with all the order-statistic queries built in.</div>
+  </section>
+  </div>
+
+  <div id="sec-contact" class="section">
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h2>🛠️ Runtime Validation Checklist</h2>
+    <ul class="checklist">
+      <li>Sidebar opens and closes on hamburger click; overlay dismisses on click outside.</li>
+      <li>Theme toggle switches dark and light and persists in localStorage.</li>
+      <li>Escape key closes an open sidebar on mobile widths.</li>
+      <li>Active nav link highlights as the user scrolls.</li>
+      <li>All mailto links are plain (no Cloudflare obfuscation).</li>
+      <li>All VJudge problem links open in new tabs.</li>
+      <li>No duplicate id attributes; HTML validates with no JS console errors.</li>
+      <li>Every stepper responds to Next, Prev, and Reset; SVG redraws cleanly between frames.</li>
+      <li>Scroll-reveal animations trigger on intersection; a 300 ms fallback reveals all content if IntersectionObserver does not fire.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ===== Generic SVG tree stepper framework =====
+// Each stepper is initialised from a list of frames. A frame is an object
+// of the form { desc, nodes, edges } where nodes is an array of node
+// descriptors (id, x, y, label, sub, color, state) and edges is an array
+// of edge descriptors (from, to, state). The renderer rebuilds the SVG
+// from the current frame whenever the user moves to the next or previous
+// step or resets to the beginning. This keeps the rendering logic stateless.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function nodeColor(c){
+  const map = { blue:'var(--node-blue)', green:'var(--node-green)', amber:'var(--node-amber)', red:'var(--node-red)', purple:'var(--node-purple)', dark:'#1f2937', black:'#0f172a' };
+  return map[c] || map.blue;
+}
+
+function makeStepper(containerId, frames){
+  const root    = document.getElementById(containerId);
+  const svg     = root.querySelector('.stepper-svg');
+  const desc    = root.querySelector('.stepper-desc');
+  const counter = root.querySelector('.stepper-counter');
+  const prevBtn = root.querySelector('[data-act="prev"]');
+  const nextBtn = root.querySelector('[data-act="next"]');
+  const resetBtn= root.querySelector('[data-act="reset"]');
+  let idx = 0;
+
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function render(){
+    const f = frames[idx];
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    // Draw edges first so nodes overlap them at the connection points.
+    (f.edges || []).forEach(e => {
+      const a = f.nodes.find(n => n.id === e.from);
+      const b = f.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const line = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y});
+      let cls = 'tree-edge';
+      if (e.state) cls += ' ' + e.state;
+      line.setAttribute('class', cls);
+      svg.appendChild(line);
+    });
+    // Draw nodes; each node is a group containing a circle plus one or
+    // two centred text lines (the label and optional sub-label).
+    (f.nodes || []).forEach(n => {
+      const g = el('g', {});
+      let cls = 'tree-node';
+      if (n.state) cls += ' ' + n.state;
+      g.setAttribute('class', cls);
+      const r = n.r || 26;
+      g.appendChild(el('circle', {cx:n.x, cy:n.y, r:r, fill:nodeColor(n.color)}));
+      const labelY = n.sub ? n.y - 6 : n.y;
+      const t1 = el('text', {x:n.x, y:labelY, 'font-size':n.fs || 16});
+      t1.textContent = n.label;
+      g.appendChild(t1);
+      if (n.sub){
+        const t2 = el('text', {x:n.x, y:n.y + 10, 'font-size':11});
+        t2.textContent = n.sub;
+        g.appendChild(t2);
+      }
+      svg.appendChild(g);
+    });
+    // Labels are free-floating text annotations (used for tree titles or
+    // captions that sit above subtrees).
+    (f.labels || []).forEach(l => {
+      const t = el('text', {x:l.x, y:l.y, 'font-size':l.fs || 18, class:l.caption ? 'tree-caption' : 'tree-label'});
+      t.textContent = l.text;
+      svg.appendChild(t);
+    });
+    desc.textContent = f.desc;
+    counter.textContent = 'Step ' + (idx + 1) + ' / ' + frames.length;
+    prevBtn.disabled  = idx === 0;
+    nextBtn.disabled  = idx === frames.length - 1;
+  }
+
+  prevBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < frames.length - 1) { idx++; render(); } });
+  resetBtn.addEventListener('click', () => { idx = 0; render(); });
+  render();
+}
+
+// ===== Frame definitions =====
+// Each set of frames below drives a single stepper. We keep them in this
+// JavaScript section so the HTML markup remains a thin container that
+// simply holds the svg, description, counter, and three control buttons.
+
+// --- Two BST shapes for the same set { 2, 4, 5, 7, 8 } ---
+const BST_SHAPES_FRAMES = [
+  {
+    desc: 'A balanced BST holding the values 2, 4, 5, 7, 8. Height is 2. Every root-to-leaf path visits at most three nodes, so every operation is fast.',
+    nodes: [
+      {id:'r', x:180, y:60,  label:'5', color:'blue'},
+      {id:'l', x:100, y:160, label:'3', color:'blue'},
+      {id:'rr', x:260, y:160, label:'7', color:'blue'},
+      {id:'ll', x:60,  y:250, label:'2', color:'blue'},
+      {id:'lr', x:140, y:250, label:'4', color:'blue'},
+      {id:'rl', x:220, y:250, label:'',  color:'blue', state:'faded'},
+      {id:'rrr', x:300, y:250, label:'8', color:'blue'}
+    ],
+    edges: [
+      {from:'r', to:'l'}, {from:'r', to:'rr'},
+      {from:'l', to:'ll'}, {from:'l', to:'lr'},
+      {from:'rr', to:'rrr'}
+    ],
+    labels: [
+      {x:180, y:30, text:'Balanced shape, height 2', fs:20},
+      {x:560, y:30, text:'Chain shape, height 4', fs:20}
+    ]
+  }
+];
+// Insert second tree into the same frame so both visible side by side.
+BST_SHAPES_FRAMES[0].nodes.push(
+  {id:'c0', x:480, y:60,  label:'2', color:'amber'},
+  {id:'c1', x:520, y:120, label:'4', color:'amber'},
+  {id:'c2', x:560, y:180, label:'5', color:'amber'},
+  {id:'c3', x:600, y:240, label:'7', color:'amber'},
+  {id:'c4', x:640, y:300, label:'8', color:'amber'}
+);
+BST_SHAPES_FRAMES[0].edges.push(
+  {from:'c0', to:'c1'}, {from:'c1', to:'c2'}, {from:'c2', to:'c3'}, {from:'c3', to:'c4'}
+);
+
+// --- BST insertion of 5, 3, 8, 4, 9 into an initially empty tree ---
+const BST_INSERT_FRAMES = [
+  {
+    desc: 'We begin with an empty tree. There are no nodes yet, so the root pointer is null.',
+    nodes: [],
+    edges: [],
+    labels: [{x:350, y:170, text:'(empty tree)', fs:24, caption:true}]
+  },
+  {
+    desc: 'Insert 5. The tree is empty, so the new node becomes the root.',
+    nodes: [{id:'a', x:350, y:80, label:'5', color:'blue', state:'new-node'}],
+    edges: []
+  },
+  {
+    desc: 'Insert 3. We compare 3 with the root (5); since 3 < 5 we descend left and find a null pointer, so 3 attaches as the left child.',
+    nodes: [
+      {id:'a', x:350, y:80,  label:'5', color:'blue', state:'highlight'},
+      {id:'b', x:250, y:180, label:'3', color:'blue', state:'new-node'}
+    ],
+    edges: [{from:'a', to:'b', state:'new'}]
+  },
+  {
+    desc: 'Insert 8. We compare 8 with the root (5); since 8 > 5 we descend right and find a null pointer, so 8 attaches as the right child.',
+    nodes: [
+      {id:'a', x:350, y:80,  label:'5', color:'blue', state:'highlight'},
+      {id:'b', x:250, y:180, label:'3', color:'blue'},
+      {id:'c', x:450, y:180, label:'8', color:'blue', state:'new-node'}
+    ],
+    edges: [{from:'a', to:'b'}, {from:'a', to:'c', state:'new'}]
+  },
+  {
+    desc: 'Insert 4. We compare with 5 and go left, then compare with 3 and go right; we find a null pointer and attach 4 there.',
+    nodes: [
+      {id:'a', x:350, y:80,  label:'5', color:'blue'},
+      {id:'b', x:250, y:180, label:'3', color:'blue', state:'highlight'},
+      {id:'c', x:450, y:180, label:'8', color:'blue'},
+      {id:'d', x:300, y:270, label:'4', color:'blue', state:'new-node'}
+    ],
+    edges: [{from:'a', to:'b', state:'path'}, {from:'a', to:'c'}, {from:'b', to:'d', state:'new'}]
+  },
+  {
+    desc: 'Insert 9. We compare with 5 and go right, then compare with 8 and go right; we attach 9 as 8\u2019s right child. Final shape: balanced enough for now.',
+    nodes: [
+      {id:'a', x:350, y:80,  label:'5', color:'blue'},
+      {id:'b', x:250, y:180, label:'3', color:'blue'},
+      {id:'c', x:450, y:180, label:'8', color:'blue', state:'highlight'},
+      {id:'d', x:300, y:270, label:'4', color:'blue'},
+      {id:'e', x:500, y:270, label:'9', color:'blue', state:'new-node'}
+    ],
+    edges: [{from:'a', to:'b'}, {from:'a', to:'c', state:'path'}, {from:'b', to:'d'}, {from:'c', to:'e', state:'new'}]
+  }
+];
+
+
+// --- BST deletion: the three cases shown in sequence ---
+// Frames 0-2 walk through Case 1 (deleting a leaf); frames 3-5 demonstrate
+// Case 2 (deleting a node with one child); frames 6-9 show Case 3 (deleting
+// a node with two children using the inorder successor substitution).
+const BST_DELETE_FRAMES = [
+  {
+    desc: 'Starting tree. We will delete three different nodes to demonstrate the three deletion cases.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'blue'},
+      {id:'b', x:240, y:150, label:'3', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'d', x:180, y:240, label:'2', color:'blue'},
+      {id:'e', x:300, y:240, label:'4', color:'blue'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'b',to:'d'},{from:'b',to:'e'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'Case 1: delete the leaf 4. The doomed node is highlighted in red. Since it has no children we simply detach it from its parent.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'blue'},
+      {id:'b', x:240, y:150, label:'3', color:'blue', state:'highlight'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'d', x:180, y:240, label:'2', color:'blue'},
+      {id:'e', x:300, y:240, label:'4', color:'red', state:'doomed'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'b',to:'d'},{from:'b',to:'e',state:'path'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'After Case 1. Node 4 is gone, the parent 3 now has only a left child. The BST invariant continues to hold trivially.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'blue'},
+      {id:'b', x:240, y:150, label:'3', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'d', x:180, y:240, label:'2', color:'blue'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'b',to:'d'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'Case 2: delete node 3, which now has only one child. We splice its surviving child (2) up into its place.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'blue'},
+      {id:'b', x:240, y:150, label:'3', color:'red', state:'doomed'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'d', x:180, y:240, label:'2', color:'green', state:'target'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b',state:'path'},{from:'a',to:'c'},{from:'b',to:'d',state:'new'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'After Case 2. Node 2 has been promoted into the position that 3 used to occupy. The subtree rooted at 5 still satisfies the BST invariant because 2 was already on the correct side of 5.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'blue'},
+      {id:'d', x:240, y:150, label:'2', color:'blue', state:'highlight'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'d'},{from:'a',to:'c'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'Case 3 setup: rebuild a richer tree, then delete the root (5) which has two children. We will replace its key with the inorder successor.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'red', state:'doomed'},
+      {id:'b', x:240, y:150, label:'2', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'f', x:420, y:240, label:'7', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'c',to:'f'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'Find the inorder successor: go right once, then keep going left until a null pointer. From the doomed node we go right to 8, then left to 7. Node 7 has no left child, so it is the successor.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'5', color:'red', state:'doomed'},
+      {id:'b', x:240, y:150, label:'2', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue', state:'highlight'},
+      {id:'f', x:420, y:240, label:'7', color:'green', state:'target'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c',state:'path'},{from:'c',to:'f',state:'path'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'Copy the successor key (7) into the doomed node and then recursively delete the successor from the right subtree. The successor has no left child, so the recursive delete falls into Case 1 or Case 2 and terminates immediately.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'7', color:'green', state:'new-node'},
+      {id:'b', x:240, y:150, label:'2', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue', state:'highlight'},
+      {id:'f', x:420, y:240, label:'7', color:'red', state:'doomed'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'c',to:'f',state:'path'},{from:'c',to:'g'}]
+  },
+  {
+    desc: 'After Case 3. The original doomed key is gone, replaced by 7. The successor has been deleted from its original position, and the BST invariant holds everywhere.',
+    nodes: [
+      {id:'a', x:350, y:60,  label:'7', color:'blue'},
+      {id:'b', x:240, y:150, label:'2', color:'blue'},
+      {id:'c', x:460, y:150, label:'8', color:'blue'},
+      {id:'g', x:530, y:240, label:'9', color:'blue'}
+    ],
+    edges: [{from:'a',to:'b'},{from:'a',to:'c'},{from:'c',to:'g'}]
+  }
+];
+
+
+// --- Right rotation: a step-by-step demonstration on five subtrees ---
+// We use a typical layout where p is the parent, c is the left child, and
+// the three triangular subtrees A, B, C hang off c-left, c-right, and
+// p-right respectively. After the right rotation, c becomes the new root
+// of the local subtree, p becomes c's new right child, and B (which was
+// c-right) becomes p's new left child.
+const BST_ROTATION_FRAMES = [
+  {
+    desc: 'Before the rotation. Node p is the local parent and c is its left child. The three triangular subtrees A, B, C hang off c-left, c-right, and p-right respectively. Read inorder this gives A, c, B, p, C.',
+    nodes: [
+      {id:'p', x:420, y:80,  label:'p', color:'amber', r:30},
+      {id:'c', x:280, y:170, label:'c', color:'blue',  r:30},
+      {id:'A', x:200, y:280, label:'A', color:'purple', r:34},
+      {id:'B', x:360, y:280, label:'B', color:'purple', r:34},
+      {id:'C', x:520, y:200, label:'C', color:'purple', r:34}
+    ],
+    edges: [{from:'p',to:'c'},{from:'p',to:'C'},{from:'c',to:'A'},{from:'c',to:'B'}],
+    labels: [{x:420, y:330, text:'Inorder: A, c, B, p, C', fs:18, caption:true}]
+  },
+  {
+    desc: 'Identify the three pointer changes that the rotation will perform. First, c\u2019s right child (currently B) must become p\u2019s new left child. Second, p must become c\u2019s new right child. Third, the parent of the whole subtree, if any, must now point at c instead of p.',
+    nodes: [
+      {id:'p', x:420, y:80,  label:'p', color:'amber', state:'highlight', r:30},
+      {id:'c', x:280, y:170, label:'c', color:'blue',  state:'highlight', r:30},
+      {id:'A', x:200, y:280, label:'A', color:'purple', r:34},
+      {id:'B', x:360, y:280, label:'B', color:'purple', state:'target', r:34},
+      {id:'C', x:520, y:200, label:'C', color:'purple', r:34}
+    ],
+    edges: [{from:'p',to:'c',state:'path'},{from:'p',to:'C'},{from:'c',to:'A'},{from:'c',to:'B',state:'path'}]
+  },
+  {
+    desc: 'Perform the rotation. Node c rises to where p was. Node p sinks to become c\u2019s right child. The middle subtree B moves from c-right to p-left. Subtrees A and C do not move.',
+    nodes: [
+      {id:'c', x:280, y:80,  label:'c', color:'blue',  r:30},
+      {id:'A', x:160, y:200, label:'A', color:'purple', r:34},
+      {id:'p', x:420, y:170, label:'p', color:'amber', r:30},
+      {id:'B', x:340, y:280, label:'B', color:'purple', r:34},
+      {id:'C', x:520, y:280, label:'C', color:'purple', r:34}
+    ],
+    edges: [{from:'c',to:'A'},{from:'c',to:'p',state:'new'},{from:'p',to:'B',state:'new'},{from:'p',to:'C'}]
+  },
+  {
+    desc: 'After the rotation. Reading inorder gives A, c, B, p, C \u2014 exactly the same sequence as before. The BST invariant is preserved because the inorder is unchanged. What did change is the depths: c lost a level, p gained a level, B is now one level deeper relative to p but at the same depth relative to the local root.',
+    nodes: [
+      {id:'c', x:280, y:80,  label:'c', color:'blue',  r:30},
+      {id:'A', x:160, y:200, label:'A', color:'purple', r:34},
+      {id:'p', x:420, y:170, label:'p', color:'amber', r:30},
+      {id:'B', x:340, y:280, label:'B', color:'purple', r:34},
+      {id:'C', x:520, y:280, label:'C', color:'purple', r:34}
+    ],
+    edges: [{from:'c',to:'A'},{from:'c',to:'p'},{from:'p',to:'B'},{from:'p',to:'C'}],
+    labels: [{x:340, y:330, text:'Inorder: A, c, B, p, C (unchanged)', fs:18, caption:true}]
+  }
+];
+
+// --- AVL imbalance cases: LL, RR, LR, RL ---
+// We show each case as a pair: an imbalanced tree on the left and the
+// repaired tree on the right after applying the rotation prescribed by
+// the case. The four cases are shown one after another in the same
+// stepper for visual continuity.
+const AVL_CASES_FRAMES = [
+  {
+    desc: 'LL case (left-left). The new leaf was inserted in the left subtree of the left child of some node u (here u is z). The balance factor at z is +2. A single right rotation at z repairs the imbalance.',
+    nodes: [
+      {id:'z', x:220, y:70,  label:'z', sub:'bf=+2', color:'red', r:30},
+      {id:'y', x:140, y:170, label:'y', color:'amber', r:30},
+      {id:'x', x:80,  y:270, label:'x', color:'blue', state:'new-node', r:30},
+      {id:'B', x:200, y:260, label:'B', color:'purple', r:24},
+      {id:'C', x:300, y:170, label:'C', color:'purple', r:24}
+    ],
+    edges: [{from:'z',to:'y',state:'path'},{from:'z',to:'C'},{from:'y',to:'x',state:'path'},{from:'y',to:'B'}],
+    labels: [{x:530, y:170, text:'After right-rotate(z):', fs:18, caption:true}]
+  },
+  {
+    desc: 'LL repaired. After a single right rotation at z, the new layout has y at the top with x and z as its two children. Heights are now balanced.',
+    nodes: [
+      {id:'y', x:220, y:70,  label:'y', color:'green', r:30},
+      {id:'x', x:140, y:170, label:'x', color:'blue', r:30},
+      {id:'z', x:300, y:170, label:'z', color:'amber', r:30},
+      {id:'B', x:240, y:260, label:'B', color:'purple', r:24},
+      {id:'C', x:360, y:260, label:'C', color:'purple', r:24}
+    ],
+    edges: [{from:'y',to:'x'},{from:'y',to:'z',state:'new'},{from:'z',to:'B',state:'new'},{from:'z',to:'C'}]
+  },
+  {
+    desc: 'RR case (right-right). Mirror image of LL: the new leaf is in the right subtree of the right child of z. The balance factor at z is -2. A single left rotation at z repairs the imbalance.',
+    nodes: [
+      {id:'z', x:220, y:70,  label:'z', sub:'bf=-2', color:'red', r:30},
+      {id:'A', x:140, y:170, label:'A', color:'purple', r:24},
+      {id:'y', x:300, y:170, label:'y', color:'amber', r:30},
+      {id:'B', x:240, y:260, label:'B', color:'purple', r:24},
+      {id:'x', x:360, y:270, label:'x', color:'blue', state:'new-node', r:30}
+    ],
+    edges: [{from:'z',to:'A'},{from:'z',to:'y',state:'path'},{from:'y',to:'B'},{from:'y',to:'x',state:'path'}]
+  },
+  {
+    desc: 'RR repaired. After a single left rotation at z, y rises to the top with z and x as its two children.',
+    nodes: [
+      {id:'y', x:220, y:70,  label:'y', color:'green', r:30},
+      {id:'z', x:140, y:170, label:'z', color:'amber', r:30},
+      {id:'x', x:300, y:170, label:'x', color:'blue', r:30},
+      {id:'A', x:80,  y:260, label:'A', color:'purple', r:24},
+      {id:'B', x:200, y:260, label:'B', color:'purple', r:24}
+    ],
+    edges: [{from:'y',to:'z',state:'new'},{from:'y',to:'x'},{from:'z',to:'A'},{from:'z',to:'B',state:'new'}]
+  },
+  {
+    desc: 'LR case (left-right). The new leaf is in the right subtree of the left child. A single rotation at z is not enough \u2014 it would just flip the imbalance to the other side. The fix is a double rotation: first a left rotation at y, then a right rotation at z.',
+    nodes: [
+      {id:'z', x:280, y:70,  label:'z', sub:'bf=+2', color:'red', r:30},
+      {id:'y', x:180, y:170, label:'y', color:'amber', r:30},
+      {id:'x', x:240, y:270, label:'x', color:'blue', state:'new-node', r:30},
+      {id:'A', x:100, y:260, label:'A', color:'purple', r:24},
+      {id:'D', x:380, y:170, label:'D', color:'purple', r:24}
+    ],
+    edges: [{from:'z',to:'y',state:'path'},{from:'z',to:'D'},{from:'y',to:'A'},{from:'y',to:'x',state:'path'}]
+  },
+  {
+    desc: 'LR repaired. After the double rotation, x rises to the top of the local subtree. y becomes x\u2019s left child, z becomes x\u2019s right child. Heights are balanced.',
+    nodes: [
+      {id:'x', x:280, y:70,  label:'x', color:'green', r:30},
+      {id:'y', x:180, y:170, label:'y', color:'amber', r:30},
+      {id:'z', x:380, y:170, label:'z', color:'blue', r:30},
+      {id:'A', x:120, y:260, label:'A', color:'purple', r:24},
+      {id:'D', x:440, y:260, label:'D', color:'purple', r:24}
+    ],
+    edges: [{from:'x',to:'y',state:'new'},{from:'x',to:'z',state:'new'},{from:'y',to:'A'},{from:'z',to:'D'}]
+  },
+  {
+    desc: 'RL case (right-left). Mirror image of LR: the new leaf is in the left subtree of the right child. Fix is a double rotation: first a right rotation at y, then a left rotation at z.',
+    nodes: [
+      {id:'z', x:200, y:70,  label:'z', sub:'bf=-2', color:'red', r:30},
+      {id:'A', x:120, y:170, label:'A', color:'purple', r:24},
+      {id:'y', x:300, y:170, label:'y', color:'amber', r:30},
+      {id:'x', x:240, y:270, label:'x', color:'blue', state:'new-node', r:30},
+      {id:'D', x:380, y:260, label:'D', color:'purple', r:24}
+    ],
+    edges: [{from:'z',to:'A'},{from:'z',to:'y',state:'path'},{from:'y',to:'x',state:'path'},{from:'y',to:'D'}]
+  },
+  {
+    desc: 'RL repaired. After the double rotation, x rises to the top with z as its left child and y as its right child. All four cases produce a balanced subtree at the cost of one or two rotations.',
+    nodes: [
+      {id:'x', x:240, y:70,  label:'x', color:'green', r:30},
+      {id:'z', x:140, y:170, label:'z', color:'blue', r:30},
+      {id:'y', x:340, y:170, label:'y', color:'amber', r:30},
+      {id:'A', x:80,  y:260, label:'A', color:'purple', r:24},
+      {id:'D', x:400, y:260, label:'D', color:'purple', r:24}
+    ],
+    edges: [{from:'x',to:'z',state:'new'},{from:'x',to:'y',state:'new'},{from:'z',to:'A'},{from:'y',to:'D'}]
+  }
+];
+
+
+// ===== Theme toggle, sidebar, observer wiring =====
+const themeSwitch = document.getElementById('themeSwitch');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
+}
+applyTheme(localStorage.getItem('ca-theme') || 'light');
+themeSwitch.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('ca-theme', next);
+});
+themeSwitch.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeSwitch.click(); }
+});
+
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  if (window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay   = document.getElementById('sidebarOverlay');
+const sidebarEl        = document.getElementById('sidebar');
+
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+});
+
+// Active nav link highlighting tied to scroll position via IntersectionObserver.
+const sectionIds = ['problem','intuition','visual','formal','observations','insertion','deletion','rotation','avl','rb','compare','complexity','proof','edges','pitfalls','decision','problems','summary','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector('.navlink[onclick*="\'' + id + '\'"]');
+  if (a) navLinks[id] = a;
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+// Scroll-reveal animations: each .scroll-reveal card fades in when it
+// enters the viewport, with a 300ms fallback that reveals everything
+// in case IntersectionObserver does not fire (older browsers, print).
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('revealed'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('revealed')); }, 300);
+
+// Initialise each stepper after the DOM is ready. Wrapped in a try/catch
+// per stepper so that an error in one stepper's frame definitions does
+// not prevent the others from rendering.
+function safeInit(id, frames){
+  try { makeStepper(id, frames); }
+  catch(e){ console.error('stepper init failed for ' + id, e); }
+}
+safeInit('bst-shapes',    BST_SHAPES_FRAMES);
+safeInit('bst-insert',    BST_INSERT_FRAMES);
+safeInit('bst-delete',    BST_DELETE_FRAMES);
+safeInit('bst-rotation',  BST_ROTATION_FRAMES);
+safeInit('avl-cases',     AVL_CASES_FRAMES);
+</script>
+</body>
+</html>

@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Coach Academy — Bellman-Ford, SPFA &amp; Difference Constraints</title>
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:22px;--fs-sm:19px;
+  --fs-h1:48px;--fs-h2:34px;--fs-h3:27px;
+  --radius:18px;
+  --hl-node:rgba(37,99,235,.30);--hl-edge:rgba(180,83,9,.30);--hl-cell:rgba(15,118,110,.30);
+  --sbw:420px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  font-size:var(--fs-base);line-height:1.45;background:var(--bg);color:var(--text);
+  transition:background .28s,color .28s}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;font-weight:900}
+h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;font-weight:900}
+h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;font-weight:900}
+section{scroll-margin-top:16px}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sbw);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border-right:3px solid var(--border);overflow-y:auto;z-index:150;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .35s ease;}
+.sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none}
+.content{margin-left:var(--sbw);padding:26px 32px 90px;min-height:100vh;
+  transition:margin-left .45s cubic-bezier(.4,0,.2,1);}
+body.sb-closed .content{margin-left:0}
+@media(max-width:1300px){body:not(.sb-closed) .content{padding-top:80px}}
+.sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.38);
+  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:48px;height:48px;
+  border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);
+  user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);
+  transform:scale(1.06);}
+.burger-icon{width:22px;height:16px;display:flex;flex-direction:column;
+  justify-content:space-between;pointer-events:none}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;
+  border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg)}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0)}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg)}
+.brand{display:flex;align-items:center;gap:14px;padding:18px 16px 16px;
+  border-bottom:3px solid var(--border);position:sticky;top:0;
+  background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5}
+.logo-box{width:72px;height:72px;border-radius:18px;background:#0B2D72;
+  box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:900;font-size:28px;flex:0 0 auto}
+.brand-title .t1{font-weight:900;font-size:28px}
+.brand-title .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700}
+.brand-title .t3{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.nav{padding:14px 6px 0}
+.nav .grpTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;
+  text-transform:uppercase;letter-spacing:.06em;font-size:18px}
+.nav a{display:block;padding:11px 13px;border-radius:14px;border:2px solid transparent;
+  font-weight:800;color:var(--text);margin:5px 5px;font-size:18px}
+.nav a small{display:block;font-weight:700;color:var(--muted);font-size:16px;margin-top:2px}
+.nav a:hover{background:var(--hl-node);text-decoration:none}
+.nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);
+  box-shadow:0 8px 18px rgba(37,99,235,.12)}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.topbar h1{padding-left:56px}
+.subtitle{color:var(--muted);font-weight:750;font-size:22px;margin-top:8px}
+.btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);
+  background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:18px}
+.switch{width:64px;height:36px;border-radius:999px;border:3px solid var(--border);
+  background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+  border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transition:all .2s ease;box-shadow:0 4px 12px rgba(37,99,235,.22)}
+[data-theme="dark"] .switch::after{left:31px}
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px 16px;box-shadow:var(--shadow);margin:18px 0}
+.card h2,.card h3{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.ib{border-radius:12px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;
+  align-items:flex-start;font-size:var(--fs-sm);font-weight:700;line-height:1.5}
+.ib i{font-style:normal;font-size:22px;flex:0 0 auto;margin-top:1px}
+.ib p{margin:0}.ib strong{font-weight:900}
+.ib-blue{background:rgba(37,99,235,.08);border-left:4px solid var(--accent2)}
+.ib-green{background:rgba(15,118,110,.08);border-left:4px solid var(--good)}
+.ib-orange{background:rgba(180,83,9,.08);border-left:4px solid var(--warn)}
+.ib-red{background:rgba(185,28,28,.08);border-left:4px solid var(--bad)}
+.ib-purple{background:rgba(124,58,237,.08);border-left:4px solid #7c3aed}
+pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;
+  padding:18px;overflow-x:auto;border:2px solid rgba(255,255,255,.10);
+  font-size:18px;line-height:1.5}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ic{background:var(--chip);border:1.5px solid rgba(37,99,235,.18);padding:1px 7px;
+  border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:.87em}
+details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);
+  box-shadow:var(--shadow);margin:18px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;
+  font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;
+  gap:14px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02))}
+summary::-webkit-details-marker{display:none}
+summary .hint{font-size:18px;color:var(--muted);font-weight:850}
+summary::after{content:"▸";transition:transform .22s;font-size:20px}
+details[open] summary::after{transform:rotate(90deg)}
+.detailsBody{padding:16px 18px 18px}
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+  border-radius:18px;border:3px solid var(--border);margin-top:10px;
+  font-weight:850;font-size:var(--fs-sm)}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:middle}
+th{background:rgba(37,99,235,.10);font-weight:950}
+tr:last-child td{border-bottom:none}
+.cy{color:var(--good)}.cb{color:var(--warn)}.cr{color:var(--bad)}.cp{color:#7c3aed}
+.upd{background:rgba(15,118,110,.12);color:var(--good);font-weight:950}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);
+  padding:8px 13px;border-radius:999px;font-weight:900;font-size:17px}
+.chip.g{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.chip.w{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn)}
+.chip.r{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad)}
+.chip.p{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.30);color:#7c3aed}
+.diagramWrap{border-radius:18px;border:3px solid var(--border);
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px}
+.diagramHeader{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.diagramTitle{font-weight:950;font-size:24px}
+.diagramTools{display:flex;gap:10px;flex-wrap:wrap}
+.miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;
+  font-size:19px;user-select:none;transition:all .2s}
+.miniBtn:hover{transform:translateY(-1px)}
+.miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));
+  color:white;border-color:rgba(255,255,255,.18)}
+svg.graphsvg{width:100%;display:block;border-radius:12px}
+.statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));
+  font-weight:850;font-size:var(--fs-sm);margin-top:10px;min-height:52px;line-height:1.55}
+.distBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;
+  padding:14px;font-family:ui-monospace,monospace;font-size:var(--fs-sm);
+  font-weight:700;overflow-x:auto;margin-top:10px}
+.dist-items{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ditem{display:flex;flex-direction:column;align-items:center;background:var(--panel);
+  border:3px solid var(--border);border-radius:10px;padding:7px 10px;min-width:52px;transition:all .25s}
+.di-lbl{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.di-val{font-size:20px;font-weight:900;font-family:ui-monospace,monospace}
+.ditem.src{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.08)}
+.ditem.upd{border-color:var(--good);background:rgba(15,118,110,.12);animation:cellFlash .6s ease}
+.ditem.asrc{border-color:rgba(180,83,9,.5);background:rgba(180,83,9,.07)}
+.ditem.adst{border-color:var(--accent2);background:rgba(37,99,235,.08)}
+@keyframes cellFlash{0%,100%{transform:scale(1)}40%{transform:scale(1.14)}}
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cbtn{border:3px solid var(--border);background:var(--panel);color:var(--text);
+  padding:10px 14px;border-radius:12px;font-size:18px;cursor:pointer;font-weight:900;
+  transition:all .15s;user-select:none;min-width:44px;text-align:center}
+.cbtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.cbtn:disabled{opacity:.33;cursor:default;transform:none!important}
+.cbtn.playing{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.35);color:var(--warn)}
+.spd-row{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;
+  color:var(--muted);margin-bottom:10px}
+.spd-row input{flex:1;accent-color:var(--accent2)}
+.rjump{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.rjbtn{padding:5px 12px;border-radius:999px;border:2px solid var(--border);
+  background:var(--panel);font-size:16px;font-weight:900;cursor:pointer;transition:all .16s}
+.rjbtn:hover{border-color:var(--accent2)}
+.rjbtn.active{background:var(--accent2);color:#fff;border-color:transparent}
+.rjbtn.done{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good)}
+.tracer-wrap{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.tside{border:3px solid var(--border);border-radius:var(--radius);
+  background:var(--panel2);padding:14px;position:sticky;top:6px}
+.sp-phase{font-size:14px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;
+  color:var(--muted);margin-bottom:3px}
+.sp-round{font-weight:900;font-size:20px;margin-bottom:5px}
+.sp-edge{font-family:ui-monospace,monospace;font-size:16px;background:var(--codebg);
+  color:var(--codetext);padding:6px 10px;border-radius:8px;margin-bottom:7px;min-height:30px}
+.sp-exp{font-size:17px;font-weight:700;line-height:1.5;padding:9px 11px;
+  border-radius:9px;border-left:4px solid var(--border)}
+.sp-exp.ok{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.sp-exp.skip{background:rgba(0,0,0,.03)}
+.sp-exp.init{border-left-color:var(--accent2);background:rgba(37,99,235,.08)}
+.sp-exp.rend{border-left-color:var(--warn);background:rgba(180,83,9,.07)}
+.sp-exp.neg{border-left-color:var(--bad);background:rgba(185,28,28,.07)}
+.sp-exp.done{border-left-color:var(--good);background:rgba(15,118,110,.08)}
+.slog{max-height:130px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace;margin-top:10px}
+.sli{padding:3px 5px;border-radius:4px;color:#6b7280;line-height:1.4;cursor:pointer}
+.sli:hover{background:rgba(255,255,255,.07)}
+.sli.cur{background:rgba(37,99,235,.22);color:#e5e7eb}
+.sli.ok{color:#34d399}.sli.ph{color:#fbbf24}.sli.ng{color:#fb7185}
+.elist{display:flex;flex-direction:column;gap:4px;max-height:190px;overflow-y:auto}
+.eli{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;
+  border:2px solid var(--border);font-size:16px;font-weight:800;
+  background:var(--panel);transition:all .18s}
+.eli.ea{border-color:var(--warn);background:rgba(180,83,9,.09)}
+.eli.eo{border-color:var(--good);background:rgba(15,118,110,.09)}
+.eli.en{border-color:var(--bad);background:rgba(185,28,28,.09)}
+.eldot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.eli.ea .eldot{background:var(--warn)}.eli.eo .eldot{background:var(--good)}.eli.en .eldot{background:var(--bad)}
+.spfa-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.spfa-q{display:flex;gap:6px;flex-wrap:wrap;min-height:48px;padding:8px;
+  background:var(--panel2);border:3px solid var(--border);border-radius:10px;align-items:center}
+.sqn{width:38px;height:38px;border-radius:9px;background:var(--warn);color:#fff;
+  font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center;
+  animation:popIn .22s ease}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.spfalog{max-height:140px;overflow-y:auto;background:var(--codebg);border:3px solid var(--border);
+  border-radius:10px;padding:6px;font-size:14px;font-family:ui-monospace,monospace}
+.spfali{color:#6b7280;padding:2px 5px;line-height:1.45}
+.spfali.ok{color:#34d399}.spfali.upd{color:#fbbf24}.spfali.ph{color:var(--accent2);font-weight:900}
+.dcdemo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.dci{font-size:17px;font-weight:800;padding:7px 11px;border-radius:9px;
+  border:2px solid var(--border);background:var(--panel);
+  font-family:ui-monospace,monospace;margin-bottom:6px}
+.dci.bad{border-color:var(--bad);background:rgba(185,28,28,.08);color:var(--bad)}
+.formula{background:var(--panel2);border:3px solid var(--border);border-radius:14px;
+  padding:14px 20px;margin:14px 0;font-family:ui-monospace,monospace;
+  font-size:20px;font-weight:900;text-align:center}
+.formula.master{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.08));
+  border-color:var(--accent2);font-size:22px;font-family:system-ui,sans-serif}
+.ks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.ks-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.ks-block h4{margin:0 0 10px;font-size:20px;font-weight:950;display:flex;align-items:center;gap:7px}
+.ks-block ul{margin:0;padding-left:1.2rem}
+.ks-block li{font-size:17px;font-weight:700;margin:.4rem 0}
+.checklist li{list-style:none;padding-left:0}
+.checklist li::before{content:"✓ ";color:var(--good);font-weight:950}
+.mistake li{list-style:none;padding-left:0}
+.mistake li::before{content:"⚠ ";color:var(--warn);font-weight:950}
+.layer-badge{display:inline-block;font-size:12px;font-weight:900;padding:3px 9px;
+  border-radius:999px;margin-left:12px;vertical-align:middle;letter-spacing:.05em}
+.lb-base{background:rgba(37,99,235,.12);color:var(--accent2);border:1.5px solid rgba(37,99,235,.25)}
+.lb-sched{background:rgba(15,118,110,.12);color:var(--good);border:1.5px solid rgba(15,118,110,.25)}
+.lb-model{background:rgba(124,58,237,.12);color:#7c3aed;border:1.5px solid rgba(124,58,237,.25)}
+.lb-fw{background:rgba(180,83,9,.10);color:var(--warn);border:1.5px solid rgba(180,83,9,.22)}
+.page-footer{margin-top:40px;padding:26px 20px;border-top:3px solid var(--border);text-align:center}
+.footer-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:4px}
+.footer-by{font-weight:800;font-size:18px;color:var(--muted);margin-bottom:10px}
+.footer-emails{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:14px 0}
+.footer-email{display:flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 18px;border-radius:999px;color:var(--link)}
+.footer-copy{font-size:16px;font-weight:700;color:var(--muted);margin-top:8px}
+.sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);
+  text-align:center;padding-bottom:6px}
+.sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-weight:900;
+  font-size:18px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:rgba(2,6,23,.04);
+  padding:7px 11px;border-radius:999px;border:2px solid rgba(2,6,23,.08)}
+.swatch{width:16px;height:16px;border-radius:50%;display:inline-block;
+  border:2px solid rgba(255,255,255,.3)}
+.hierarchy-chain{display:flex;flex-direction:column;gap:0;margin:18px 0}
+.hc-item{background:var(--panel);border:3px solid var(--border);border-radius:14px;
+  padding:16px 20px;position:relative}
+.hc-connector{text-align:center;font-size:22px;color:var(--muted);padding:4px 0;
+  font-weight:900;line-height:1}
+.hc-label{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);margin-bottom:4px}
+.hc-name{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:4px}
+.hc-desc{font-size:17px;font-weight:700;color:var(--text);line-height:1.55}
+.hc-inherits{font-size:14px;font-weight:800;color:var(--good);margin-top:6px;
+  display:flex;align-items:center;gap:5px}
+.app-block{background:var(--panel2);border:3px solid var(--border);border-radius:var(--radius);
+  padding:22px 20px 18px;margin:18px 0;position:relative}
+.app-block::before{content:"APPLICATION";position:absolute;top:-14px;left:18px;
+  background:var(--accent2);color:#fff;font-size:13px;font-weight:900;
+  padding:3px 10px;border-radius:999px;letter-spacing:.07em}
+.app-block p{margin:8px 0;font-size:var(--fs-sm);line-height:1.55}
+.app-block pre{margin:8px 0;font-size:16px}
+.app-block h3{margin:14px 0 6px;font-size:21px}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.dec-card{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px 18px}
+.dec-card .dc-head{font-weight:950;font-size:20px;color:var(--accent2);margin-bottom:6px}
+.dec-card .dc-cond{font-size:16px;font-weight:800;color:var(--muted);margin-bottom:8px;
+  padding:4px 8px;background:rgba(37,99,235,.06);border-radius:8px;display:inline-block}
+.dec-card p{font-size:17px;font-weight:700;margin:6px 0;line-height:1.5}
+.mental-model{background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(37,99,235,.06));
+  border:3px solid var(--good);border-radius:var(--radius);padding:20px 24px;margin:18px 0}
+.mm-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.mm-item{background:var(--panel);border:3px solid var(--border);border-radius:14px;padding:14px 16px}
+.mm-item .mm-num{font-size:28px;font-weight:950;color:var(--good);line-height:1}
+.mm-item .mm-title{font-weight:950;font-size:18px;margin:4px 0}
+.mm-item .mm-desc{font-size:16px;font-weight:700;color:var(--muted);line-height:1.5}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.diff-grid pre{margin:0;font-size:16px}
+.diff-lbl{font-weight:950;font-size:16px;margin-bottom:6px;color:var(--muted)}
+.diff-add{color:#34d399}
+@media(max-width:1300px){
+  .tracer-wrap{grid-template-columns:1fr}.tside{position:static}
+  .grid2,.grid3,.spfa-wrap,.dcdemo,.ks-grid,.diff-grid{grid-template-columns:1fr}
+  .decision-grid,.mm-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  h1{font-size:32px}.card{padding:14px 15px}.topbar h1{padding-left:60px}
+  .decision-grid,.mm-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body class="sb-open">
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Menu" title="Toggle Menu" aria-controls="sidebar" aria-expanded="true">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo-box">CA</div>
+    <div class="brand-title">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Bellman-Ford &amp; SPFA</div>
+      <div class="t3">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="grpTitle">The Invariant (§1–9)</div>
+    <a href="#s0">Overview<small>The system you will master</small></a>
+    <a href="#sfamily">One Family — Three Layers<small>Base · Scheduling · Modeling</small></a>
+    <a href="#s1">1. Shortest Path Problem<small>Formal definition + why cycles matter</small></a>
+    <a href="#s2">2. Negative Edges<small>Why Dijkstra fails + monotonicity</small></a>
+    <a href="#s3">3. Relaxation<small>The one rule that never changes</small></a>
+    <a href="#s4">4. DP Interpretation<small>dp[k][v] recurrence + 1D proof</small></a>
+    <a href="#s5">5. Correctness Proof<small>Induction + both-direction bound</small></a>
+    <a href="#s6">6. Why n−1 Iterations<small>Tight bound + worst-case chain</small></a>
+    <a href="#s7">7. Negative Cycle Detection<small>Theorem + reachability nuance</small></a>
+    <a href="#s8">8. Complexity<small>O(nm) = rounds × edges</small></a>
+    <a href="#s9">Master Template — BF<small>Contest-ready C++ with annotations</small></a>
+    <a href="#s11">Visual Propagation<small>Round = one DP row</small></a>
+    <a href="#stracer">Interactive Tracer<small>CLRS 5-node step-by-step</small></a>
+    <div class="grpTitle">Scheduling Variant — SPFA</div>
+    <a href="#s12">12. SPFA Algorithm<small>Layered-round BF with queue</small></a>
+    <a href="#s14">Master Template — SPFA<small>Canonical template + layered proof</small></a>
+    <a href="#s15">SPFA Complexity<small>When to switch from BF</small></a>
+    <div class="grpTitle">Decision Framework</div>
+    <a href="#sdecision">Which Algorithm?<small>Decision tree + 6-card reference</small></a>
+    <a href="#scomptable">Comparison Table<small>7 algorithms × 7 properties</small></a>
+    <div class="grpTitle">Graph Construction Layer</div>
+    <a href="#s17">Difference Constraints<small>Inequalities → edges → BF</small></a>
+    <a href="#s20">Wormholes (UVA 558)<small>Global negative cycle detection</small></a>
+    <a href="#s21">King Problem (UVA 515)<small>Bounded-difference constraints</small></a>
+    <a href="#s22">Arbitrage &amp; Scheduling<small>Log-transform + feasibility</small></a>
+    <a href="#s23">Unified View<small>All applications as two query types</small></a>
+    <div class="grpTitle">Synthesis</div>
+    <a href="#smental">Final Mental Model<small>One formula, six proofs</small></a>
+    <a href="#summary">Knowledge Summary<small>Checklists, map, pitfalls</small></a>
+    <a href="#rvc">Runtime Validation<small>Shell, theme, integrity checks</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br/>© 2025 All rights reserved.</div>
+  </div>
+</aside>
+
+<div class="content" id="content">
+<div class="topbar">
+  <div>
+    <h1>Bellman-Ford</h1>
+    <div class="subtitle">SPFA &amp; Difference Constraints — Complete Interactive Tutorial</div>
+  </div>
+  <div class="btnRow">
+    <div class="pill">Theme <div class="switch" id="themeSwitch" role="switch" tabindex="0" aria-checked="false"></div></div>
+  </div>
+</div>
+
+<section class="card" id="s0">
+  <h2>Overview <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="formula master">shortest path algorithms = relaxation rule + scheduling strategy + graph construction</div>
+  <p>This tutorial builds complete mastery of the Bellman-Ford family by treating every variant as a controlled derivation from one master template. The relaxation rule never changes. Everything else — scheduling, graph construction, stopping condition — is parameterised. By the end you will derive BF, SPFA, and difference constraints from a single four-line template, and apply them to every major application pattern.</p>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--accent2)">The learning arc</strong>
+      <ol style="margin:8px 0 0;padding-left:1.4rem">
+        <li style="font-size:17px;margin:.5rem 0">Relaxation — the single invariant (§3)</li>
+        <li style="font-size:17px;margin:.5rem 0">DP derivation — where n−1 comes from (§4–6)</li>
+        <li style="font-size:17px;margin:.5rem 0">BF master template — the canonical code (§9)</li>
+        <li style="font-size:17px;margin:.5rem 0">SPFA — layered-round scheduling variant (§12–14)</li>
+        <li style="font-size:17px;margin:.5rem 0">Difference constraints — graph construction layer (§17)</li>
+        <li style="font-size:17px;margin:.5rem 0">Applications — Wormholes, King, arbitrage as template deltas (§20–22)</li>
+      </ol>
+    </div>
+    <div class="card" style="margin:0;background:var(--panel2)">
+      <strong style="font-size:20px;color:var(--good)">✓ What you can do after this</strong>
+      <ul style="margin:8px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.4rem 0">Derive BF from the DP recurrence — not from memorisation</li>
+        <li style="font-size:17px;margin:.4rem 0">Explain SPFA as BF with layered queue rounds, not a separate algorithm</li>
+        <li style="font-size:17px;margin:.4rem 0">Prove negative-cycle detection via the nth-round argument for both BF and SPFA</li>
+        <li style="font-size:17px;margin:.4rem 0">Model any difference-constraint system and run BF on it</li>
+        <li style="font-size:17px;margin:.4rem 0">Choose the right algorithm for any shortest-path problem</li>
+      </ul>
+      <strong style="font-size:19px;color:var(--muted);display:block;margin-top:12px">Prerequisites</strong>
+      <ul style="margin:6px 0 0;padding-left:1.2rem">
+        <li style="font-size:17px;margin:.3rem 0">Basic graph representation (edge list / adjacency list)</li>
+        <li style="font-size:17px;margin:.3rem 0">BFS for unweighted shortest paths</li>
+        <li style="font-size:17px;margin:.3rem 0">Dijkstra's algorithm (for contrast)</li>
+        <li style="font-size:17px;margin:.3rem 0">Basic dynamic programming intuition</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="sfamily">
+  <h2>One Family — Three Layers <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p>Bellman-Ford, SPFA, and every difference-constraints application are the <em>same algorithm</em> with three independent axes of variation. The relaxation rule is constant. Everything else is a controlled parameter.</p>
+  <div class="formula master">Every variant in this family varies on exactly three axes:<br>
+  (1) Which edges to relax &nbsp;·&nbsp; (2) In what order / schedule &nbsp;·&nbsp; (3) What graph to build.<br>
+  The relaxation rule <em>dist[v] = min(dist[v], dist[u] + w)</em> never varies.</div>
+  <div class="hierarchy-chain">
+    <div class="hc-item" style="border-color:var(--accent2);background:rgba(37,99,235,.06)">
+      <div class="hc-label">Layer 1 — Base Algorithm</div>
+      <div class="hc-name">Bellman-Ford</div>
+      <div class="hc-desc">Applies the relaxation rule to <strong>every edge</strong>, in <strong>any fixed order</strong>, for exactly <strong>n−1 rounds</strong>. Zero scheduling intelligence — but provably correct on any graph without a negative cycle. This is the master template.</div>
+    </div>
+    <div class="hc-connector">↓ change only the scheduling loop</div>
+    <div class="hc-item" style="border-color:var(--good);background:rgba(15,118,110,.06)">
+      <div class="hc-label">Layer 2 — Scheduling Variant</div>
+      <div class="hc-name">SPFA (Layered-Round BF)</div>
+      <div class="hc-desc">Identical relaxation rule. The outer loop is replaced with a <strong>queue processed in layers</strong>: each outer iteration drains the entire current queue (one compressed BF round), then processes the newly-enqueued vertices in the next layer. Only vertices whose distance just improved are in the queue. The round counter <code>n--</code> mirrors BF's n−1 bound — if a relaxation fires when <code>n</code> reaches 0, a negative cycle exists.</div>
+      <div class="hc-inherits">↑ inherits: relaxation rule, convergence guarantee, nth-round negative-cycle proof</div>
+    </div>
+    <div class="hc-connector">↓ change only the graph construction</div>
+    <div class="hc-item" style="border-color:#7c3aed;background:rgba(124,58,237,.06)">
+      <div class="hc-label">Layer 3 — Graph Construction</div>
+      <div class="hc-name">Difference Constraints / Applications</div>
+      <div class="hc-desc">Identical relaxation rule, identical BF or SPFA loop. The graph is <strong>constructed from the problem</strong>: inequalities become edges, super-sources are added, weights are log-transformed. Run either template unchanged on the constructed graph.</div>
+      <div class="hc-inherits">↑ inherits: everything from Layers 1 and 2</div>
+    </div>
+  </div>
+  <div class="tw" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Variant</th><th>Which edges</th><th>Schedule</th><th>Termination</th><th>Neg-cycle proof</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Bellman-Ford</strong></td><td>All m edges</td><td>Fixed scan order, n−1 rounds</td><td>No relaxation in a full round</td><td>n-th round fires</td></tr>
+        <tr><td><strong>SPFA</strong></td><td>Only from active vertices</td><td>Layered queue (each layer = one compressed round)</td><td>Queue empties before n layers</td><td>Relaxation fires in nth layer</td></tr>
+        <tr><td><strong>Diff. constraints</strong></td><td>Constructed from inequalities</td><td>Either above</td><td>Either above</td><td>Either above</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <details>
+    <summary>Why SPFA is not a different algorithm <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p>In the BF master template, the outer <code>for (iter = 0; iter &lt; n-1; iter++)</code> loop drives n−1 exhaustive edge scans. SPFA replaces this with a queue. But crucially, the SPFA loop preserves the same <em>layer structure</em>: at the start of each outer iteration, the queue holds exactly the vertices that improved in the previous layer — analogous to BF's "frontier" after one round. The inner loop drains the entire current layer before advancing. The round counter <code>n--</code> counts layers exactly as BF counts rounds. The relaxation line inside is byte-for-byte identical. SPFA is BF with a smarter scheduling policy that skips useless scans.</p>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s1">
+  <h2>1. The Shortest Path Problem <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>Given a directed weighted graph G = (V, E) and a source vertex s, find the minimum-weight path from s to every reachable vertex. Weights can be positive, zero, or negative. One condition must hold: no <em>negative-weight cycle</em> may be reachable from s.</p>
+  <p>Why? Consider cycle A → B(−1) → A with total weight −1. After one traversal dist[A] = −1, after two dist[A] = −2, after k traversals dist[A] = −k. The question "what is the shortest path?" has no finite answer. The algorithm must detect and report this condition.</p>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Simple vs shortest path:</strong> When no negative cycle exists, every shortest path is also simple (visiting no vertex twice), because any cycle either adds nothing or adds positive cost. This equivalence is why n−1 iterations suffice — n−1 is the maximum edge count of a simple path in an n-vertex graph.</p>
+  </div>
+  <div class="legend" style="margin-bottom:10px">
+    <span><span class="swatch" style="background:#6d28d9"></span>Source</span>
+    <span><span class="swatch" style="background:var(--warn)"></span>Edge being relaxed</span>
+    <span><span class="swatch" style="background:var(--good)"></span>Distance just updated</span>
+    <span><span class="swatch" style="background:var(--accent2)"></span>Reached (finite distance)</span>
+  </div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Bellman-Ford preview — 6 nodes, mixed weights</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="g1Rst">↺ Reset</button>
+        <button class="miniBtn" id="g1Nxt">Next ▶</button>
+        <button class="miniBtn" id="g1Auto">⏩ Auto</button>
+      </div>
+    </div>
+    <svg id="g1Svg" class="graphsvg" viewBox="0 0 780 280"></svg>
+    <div class="statusPanel" id="g1Act">Every detail of this trace is derived in §3–9. Observe that distances propagate round by round from the source.</div>
+  </div>
+</section>
+
+<section class="card" id="s2">
+  <h2>2. Negative Edges — Why Dijkstra Fails <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>Dijkstra locks each vertex once it is selected as the minimum-distance unvisited vertex. This greedy lock is valid only when all edge weights are non-negative — adding more edges can only increase or maintain path length. A negative edge breaks this monotonicity: a cheaper path can arrive <em>after</em> Dijkstra has already locked the destination.</p>
+  <div class="formula">dist[v] is non-increasing across all relaxation operations — it can only decrease or stay the same. This is the monotonicity property that makes the entire BF family safe.</div>
+  <div class="ib ib-red"><i>✗</i>
+    <p><strong>Dijkstra failure example:</strong> A→B(+5), B→C(−7), A→C(+10). Dijkstra locks C with cost 10 before exploring B. Then B→C gives 5+(−7) = −2, but C is already locked — Dijkstra returns 10 instead of −2.</p>
+  </div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Dijkstra failure vs Bellman-Ford success</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="neg2Rst">↺ Reset</button>
+        <button class="miniBtn" id="neg2Nxt">Next ▶</button>
+        <button class="miniBtn" id="neg2Auto">⏩ Auto</button>
+      </div>
+    </div>
+    <svg id="neg2Svg" class="graphsvg" viewBox="0 0 760 260"></svg>
+    <div class="statusPanel" id="neg2Act">Press Next to see how Dijkstra fails and Bellman-Ford succeeds.</div>
+  </div>
+  <p style="margin-top:12px">Bellman-Ford's minimal fix: <strong>remove locking entirely.</strong> Every edge is re-examined every round. Cost: O(nm) instead of O((n+m) log n). Gain: correctness on any weight sign.</p>
+  <div class="ib ib-blue"><i>🔑</i>
+    <p><strong>Key transition:</strong> The rest of this tutorial asks one question — given that we must re-examine edges, how often and in what order? BF answers: every edge, every round, n−1 rounds. SPFA answers: only edges from recently-improved vertices, one queue layer at a time. Same invariant, different scheduling.</p>
+  </div>
+</section>
+
+<section class="card" id="s3">
+  <h2>3. Relaxation — The One Rule <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <div class="formula master">dist[v] = min(dist[v], dist[u] + w(u, v))</div>
+  <p><strong>The distance invariant:</strong> <code>dist[v]</code> is <em>never an overestimate</em>. It starts at ∞ (trivially safe) and can only decrease. After all necessary relaxations have fired, <code>dist[v]</code> equals the true shortest distance. This invariant is maintained by every algorithm in the family — BF, SPFA, and every application — because they all use the same relaxation step.</p>
+  <p>This is the same operation used in Dijkstra, Floyd-Warshall, and SPFA. The algorithms differ only on three axes: which edges they relax, in what order, and on what graph.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Interactive Relaxation — click any edge to apply the rule</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="relRst">↺ Reset</button>
+        <button class="miniBtn" id="relAuto">⏩ Auto-relax</button>
+      </div>
+    </div>
+    <svg id="relSvg" class="graphsvg" viewBox="0 0 740 240"></svg>
+    <div class="statusPanel" id="relAct">Click any edge to relax it.</div>
+    <div class="dist-items" id="relDist" style="margin-top:8px"></div>
+  </div>
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>Experiment:</strong> Relax edges in different orders. You can always reach the correct answer, but some orderings need more passes. This is why BF scans all edges n−1 times — it handles the worst-case ordering where edges are scanned in reverse propagation order.</p>
+  </div>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Convergence condition:</strong> BF converges when a complete scan of all edges produces zero relaxations. SPFA converges when the queue empties before the n-th layer. Both express the same condition: no vertex has new information to propagate.</p>
+  </div>
+</section>
+
+<section class="card" id="s4">
+  <h2>4. DP Interpretation <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <div class="formula">dp[k][v] = minimum weight of any path from s to v using at most k edges</div>
+  <p>Recurrence:</p>
+  <pre><code>dp[0][s] = 0;          // base: zero edges to reach source
+dp[0][v] = ∞ ∀ v ≠ s  // can't reach anyone else with 0 edges
+
+dp[k][v] = min(
+    dp[k-1][v],                            // don't use the k-th edge
+    min over all (u,v,w): dp[k-1][u] + w   // extend best (k-1)-edge path
+)</code></pre>
+  <p>Since any simple path in an n-vertex graph uses at most n−1 edges, k = 1…n−1 suffices. This is exactly what the outer loop of Bellman-Ford computes.</p>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Frontier propagation invariant:</strong> After k complete BF iterations, <code>dist[v]</code> is correct for every vertex v whose shortest path uses at most k edges. This invariant bridges directly to the "why n−1" argument in §6.</p>
+  </div>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">DP Table Builder — each press = one row of the table</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="dpRst">↺ Reset</button>
+        <button class="miniBtn" id="dpNxt">Next Round ▶</button>
+        <button class="miniBtn" id="dpAuto">⏩ Auto</button>
+      </div>
+    </div>
+    <svg id="dpSvg" class="graphsvg" viewBox="0 0 790 200"></svg>
+    <div class="tw" id="dpTable"></div>
+    <div class="statusPanel" id="dpAct">Press Next Round to fill the DP table one iteration at a time.</div>
+  </div>
+  <h3>Why the 1D in-place version is correct — and faster</h3>
+  <p>Using a single <code>dist[]</code> array means that when we relax edge u → v in iteration k, we may use <code>dist[u]</code> already improved earlier in the same iteration. This is strictly better — we propagate information faster. Formally: iterations₁D ≤ iterations₂D ≤ n−1. The 1D version is correct and is a performance improvement over strict DP.</p>
+  <div class="formula">iterations₁D ≤ iterations₂D ≤ n−1 &nbsp;&nbsp; (early termination exploits this)</div>
+</section>
+
+<section class="card" id="s5">
+  <h2>5. Correctness Proof <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>The proof is a domino chain: the source falls first, then each node falls as soon as the node before it on its shortest path falls.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Inductive proof — step through the domino chain</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="pfRst">↺ Reset</button>
+        <button class="miniBtn" id="pfNxt">Next ▶</button>
+        <span class="miniBtn" id="pfCtr" style="cursor:default;background:var(--panel2)">Step 1 / 8</span>
+      </div>
+    </div>
+    <svg id="pfSvg" class="graphsvg" viewBox="0 0 890 200"></svg>
+    <div class="statusPanel" id="pfAct">Press Next to walk through the inductive proof.</div>
+  </div>
+  <div class="card" style="background:rgba(37,99,235,.06);margin:14px 0">
+    <p><strong>Claim:</strong> After iteration k (1D in-place), for every vertex v reachable from s by a path with at most k edges, <code>dist[v]</code> equals the optimal path weight.</p>
+    <p><strong>Base case (k = 0):</strong> <code>dist[s] = 0</code> is correct. All others are ∞ (never an underestimate).</p>
+    <p><strong>Inductive step:</strong> Assume after iteration k−1, <code>dist[v]</code> is correct for all v whose shortest path uses ≤ k−1 edges. Let v have an optimal k-edge path, last edge (u, v, w). By the 1D in-place guarantee, <code>dist[u]</code> is already correct by the time we examine (u, v) in iteration k. The relaxation fires, setting <code>dist[v]</code> to its optimal value. ∎</p>
+    <p><strong>Correctness in both directions:</strong> <code>dist[v]</code> never underestimates (every decrease requires an improving path) and never overestimates after n−1 passes (inductive step guarantees it reaches the correct value).</p>
+  </div>
+  <details>
+    <summary>Extended formal proof <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>Why simple paths suffice:</strong> Any simple path uses at most n−1 edges. If a shortest path contained a zero-weight cycle, remove it — same cost. If it contained a positive cycle, remove it — cheaper. Therefore optimal paths are always simple, and n−1 iterations always suffice (unless a negative cycle exists).</p>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s6">
+  <h2>6. Why n−1 Iterations Is a Tight Bound <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>The bound n−1 is tight. Consider a chain graph 0 → 1 → 2 → … → (n−1), with edges presented in reverse order (edge (n−2)→(n−1) first, down to 0→1 last). In iteration 1, only edge 0→1 fires. In iteration k, only node k is settled. Exactly n−1 iterations are required.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Iteration k</th><th>Frontier propagation invariant guarantees</th><th>Chain graph progress</th></tr></thead>
+      <tbody>
+        <tr><td>0 (init)</td><td>dist[s] = 0, all others = ∞</td><td>Only node 0</td></tr>
+        <tr><td>1</td><td>All ≤1-edge shortest paths correct</td><td>Node 1 settled</td></tr>
+        <tr><td>…</td><td>…</td><td>…</td></tr>
+        <tr><td>n−1</td><td>All shortest paths correct (entire graph)</td><td>Node n−1 settled</td></tr>
+        <tr><td class="cr">n (extra)</td><td class="cr">Any relaxation here = negative cycle reachable</td><td class="cr">Cycle detection only</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Connection to negative cycles:</strong> If a negative cycle exists, distances never stabilise. The n-th iteration catches it: any relaxation that fires after n−1 complete rounds proves distances can still decrease, which is only possible through a negative cycle.</p>
+  </div>
+</section>
+
+<section class="card" id="s7">
+  <h2>7. Negative Cycle Detection <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <h3>The theorem</h3>
+  <p>After n−1 iterations, the frontier propagation invariant guarantees that all shortest paths using at most n−1 edges are correct. A simple path uses at most n−1 edges. Therefore if any relaxation fires in a hypothetical n-th iteration, the improving walk must use ≥ n edges — meaning it revisits at least one vertex — meaning it contains a cycle. Since removing a zero or positive-weight cycle only helps, a cycle that enables further improvement must have <em>negative total weight</em>.</p>
+  <div class="ib ib-red"><i>⚠</i>
+    <p><strong>Reachability nuance:</strong> Running BF from a single fixed source only detects negative cycles reachable from that source. To detect any negative cycle in the entire graph, add a super-source with 0-weight edges to all vertices and run BF from it. This is used in Wormholes (§20) and Difference Constraints (§17).</p>
+  </div>
+  <h3>Detection code</h3>
+<pre><code>// After the standard n-1 loop — append this:
+for (const auto&amp; e : edges) {
+    if (dist[e.u] &lt; INF &amp;&amp; dist[e.u] + e.w &lt; dist[e.v])
+        return false;   // negative cycle detected
+}
+return true;</code></pre>
+  <h3>What this detection does NOT tell you</h3>
+  <p>It tells you a negative cycle exists somewhere reachable from the source. It does not identify which cycle or which vertices are affected. For problems requiring you to output the cycle's vertices, record predecessors and trace back from the vertex that triggered the n-th relaxation.</p>
+  <div class="diagramWrap" style="margin-top:18px">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Negative cycle tracer — A→B(+1), B→C(−3), C→A(+1) = cycle weight −1</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="ncRst">↺ Reset</button>
+        <button class="miniBtn" id="ncNxt">Next ▶</button>
+        <button class="miniBtn" id="ncAuto">⏩ Auto</button>
+        <span class="miniBtn" id="ncCtr" style="cursor:default;background:var(--panel2)">Step 1/…</span>
+      </div>
+    </div>
+    <svg id="ncSvg" class="graphsvg" viewBox="0 0 720 270"></svg>
+    <div class="dist-items" id="ncDist" style="margin-top:8px"></div>
+    <div class="statusPanel" id="ncAct">Press Next to see distances decrease with each negative cycle pass.</div>
+  </div>
+</section>
+
+<section class="card" id="s8">
+  <h2>8. Complexity Analysis <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <div class="grid2">
+    <div>
+      <h3>Time: O(n · m)</h3>
+      <div class="formula" style="font-size:26px">O(n · m)</div>
+      <p>n−1 rounds × m edges per round × O(1) per relaxation. O(nm) is a direct consequence of zero scheduling intelligence. For sparse graphs (m = O(n)): O(n²). For dense graphs (m = O(n²)): O(n³).</p>
+      <div class="formula" style="font-size:17px;margin-top:10px">O(nm) = O(n rounds) × O(m edges/round)<br>SPFA reduces effective rounds — see §15</div>
+    </div>
+    <div>
+      <h3>Space: O(n + m)</h3>
+      <div class="formula" style="font-size:26px">O(n + m)</div>
+      <p>O(n) for dist[], O(m) for the edge list. No adjacency matrix required. The 1D optimisation avoids the O(n²) DP table.</p>
+      <p style="margin-top:10px;font-size:17px;font-weight:700;color:var(--muted)"><strong>Practical note:</strong> BF with early termination is often fast on contest inputs — most graphs converge well before n−1 rounds. The O(nm) worst case requires the adversarial chain scenario from §6.</p>
+    </div>
+  </div>
+  <div class="tw" style="margin-top:14px">
+    <table>
+      <thead><tr><th>Algorithm</th><th>Time</th><th>Edge weights</th><th>Neg-cycle?</th><th>When to avoid</th></tr></thead>
+      <tbody>
+        <tr><td>BFS</td><td>O(n+m)</td><td>Unit only</td><td class="cr">✗</td><td>Any non-unit weights</td></tr>
+        <tr><td>Dijkstra</td><td>O((n+m)log n)</td><td>≥ 0 only</td><td class="cr">✗</td><td>Any negative edge</td></tr>
+        <tr style="background:rgba(37,99,235,.05)"><td><strong>Bellman-Ford</strong></td><td><strong>O(nm)</strong></td><td>Any real</td><td class="cy">✓</td><td>n·m &gt; 10⁸</td></tr>
+        <tr><td>SPFA (§15)</td><td>Avg O(km)</td><td>Any real</td><td class="cy">✓</td><td>Adversarial inputs</td></tr>
+        <tr><td>DAG shortest path</td><td>O(n+m)</td><td>Any real</td><td>N/A</td><td>Graph has cycles</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card" id="s9">
+  <h2>Master Template — Bellman-Ford <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>This is the canonical reference for the entire tutorial. Every subsequent variant is derived from this template by changing exactly one thing. Each comment maps back to §3–7.</p>
+  <div class="ib ib-blue" style="margin:10px 0 4px"><i>📌</i>
+    <p><strong>Robust general-purpose baseline:</strong> This template is written with <code>long long</code> distances and a large <code>INF = 1e18</code> precisely because it serves as a <em>reusable master baseline</em> safe across all problem sizes and weight ranges. When adapting for a specific contest problem you may narrow types as needed — but this version is the one to reach for when in doubt.</p>
+  </div>
+<pre><code>// ═══ BF MASTER TEMPLATE ════════════════════════════════════
+// Input : n vertices (0-indexed), edge list, source src
+// Output: dist[v] = shortest dist from src (INF = unreachable)
+// Return: true  = no negative cycle reachable from src
+//         false = negative cycle detected
+// Complexity: O(nm) time, O(n+m) space
+// Template slots:
+//   EDGE_SET  — what edges exist (given, or constructed)
+//   SCHEDULE  — all edges each round  (→ SPFA: layered queue)
+//   STOP_COND — n-1 rounds            (→ SPFA: queue empties before nth layer)
+//   QUERY     — dist[] values or cycle detection boolean
+// ════════════════════════════════════════════════════════════
+
+struct Edge { int u, v; long long w; };
+const long long INF = 1e18;
+
+bool bellmanFord(int n, const vector&lt;Edge&gt;&amp; edges,   // EDGE_SET
+                 int src, vector&lt;long long&gt;&amp; dist) {
+
+    dist.assign(n, INF);
+    dist[src] = 0;          // dp[0][src] = 0  ← base case
+
+    // SCHEDULE: n-1 rounds over all edges
+    for (int iter = 0; iter &lt; n - 1; iter++) {         // STOP_COND
+        bool changed = false;
+        for (const auto&amp; e : edges) {
+            // Guard: never relax through unreachable node (INF + w overflows)
+            if (dist[e.u] &lt; INF &amp;&amp; dist[e.u] + e.w &lt; dist[e.v]) {
+                dist[e.v] = dist[e.u] + e.w;   // THE relaxation rule
+                changed = true;
+            }
+        }
+        if (!changed) break;    // early exit: converged before n-1 rounds
+    }
+
+    // QUERY: n-th pass = negative cycle detection (§7 theorem)
+    for (const auto&amp; e : edges) {
+        if (dist[e.u] &lt; INF &amp;&amp; dist[e.u] + e.w &lt; dist[e.v])
+            return false;       // negative cycle — dist[] invalid for some v
+    }
+    return true;
+}</code></pre>
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>What to derive from this template:</strong> SPFA (§12) changes the SCHEDULE slot only — the outer loop becomes a layered queue. Difference constraints (§17) change the EDGE_SET slot only. Wormholes (§20) add a super-source. Every application in §17–22 is a combination of these two changes — nothing else ever changes.</p>
+  </div>
+  <details>
+    <summary>Line-by-line explanation <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <p><strong>dist.assign(n, INF); dist[src] = 0;</strong> — DP base case: k=0, source is 0, all others ∞.</p>
+      <p><strong>for iter = 0 .. n−2</strong> — n−1 outer rounds. Each round advances the frontier propagation invariant by one hop.</p>
+      <p><strong>if (dist[e.u] &lt; INF)</strong> — critical guard. Without this, INF + (negative w) wraps around and produces phantom relaxations.</p>
+      <p><strong>if (!changed) break;</strong> — 1D convergence is always ≤ n−1 rounds, often much less.</p>
+      <p><strong>n-th iteration check</strong> — any relaxation proves a negative cycle (§7 theorem).</p>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s11">
+  <h2>11. Visual Propagation — Round = One DP Row <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>Each round of Bellman-Ford corresponds to one row of the DP table from §4. After round k, every vertex whose optimal path uses at most k edges has its correct distance.</p>
+  <div class="diagramWrap">
+    <div class="diagramHeader">
+      <div class="diagramTitle">Round-by-round propagation — 4-node graph</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="p4Rst">↺ Reset</button>
+        <button class="miniBtn" id="p4Nxt">Next ▶</button>
+        <button class="miniBtn" id="p4Auto">⏩ Auto</button>
+        <span class="miniBtn" id="p4Ctr" style="cursor:default;background:var(--panel2)">Step 1/…</span>
+      </div>
+    </div>
+    <svg id="p4Svg" class="graphsvg" viewBox="0 0 790 200"></svg>
+    <div class="dist-items" id="p4Dist" style="margin-top:8px"></div>
+    <div class="statusPanel" id="p4Act">Press Next to watch one DP row compute per round.</div>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Negative edges cause re-settling:</strong> Unlike Dijkstra where each vertex is settled once, BF can re-settle a vertex across rounds. Node 2 above is first reached with distance 5 (via 0→2), then corrected to distance 2 (via 0→1→2 through the negative edge). This backward correction is the deliberate consequence of the no-locking design.</p>
+  </div>
+</section>
+
+<section class="card" id="stracer">
+  <h2>Interactive Step Tracer — Full Bellman-Ford <span class="layer-badge lb-base">BASE ALGORITHM</span></h2>
+  <p>This tracer runs the master template from §9 on the classic 5-node CLRS graph (s, t, x, y, z). Use it to verify three predictions:</p>
+  <ol style="font-size:var(--fs-sm);font-weight:700;line-height:1.8;margin:10px 0 14px;padding-left:1.4rem">
+    <li><strong>Prediction A:</strong> After round 1, which nodes have correct distances?</li>
+    <li><strong>Prediction B:</strong> Which edge causes the first backward correction?</li>
+    <li><strong>Prediction C:</strong> In which round does this graph converge? Before n−1 = 4 rounds?</li>
+  </ol>
+  <div class="ctrl-row">
+    <button class="cbtn" id="bfRst">↺</button>
+    <button class="cbtn" id="bfPrv">◀ Prev</button>
+    <button class="cbtn" id="bfPly">▶</button>
+    <button class="cbtn" id="bfNxt">Next ▶</button>
+    <button class="cbtn" id="bfSkp">Skip Round ⏭</button>
+  </div>
+  <div class="spd-row">
+    Speed: <input type="range" id="bfSpd" min="0" max="4" value="2" style="width:120px"/>
+    <span id="bfSpdLbl">1×</span>
+    <span id="stepctr" style="margin-left:auto;font-weight:900;font-size:17px;color:var(--muted)">Step 1/…</span>
+  </div>
+  <div class="rjump" id="rjump"></div>
+  <div class="tracer-wrap">
+    <div>
+      <svg id="bfsvg" class="graphsvg" viewBox="0 0 730 360"></svg>
+      <div class="dist-items" id="dtrow" style="margin-top:10px"></div>
+    </div>
+    <div class="tside">
+      <div class="sp-phase" id="spPhase">INIT</div>
+      <div class="sp-round" id="spRound">—</div>
+      <div class="sp-edge" id="spEdge">—</div>
+      <div class="sp-exp" id="spExp"></div>
+      <div style="font-weight:900;font-size:16px;color:var(--muted);margin:12px 0 6px">EDGES</div>
+      <div class="elist" id="elist"></div>
+      <div class="slog" id="slog"></div>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="s12">
+  <h2>12. SPFA — Bellman-Ford with Layered-Round Scheduling <span class="layer-badge lb-sched">SCHEDULING VARIANT</span></h2>
+
+  <div class="app-block" style="margin-top:28px">
+    <p><strong>Context → Mapping:</strong> Bellman-Ford's outer loop runs n−1 full edge scans, even when most vertices have not changed since the last round. SPFA eliminates this waste by replacing the fixed outer loop with a queue that tracks only the vertices whose distances just improved — the "active frontier." The queue is processed in discrete <em>layers</em>: each outer iteration drains the entire current layer (one compressed BF round) and collects newly-improved vertices for the next layer.</p>
+
+    <p><strong>What stays the same:</strong> The relaxation rule <code>if (dist[v] &gt; dist[u] + w) dist[v] = dist[u] + w</code> is byte-for-byte identical to BF. The meaning of dist[] is identical. Any vertex whose distance improves is guaranteed to be re-queued and re-examined — no useful relaxation is ever permanently skipped.</p>
+
+    <p><strong>What changes:</strong> The outer SCHEDULE changes from "scan all m edges in a fixed order, n−1 times" to "process only active vertices layer by layer, up to n layers." Concretely: the outer <code>for (iter = 0; iter &lt; n-1; iter++)</code> loop is replaced by <code>while (q.size() &amp;&amp; n--)</code>; the inner edge scan is replaced by draining the current queue layer via <code>int s = q.size(); while (s--)</code>. A boolean <code>inQueue[]</code> flag prevents duplicates within a layer.</p>
+
+    <p><strong>Why correctness holds:</strong> BF fact: after k full rounds, all shortest paths using at most k edges are correct (frontier propagation invariant, §4). SPFA preserves this invariant layer by layer — each outer iteration corresponds to exactly one compressed BF round, because the queue at the start of each iteration holds precisely the vertices that improved in the previous round. The counter <code>n--</code> counts layers exactly as BF counts rounds. Therefore: if a relaxation still fires when <code>n</code> reaches 0 (the nth layer), some improving walk uses at least n edges. An n-edge walk in an n-vertex graph must revisit a vertex, forming a cycle. Because the distance improved through that cycle, the cycle must have negative total weight. This is the nth-layer negative-cycle proof — structurally identical to BF's nth-iteration proof.</p>
+
+    <p><strong>Code delta from Bellman-Ford:</strong></p>
+<pre><code>// ─── CHANGED: SCHEDULE slot only ─────────────────────────────
+// BF outer loop:
+//   for (int iter = 0; iter &lt; n-1; iter++) {
+//       for (const auto&amp; e : edges) { ... }
+//   }
+// Replaced by layered queue:
+
+bool sp(const vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;&amp; adj, int src) {
+    int n = (int)adj.size();        // infer n — no explicit parameter
+    vector&lt;int&gt; dist(n, 1e9);
+    dist[src] = 0;
+    queue&lt;int&gt; q;
+    q.push(src);
+    vector&lt;bool&gt; inQueue(n);
+    inQueue[src] = true;
+
+    while (q.size() &amp;&amp; n--) {      // outer: n-- counts BF rounds
+        int s = q.size();           // freeze current layer size
+        while (s--) {               // drain entire current layer
+            int u = q.front(); q.pop();
+            inQueue[u] = false;
+            for (auto [v, w] : adj[u]) {
+                int d = dist[u] + w;
+                if (dist[v] &gt; d) {  // same relaxation rule as BF
+                    dist[v] = d;
+                    if (!inQueue[v]) { inQueue[v] = true; q.push(v); }
+                    if (!n) return false;  // nth-layer = neg cycle
+                }
+            }
+        }
+    }
+    return true;  // queue emptied before nth layer: no neg cycle
+}
+// ─── UNCHANGED: relaxation rule, dist[] semantics, neg-cycle logic</code></pre>
+
+    <p><strong>Common pitfall:</strong> Processing the queue in arbitrary order instead of layer by layer. The nth-layer negative-cycle proof relies on each outer iteration corresponding to exactly one compressed BF round. If vertices from multiple rounds are mixed in the same iteration, the layer count no longer tracks the edge-hop bound, and the proof breaks. If you change the scheduling semantics, you must also revisit the correctness proof.</p>
+
+    <p><strong>Practice:</strong> <a href="https://vjudge.net/problem/UVA-10557" target="_blank">UVA 10557 — XYZZY</a> — Bellman-Ford/SPFA-family propagation with cycle-aware reachability; stronger match for negative-edge relaxation behavior than a nonneg Dijkstra-style problem.</p>
+  </div>
+
+  <div class="ib ib-blue" style="margin-top:18px"><i>📌</i>
+    <p><strong>How to read this tracer:</strong> Each time you press <em>Next Step</em>, watch the queue update. When all vertices enqueued at the start of a step are flushed before new ones are added, that boundary marks the end of one <strong>compressed BF round (layer)</strong>. The step log entry "Process node u" belongs to the layer that was active when u entered the queue. Vertices pushed during that processing appear in the <em>next</em> layer — exactly mirroring how BF discovers new nodes one hop at a time.</p>
+  </div>
+
+  <div class="diagramWrap" style="margin-top:10px">
+    <div class="diagramHeader">
+      <div class="diagramTitle">SPFA Layered-Round Tracer</div>
+      <div class="diagramTools">
+        <button class="miniBtn" id="spfaRst">↺ Reset</button>
+        <button class="miniBtn" id="spfaNxt">Next Step ▶</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin:8px 0 10px;flex-wrap:wrap">
+      <div style="font-weight:900;font-size:16px;color:var(--muted)">Current round:</div>
+      <div id="spfaLayer" style="background:rgba(37,99,235,.12);border:2px solid rgba(37,99,235,.3);padding:5px 16px;border-radius:999px;font-weight:950;font-size:18px;color:var(--accent2)">Init</div>
+      <div style="font-size:15px;font-weight:700;color:var(--muted)">← each layer = one compressed BF round</div>
+    </div>
+    <div style="font-size:16px;font-weight:700;color:var(--muted);padding:0 4px 6px">
+      <strong>Active frontier</strong> = vertices that improved last round.
+      Processing them = this round's relaxations.
+      Any new improvements → <strong>next round's frontier</strong>.
+    </div>
+    <div class="spfa-wrap">
+      <div>
+        <div style="font-weight:900;font-size:18px;color:var(--muted);margin-bottom:4px">Active frontier (current layer)</div>
+        <div style="font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px">Vertices queued here improved in the previous round. Processing them = layer k relaxations.</div>
+        <div class="spfa-q" id="spfaQ"></div>
+        <div class="dist-items" id="spfaDt" style="margin-top:8px"></div>
+      </div>
+      <div>
+        <div style="font-weight:900;font-size:18px;color:var(--muted);margin-bottom:4px">Step Log — layered rounds</div>
+        <div style="font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px">Blue = layer boundary. Green = relaxation. Yellow = next-layer enqueue.</div>
+        <div class="spfaLog" id="spfaLog"></div>
+      </div>
+    </div>
+    <div class="statusPanel" style="margin-top:10px">
+      <strong>Layer invariant:</strong> after all vertices in the current layer are processed, every shortest path using at most <em>k</em> edges (where <em>k</em> = current layer number) is correct in dist[] — exactly the same guarantee BF gives after round <em>k</em>.
+    </div>
+  </div>
+</section>
+
+<section class="card" id="s14">
+  <h2>Master Template — SPFA <span class="layer-badge lb-sched">SCHEDULING VARIANT</span></h2>
+
+  <p>This is the second canonical template in this tutorial. Every application that uses SPFA instead of BF is derived from this template by changing the EDGE_SET slot only — the SCHEDULE loop is never touched. Parity with §9: same invariant, same correctness, different scheduling.</p>
+
+  <div class="ib ib-orange" style="margin:10px 0 4px"><i>📌</i>
+    <p><strong>Accepted compact contest style — intentionally preserved:</strong> This template uses <code>int</code> distances and <code>1e9</code> as INF. This is a <em>deliberate presentation choice</em>, not an algorithmic inconsistency with §9. The BF master template is written in a robust long-long baseline form for safe generic reuse. This SPFA template is kept in its accepted compact contest form to leave the exact layered-round scheduling structure and negative-cycle proof unchanged and easy to read. Same family, same correctness backbone, different code presentation goals.</p>
+  </div>
+
+  <!-- ── INVARIANT ───────────────────────────────────────── -->
+  <h3>Invariant</h3>
+  <div class="formula">After the queue layer for round k is fully drained, every shortest path using at most k edges is correct in dist[].</div>
+  <p>This is the <em>same</em> frontier propagation invariant as Bellman-Ford (§4), preserved by the layered structure of the queue. Layer k of the queue holds exactly the vertices that improved in layer k−1 — so draining layer k advances the frontier by one hop, identically to BF's k-th round.</p>
+
+  <!-- ── CORRECTNESS IDEA ───────────────────────────────── -->
+  <h3>Correctness idea</h3>
+  <p>No useful relaxation is ever permanently skipped. Any vertex v whose distance improves acquires new information to propagate. Because v is pushed to the queue, its outgoing edges will be examined in the next layer. The invariant therefore progresses layer by layer, and after at most n−1 layers all shortest paths are correct — provided no negative cycle exists.</p>
+  <p><strong>Negative-cycle detection:</strong> If the counter <code>n--</code> reaches 0 and a relaxation still fires (<code>if (!n) return false</code>), some improving walk uses ≥ n edges. An n-edge walk in an n-vertex graph must revisit a vertex, forming a cycle. Because the distance improved, that cycle is negative. This is the nth-layer proof — structurally identical to BF's nth-iteration proof (§7).</p>
+
+  <!-- ── TEMPLATE ───────────────────────────────────────── -->
+  <h3>Template</h3>
+<pre><code>// ═══ SPFA MASTER TEMPLATE ══════════════════════════════════
+// Input : adj[u] = list of {v, w}, source src
+// Output: dist[v] = shortest dist from src (1e9 = unreachable)
+// Return: true  = no negative cycle reachable from src
+//         false = negative cycle detected (nth-layer proof)
+// Complexity: avg O(km) k≈2, worst O(nm) same as BF
+// Template slots:
+//   EDGE_SET  — adj[][] (given, or constructed from constraints)
+//   SCHEDULE  — layered queue  (BF uses fixed round loop instead)
+//   STOP_COND — queue empty before nth layer
+//   QUERY     — dist[] values or cycle detection boolean
+// ════════════════════════════════════════════════════════════
+
+bool sp(const vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;&amp; adj, int src) {
+    int n = (int)adj.size();               // infer n from graph
+
+    vector&lt;int&gt; dist(n, 1e9);
+    dist[src] = 0;                         // same base case as BF
+
+    queue&lt;int&gt; q;
+    q.push(src);
+    vector&lt;bool&gt; inQueue(n);
+    inQueue[src] = true;
+
+    // SCHEDULE: layered queue — each outer iteration = one BF round
+    while (q.size() &amp;&amp; n--) {             // STOP_COND: n-- counts rounds
+        int s = q.size();                  // freeze current layer size
+        while (s--) {                      // drain entire current layer
+            int u = q.front();
+            q.pop();
+            inQueue[u] = false;
+            for (auto [v, w] : adj[u]) {
+                int d = dist[u] + w;
+                if (dist[v] &gt; d) {         // same relaxation rule as BF
+                    dist[v] = d;
+                    if (!inQueue[v]) {
+                        inQueue[v] = true;
+                        q.push(v);         // push to NEXT layer
+                    }
+                    if (!n) return false;  // QUERY: nth-layer = neg cycle
+                }
+            }
+        }
+    }
+    return true;   // STOP_COND met: queue empty before nth layer
+}</code></pre>
+
+  <!-- ── COMPLEXITY ─────────────────────────────────────── -->
+  <h3>Complexity</h3>
+  <div class="grid2">
+    <div>
+      <div class="formula" style="font-size:22px">Avg: O(k · m),  k ≈ 2</div>
+      <p>On random or natural graphs, each vertex enters the queue on average about 2 times — roughly O(2m) = O(m). The layered schedule skips all edges whose source hasn't improved, compressing many BF rounds into zero-cost passes.</p>
+    </div>
+    <div>
+      <div class="formula" style="font-size:22px">Worst: O(n · m)  — same as BF</div>
+      <p>Adversarially constructed graphs can force every vertex into the queue O(n) times. This matches BF's worst case exactly. Anti-SPFA hacks on competitive judges exploit this. No theoretical improvement over BF in the worst case.</p>
+    </div>
+  </div>
+
+  <!-- ── WHEN TO USE ────────────────────────────────────── -->
+  <h3>When to use this template</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Situation</th><th>Choice</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Default — no extra information</td><td class="cy">BF (§9)</td><td>Safe worst-case guarantee. SPFA is an optimisation, not the default.</td></tr>
+        <tr><td>BF causes TLE; graph is sparse / random</td><td class="cy">SPFA (this template)</td><td>Average O(km) dramatically faster on natural inputs.</td></tr>
+        <tr><td>Judge known to have anti-SPFA hacks</td><td class="cy">BF (§9)</td><td>Adversarial inputs trigger SPFA's O(nm) worst case.</td></tr>
+        <tr><td>n·m &gt; 10⁸</td><td class="cr">Neither — reconsider</td><td>Both templates are O(nm) worst case.</td></tr>
+        <tr><td>Negative cycle detection needed</td><td>Both</td><td>BF: n-th iteration. SPFA: <code>if (!n) return false</code> in nth layer.</td></tr>
+        <tr><td>Graph is a DAG</td><td class="cr">Neither</td><td>Use topological sort + one pass: O(n+m).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── READING AS BF ──────────────────────────────────── -->
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>Reading this template as BF (§9):</strong> <code>while (q.size() &amp;&amp; n--)</code> = BF's outer round loop. <code>int s = q.size(); while (s--)</code> = BF's inner edge scan, restricted to active vertices only. <code>if (!n) return false</code> = BF's n-th iteration negative-cycle check. Every structural element of BF has a direct counterpart here.</p>
+  </div>
+
+  <div class="ib ib-blue"><i>📌</i>
+    <p><strong>Why <code>if (!n) return false</code> lives inside the relaxation block:</strong> When <code>n--</code> decrements n to 0, the outer <code>while</code> condition will fail on its next evaluation — but a relaxation could fire <em>before</em> that evaluation completes the current layer. The guard catches this immediately, returning false the instant the first nth-layer improvement is detected rather than waiting for the outer loop to exit.</p>
+  </div>
+
+  <!-- ── DIFF ───────────────────────────────────────────── -->
+  <details>
+    <summary>SPFA vs BF: surgical diff of the SCHEDULE slot <span class="hint">click to expand</span></summary>
+    <div class="detailsBody">
+      <div class="diff-grid">
+        <div>
+          <div class="diff-lbl">BF master template (§9) — SCHEDULE slot</div>
+<pre><code style="font-size:15px">for (int iter = 0; iter &lt; n-1; iter++) {
+    bool changed = false;
+    for (const auto&amp; e : edges) {
+        if (dist[e.u] &lt; INF &amp;&amp;
+            dist[e.u]+e.w &lt; dist[e.v]) {
+            dist[e.v] = dist[e.u]+e.w;
+            changed = true;
+        }
+    }
+    if (!changed) break;
+}</code></pre>
+        </div>
+        <div>
+          <div class="diff-lbl">SPFA replacement — layered queue SCHEDULE</div>
+<pre><code style="font-size:15px"><span class="diff-add">while (q.size() &amp;&amp; n--) {  // outer = round counter</span>
+<span class="diff-add">    int s = q.size();       // layer size</span>
+<span class="diff-add">    while (s--) {           // drain layer</span>
+<span class="diff-add">        int u = q.front(); q.pop();</span>
+<span class="diff-add">        inQueue[u] = false;</span>
+        for (auto [v, w] : adj[u]) {
+            int d = dist[u] + w;
+            if (dist[v] &gt; d) {
+                dist[v] = d;
+<span class="diff-add">                if (!inQueue[v]) {</span>
+<span class="diff-add">                    inQueue[v] = true;</span>
+<span class="diff-add">                    q.push(v);  // next layer</span>
+<span class="diff-add">                }</span>
+<span class="diff-add">                if (!n) return false; // nth layer</span>
+            }
+        }
+<span class="diff-add">    }</span>
+<span class="diff-add">}</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<section class="card" id="s15">
+  <h2>15. SPFA Complexity — When to Switch from BF <span class="layer-badge lb-sched">SCHEDULING VARIANT</span></h2>
+  <div class="grid2">
+    <div>
+      <h3>Average case (practice)</h3>
+      <div class="formula">O(k · m), k ≈ 2</div>
+      <p>On random or natural graphs, each vertex enters the queue on average about 2 times — roughly O(2m) = O(m). Dramatically faster than BF's O(nm) on typical contest inputs.</p>
+    </div>
+    <div>
+      <h3>Worst case (theory)</h3>
+      <div class="formula">O(n · m) — same as BF</div>
+      <p>Adversarially constructed graphs can force the queue to process every vertex O(n) times. Anti-SPFA hacks exist on competitive judges targeting this. SPFA provides no worst-case improvement over BF.</p>
+    </div>
+  </div>
+  <div class="tw" style="margin-top:14px">
+    <table>
+      <thead><tr><th>Condition</th><th>Recommendation</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Default choice</td><td class="cy">BF — safe default</td><td>BF is always correct. SPFA is an optimization.</td></tr>
+        <tr><td>Judge has anti-SPFA hacks</td><td class="cy">BF</td><td>SPFA worst-case O(nm) can be triggered intentionally</td></tr>
+        <tr><td>TLE with BF on sparse graph</td><td class="cy">Switch to SPFA</td><td>Average O(km) much faster for sparse/random inputs</td></tr>
+        <tr><td>n·m &gt; 10⁸</td><td class="cr">Neither — reconsider</td><td>Both BF and SPFA are O(nm) worst case</td></tr>
+        <tr><td>Negative cycle detection needed</td><td>Both work</td><td>BF: n-th pass. SPFA: nth-layer check (<code>if (!n) return false</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ib ib-orange"><i>⚠</i>
+    <p><strong>Contest rule of thumb:</strong> Start with BF. If TLE, switch to SPFA. If still TLE and the graph is sparse, check whether the problem has a hidden non-negative weight guarantee — if so, Dijkstra applies.</p>
+  </div>
+</section>
+
+<section class="card" id="sdecision">
+  <h2>Which Algorithm Should I Use? <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p>Answer four questions in order. The decision tree routes you to the correct choice — there is exactly one right answer per graph class.</p>
+  <div style="overflow-x:auto;margin:18px 0">
+  <svg viewBox="0 0 860 440" style="width:100%;max-width:860px;display:block;border-radius:14px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.04),rgba(0,0,0,0));padding:8px">
+    <style>.dt-q{font-weight:900;font-size:14px;fill:var(--text,#0b1220);font-family:system-ui,sans-serif}.dt-yes{font-weight:800;font-size:12px;fill:#0f766e;font-family:system-ui,sans-serif}.dt-no{font-weight:800;font-size:12px;fill:#b45309;font-family:system-ui,sans-serif}.dt-alg{font-weight:950;font-size:13px;fill:white;font-family:system-ui,sans-serif}.dt-line-y{stroke:#0f766e;stroke-width:2;fill:none;stroke-dasharray:4,2}.dt-line-n{stroke:#b45309;stroke-width:2;fill:none;stroke-dasharray:4,2}</style>
+    <rect x="330" y="10" width="200" height="46" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="2"/>
+    <text x="430" y="29" text-anchor="middle" class="dt-q">Is the graph a DAG</text>
+    <text x="430" y="47" text-anchor="middle" class="dt-q">(guaranteed acyclic)?</text>
+    <line x1="430" y1="56" x2="430" y2="78" class="dt-line-n"/><text x="440" y="74" class="dt-no">NO</text>
+    <line x1="430" y1="56" x2="720" y2="56" class="dt-line-y"/><text x="570" y="50" class="dt-yes">YES</text>
+    <line x1="720" y1="56" x2="720" y2="88" class="dt-line-y"/>
+    <rect x="645" y="88" width="150" height="34" rx="8" fill="#0f766e"/>
+    <text x="720" y="109" text-anchor="middle" class="dt-alg">DAG Shortest Path</text>
+    <rect x="305" y="78" width="250" height="46" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="2"/>
+    <text x="430" y="97" text-anchor="middle" class="dt-q">All edge weights</text>
+    <text x="430" y="115" text-anchor="middle" class="dt-q">≥ 0?</text>
+    <line x1="555" y1="101" x2="640" y2="101" class="dt-line-y"/><text x="578" y="95" class="dt-yes">YES</text>
+    <line x1="640" y1="101" x2="640" y2="140" class="dt-line-y"/>
+    <rect x="565" y="140" width="150" height="46" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="2"/>
+    <text x="640" y="159" text-anchor="middle" class="dt-q">Unweighted</text>
+    <text x="640" y="177" text-anchor="middle" class="dt-q">(unit weights)?</text>
+    <line x1="715" y1="163" x2="770" y2="163" class="dt-line-y"/><text x="730" y="157" class="dt-yes">YES</text>
+    <rect x="772" y="147" width="75" height="34" rx="8" fill="#1d4ed8"/>
+    <text x="809" y="168" text-anchor="middle" class="dt-alg">BFS</text>
+    <line x1="640" y1="186" x2="640" y2="220" class="dt-line-n"/><text x="648" y="215" class="dt-no">NO</text>
+    <rect x="575" y="220" width="130" height="34" rx="8" fill="#1e40af"/>
+    <text x="640" y="241" text-anchor="middle" class="dt-alg">Dijkstra</text>
+    <line x1="430" y1="124" x2="430" y2="168" class="dt-line-n"/><text x="440" y="160" class="dt-no">NO (neg edges)</text>
+    <rect x="285" y="168" width="290" height="46" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="2"/>
+    <text x="430" y="187" text-anchor="middle" class="dt-q">Need all-pairs</text>
+    <text x="430" y="205" text-anchor="middle" class="dt-q">shortest paths?</text>
+    <line x1="285" y1="191" x2="170" y2="191" class="dt-line-y"/><text x="207" y="185" class="dt-yes">YES</text>
+    <line x1="170" y1="191" x2="170" y2="228" class="dt-line-y"/>
+    <rect x="95" y="228" width="150" height="34" rx="8" fill="#7c3aed"/>
+    <text x="170" y="249" text-anchor="middle" class="dt-alg">Floyd-Warshall</text>
+    <line x1="430" y1="214" x2="430" y2="260" class="dt-line-n"/><text x="440" y="253" class="dt-no">NO (SSSP)</text>
+    <rect x="255" y="260" width="350" height="46" rx="10" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="2"/>
+    <text x="430" y="279" text-anchor="middle" class="dt-q">Worst-case O(nm) guarantee needed,</text>
+    <text x="430" y="297" text-anchor="middle" class="dt-q">or judge has anti-SPFA hacks?</text>
+    <line x1="255" y1="283" x2="155" y2="283" class="dt-line-y"/><text x="185" y="277" class="dt-yes">YES</text>
+    <line x1="155" y1="283" x2="155" y2="335" class="dt-line-y"/>
+    <rect x="75" y="335" width="160" height="34" rx="8" fill="#0f766e"/>
+    <text x="155" y="356" text-anchor="middle" class="dt-alg">Bellman-Ford (§9)</text>
+    <line x1="430" y1="306" x2="430" y2="355" class="dt-line-n"/><text x="440" y="345" class="dt-no">NO (avg-case ok)</text>
+    <rect x="350" y="355" width="160" height="34" rx="8" fill="#0f766e" fill-opacity=".7"/>
+    <text x="430" y="376" text-anchor="middle" class="dt-alg">SPFA (§14)</text>
+    <text x="430" y="430" text-anchor="middle" font-size="12" fill="var(--muted,#334155)" font-family="system-ui" font-weight="700">BF and SPFA are the only decision where performance—not correctness—drives the choice.</text>
+  </svg>
+  </div>
+  <div class="decision-grid">
+    <div class="dec-card"><div class="dc-head">BFS</div><div class="dc-cond">Unweighted graphs only</div><p>Unit edge weights, minimum-hop paths. Cannot handle weighted edges.</p><p style="color:var(--good);font-weight:900">✓ O(n+m) — optimal</p></div>
+    <div class="dec-card"><div class="dc-head">Dijkstra</div><div class="dc-cond">All weights ≥ 0</div><p>Greedy locking is valid. Fastest SSSP when monotonicity holds.</p><p style="color:var(--good);font-weight:900">✓ O((n+m)log n)</p></div>
+    <div class="dec-card"><div class="dc-head">Bellman-Ford</div><div class="dc-cond">Negative edges / worst-case needed</div><p>Safe default for any negative-weight SSSP. Exhaustive fixed-order rounds.</p><p style="color:var(--warn);font-weight:900">⚠ O(nm) — always correct</p></div>
+    <div class="dec-card"><div class="dc-head">SPFA</div><div class="dc-cond">Negative edges + avg-case speed</div><p>BF with layered-round queue scheduling. First fallback if BF causes TLE.</p><p style="color:var(--warn);font-weight:900">⚠ Avg O(km), worst O(nm)</p></div>
+    <div class="dec-card"><div class="dc-head">Floyd-Warshall</div><div class="dc-cond">All-pairs, n ≤ 500</div><p>O(n³) — only feasible for small dense graphs.</p><p style="color:var(--bad);font-weight:900">✗ O(n³) — infeasible large n</p></div>
+    <div class="dec-card"><div class="dc-head">DAG Shortest Path</div><div class="dc-cond">Guaranteed acyclic graph</div><p>Topological sort + one relaxation pass. Any edge weights. Linear time.</p><p style="color:var(--good);font-weight:900">✓ O(n+m) — linear</p></div>
+  </div>
+</section>
+
+<section class="card" id="scomptable">
+  <h2>Full Algorithm Comparison Table <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Algorithm</th><th>Edge weights</th><th>Neg-cycle?</th><th>All-pairs?</th><th>Time</th><th>Space</th><th>Scheduling</th><th>Best use case</th></tr></thead>
+      <tbody>
+        <tr><td><strong>BFS</strong></td><td>Unit only</td><td class="cr">✗</td><td class="cr">✗</td><td>O(n+m)</td><td>O(n)</td><td>Layer-by-layer</td><td>Unweighted SSSP</td></tr>
+        <tr><td><strong>Dijkstra</strong></td><td>≥ 0 only</td><td class="cr">✗</td><td class="cr">✗</td><td>O((n+m)log n)</td><td>O(n+m)</td><td>Greedy / priority queue</td><td>Nonneg SSSP</td></tr>
+        <tr style="background:rgba(37,99,235,.05)"><td><strong>Bellman-Ford</strong></td><td>Any real</td><td class="cy">✓</td><td class="cr">✗</td><td>O(n·m)</td><td>O(n+m)</td><td>Exhaustive fixed-order rounds</td><td>Neg-edge SSSP + cycle detect</td></tr>
+        <tr style="background:rgba(37,99,235,.05)"><td><strong>SPFA</strong></td><td>Any real</td><td class="cy">✓</td><td class="cr">✗</td><td>Avg O(km)</td><td>O(n+m)</td><td>Layered queue rounds</td><td>Neg-edge SSSP, sparse/random</td></tr>
+        <tr><td><strong>Floyd-Warshall</strong></td><td>Any real</td><td class="cy">✓ (diagonal)</td><td class="cy">✓</td><td>O(n³)</td><td>O(n²)</td><td>DP over vertex triples</td><td>All-pairs, dense, n ≤ 500</td></tr>
+        <tr><td><strong>DAG Shortest</strong></td><td>Any real</td><td>N/A</td><td class="cr">✗</td><td>O(n+m)</td><td>O(n+m)</td><td>Topological order</td><td>Any-weight DAG SSSP</td></tr>
+        <tr><td><strong>Johnson</strong></td><td>Any (no neg cycle)</td><td class="cy">✓</td><td class="cy">✓</td><td>O(nm+n²log n)</td><td>O(n+m)</td><td>BF reweighting + n×Dijkstra</td><td>All-pairs, sparse, neg edges</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:10px;font-size:17px;font-weight:700;color:var(--muted)">BF and SPFA share rows because they are the same algorithm with different scheduling. k ≈ 2 for SPFA average case.</p>
+</section>
+
+<section class="card" id="s17">
+  <h2>17. Difference Constraints <span class="layer-badge lb-model">GRAPH CONSTRUCTION</span></h2>
+  <p>This variant is derived from the master template in §9 by changing the EDGE_SET slot only. The BF loop, relaxation rule, and negative-cycle detection are completely unchanged.</p>
+
+  <h3>Interactive Demo — Inequality to Edge</h3>
+  <p>Every constraint x_j − x_i ≤ c becomes edge i → j with weight c. Add an infeasible constraint to see how a negative cycle appears.</p>
+  <div class="dcdemo">
+    <div><div style="font-weight:950;font-size:20px;margin-bottom:8px">Inequalities</div><div id="dcIneqs"></div></div>
+    <div><div style="font-weight:950;font-size:20px;margin-bottom:8px">Constructed edges</div><div id="dcEdges"></div></div>
+  </div>
+  <button class="miniBtn" id="dcBtn" style="margin-top:8px">➕ Add infeasible constraint</button>
+  <div id="dcWarn" style="margin-top:8px"></div>
+
+  <div class="app-block" style="margin-top:32px">
+    <p><strong>Context → Mapping:</strong> Given a system of linear inequalities x_j − x_i ≤ c_ij, determine whether a simultaneous solution exists and find one if so. Model each variable as a vertex; each inequality x_j − x_i ≤ c_ij becomes a directed edge i → j with weight c_ij. Add a super-source vertex s with 0-weight edges to every variable vertex (ensures all variables are reachable and establishes 0 as the reference baseline).</p>
+    <p><strong>What stays the same:</strong> The BF master template runs without modification. It has no idea it is "solving inequalities" — it just finds shortest paths on the constructed graph.</p>
+    <p><strong>What changes:</strong> The EDGE_SET is constructed from the inequality system, not given directly. A super-source node (index n) is added with 0-weight edges to all other vertices.</p>
+    <p><strong>Why correctness holds:</strong> Shortest-path distances always satisfy the triangle inequality: dist[j] ≤ dist[i] + w(i→j). This translates directly to x_j − x_i ≤ c_ij. If a negative cycle exists in the constructed graph, BF's n-th iteration fires, signalling that no simultaneous solution exists.</p>
+    <p><strong>Code delta from §9 master template:</strong></p>
+<pre><code>// CHANGED: EDGE_SET — construct from inequalities
+// For each inequality x_j - x_i &lt;= c:
++ edges.push_back({i, j, (long long)c});
+
+// CHANGED: add super-source (index n)
++ for (int i = 0; i &lt; n; i++)
++     edges.push_back({n, i, 0LL});
+
+// UNCHANGED: run BF from super-source
+bool feasible = bellmanFord(n + 1, edges, n, dist);
+// feasible == true  → dist[i] is a valid assignment for x_i
+// feasible == false → system is infeasible (negative cycle)</code></pre>
+    <p><strong>Common pitfall:</strong> Forgetting the super-source. Without it, some variables have no path from the source, leaving them at INF. Also: x_j − x_i ≤ c always becomes edge i → j (never j → i).</p>
+    <p><strong>Practice:</strong> <a href="https://vjudge.net/problem/POJ-1201" target="_blank">POJ 1201 — Intervals</a> — canonical difference-constraints modeling problem.</p>
+  </div>
+</section>
+
+<section class="card" id="s20">
+  <h2>20. Wormholes (UVA 558) <span class="layer-badge lb-model">GRAPH CONSTRUCTION</span></h2>
+  <div class="app-block">
+    <p><strong>Context → Mapping:</strong> Planets are vertices; wormholes are directed edges (negative weight = travels backward in time). The question "can you return to the past?" asks whether any negative-weight cycle is reachable from any starting point. Add a super-source with 0-weight edges to all vertices and run BF from it.</p>
+    <p><strong>What stays the same:</strong> Standard BF negative-cycle detection (n-th iteration). Completely unchanged from §9.</p>
+    <p><strong>What changes:</strong> A super-source is added so all vertices are reachable. The dist[] output is discarded — only the boolean return value matters.</p>
+    <p><strong>Why correctness holds:</strong> The super-source makes every vertex reachable from the BF starting point. Any negative cycle in the original graph is reachable from the super-source. The n-th iteration fires and BF returns false.</p>
+    <p><strong>Code delta from §9 master template:</strong></p>
+<pre><code>// CHANGED: EDGE_SET — add super-source
++ for (int i = 0; i &lt; n; i++)
++     edges.push_back({n, i, 0LL});
+
+// CHANGED: QUERY — only boolean matters, dist[] discarded
+bool hasNegCycle = !bellmanFord(n + 1, edges, n, dist);
++ cout &lt;&lt; (hasNegCycle ? "possible\n" : "not possible\n");</code></pre>
+    <p><strong>Common pitfall:</strong> Running BF from only one fixed source (e.g., vertex 0). A negative cycle in a disconnected component unreachable from 0 will be missed. The super-source trick is essential for global detection.</p>
+    <p><strong>Practice:</strong> <a href="https://onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;page=show_problem&amp;problem=499" target="_blank">UVA 558 — Wormhole</a> → pure global negative-cycle detection; add a super-source and return the boolean only.</p>
+  </div>
+</section>
+
+<section class="card" id="s21">
+  <h2>21. King Problem (UVA 515) <span class="layer-badge lb-model">GRAPH CONSTRUCTION</span></h2>
+  <div class="app-block">
+    <p><strong>Context → Mapping:</strong> Constraints "person A is between c and d years older than B" (c ≤ x_A − x_B ≤ d) decompose into two difference constraints: x_A − x_B ≤ d (edge B → A, weight d) and x_B − x_A ≤ −c (edge A → B, weight −c). Check feasibility after each new constraint is added.</p>
+    <p><strong>What stays the same:</strong> Difference-constraint graph construction from §17, BF feasibility check, super-source technique. Identical to §17 structurally.</p>
+    <p><strong>What changes:</strong> Each constraint produces two directed edges instead of one. Constraints are added incrementally; BF is re-run after each addition.</p>
+    <p><strong>Why correctness holds:</strong> Both inequality directions must be enforced simultaneously. Adding only one edge enforces the upper bound but not the lower bound — the reverse edge enforces the lower bound as an upper bound on the opposite difference.</p>
+    <p><strong>Code delta from §17 difference-constraints template:</strong></p>
+<pre><code>// CHANGED: EDGE_SET — two edges per bounded-difference constraint
+// For c &lt;= x_A - x_B &lt;= d:
++ edges.push_back({B, A, (long long)d});    // x_A - x_B &lt;= d
++ edges.push_back({A, B, (long long)(-c)}); // x_B - x_A &lt;= -c
+// UNCHANGED: super-source, BF, feasibility check</code></pre>
+    <p><strong>Common pitfall:</strong> Adding only one edge per constraint. The lower bound is enforced by the reverse edge — missing it allows infeasible assignments through.</p>
+    <p><strong>Practice:</strong> <a href="https://onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;page=show_problem&amp;problem=456" target="_blank">UVA 515 — King</a> → incremental bounded-difference constraints; add two edges per constraint and check feasibility after each addition.</p>
+  </div>
+</section>
+
+<section class="card" id="s22">
+  <h2>22. Arbitrage &amp; Scheduling <span class="layer-badge lb-model">GRAPH CONSTRUCTION</span></h2>
+  <div class="grid2" style="overflow:visible">
+    <div class="app-block" style="margin-top:28px">
+      <p><strong>Context → Mapping (Arbitrage):</strong> Currency exchange rates are multiplicative. Replace each weight with −log(rate). A profitable cycle (product of rates &gt; 1) becomes a negative-weight cycle (sum of −log values &lt; 0), detectable by BF's n-th iteration.</p>
+      <p><strong>What stays the same:</strong> BF negative-cycle detection with super-source (§20 technique).</p>
+      <p><strong>What changes:</strong> Edge weights are −log(exchange_rate). Use floating-point (double) arithmetic.</p>
+      <p><strong>Why correctness holds:</strong> log(r₁·r₂·r₃) = log(r₁)+log(r₂)+log(r₃). Negating: product &gt; 1 ↔ sum of (−log) &lt; 0.</p>
+      <p><strong>Code delta from §20 master template:</strong></p>
+<pre><code>// CHANGED: EDGE_SET — log-transform weights
++ edges.push_back({u, v, -log(rate)});
+// Everything else: super-source + BF neg-cycle detection unchanged</code></pre>
+      <p><strong>Common pitfall:</strong> Using integer arithmetic on logarithms. Always use <code>double</code> and add an epsilon guard on the relaxation check.</p>
+      <p><strong>Practice:</strong> <a href="https://vjudge.net/problem/UVA-104" target="_blank">UVA 104 — Arbitrage</a> — direct log-transform + cycle-detection match for arbitrage.</p>
+    </div>
+    <div class="app-block" style="margin-top:28px">
+      <p><strong>Context → Mapping (Scheduling):</strong> Constraints "task B starts at least gap after A, at most deadline after A" become two difference constraints. Interpret dist[i] as the start time for task i.</p>
+      <p><strong>What stays the same:</strong> Difference-constraint graph construction, BF feasibility check, two-edges-per-bound rule from §21.</p>
+      <p><strong>What changes:</strong> Interpretation: dist[i] = start time for task i. Constraints express scheduling windows rather than age differences.</p>
+      <p><strong>Why correctness holds:</strong> BF output satisfies all triangle inequalities, which directly encode all scheduling constraints.</p>
+      <p><strong>Code delta from §21 King template:</strong></p>
+<pre><code>// CHANGED: EDGE_SET — scheduling constraint windows
+// "B starts at least gap after A": x_B - x_A &gt;= gap
++ edges.push_back({A, B, (long long)(-gap)});
+// "B starts at most deadline after A": x_B - x_A &lt;= deadline
++ edges.push_back({A, B, (long long)deadline});
+
+// CHANGED: QUERY — interpret dist[] as start times
+if (bellmanFord(n+1, edges, n, dist))
++     for (int i = 0; i &lt; n; i++) start_time[i] = dist[i];</code></pre>
+      <p><strong>Common pitfall:</strong> Mixing up directions when translating constraints. Always: x_j − x_i ≤ c becomes edge i → j with weight c.</p>
+      <p><em>For scheduling, the same technique applies — see §17 for the difference-constraints template and practice problems.</em></p>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="s23">
+  <h2>23. Unified View — Two Query Types <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <p>Every application in this tutorial collapses to one of two queries on the constructed graph: <strong>Query A</strong> — "what is dist[v]?" (shortest path), or <strong>Query B</strong> — "does a relaxation fire after all rounds?" (negative cycle). Query B is a special case of Query A: it asks "can any distance still decrease?" which is only possible via a negative cycle.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Application</th><th>Graph construction</th><th>BF output used as</th><th>Query</th></tr></thead>
+      <tbody>
+        <tr><td>Pure SSSP</td><td>Given directly</td><td>dist[v] = shortest distance</td><td class="cy">A</td></tr>
+        <tr><td>Neg-cycle detection</td><td>Given + super-source</td><td>Return value only</td><td class="cb">B</td></tr>
+        <tr><td>Difference constraints</td><td>Inequalities → edges + super-source</td><td>dist[i] = valid assignment for x_i</td><td class="cy">A + B</td></tr>
+        <tr><td>Wormholes (§20)</td><td>Given + super-source</td><td>Return value only (dist[] discarded)</td><td class="cb">B</td></tr>
+        <tr><td>King problem (§21)</td><td>Bounded diffs → 2 edges + super-source</td><td>Return value only</td><td class="cb">B</td></tr>
+        <tr><td>Arbitrage (§22)</td><td>−log(rate) edges + super-source</td><td>Return value only</td><td class="cb">B</td></tr>
+        <tr><td>Scheduling (§22)</td><td>Constraint bounds → directed edges</td><td>dist[i] = start time for task i</td><td class="cy">A + B</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ib ib-green"><i>✓</i>
+    <p><strong>The key insight:</strong> The algorithm never changes. The only question in any new problem is: can I model the constraints as directed weighted edges such that BF's output answers my question? If yes, apply the template. The creativity is entirely in graph construction.</p>
+  </div>
+</section>
+
+<section class="card" id="smental">
+  <h2>Final Mental Model <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="formula master" style="font-size:24px;margin-bottom:18px">shortest path algorithms = relaxation rule + scheduling strategy + graph construction</div>
+  <p>Six statements. If you can recall and explain all six, you have mastered this family.</p>
+  <div class="mental-model">
+    <h3 style="margin:0 0 4px;color:var(--good)">The Six Things You Must Know</h3>
+    <div class="mm-row">
+      <div class="mm-item">
+        <div class="mm-num">①</div>
+        <div class="mm-title">The creative work is graph construction</div>
+        <div class="mm-desc">BF and SPFA are commodities. The question in any new problem is always: can I model the constraints as directed weighted edges such that BF's output answers my question? If yes, apply the template. The algorithm itself never changes.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">②</div>
+        <div class="mm-title">One relaxation rule governs everything</div>
+        <div class="mm-desc"><code>dist[v] = min(dist[v], dist[u]+w)</code> is the only operation this family performs. Every algorithm is a scheduling policy for deciding which (u,v,w) to try and when. The operation itself is invariant.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">③</div>
+        <div class="mm-title">BF = exhaustive schedule, n−1 rounds</div>
+        <div class="mm-desc">Every edge, fixed order, n−1 times. Zero scheduling intelligence — but the frontier propagation invariant guarantees correctness. After k rounds, all ≤k-edge shortest paths are correct.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">④</div>
+        <div class="mm-title">SPFA = layered-round queue scheduling</div>
+        <div class="mm-desc">Replace BF's outer loop with <code>while (q.size() &amp;&amp; n--)</code> + inner layer drain. Each outer iteration = one compressed BF round. Only active vertices processed. Same relaxation, same nth-round negative-cycle proof.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑤</div>
+        <div class="mm-title">Negative cycle = "distances decrease forever"</div>
+        <div class="mm-desc">If any relaxation fires in the nth round/layer, some improving walk uses ≥n edges — implies a repeated vertex — implies a cycle — and because the distance improved, the cycle is negative. Same proof for BF and SPFA.</div>
+      </div>
+      <div class="mm-item">
+        <div class="mm-num">⑥</div>
+        <div class="mm-title">Difference constraints = triangle inequality as solution</div>
+        <div class="mm-desc">x_j − x_i ≤ c becomes edge i→j weight c. Add super-source. BF outputs shortest distances that satisfy all triangle inequalities — exactly your constraints. Negative cycle = infeasible system.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="summary">
+  <h2>Knowledge Summary <span class="layer-badge lb-fw">FRAMEWORK</span></h2>
+  <div class="ks-grid">
+    <div class="ks-block">
+      <h4>✓ Core Concepts Checklist</h4>
+      <ul class="checklist">
+        <li>Relaxation: dist[v] = min(dist[v], dist[u]+w)</li>
+        <li>Distance invariant: dist[v] never overestimates</li>
+        <li>Frontier propagation: after k rounds, all ≤k-edge paths correct</li>
+        <li>n−1 iterations tight bound (adversarial chain graph)</li>
+        <li>n-th round fires = negative cycle (BF theorem)</li>
+        <li>SPFA = BF with layered queue rounds (SCHEDULE slot only)</li>
+        <li>SPFA nth-layer relaxation = negative cycle (same proof)</li>
+        <li>Difference constraints: inequality x_j−x_i≤c → edge i→j weight c</li>
+        <li>Super-source trick for global cycle detection</li>
+        <li>Log-transform for multiplicative (arbitrage) problems</li>
+        <li>Two edges per bounded-difference constraint (King)</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>⚠ Common Pitfalls (section reference)</h4>
+      <ul class="mistake">
+        <li>Using int instead of long long for large weights (§9)</li>
+        <li>Not guarding with dist[e.u] &lt; INF before relaxation (§9)</li>
+        <li>Running BF from one fixed source for global cycle detection (§7)</li>
+        <li>Forgetting the super-source in difference constraints (§17)</li>
+        <li>Flipping edge direction in inequality → edge conversion (§17)</li>
+        <li>Adding one edge instead of two for bounded-difference (§21)</li>
+        <li>Assuming SPFA has better worst-case than BF (§15)</li>
+        <li>Breaking SPFA's layer structure and still using the nth-round proof (§12)</li>
+        <li>Floating-point errors in arbitrage/log-transform (§22)</li>
+        <li>Using SPFA as default — always start with BF (§15)</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>🗺 Template Derivation Map</h4>
+      <div class="tw"><table>
+        <thead><tr><th>Base (§9)</th><th>Change</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>BF</td><td>None</td><td>SSSP + cycle detection</td></tr>
+          <tr><td>BF</td><td>SCHEDULE → layered queue</td><td>SPFA (§14)</td></tr>
+          <tr><td>BF</td><td>EDGE_SET + super-source</td><td>Global cycle detection (§20)</td></tr>
+          <tr><td>BF</td><td>EDGE_SET from inequalities</td><td>Diff. constraints (§17)</td></tr>
+          <tr><td>BF</td><td>2 edges/bound + super-source</td><td>King problem (§21)</td></tr>
+          <tr><td>BF</td><td>Weights → −log(rate)</td><td>Arbitrage (§22)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="ks-block">
+      <h4>🔢 Complexity Quick Reference</h4>
+      <ul class="checklist">
+        <li>BF: O(nm) time, O(n+m) space — always safe</li>
+        <li>SPFA avg: O(km), k≈2 — fast on sparse/random</li>
+        <li>SPFA worst: O(nm) — adversarial inputs trigger this</li>
+        <li>Both detect neg cycles in O(nm) worst case</li>
+        <li>Diff constraints: O(nm) via BF on n+1 vertices</li>
+        <li>Dijkstra: O((n+m)log n) — nonneg weights only</li>
+        <li>Floyd-Warshall: O(n³) — all-pairs, small n only</li>
+        <li>Avoid when n·m &gt; 10⁸ (both BF and SPFA)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="rvc">
+  <h2>Runtime Validation Checklist</h2>
+  <div class="grid2">
+    <div class="ks-block">
+      <h4>Shell &amp; Sidebar</h4>
+      <ul class="checklist">
+        <li>Sidebar opens/closes correctly</li>
+        <li>Hamburger button works and animates correctly</li>
+        <li>aria-expanded stays synchronized with sidebar state</li>
+        <li>Overlay appears only on narrow layouts when sidebar is open</li>
+        <li>Narrow layouts start with sidebar closed by default</li>
+        <li>Desktop starts with sidebar open, no blocking overlay</li>
+        <li>Escape closes sidebar on narrow layouts</li>
+        <li>Active nav highlighting updates while scrolling</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>Theme System</h4>
+      <ul class="checklist">
+        <li>Theme persists via localStorage across reloads</li>
+        <li>System-dark fallback works when no saved theme exists</li>
+        <li>Theme switch supports click, Enter, and Space</li>
+        <li>aria-checked is correct on first load</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>Interactivity</h4>
+      <ul class="checklist">
+        <li>All interactive tracers still function (BF, SPFA, DC, relaxation, DP, proof, neg-cycle, propagation)</li>
+        <li>No broken JS handlers remain</li>
+        <li>No duplicate IDs introduced</li>
+      </ul>
+    </div>
+    <div class="ks-block">
+      <h4>Content &amp; Integrity</h4>
+      <ul class="checklist">
+        <li>Visible emails are plain direct mailto links</li>
+        <li>Footer branding is normalized (Coach Academy / Prepared by The Coach (Dr. Wahab) &amp; Ashraf)</li>
+        <li>File is not truncated</li>
+        <li>All tags are closed</li>
+        <li>Scripts are syntactically valid</li>
+        <li>No Cloudflare email obfuscation artifacts remain</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="page-footer">
+  <div class="footer-brand">Coach Academy</div>
+  <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div class="footer-emails">
+    <span class="footer-email">📧 <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></span>
+    <span class="footer-email">📧 <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+  </div>
+  <div class="footer-copy">© 2025 Coach Academy — All rights reserved.</div>
+</div>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR — strongest family standard
+═══════════════════════════════════════════════════════ */
+(function(){
+  var sidebar  = document.getElementById('sidebar');
+  var overlay  = document.getElementById('sidebarOverlay');
+  var toggle   = document.getElementById('sidebarToggle');
+  var body     = document.body;
+  var NARROW   = 1300;
+
+  function isNarrow(){ return window.innerWidth < NARROW; }
+
+  function syncSidebar(open){
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+      body.classList.remove('sb-closed');
+      body.classList.add('sb-open');
+      if(isNarrow()) overlay.classList.add('show');
+      else overlay.classList.remove('show');
+    } else {
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      body.classList.add('sb-closed');
+      body.classList.remove('sb-open');
+      overlay.classList.remove('show');
+    }
+  }
+  function isOpen(){ return !sidebar.classList.contains('collapsed'); }
+  function toggleSidebar(){ syncSidebar(!isOpen()); }
+  function initState(){ syncSidebar(!isNarrow()); }
+
+  toggle.addEventListener('click', toggleSidebar);
+  overlay.addEventListener('click', function(){ syncSidebar(false); });
+  window.addEventListener('resize', initState);
+
+  /* Escape key closes sidebar on narrow */
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape' && isNarrow() && isOpen()) syncSidebar(false);
+  });
+
+  initState();
+
+  /* Nav click → highlight + close on narrow */
+  document.querySelectorAll('.nav a').forEach(function(a){
+    a.addEventListener('click', function(){
+      document.querySelectorAll('.nav a').forEach(function(x){ x.classList.remove('active'); });
+      a.classList.add('active');
+      if(isNarrow()) syncSidebar(false);
+    });
+  });
+
+  /* Scroll-based active nav highlighting */
+  var navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  var sectionEls = [];
+  navLinks.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) sectionEls.push({el:el, link:a});
+  });
+  var scrollTick = false;
+  window.addEventListener('scroll', function(){
+    if(scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(function(){
+      scrollTick = false;
+      var scrollY = window.scrollY + 120;
+      var best = null;
+      for(var i = sectionEls.length - 1; i >= 0; i--){
+        if(sectionEls[i].el.offsetTop <= scrollY){ best = sectionEls[i]; break; }
+      }
+      navLinks.forEach(function(a){ a.classList.remove('active'); });
+      if(best) best.link.classList.add('active');
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   THEME — strongest family standard
+═══════════════════════════════════════════════════════ */
+(function(){
+  var sw = document.getElementById('themeSwitch');
+  var THEME_KEY = 'ca-theme';
+
+  function setTheme(dark){
+    document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+    sw.setAttribute('aria-checked', String(dark));
+    try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch(e){}
+    var fns=['g1Draw','neg2Draw','relDraw','dpDraw','pfDraw','p4Draw','ncDraw','bfDraw'];
+    fns.forEach(function(fn){ if(typeof window[fn]==='function') window[fn](); });
+  }
+
+  function toggle(){ setTheme(document.body.getAttribute('data-theme')!=='dark'); }
+
+  /* Restore from localStorage or fall back to system preference */
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+  if(saved === 'dark' || saved === 'light'){
+    setTheme(saved === 'dark');
+  } else {
+    setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
+  sw.addEventListener('click', toggle);
+  sw.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SVG UTILITIES
+═══════════════════════════════════════════════════════ */
+var NS='http://www.w3.org/2000/svg';
+function mk(t,a){
+  var e=document.createElementNS(NS,t);
+  if(a) for(var k in a) e.setAttribute(k,a[k]);
+  return e;
+}
+function cv(n){ return getComputedStyle(document.body).getPropertyValue('--'+n).trim(); }
+function dark(){ return document.body.getAttribute('data-theme')==='dark'; }
+
+function addMarkers(svgEl, prefix, cols){
+  var defs=mk('defs');
+  for(var k in cols){
+    var m=mk('marker',{id:prefix+k,markerWidth:'9',markerHeight:'9',refX:'8',refY:'3.5',orient:'auto'});
+    var p=mk('path',{d:'M0,0 L9,3.5 L0,7 Z',fill:cols[k]});
+    m.appendChild(p); defs.appendChild(m);
+  }
+  svgEl.appendChild(defs);
+}
+
+function perp(x1,y1,x2,y2){
+  var dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
+  return {px:-dy/len, py:dx/len};
+}
+
+function drawArrow(svgEl,x1,y1,x2,y2,col,mid,sw,r){
+  r=r||29;
+  var dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
+  var sx=x1+(dx/len)*r, sy=y1+(dy/len)*r;
+  var ex=x2-(dx/len)*r, ey=y2-(dy/len)*r;
+  var p=mk('path',{d:'M'+sx+' '+sy+' L'+ex+' '+ey,fill:'none',stroke:col,'stroke-width':sw||2.5,'marker-end':'url(#'+mid+')'});
+  svgEl.appendChild(p);
+  return {mx:(sx+ex)/2, my:(sy+ey)/2};
+}
+
+function drawCurve(svgEl,x1,y1,x2,y2,col,mid,sw,offset){
+  offset=offset||28;
+  var dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
+  var mx=(x1+x2)/2, my=(y1+y2)/2;
+  var qx=mx+(-dy/len)*offset, qy=my+(dx/len)*offset;
+  var p=mk('path',{d:'M'+x1+' '+y1+' Q'+qx+' '+qy+' '+x2+' '+y2,
+    fill:'none',stroke:col,'stroke-width':sw||2.5,'marker-end':'url(#'+mid+')'});
+  svgEl.appendChild(p);
+  var blx=0.25*x1+0.5*qx+0.25*x2;
+  var bly=0.25*y1+0.5*qy+0.25*y2;
+  return {lx:blx, ly:bly};
+}
+
+function drawWLabel(svgEl,x,y,txt,col){
+  var str=String(txt);
+  var w=str.length*9+14;
+  var bg=mk('rect',{x:x-w/2,y:y-11,width:w,height:20,rx:6,
+    fill:cv('panel'),'fill-opacity':'0.92',stroke:col,'stroke-width':'1'});
+  svgEl.appendChild(bg);
+  var t=mk('text',{x:x,y:y+5,fill:col,'font-size':'14','font-weight':'900',
+    'text-anchor':'middle','font-family':'system-ui,sans-serif'});
+  t.textContent=str; svgEl.appendChild(t);
+}
+
+function drawNode(svgEl,cx,cy,r,fill,stroke,sw,letter,dlabel,dcol){
+  r=r||28;
+  var c=mk('circle',{cx:cx,cy:cy,r:r,fill:fill,stroke:stroke,'stroke-width':sw||3});
+  svgEl.appendChild(c);
+  var lc=(fill==='#6d28d9'||fill===cv('good')||fill===cv('warn')||fill===cv('accent2'))?'#fff':
+    (dark()?'#e5e7eb':cv('text'));
+  var t=mk('text',{x:cx,y:cy+7,fill:lc,'font-size':'19','font-weight':'950',
+    'text-anchor':'middle','font-family':'system-ui,sans-serif'});
+  t.textContent=letter; svgEl.appendChild(t);
+  if(dlabel!==undefined){
+    var dy2=cy+r+22;
+    var dstr=String(dlabel);
+    var dw=dstr.length*9+14;
+    var dbg=mk('rect',{x:cx-dw/2,y:dy2-12,width:dw,height:20,rx:5,
+      fill:cv('panel'),'fill-opacity':'0.88'});
+    svgEl.appendChild(dbg);
+    var dt=mk('text',{x:cx,y:dy2+3,fill:dcol||cv('muted'),'font-size':'14','font-weight':'800',
+      'text-anchor':'middle','font-family':'ui-monospace,monospace'});
+    dt.textContent=dstr; svgEl.appendChild(dt);
+  }
+}
+
+function distRow(cid,names,dist,src,activeEdge,EDGES,INF){
+  var c=document.getElementById(cid); if(!c)return; c.innerHTML='';
+  names.forEach(function(nm,i){
+    var d=dist[i];
+    var el=document.createElement('div'); el.className='ditem';
+    if(i===src) el.classList.add('src');
+    if(activeEdge>=0&&EDGES){
+      var e=EDGES[activeEdge];
+      if(e&&e.rel&&e.v===i) el.classList.add('upd');
+      else if(e&&e.u===i) el.classList.add('asrc');
+      else if(e&&e.v===i) el.classList.add('adst');
+    }
+    el.innerHTML='<div class="di-lbl">'+nm+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+    c.appendChild(el);
+  });
+}
+
+function nodeColor(i,dist,src,activeEdge,EDGES,frame){
+  var INF=1e9;
+  var d=dist[i];
+  var isUpd=frame&&frame.rel&&frame.ei>=0&&EDGES&&EDGES[frame.ei]&&EDGES[frame.ei].v===i;
+  var isSrc2=frame&&frame.ei>=0&&EDGES&&EDGES[frame.ei]&&EDGES[frame.ei].u===i;
+  var isDst=frame&&frame.ei>=0&&EDGES&&EDGES[frame.ei]&&EDGES[frame.ei].v===i;
+  if(isUpd) return {f:cv('good'),s:cv('good')};
+  if(isSrc2) return {f:cv('warn'),s:cv('warn')};
+  if(i===src) return {f:'#6d28d9',s:'#6d28d9'};
+  if(d<INF) return {f:dark()?'#1a3a5c':'#dbeafe',s:cv('accent2')};
+  return {f:dark()?cv('panel2'):'#f1f5f9',s:cv('border')};
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 1 — Example Graph BF Trace
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[80,150],[260,65],[460,65],[700,65],[460,235],[700,235]];
+  var E=[{u:0,v:1,w:4},{u:0,v:4,w:7},{u:1,v:2,w:2},{u:1,v:4,w:-1},
+         {u:2,v:3,w:3},{u:4,v:3,w:5},{u:4,v:5,w:2},{u:3,v:5,w:1}];
+  var N=['0','1','2','3','4','5'], INF=1e9;
+  var frames=[], dist=Array(6).fill(INF); dist[0]=0;
+  frames.push({dist:dist.slice(),ei:-1,msg:'Initial: dist[0]=0, all others = ∞. Source = node 0.'});
+  for(var it=0;it<5;it++){
+    for(var ei=0;ei<E.length;ei++){
+      var e=E[ei];
+      if(dist[e.u]>=INF) continue;
+      var nd=dist[e.u]+e.w, rel=nd<dist[e.v];
+      if(rel) dist[e.v]=nd;
+      frames.push({dist:dist.slice(),ei:ei,rel:rel,u:e.u,v:e.v,
+        msg:'Round '+(it+1)+': '+e.u+'→'+e.v+'('+e.w+'). dist['+e.v+']='+
+          (dist[e.v]>=INF?'∞':dist[e.v])+(rel?' ← updated!':'')});
+    }
+  }
+  frames.push({dist:dist.slice(),ei:-1,msg:'Done! Final shortest distances from node 0 labelled below each node.'});
+  var step=0, tmr=null;
+
+  function g1Draw(){
+    var sv=document.getElementById('g1Svg'); if(!sv)return;
+    sv.innerHTML='';
+    var f=frames[step];
+    var cols={def:cv('muted'),act:cv('warn'),ok:cv('good')};
+    addMarkers(sv,'g1-',cols);
+    E.forEach(function(e,i){
+      var isA=(i===f.ei), col=isA?(f.rel?cols.ok:cols.act):cols.def;
+      var mid='g1-'+(isA?(f.rel?'ok':'act'):'def');
+      var r=drawArrow(sv,P[e.u][0],P[e.u][1],P[e.v][0],P[e.v][1],col,mid,isA?3.5:2);
+      var pp=perp(P[e.u][0],P[e.u][1],P[e.v][0],P[e.v][1]);
+      drawWLabel(sv,r.mx+pp.px*16,r.my+pp.py*16,(e.w>0?'+':'')+e.w,col);
+    });
+    N.forEach(function(nm,i){
+      var c=nodeColor(i,f.dist,0,f.ei,f.ei>=0?[{u:f.u,v:f.v,rel:f.rel}]:null,f);
+      var d=f.dist[i]; var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],28,c.f,c.s,3,nm,d>=INF?'∞':d,dc);
+    });
+    document.getElementById('g1Act').textContent=f.msg;
+  }
+  window.g1Draw=g1Draw;
+  function wireG1(rst,nxt,auto){
+    document.getElementById(rst).addEventListener('click',function(){step=0;clearInterval(tmr);tmr=null;document.getElementById(auto).textContent='⏩ Auto';g1Draw();});
+    document.getElementById(nxt).addEventListener('click',function(){if(step<frames.length-1){step++;g1Draw();}});
+    document.getElementById(auto).addEventListener('click',function(){
+      if(tmr){clearInterval(tmr);tmr=null;document.getElementById(auto).textContent='⏩ Auto';return;}
+      document.getElementById(auto).textContent='⏸ Pause';
+      tmr=setInterval(function(){if(step>=frames.length-1){clearInterval(tmr);tmr=null;document.getElementById(auto).textContent='⏩ Auto';return;}step++;g1Draw();},750);
+    });
+  }
+  wireG1('g1Rst','g1Nxt','g1Auto');
+  g1Draw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 2 — Dijkstra vs BF
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[90,130],[350,55],[660,130],[350,205]];
+  var N=['A','B','C','D'], INF=1e9;
+  var frames=[
+    {dist:[0,INF,INF,INF],ei:-1,mode:'',
+      msg:'Graph: A→B(+5), B→C(−7), A→C(+10), B→D(+3), D→C(+2). Source=A. What is the shortest path to C?'},
+    {dist:[0,5,10,INF],ei:2,mode:'dijk',
+      msg:'DIJKSTRA: Greedily selects A→C=10 (lowest direct cost). Marks C visited with dist=10.'},
+    {dist:[0,5,10,8],ei:0,mode:'dijk',
+      msg:'DIJKSTRA: Visits B (dist=5), updates D: 5+3=8. C is already LOCKED — will not be re-examined.'},
+    {dist:[0,5,10,8],ei:1,mode:'fail',
+      msg:'DIJKSTRA: Edge B→C(−7) would give 5+(−7)=−2, but C is locked. Returns 10. ✗ WRONG!'},
+    {dist:[0,5,-2,8],ei:1,mode:'bf',
+      msg:'BELLMAN-FORD: Re-relaxes all edges each round. Finds B→C: min(10, 5+(−7))=−2. Updates dist[C]=−2. ✓'},
+    {dist:[0,5,-2,8],ei:-1,mode:'done',
+      msg:'Final: dist[A]=0, dist[B]=5, dist[C]=−2, dist[D]=8. BF is correct; Dijkstra was wrong.'},
+  ];
+  var step=0, tmr=null;
+
+  function neg2Draw(){
+    var sv=document.getElementById('neg2Svg'); if(!sv)return;
+    sv.innerHTML='';
+    var f=frames[step];
+    var EDGES_DRAW=[
+      {u:0,v:1,w:'+5',arc:false},
+      {u:1,v:2,w:'−7',arc:false},
+      {u:0,v:2,w:'+10',arc:true,ao:55},
+      {u:1,v:3,w:'+3',arc:false},
+      {u:3,v:2,w:'+2',arc:false},
+    ];
+    var cols={def:cv('muted'),act:cv('warn'),ok:cv('good'),bad:cv('bad')};
+    addMarkers(sv,'n2-',cols);
+    EDGES_DRAW.forEach(function(e,i){
+      var isA=(i===f.ei);
+      var isFail=(isA&&f.mode==='fail');
+      var isBF=(isA&&f.mode==='bf');
+      var col=isFail?cols.bad:isBF?cols.ok:isA?cols.act:cols.def;
+      var mid='n2-'+(isFail?'bad':isBF?'ok':isA?'act':'def');
+      var sw=isA?3.5:2;
+      var x1=P[e.u][0],y1=P[e.u][1],x2=P[e.v][0],y2=P[e.v][1];
+      if(e.arc){
+        var dx=x2-x1,dy=y2-y1,len2=Math.sqrt(dx*dx+dy*dy)||1;
+        var mx=(x1+x2)/2,my=(y1+y2)/2;
+        var ao=e.ao||40;
+        var qx=mx+(-dy/len2)*ao, qy=my+(dx/len2)*ao;
+        var ap=mk('path',{d:'M'+x1+' '+y1+' Q'+qx+' '+qy+' '+x2+' '+y2,
+          fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+        sv.appendChild(ap);
+        var lx=0.25*x1+0.5*qx+0.25*x2, ly=0.25*y1+0.5*qy+0.25*y2;
+        drawWLabel(sv,lx,ly,e.w,col);
+      } else {
+        var r2=drawArrow(sv,x1,y1,x2,y2,col,mid,sw);
+        var pp=perp(x1,y1,x2,y2);
+        drawWLabel(sv,r2.mx+pp.px*16,r2.my+pp.py*16,e.w,col);
+      }
+    });
+    N.forEach(function(nm,i){
+      var d=f.dist[i];
+      var fill,stroke;
+      if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(f.mode==='fail'&&i===2){fill=cv('bad');stroke=cv('bad');}
+      else if(f.mode==='bf'&&i===2){fill=cv('good');stroke=cv('good');}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],28,fill,stroke,3,nm,d>=INF?'∞':String(d),dc);
+    });
+    document.getElementById('neg2Act').textContent=f.msg;
+  }
+  window.neg2Draw=neg2Draw;
+  function wire2(r,n,a){
+    document.getElementById(r).addEventListener('click',function(){step=0;clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';neg2Draw();});
+    document.getElementById(n).addEventListener('click',function(){if(step<frames.length-1){step++;neg2Draw();}});
+    document.getElementById(a).addEventListener('click',function(){
+      if(tmr){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}
+      document.getElementById(a).textContent='⏸ Pause';
+      tmr=setInterval(function(){if(step>=frames.length-1){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}step++;neg2Draw();},1100);
+    });
+  }
+  wire2('neg2Rst','neg2Nxt','neg2Auto');
+  neg2Draw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 3 — Relaxation Visualiser
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[80,130],[255,60],[455,130],[655,60],[655,200]];
+  var N=['0','1','2','3','4'];
+  var E=[{u:0,v:1,w:6},{u:0,v:2,w:10},{u:1,v:2,w:-2},{u:2,v:3,w:4},{u:2,v:4,w:8},{u:3,v:4,w:1}];
+  var INF=1e9;
+  var dist=[0,INF,INF,INF,INF];
+  var lastE=-1,lastRel=false,autoIdx=0,autoTmr=null;
+
+  function relDraw(){
+    var sv=document.getElementById('relSvg'); if(!sv)return;
+    sv.innerHTML='';
+    var cols={def:cv('muted'),act:cv('warn'),ok:cv('good')};
+    addMarkers(sv,'rel-',cols);
+    E.forEach(function(e,i){
+      var isA=(i===lastE), col=isA?(lastRel?cols.ok:cols.act):cols.def;
+      var mid='rel-'+(isA?(lastRel?'ok':'act'):'def');
+      var sw=isA?4:2;
+      var r=drawArrow(sv,P[e.u][0],P[e.u][1],P[e.v][0],P[e.v][1],col,mid,sw);
+      var pp=perp(P[e.u][0],P[e.u][1],P[e.v][0],P[e.v][1]);
+      drawWLabel(sv,r.mx+pp.px*17,r.my+pp.py*17,(e.w>0?'+':'')+e.w,col);
+      var hit=mk('path',{d:'M'+(P[e.u][0]+pp.px*17)+' '+(P[e.u][1]+pp.py*17)+' L'+(P[e.v][0]+pp.px*17)+' '+(P[e.v][1]+pp.py*17),
+        fill:'none',stroke:'transparent','stroke-width':'24',cursor:'pointer'});
+      (function(idx){
+        hit.addEventListener('click',function(){
+          lastE=idx;
+          var ed=E[idx];
+          if(dist[ed.u]<INF&&dist[ed.u]+ed.w<dist[ed.v]){
+            dist[ed.v]=dist[ed.u]+ed.w; lastRel=true;
+            document.getElementById('relAct').textContent='✓ Relaxed '+ed.u+'→'+ed.v+'('+ed.w+'). dist['+ed.v+']='+dist[ed.v];
+          } else {
+            lastRel=false;
+            document.getElementById('relAct').textContent='No improvement on '+ed.u+'→'+ed.v+'('+ed.w+'). dist['+ed.v+']='+(dist[ed.v]>=INF?'∞':dist[ed.v])+' already optimal.';
+          }
+          relDraw();
+        });
+      })(i);
+      sv.appendChild(hit);
+    });
+    N.forEach(function(nm,i){
+      var d=dist[i];
+      var fill,stroke;
+      if(lastE>=0&&E[lastE].v===i&&lastRel){fill=cv('good');stroke=cv('good');}
+      else if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],28,fill,stroke,3,nm,d>=INF?'∞':d,dc);
+    });
+    var dc=document.getElementById('relDist'); dc.innerHTML='';
+    N.forEach(function(nm,i){
+      var d=dist[i];
+      var el=document.createElement('div'); el.className='ditem';
+      if(i===0)el.classList.add('src');
+      if(lastE>=0&&lastRel&&E[lastE].v===i)el.classList.add('upd');
+      el.innerHTML='<div class="di-lbl">'+nm+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+      dc.appendChild(el);
+    });
+  }
+  window.relDraw=relDraw;
+  document.getElementById('relRst').addEventListener('click',function(){
+    dist=[0,INF,INF,INF,INF];lastE=-1;lastRel=false;autoIdx=0;
+    clearInterval(autoTmr);autoTmr=null;
+    document.getElementById('relAuto').textContent='⏩ Auto-relax';
+    document.getElementById('relAct').textContent='Click any edge to relax it.';
+    relDraw();
+  });
+  document.getElementById('relAuto').addEventListener('click',function(){
+    if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('relAuto').textContent='⏩ Auto-relax';return;}
+    document.getElementById('relAuto').textContent='⏸ Stop';
+    autoTmr=setInterval(function(){
+      if(autoIdx>=E.length*4){clearInterval(autoTmr);autoTmr=null;document.getElementById('relAuto').textContent='⏩ Auto-relax';return;}
+      var idx=autoIdx%E.length; autoIdx++;
+      lastE=idx;
+      var ed=E[idx];
+      if(dist[ed.u]<INF&&dist[ed.u]+ed.w<dist[ed.v]){
+        dist[ed.v]=dist[ed.u]+ed.w; lastRel=true;
+        document.getElementById('relAct').textContent='Auto-relax '+ed.u+'→'+ed.v+'('+ed.w+'). dist['+ed.v+']='+dist[ed.v]+' ← updated!';
+      } else {lastRel=false; document.getElementById('relAct').textContent='No change on '+ed.u+'→'+ed.v+'('+ed.w+')';}
+      relDraw();
+    },680);
+  });
+  relDraw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 4 — DP Table Builder
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[80,120],[270,120],[490,120],[710,120]];
+  var E=[{u:0,v:1,w:4},{u:0,v:2,w:5},{u:1,v:2,w:-2},{u:2,v:3,w:3}];
+  var N=['0','1','2','3'], INF=1e9;
+  var rounds=[];
+  (function(){
+    var d=Array(4).fill(INF);d[0]=0;rounds.push(d.slice());
+    for(var it=0;it<3;it++){
+      var nd2=d.slice();
+      E.forEach(function(e){if(d[e.u]<INF&&d[e.u]+e.w<nd2[e.v])nd2[e.v]=d[e.u]+e.w;});
+      d=nd2;rounds.push(d.slice());
+    }
+  })();
+  var curK=0,tmr=null;
+
+  function dpDraw(){
+    var sv=document.getElementById('dpSvg'); if(!sv)return;
+    sv.innerHTML='';
+    var prev=rounds[Math.max(0,curK-1)];
+    var cur=rounds[curK];
+    var cols={def:cv('muted'),ok:cv('good')};
+    addMarkers(sv,'dp-',cols);
+    E.forEach(function(e){
+      var improved=(curK>0&&cur[e.v]<prev[e.v]);
+      var col=improved?cols.ok:cols.def;
+      var mid='dp-'+(improved?'ok':'def');
+      var sw=improved?3.5:2;
+      var x1=P[e.u][0],y1=P[e.u][1],x2=P[e.v][0],y2=P[e.v][1];
+      if(e.u===0&&e.v===2){
+        var mx=(x1+x2)/2, my=(y1+y2)/2;
+        var ap=mk('path',{d:'M'+x1+' '+y1+' Q'+mx+' '+(my-65)+' '+x2+' '+y2,
+          fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+        sv.appendChild(ap);
+        drawWLabel(sv,mx,my-70,(e.w>0?'+':'')+e.w,col);
+      } else {
+        var r=drawArrow(sv,x1,y1,x2,y2,col,mid,sw);
+        var pp=perp(x1,y1,x2,y2);
+        drawWLabel(sv,r.mx+pp.px*17,r.my+pp.py*17,(e.w>0?'+':'')+e.w,col);
+      }
+    });
+    N.forEach(function(nm,i){
+      var d=cur[i];
+      var improved=(curK>0&&d<rounds[curK-1][i]);
+      var fill,stroke;
+      if(improved){fill=cv('good');stroke=cv('good');}
+      else if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],26,fill,stroke,3,nm,d>=INF?'∞':d,dc);
+    });
+    var tbl=document.getElementById('dpTable'); tbl.innerHTML='';
+    var h='<table><thead><tr><th>k</th>';
+    N.forEach(function(nm){h+='<th>dist['+nm+']</th>';});
+    h+='</tr></thead><tbody>';
+    rounds.forEach(function(r,k){
+      var cls=(k===curK)?'style="background:rgba(37,99,235,.12)"':'';
+      h+='<tr '+cls+'><td><strong>k='+k+(k===0?' (init)':'')+'</strong></td>';
+      r.forEach(function(d,i){
+        var hl=(k===curK&&k>0&&d<rounds[k-1][i])?'class="upd"':'';
+        h+='<td '+hl+'>'+(d>=INF?'∞':d)+'</td>';
+      });
+      h+='</tr>';
+    });
+    h+='</tbody></table>';
+    tbl.innerHTML=h;
+    document.getElementById('dpAct').textContent=
+      curK===0?'Initial: dist[0]=0, others=∞. Press Next Round for iteration 1.':
+      curK<rounds.length-1?'After k='+curK+' iteration'+(curK>1?'s':'')+'. Press Next Round for k='+(curK+1)+'.':
+      'Complete! Final distances: ['+rounds[curK].map(function(d){return d>=INF?'∞':d;}).join(', ')+'].';
+  }
+  window.dpDraw=dpDraw;
+  function wireDP(r,n,a){
+    document.getElementById(r).addEventListener('click',function(){curK=0;clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';dpDraw();});
+    document.getElementById(n).addEventListener('click',function(){if(curK<rounds.length-1){curK++;dpDraw();}});
+    document.getElementById(a).addEventListener('click',function(){
+      if(tmr){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}
+      document.getElementById(a).textContent='⏸ Pause';
+      tmr=setInterval(function(){if(curK>=rounds.length-1){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}curK++;dpDraw();},1000);
+    });
+  }
+  wireDP('dpRst','dpNxt','dpAuto');
+  dpDraw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 5 — Inductive Proof Visualiser
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[80,130],[240,65],[430,130],[620,65],[810,130]];
+  var NM=['s','v₁','v₂','v₃','v'];
+  var pf=[
+    {hi:[],ei:-1,k:-1,msg:'We prove by induction: after k iterations all shortest paths using ≤ k edges are correct.'},
+    {hi:[0],ei:-1,k:0,msg:'Base (k=0): dist[s]=0 is the trivially correct 0-edge path.'},
+    {hi:[0,1],ei:0,k:1,msg:'Inductive step k=1: Hypothesis says dist[v₁] is not yet correct (∞). Iteration 1 relaxes edge s→v₁.'},
+    {hi:[0,1],ei:0,k:1,msg:'After relaxing s→v₁: dist[v₁] = 0 + w₁. The 1-edge shortest path to v₁ is now correct.'},
+    {hi:[0,1,2],ei:1,k:2,msg:'k=2: By hypothesis dist[v₁] is correct. Relaxing v₁→v₂ gives dist[v₂] = dist[v₁] + w₂.'},
+    {hi:[0,1,2,3],ei:2,k:3,msg:'k=3: dist[v₂] correct. Relaxing v₂→v₃ gives the 3-edge shortest path to v₃.'},
+    {hi:[0,1,2,3,4],ei:3,k:4,msg:'k=4: dist[v₃] correct. Relaxing v₃→v gives the k-edge shortest path to v. ∎'},
+    {hi:[0,1,2,3,4],ei:-1,k:-1,msg:'Conclusion: after n−1 iterations all shortest paths are found (no cycle can repeat vertices).'},
+  ];
+  var step=0;
+
+  function pfDraw(){
+    var sv=document.getElementById('pfSvg'); if(!sv)return;
+    sv.innerHTML='';
+    var cols={def:cv('muted'),ok:cv('good'),act:cv('warn')};
+    addMarkers(sv,'pf-',cols);
+    var f=pf[step];
+    var offsets=[18,-18,18,-18];
+    for(var i=0;i<4;i++){
+      var x1=P[i][0],y1=P[i][1],x2=P[i+1][0],y2=P[i+1][1];
+      var isA=(i===f.ei);
+      var isOk=!isA&&f.hi.indexOf(i)>=0&&f.hi.indexOf(i+1)>=0;
+      var col=isA?cols.act:isOk?cols.ok:cols.def;
+      var mid='pf-'+(isA?'act':isOk?'ok':'def');
+      var sw=isA||isOk?3.5:2;
+      var r=drawArrow(sv,x1,y1,x2,y2,col,mid,sw);
+      var pp=perp(x1,y1,x2,y2);
+      var off=offsets[i];
+      drawWLabel(sv,r.mx+pp.px*off,r.my+pp.py*off,'w'+(i+1),col);
+    }
+    NM.forEach(function(nm,i){
+      var inH=f.hi.indexOf(i)>=0;
+      var fill,stroke;
+      if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(i===4&&inH){fill=cv('good');stroke=cv('good');}
+      else if(inH){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      drawNode(sv,P[i][0],P[i][1],26,fill,stroke,3,nm);
+    });
+    if(f.k>=0&&f.k<=4){
+      var t=mk('text',{x:P[f.k][0],y:P[f.k][1]+56,fill:cv('warn'),
+        'font-size':'15','font-weight':'950','text-anchor':'middle','font-family':'system-ui'});
+      t.textContent='iter '+f.k; sv.appendChild(t);
+    }
+    document.getElementById('pfAct').textContent=f.msg;
+    document.getElementById('pfCtr').textContent='Step '+(step+1)+' / '+pf.length;
+  }
+  window.pfDraw=pfDraw;
+  document.getElementById('pfRst').addEventListener('click',function(){step=0;pfDraw();});
+  document.getElementById('pfNxt').addEventListener('click',function(){if(step<pf.length-1){step++;pfDraw();}});
+  pfDraw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 7 — Negative Cycle Tracer
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[110,185],[360,55],[610,185]];
+  var N=['A','B','C'];
+  var E=[{u:0,v:1,w:1},{u:1,v:2,w:-3},{u:2,v:0,w:1}];
+  var INF=1e9, frames=[];
+  (function(){
+    var d=[0,INF,INF];
+    frames.push({d:d.slice(),ei:-1,r:-1,msg:'Init: dist[A]=0, dist[B]=∞, dist[C]=∞. Cycle weight=1+(−3)+1=−1<0.'});
+    for(var it=0;it<=3;it++){
+      for(var ei=0;ei<E.length;ei++){
+        var e=E[ei];
+        if(d[e.u]>=INF) continue;
+        var nd=d[e.u]+e.w, rel=nd<d[e.v];
+        if(rel) d[e.v]=nd;
+        frames.push({d:d.slice(),ei:ei,r:it,rel:rel,
+          msg:(it<3?'Round '+(it+1):'Extra (n-th) round')+': '+N[e.u]+'→'+N[e.v]+'('+e.w+'). dist['+N[e.v]+']='+
+          (d[e.v]>=INF?'∞':d[e.v])+(rel?' ← updated!':'')+(it===3&&rel?' ⚠ Negative cycle!':'')});
+      }
+    }
+    frames.push({d:d.slice(),ei:-1,r:3,msg:'Confirmed: distances keep decreasing each cycle. Negative cycle detected!'});
+  })();
+  var step=0, tmr=null;
+
+  function ncDraw(){
+    var sv=document.getElementById('ncSvg'); if(!sv)return;
+    sv.innerHTML='';
+    var f=frames[step];
+    var cols={def:cv('muted'),ok:cv('good'),act:cv('warn'),bad:cv('bad')};
+    addMarkers(sv,'nc-',cols);
+    var cx=360, cy=142;
+    E.forEach(function(e,i){
+      var isA=(i===f.ei);
+      var isNeg=(f.r>=3&&isA&&f.rel);
+      var col=isNeg?cols.bad:isA?(f.rel?cols.ok:cols.act):cols.def;
+      var mid='nc-'+(isNeg?'bad':isA?(f.rel?'ok':'act'):'def');
+      var sw=isA?4:2.5;
+      var x1=P[e.u][0],y1=P[e.u][1],x2=P[e.v][0],y2=P[e.v][1];
+      var emx=(x1+x2)/2, emy=(y1+y2)/2;
+      var outX=emx+(emx-cx)*0.4, outY=emy+(emy-cy)*0.4;
+      var ap=mk('path',{d:'M'+x1+' '+y1+' Q'+outX+' '+outY+' '+x2+' '+y2,
+        fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+      sv.appendChild(ap);
+      var lx=0.25*x1+0.5*outX+0.25*x2;
+      var ly=0.25*y1+0.5*outY+0.25*y2;
+      var lox=(lx-cx)*0.25, loy=(ly-cy)*0.25;
+      drawWLabel(sv,lx+lox,ly+loy,(e.w>0?'+':'')+e.w,col);
+    });
+    N.forEach(function(nm,i){
+      var d=f.d[i];
+      var isUpd=f.rel&&f.ei>=0&&E[f.ei].v===i;
+      var isSrc2=f.ei>=0&&E[f.ei].u===i;
+      var fill,stroke;
+      if(isUpd){fill=cv('good');stroke=cv('good');}
+      else if(isSrc2){fill=cv('warn');stroke=cv('warn');}
+      else if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],28,fill,stroke,3,nm,d>=INF?'∞':d,dc);
+    });
+    var wt=mk('text',{x:360,y:250,fill:cv('bad'),'font-size':'17','font-weight':'950',
+      'text-anchor':'middle','font-family':'system-ui'});
+    wt.textContent='Cycle weight = 1+(−3)+1 = −1 < 0'; sv.appendChild(wt);
+    var dc=document.getElementById('ncDist'); dc.innerHTML='';
+    N.forEach(function(nm,i){
+      var d=f.d[i];
+      var el=document.createElement('div'); el.className='ditem';
+      if(i===0)el.classList.add('src');
+      if(f.rel&&f.ei>=0&&E[f.ei].v===i)el.classList.add('upd');
+      el.innerHTML='<div class="di-lbl">'+nm+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+      dc.appendChild(el);
+    });
+    document.getElementById('ncAct').textContent=f.msg;
+    document.getElementById('ncCtr').textContent='Step '+(step+1)+'/'+frames.length;
+  }
+  window.ncDraw=ncDraw;
+  function wireNC(r,n,a){
+    document.getElementById(r).addEventListener('click',function(){step=0;clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';ncDraw();});
+    document.getElementById(n).addEventListener('click',function(){if(step<frames.length-1){step++;ncDraw();}});
+    document.getElementById(a).addEventListener('click',function(){
+      if(tmr){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}
+      document.getElementById(a).textContent='⏸ Pause';
+      tmr=setInterval(function(){if(step>=frames.length-1){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}step++;ncDraw();},900);
+    });
+  }
+  wireNC('ncRst','ncNxt','ncAuto');
+  ncDraw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SECTION 11 — 4-Node Propagation Tracer
+═══════════════════════════════════════════════════════ */
+(function(){
+  var P=[[80,130],[280,130],[490,130],[710,130]];
+  var E=[{u:0,v:1,w:4},{u:0,v:2,w:5},{u:1,v:2,w:-2},{u:2,v:3,w:3}];
+  var N=['0','1','2','3'], INF=1e9;
+  var frames=[];
+  (function(){
+    var d=Array(4).fill(INF);d[0]=0;
+    frames.push({d:d.slice(),ei:-1,msg:'Init: dist[0]=0, others=∞. Source=0.'});
+    var anyR=true;
+    for(var it=0;it<4&&anyR;it++){
+      anyR=false;
+      frames.push({d:d.slice(),ei:-1,r:it,msg:'Round '+(it+1)+': scan all edges.'});
+      for(var ei=0;ei<E.length;ei++){
+        var e=E[ei];
+        var nd=d[e.u]>=INF?INF:d[e.u]+e.w, rel=nd<d[e.v];
+        if(rel){d[e.v]=nd;anyR=true;}
+        frames.push({d:d.slice(),ei:ei,rel:rel,r:it,
+          msg:'Round '+(it+1)+': '+e.u+'→'+e.v+'('+e.w+'). dist['+e.v+']='+
+            (d[e.v]>=INF?'∞':d[e.v])+(rel?' ← updated!':'')});
+      }
+      frames.push({d:d.slice(),ei:-1,r:it,
+        msg:'Round '+(it+1)+' complete.'+(anyR?'':' No changes — early exit!')});
+    }
+    frames.push({d:d.slice(),ei:-1,msg:'Done! Final: [0, 4, 2, 5].'});
+  })();
+  var step=0, tmr=null;
+
+  function p4Draw(){
+    var sv=document.getElementById('p4Svg'); if(!sv)return;
+    sv.innerHTML='';
+    var f=frames[step];
+    var cols={def:cv('muted'),ok:cv('good'),act:cv('warn')};
+    addMarkers(sv,'p4-',cols);
+    E.forEach(function(e,i){
+      var isA=(i===f.ei), col=isA?(f.rel?cols.ok:cols.act):cols.def;
+      var mid='p4-'+(isA?(f.rel?'ok':'act'):'def');
+      var sw=isA?4:2.5;
+      var x1=P[e.u][0],y1=P[e.u][1],x2=P[e.v][0],y2=P[e.v][1];
+      if(e.u===0&&e.v===2){
+        var mx=(x1+x2)/2;
+        var ap=mk('path',{d:'M'+x1+' '+y1+' Q'+mx+' 38 '+x2+' '+y2,
+          fill:'none',stroke:col,'stroke-width':sw,'marker-end':'url(#'+mid+')'});
+        sv.appendChild(ap);
+        drawWLabel(sv,mx,27,(e.w>0?'+':'')+e.w,col);
+      } else {
+        var r=drawArrow(sv,x1,y1,x2,y2,col,mid,sw);
+        var pp=perp(x1,y1,x2,y2);
+        drawWLabel(sv,r.mx+pp.px*17,r.my+pp.py*17,(e.w>0?'+':'')+e.w,col);
+      }
+    });
+    N.forEach(function(nm,i){
+      var d=f.d[i];
+      var isUpd=f.rel&&f.ei>=0&&E[f.ei].v===i;
+      var isSrc2=f.ei>=0&&E[f.ei].u===i;
+      var fill,stroke;
+      if(isUpd){fill=cv('good');stroke=cv('good');}
+      else if(isSrc2){fill=cv('warn');stroke=cv('warn');}
+      else if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,P[i][0],P[i][1],28,fill,stroke,3,nm,d>=INF?'∞':d,dc);
+    });
+    var dc=document.getElementById('p4Dist'); dc.innerHTML='';
+    N.forEach(function(nm,i){
+      var d=f.d[i];
+      var el=document.createElement('div'); el.className='ditem';
+      if(i===0)el.classList.add('src');
+      if(f.rel&&f.ei>=0&&E[f.ei].v===i)el.classList.add('upd');
+      el.innerHTML='<div class="di-lbl">'+nm+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+      dc.appendChild(el);
+    });
+    document.getElementById('p4Act').textContent=f.msg;
+    document.getElementById('p4Ctr').textContent='Step '+(step+1)+'/'+frames.length;
+  }
+  window.p4Draw=p4Draw;
+  function wireP4(r,n,a){
+    document.getElementById(r).addEventListener('click',function(){step=0;clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';p4Draw();});
+    document.getElementById(n).addEventListener('click',function(){if(step<frames.length-1){step++;p4Draw();}});
+    document.getElementById(a).addEventListener('click',function(){
+      if(tmr){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}
+      document.getElementById(a).textContent='⏸ Pause';
+      tmr=setInterval(function(){if(step>=frames.length-1){clearInterval(tmr);tmr=null;document.getElementById(a).textContent='⏩ Auto';return;}step++;p4Draw();},800);
+    });
+  }
+  wireP4('p4Rst','p4Nxt','p4Auto');
+  p4Draw();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MAIN BF TRACER — CLRS 5-node
+═══════════════════════════════════════════════════════ */
+(function(){
+  var NM=['s','t','x','y','z'];
+  var EDGES=[
+    {u:0,v:1,w:6},{u:0,v:3,w:7},{u:1,v:2,w:5},{u:1,v:3,w:8},
+    {u:1,v:4,w:-4},{u:2,v:1,w:-2},{u:3,v:2,w:-3},{u:3,v:4,w:9},
+    {u:4,v:0,w:2},{u:4,v:2,w:7}
+  ];
+  var POS=[
+    [80,170],[300,65],[640,65],[300,285],[640,285]
+  ];
+  var BIDIR={2:true,5:true};
+  var INF=1e9, SPEEDS=[200,450,850,1500,3000];
+
+  function buildTrace(){
+    var tr=[],n=NM.length;
+    var dist=Array(n).fill(INF); dist[0]=0;
+    function snap(ph,rnd,ei,rel,nc,badge,exp){
+      tr.push({ph:ph,rnd:rnd,ei:ei,dist:dist.slice(),rel:rel,nc:nc,badge:badge,exp:exp});
+    }
+    snap('init',-1,-1,false,false,'Init','Set dist[s]=0, all others = ∞');
+    var anyRel=true;
+    for(var it=0;it<n&&anyRel;it++){
+      anyRel=false;
+      snap('round-start',it,-1,false,false,'Round '+(it+1),'Iteration '+(it+1)+': scanning all edges');
+      for(var ei=0;ei<EDGES.length;ei++){
+        var e=EDGES[ei];
+        var nd=dist[e.u]>=INF?INF:dist[e.u]+e.w;
+        if(nd<dist[e.v]){
+          dist[e.v]=nd; anyRel=true;
+          snap('relax',it,ei,true,false,'Relaxed!',
+            'dist['+NM[e.v]+'] → '+(nd>=INF?'∞':nd)+' via '+NM[e.u]+'→'+NM[e.v]+'('+e.w+')');
+          if(it===n-1) snap('neg-cycle',it,ei,true,true,'Neg Cycle!','Relaxation on n-th pass → negative cycle!');
+        } else {
+          snap('relax',it,ei,false,false,'No change',
+            NM[e.u]+'→'+NM[e.v]+': '+
+            (dist[e.u]>=INF?'∞':dist[e.u])+'+'+(e.w>0?'+':'')+e.w+' ≥ '+(dist[e.v]>=INF?'∞':dist[e.v]));
+        }
+      }
+      snap('round-end',it,-1,false,false,'Round '+(it+1)+' done',
+        anyRel?'Round '+(it+1)+' complete.':'No relaxation — converged early!');
+    }
+    snap('done',-1,-1,false,false,'Done ✓','All shortest paths found. No negative cycle.');
+    return tr;
+  }
+  var steps=buildTrace(), cur=0, playing=false, tmr=null;
+  function spd(){return SPEEDS[4-parseInt(document.getElementById('bfSpd').value)];}
+
+  function bfDraw(){
+    var sv=document.getElementById('bfsvg'); if(!sv)return;
+    sv.innerHTML='';
+    var s=steps[cur];
+    var cols={def:cv('muted'),act:cv('warn'),ok:cv('good'),bad:cv('bad')};
+    addMarkers(sv,'bf-',cols);
+    function eState(ei){
+      if(s.nc&&s.ei===ei)return 'bad';
+      if(s.ph==='relax'&&s.ei===ei)return s.rel?'ok':'act';
+      return 'def';
+    }
+    EDGES.forEach(function(e,ei){
+      var es=eState(ei);
+      var col=cols[es==='def'?'def':es];
+      var mid='bf-'+(es==='def'?'def':es);
+      var sw=es!=='def'?3.5:2;
+      var x1=POS[e.u][0],y1=POS[e.u][1],x2=POS[e.v][0],y2=POS[e.v][1];
+      if(BIDIR[ei]){
+        var lp=drawCurve(sv,x1,y1,x2,y2,col,mid,sw,26);
+        drawWLabel(sv,lp.lx,lp.ly,(e.w>0?'+':'')+e.w,col);
+      } else {
+        var r=drawArrow(sv,x1,y1,x2,y2,col,mid,sw);
+        var pp=perp(x1,y1,x2,y2);
+        drawWLabel(sv,r.mx+pp.px*17,r.my+pp.py*17,(e.w>0?'+':'')+e.w,col);
+      }
+    });
+    var aSrc=s.ei>=0?EDGES[s.ei].u:-1, aDst=s.ei>=0?EDGES[s.ei].v:-1;
+    NM.forEach(function(nm,i){
+      var d=s.dist[i];
+      var isUpd=s.rel&&s.ei>=0&&EDGES[s.ei].v===i;
+      var fill,stroke;
+      if(isUpd){fill=cv('good');stroke=cv('good');}
+      else if(i===aSrc){fill=cv('warn');stroke=cv('warn');}
+      else if(i===aDst){fill=cv('accent2');stroke=cv('accent2');}
+      else if(i===0){fill='#6d28d9';stroke='#6d28d9';}
+      else if(d<INF){fill=dark()?'#1a3a5c':'#dbeafe';stroke=cv('accent2');}
+      else{fill=dark()?cv('panel2'):'#f1f5f9';stroke=cv('border');}
+      var dc=d<INF?cv('good'):cv('muted');
+      drawNode(sv,POS[i][0],POS[i][1],28,fill,stroke,3,nm,d>=INF?'∞':d,dc);
+    });
+  }
+  window.bfDraw=bfDraw;
+
+  function render(){
+    var s=steps[cur];
+    bfDraw();
+    document.getElementById('spPhase').textContent=s.ph.toUpperCase();
+    document.getElementById('spRound').textContent=s.rnd>=0?'Iteration '+(s.rnd+1):s.badge;
+    var e=s.ei>=0?EDGES[s.ei]:null;
+    document.getElementById('spEdge').textContent=e?NM[e.u]+'→'+NM[e.v]+'  ('+(e.w>0?'+':'')+e.w+')':'—';
+    var ex=document.getElementById('spExp');
+    ex.textContent=s.exp;
+    ex.className='sp-exp '+(s.ph==='relax'&&s.rel?'ok':s.ph==='round-end'?'rend':s.ph==='init'?'init':s.nc?'neg':s.badge==='Done ✓'?'done':'skip');
+    var dt=document.getElementById('dtrow'); dt.innerHTML='';
+    var e2=s.ei>=0?EDGES[s.ei]:null;
+    s.dist.forEach(function(d,i){
+      var el=document.createElement('div'); el.className='ditem';
+      if(i===0)el.classList.add('src');
+      if(s.rel&&e2&&e2.v===i)el.classList.add('upd');
+      else if(e2&&e2.u===i)el.classList.add('asrc');
+      else if(e2&&e2.v===i)el.classList.add('adst');
+      el.innerHTML='<div class="di-lbl">'+NM[i]+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+      dt.appendChild(el);
+    });
+    var el=document.getElementById('elist'); el.innerHTML='';
+    EDGES.forEach(function(e,ei){
+      var li=document.createElement('div'); li.className='eli';
+      if(s.nc&&s.ei===ei)li.classList.add('en');
+      else if(s.ph==='relax'&&s.ei===ei&&s.rel)li.classList.add('eo');
+      else if(s.ph==='relax'&&s.ei===ei)li.classList.add('ea');
+      var dot=document.createElement('div'); dot.className='eldot'; li.appendChild(dot);
+      var sp=document.createElement('span');
+      sp.textContent=NM[e.u]+'→'+NM[e.v]+' ('+(e.w>0?'+':'')+e.w+')';
+      li.appendChild(sp); el.appendChild(li);
+    });
+    var log=document.getElementById('slog'), st=Math.max(0,cur-11); log.innerHTML='';
+    for(var i=st;i<=cur;i++){
+      var si=steps[i];
+      var li=document.createElement('div');
+      li.className='sli'+(i===cur?' cur':'')+(si.rel?' ok':si.ph==='round-start'||si.ph==='round-end'?' ph':si.nc?' ng':'');
+      li.textContent='['+i+'] '+si.badge+': '+si.exp.slice(0,60)+(si.exp.length>60?'…':'');
+      (function(idx){li.addEventListener('click',function(){cur=idx;render();});})(i);
+      log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('stepctr').textContent='Step '+(cur+1)+'/'+steps.length;
+    document.getElementById('bfPrv').disabled=cur===0;
+    document.getElementById('bfNxt').disabled=cur===steps.length-1;
+    document.getElementById('bfSkp').disabled=cur===steps.length-1;
+    updateRJ();
+  }
+  function buildRJ(){
+    var rj=document.getElementById('rjump'); rj.innerHTML='';
+    var items=[{label:'Init',idx:0}];
+    steps.forEach(function(s,i){if(s.ph==='round-start')items.push({label:'Round '+(s.rnd+1),idx:i});});
+    var di=steps.findIndex(function(s){return s.ph==='done';});
+    if(di>=0)items.push({label:'Done',idx:di});
+    items.forEach(function(item){
+      var b=document.createElement('button'); b.className='rjbtn'; b.textContent=item.label; b.dataset.i=item.idx;
+      b.addEventListener('click',function(){cur=parseInt(b.dataset.i);render();});
+      rj.appendChild(b);
+    });
+  }
+  function updateRJ(){
+    document.querySelectorAll('.rjbtn').forEach(function(b){
+      var idx=parseInt(b.dataset.i);
+      b.classList.remove('active','done');
+      if(idx===cur)b.classList.add('active');
+      else if(idx<cur)b.classList.add('done');
+    });
+  }
+  function startPlay(){
+    if(playing)return;playing=true;
+    document.getElementById('bfPly').textContent='⏸';
+    document.getElementById('bfPly').classList.add('playing');
+    function tick(){
+      if(!playing||cur>=steps.length-1){stopPlay();return;}
+      cur++;render();tmr=setTimeout(tick,spd());
+    }
+    tmr=setTimeout(tick,spd());
+  }
+  function stopPlay(){
+    playing=false;clearTimeout(tmr);
+    document.getElementById('bfPly').textContent='▶';
+    document.getElementById('bfPly').classList.remove('playing');
+  }
+  document.getElementById('bfRst').addEventListener('click',function(){stopPlay();cur=0;render();});
+  document.getElementById('bfPrv').addEventListener('click',function(){stopPlay();if(cur>0){cur--;render();}});
+  document.getElementById('bfPly').addEventListener('click',function(){playing?stopPlay():startPlay();});
+  document.getElementById('bfNxt').addEventListener('click',function(){stopPlay();if(cur<steps.length-1){cur++;render();}});
+  document.getElementById('bfSkp').addEventListener('click',function(){
+    stopPlay();var i=cur+1;
+    while(i<steps.length&&steps[i].ph!=='round-start'&&steps[i].ph!=='done')i++;
+    cur=Math.min(i,steps.length-1);render();
+  });
+  document.getElementById('bfSpd').addEventListener('input',function(){
+    var ls=['0.25×','0.5×','1×','2×','4×'];
+    document.getElementById('bfSpdLbl').textContent=ls[this.value];
+  });
+  buildRJ();render();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   SPFA DEMO
+═══════════════════════════════════════════════════════ */
+(function(){
+  var ADJ=[[[1,4],[2,5]],[[2,-2]],[[3,3]],[]];
+  var NM=['0','1','2','3'],N=4,INF=1e9;
+  function buildTrace(){
+    var tr=[],d=Array(N).fill(INF);d[0]=0;
+    var q=[0],inQ=Array(N).fill(0);inQ[0]=1;
+    var layer=1;
+    tr.push({q:q.slice(),d:d.slice(),msg:'Init: source 0 enters Layer 1 frontier',cls:'upd',layer:0});
+    while(q.length){
+      var s=q.length;
+      tr.push({q:q.slice(),d:d.slice(),msg:'━━ Layer '+layer+' / Round '+layer+' — '+s+' active node'+(s>1?'s':'')+'  ━━',cls:'ph',layer:layer});
+      while(s--){
+        var u=q.shift();inQ[u]=0;
+        tr.push({q:q.slice(),d:d.slice(),msg:'Layer '+layer+': relax outgoing edges from node '+u,cls:'',layer:layer});
+        for(var i=0;i<ADJ[u].length;i++){
+          var v=ADJ[u][i][0],w=ADJ[u][i][1];
+          if(d[u]+w<d[v]){
+            d[v]=d[u]+w;
+            tr.push({q:q.slice(),d:d.slice(),msg:'Layer '+layer+': dist['+v+'] → '+d[v]+' via '+u+'→'+v+'('+w+')',cls:'ok',layer:layer});
+            if(!inQ[v]){q.push(v);inQ[v]=1;tr.push({q:q.slice(),d:d.slice(),msg:'Node '+v+' improved → queued for Layer '+(layer+1),cls:'upd',layer:layer});}
+          }
+        }
+      }
+      tr.push({q:q.slice(),d:d.slice(),msg:'Layer '+layer+' done — dist[] correct for all ≤'+layer+'-edge paths',cls:'ph',layer:layer});
+      layer++;
+    }
+    tr.push({q:[],d:d.slice(),msg:'Queue empty before Layer '+N+' — converged, no negative cycle ✓',cls:'ok',layer:layer-1});
+    return tr;
+  }
+  var trace=buildTrace(),si=0;
+  function renderSpfa(){
+    var s=trace[si];
+    var layerEl=document.getElementById('spfaLayer');
+    if(layerEl) layerEl.textContent=s.layer>0?'Layer '+s.layer+' / Round '+s.layer:'Init';
+    var qEl=document.getElementById('spfaQ'); qEl.innerHTML='';
+    s.q.forEach(function(v){var n=document.createElement('div');n.className='sqn';n.textContent=v;qEl.appendChild(n);});
+    var dt=document.getElementById('spfaDt'); dt.innerHTML='';
+    s.d.forEach(function(d,i){
+      var el=document.createElement('div');el.className='ditem';
+      if(i===0)el.classList.add('src');
+      el.innerHTML='<div class="di-lbl">'+NM[i]+'</div><div class="di-val">'+(d>=INF?'∞':d)+'</div>';
+      dt.appendChild(el);
+    });
+    var log=document.getElementById('spfaLog'),st=Math.max(0,si-9);log.innerHTML='';
+    for(var i=st;i<=si;i++){
+      var li=document.createElement('div');li.className='spfali '+trace[i].cls;
+      li.textContent=trace[i].msg;log.appendChild(li);
+    }
+    log.scrollTop=log.scrollHeight;
+    document.getElementById('spfaNxt').disabled=si>=trace.length-1;
+  }
+  document.getElementById('spfaRst').addEventListener('click',function(){si=0;trace=buildTrace();renderSpfa();});
+  document.getElementById('spfaNxt').addEventListener('click',function(){if(si<trace.length-1){si++;renderSpfa();}});
+  renderSpfa();
+})();
+
+/* ═══════════════════════════════════════════════════════
+   DIFFERENCE CONSTRAINTS DEMO
+═══════════════════════════════════════════════════════ */
+(function(){
+  var base=[
+    {ineq:'x\u2082 \u2212 x\u2081 \u2264 3',  edge:'1 \u2192 2  (weight 3)'},
+    {ineq:'x\u2083 \u2212 x\u2082 \u2264 4',  edge:'2 \u2192 3  (weight 4)'},
+  ];
+  var extra={ineq:'x\u2081 \u2212 x\u2083 \u2264 \u221210',edge:'3 \u2192 1  (weight \u221210)',bad:true};
+  var show=false;
+  function renderDC(){
+    var iq=document.getElementById('dcIneqs'),eq=document.getElementById('dcEdges');
+    iq.innerHTML='';eq.innerHTML='';
+    var items=base.slice();if(show)items.push(extra);
+    items.forEach(function(c){
+      var a=document.createElement('div');a.className='dci'+(c.bad?' bad':'');a.textContent=c.ineq;iq.appendChild(a);
+      var b=document.createElement('div');b.className='dci'+(c.bad?' bad':'');b.textContent=c.edge;eq.appendChild(b);
+    });
+    var w=document.getElementById('dcWarn');w.innerHTML='';
+    if(show){
+      w.innerHTML='<div class="ib ib-red" style="margin-top:10px"><i>⚠</i><p><strong>Negative cycle detected!</strong> The constraint x₁ − x₃ ≤ −10 together with x₂ − x₁ ≤ 3 and x₃ − x₂ ≤ 4 creates a cycle of total weight 3 + 4 + (−10) = −3 &lt; 0. The system is <strong>infeasible</strong> — no assignment of x₁, x₂, x₃ can satisfy all three constraints simultaneously.</p></div>';
+    }
+  }
+  document.getElementById('dcBtn').addEventListener('click',function(){
+    show=!show;
+    this.textContent=show?'➖ Remove infeasible constraint':'➕ Add infeasible constraint';
+    renderDC();
+  });
+  renderDC();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Mo with Updates (3D Mo) · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-add: rgba(15,118,110,.30);
+    --hl-rem: rgba(185,28,28,.30);
+    --hl-time: rgba(180,83,9,.34);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --hl-add: rgba(52,211,153,.30);
+    --hl-rem: rgba(251,113,133,.34);
+    --hl-time: rgba(251,191,36,.34);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);font-size:21px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:17px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:21px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:700;overflow-x:auto;line-height:1.6;white-space:pre-wrap;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:21px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  /* Tracer */
+  .arrRow{display:flex;flex-wrap:wrap;gap:6px;padding:14px 0 28px;}
+  .arrCell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:58px;height:74px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:950;font-size:22px;position:relative;transition:all .25s ease;}
+  .arrCell .idx{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-weight:800;}
+  .arrCell.inRange{box-shadow:inset 0 0 0 3px var(--accent2);}
+  .arrCell.curL{border-color:var(--good);background:var(--hl-add);}
+  .arrCell.curR{border-color:var(--good);background:var(--hl-add);}
+  .arrCell.justUpdated{outline:4px solid var(--warn);outline-offset:2px;background:var(--hl-time);}
+  .arrCell.justAdd{background:var(--hl-add);}
+  .arrCell.justRem{background:var(--hl-rem);}
+  .opList{display:flex;flex-direction:column;gap:6px;max-height:380px;overflow:auto;padding:8px;background:var(--panel2);border:3px solid var(--border);border-radius:16px;}
+  .opLine{padding:8px 12px;border-radius:10px;background:var(--panel);border:2px solid var(--border);font-family:ui-monospace,monospace;font-weight:850;font-size:17px;display:flex;align-items:center;gap:10px;}
+  .opLine.cur{background:var(--hl-time);border-color:var(--warn);box-shadow:0 0 0 3px rgba(180,83,9,.18);}
+  .opLine.applied{opacity:.55;text-decoration:line-through;}
+  .opTag{font-size:13px;padding:3px 8px;border-radius:999px;background:rgba(37,99,235,.18);font-weight:900;}
+  .opTag.q{background:rgba(15,118,110,.18);color:var(--good);}
+  .opTag.u{background:rgba(180,83,9,.18);color:var(--warn);}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .queryRow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .queryChip{padding:8px 14px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:900;font-size:16px;font-family:ui-monospace,monospace;}
+  .queryChip.curQ{border-color:var(--warn);background:var(--hl-time);}
+  .queryChip.doneQ{border-color:var(--good);background:rgba(15,118,110,.10);color:var(--good);opacity:.7;}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">⏱</div>
+  <div class="brandTitle">
+    <div class="t1">Mo with Updates</div>
+    <div class="t2">3D Mo · Time Dimension · CF 940F</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem" id="nav-problem">🧩 Problem Definition<small>Range queries + point updates</small></a>
+  <a href="#intuition" id="nav-intuition">💡 Intuition<small>Why classic Mo breaks</small></a>
+  <a href="#mental" id="nav-mental">🎯 Visual Mental Model<small>3D state (l, r, t)</small></a>
+  <a href="#abstract" id="nav-abstract">🧠 Formal Abstraction<small>Update / undo hooks</small></a>
+  <a href="#observations" id="nav-observations">🔭 Key Observations<small>Position vs range</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#apply-undo" id="nav-apply-undo">🔧 Apply &amp; Undo Updates<small>Symmetric hooks</small></a>
+  <a href="#ordering" id="nav-ordering">🔀 3D Ordering<small>(block_l, block_r, t)</small></a>
+  <a href="#tracer">🎮 3D Mo Tracer<small>Step through pointers</small></a>
+  <a href="#master" id="nav-master">📄 Master Template<small>CF 940F engine</small></a>
+  <div class="groupTitle">Theory</div>
+  <a href="#invariants" id="nav-invariants">🔒 Invariants<small>State at time curT</small></a>
+  <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Why undo works</small></a>
+  <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(N^(5/3))</small></a>
+  <a href="#lbl" id="nav-lbl">🔎 Line-by-Line<small>CF 940F dissected</small></a>
+  <div class="groupTitle">Quality Gates</div>
+  <a href="#edges" id="nav-edges">🪜 Edge-Case Audit<small>12 must-checks</small></a>
+  <a href="#pitfalls" id="nav-pitfalls">⚠️ Common Pitfalls<small>Old-value rule</small></a>
+  <a href="#decision" id="nav-decision">🧭 Decision Guide<small>3D Mo vs alternatives</small></a>
+  <div class="groupTitle">Problems</div>
+  <a href="#problems" id="nav-problems">🚀 Problem-Based Learning<small>CF 940F full code</small></a>
+  <a href="#summary" id="nav-summary">📝 Final Summary</a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">⏱</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Mo Family · 3 / 4</div>
+        <h1>Mo with Updates — 3D Mo</h1>
+        <div class="subtitle">Adding a Time Dimension · Apply / Undo Hooks · Codeforces 940F Machine Learning</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+    <p>Classic Mo solves offline range queries on a <em>static</em> array. In this file we relax that assumption: between the queries, point updates may also arrive. The input stream now contains two kinds of operations. A type-1 operation is a query: given <code class="inlineCode">l</code> and <code class="inlineCode">r</code>, compute some frequency-based aggregate over the current contents of the range <code class="inlineCode">a[l..r]</code>. A type-2 operation is an update: given a position <code class="inlineCode">pos</code> and a new value <code class="inlineCode">val</code>, overwrite <code class="inlineCode">a[pos] = val</code>. The two kinds are interleaved in arbitrary order, and the algorithm is still allowed to be offline — we may read everything, sort, and produce answers in input order.</p>
+    <p>The canonical illustration in this file is Codeforces 940F (Machine Learning). It asks for the smallest positive integer <code class="inlineCode">f</code> such that no value occurs exactly <code class="inlineCode">f</code> times in the queried range, while supporting point updates of array values. We will use 940F throughout this file as the running example for the master template, the line-by-line walk, and the tracer.</p>
+  </section>
+
+  <!-- INTUITION -->
+  <section class="card" id="intuition">
+    <h2>💡 Intuition — Why Classic Mo Breaks</h2>
+    <p>The whole reason classic Mo is correct is that the maintained state is uniquely determined by two integers <code class="inlineCode">(curL, curR)</code>. If you tell me where the pointers are, I can tell you the multiset of values they cover. Pointer movement is reversible because the array contents under the pointers never change.</p>
+    <p>Add even one update to the mix and that uniqueness collapses. The multiset of values inside <code class="inlineCode">[l, r]</code> now depends on <em>which updates have already been applied</em>. Two visits to the same <code class="inlineCode">[l, r]</code> at different points in input order can yield different answers. The classic two-pointer engine cannot recover from this on its own.</p>
+    <p>The fix is to extend the state with a third coordinate, <code class="inlineCode">curT</code> — the number of updates that have currently been applied to the array. The full state is now <code class="inlineCode">(curL, curR, curT)</code>, and the engine grows a third loop that moves time forward (by applying updates) and backward (by undoing them). The classic four-loop pointer engine survives unchanged; we wrap it inside a sixth and seventh loop for the time axis.</p>
+    <p>Because we are still offline, we can sort queries by a 3-D key — block of <code class="inlineCode">l</code>, block of <code class="inlineCode">r</code>, time <code class="inlineCode">t</code> — so that the total pointer travel along all three axes stays bounded.</p>
+  </section>
+
+  <!-- MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>🎯 Visual Mental Model — A 3-D State</h2>
+    <p>Picture a cube. The <code class="inlineCode">x</code> axis is the left pointer, the <code class="inlineCode">y</code> axis is the right pointer, and the <code class="inlineCode">z</code> axis is time. Each query is a point inside that cube, and our task is to walk from point to point with a total path length that is sub-quadratic in <code class="inlineCode">N · Q</code>.</p>
+    <p>Two pieces of structure make this tractable. First, classic Mo's comparator still organizes <code class="inlineCode">l</code> into <code class="inlineCode">√N</code> blocks; we now do the same for <code class="inlineCode">r</code>, creating a 2-D block grid in the <code class="inlineCode">(l, r)</code> plane. Inside each cell of that grid, we sort by <code class="inlineCode">t</code>. Second, the time axis is monotone within each cell: we only ever apply or undo updates one at a time, and a balanced amount of forward/backward motion is acceptable because each update touches at most one cell of the array.</p>
+    <p>The right block size for this geometry is no longer <code class="inlineCode">√N</code>. It is <code class="inlineCode">N^(2/3)</code>, which balances pointer travel across all three axes and yields a total complexity of <code class="inlineCode">O(Q · N^(2/3))</code>. We will derive that more carefully later in the file.</p>
+  </section>
+
+  <!-- ABSTRACTION -->
+  <section class="card" id="abstract">
+    <h2>🧠 Formal Abstraction — Updates as Reversible Hooks</h2>
+    <p>The update queue is stored as a vector of records. Each record contains <code class="inlineCode">pos</code> (the position that is being overwritten), <code class="inlineCode">oldVal</code> (the value that was there before this update), and <code class="inlineCode">newVal</code> (the value that will be there after). Both values are recorded so that the algorithm can apply or undo the update symmetrically.</p>
+    <pre><code>struct Query  { int l, r, t, id; };
+struct Update { int pos, oldVal, newVal; };</code></pre>
+    <p>The single most important rule about <code class="inlineCode">oldVal</code> is that it must be the value of <code class="inlineCode">a[pos]</code> <em>after all previous updates have been applied</em>, not the value from the original input array. We compute it during a single forward pass through the input operations, keeping a "current array" that mirrors what the array would look like at the moment each update was issued.</p>
+    <p>The hooks have a satisfying symmetry. <code class="inlineCode">apply_update(id)</code> reads <code class="inlineCode">newVal</code> from <code class="inlineCode">updates[id]</code> and writes it into <code class="inlineCode">a[pos]</code>. <code class="inlineCode">undo_update(id)</code> reads <code class="inlineCode">oldVal</code> from the same record and writes it back. Both hooks also patch the maintained Mo state when the updated position is inside the current pointer interval — and crucially, they leave the maintained state alone when the position is outside. This is the entire trick that makes 3D Mo correct.</p>
+  </section>
+
+  <!-- OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>🔭 Key Observations</h2>
+
+    <h3>Observation 1 — Position-vs-range branching is the only new logic</h3>
+    <p>When <code class="inlineCode">curL ≤ pos ≤ curR</code>, the value at <code class="inlineCode">pos</code> participates in the maintained Mo state. Changing it means doing one <code class="inlineCode">remove_value(oldVal)</code> immediately followed by one <code class="inlineCode">add_value(newVal)</code>. When <code class="inlineCode">pos</code> is outside the pointer interval, the maintained state is unaffected and we only patch the underlying array <code class="inlineCode">a[pos]</code>. This single branch is the entire conceptual addition in 3D Mo.</p>
+
+    <h3>Observation 2 — Time is monotone within a cell, not globally</h3>
+    <p>Across the whole sort, <code class="inlineCode">curT</code> goes up and down many times. Inside a single <code class="inlineCode">(block_l, block_r)</code> cell, however, <code class="inlineCode">curT</code> is monotonically non-decreasing because the comparator's tertiary key is <code class="inlineCode">t</code>. This local monotonicity is exactly what keeps the time-axis travel within each cell linear in the total number of updates.</p>
+
+    <h3>Observation 3 — Block size is <code class="inlineCode">N^(2/3)</code>, not <code class="inlineCode">√N</code></h3>
+    <p>In 2D Mo, balancing the cost of moving the right pointer (linear inside a block) against the cost of jumping the left pointer (one block-step per query) gives <code class="inlineCode">B = √N</code>. In 3D Mo, balancing left-pointer travel, right-pointer travel, and time-pointer travel gives <code class="inlineCode">B = N^(2/3)</code>. The CF 940F template uses <code class="inlineCode">max(1, ⌊N^(2/3)⌋)</code>.</p>
+
+    <h3>Observation 4 — Time-axis loop comes <em>before</em> the four pointer loops</h3>
+    <p>It is not a hard constraint, but it is a sane convention: move time first to synchronize the array, then move the pointers. This keeps the position-vs-range check in <code class="inlineCode">apply_update</code>/<code class="inlineCode">undo_update</code> meaningful — the pointers still describe the interval at the previous query, which is exactly the interval that should react to in-range updates.</p>
+  </section>
+
+  <!-- APPLY & UNDO -->
+  <section class="card" id="apply-undo">
+    <h2>🔧 Apply &amp; Undo Updates — The Heart of the Variant</h2>
+    <p>Both hooks have the same shape. They patch the underlying array and, only when the updated position sits inside the current pointer interval, they patch the maintained Mo state by removing the old value and adding the new one.</p>
+<pre><code>void apply_update(int id) {
+    int pos    = updates[id].pos;
+    int oldVal = updates[id].oldVal;
+    int newVal = updates[id].newVal;
+
+    if (curL &lt;= pos &amp;&amp; pos &lt;= curR) {
+        remove_value(oldVal);
+        add_value(newVal);
+    }
+    a[pos] = newVal;
+}
+
+void undo_update(int id) {
+    int pos    = updates[id].pos;
+    int oldVal = updates[id].oldVal;
+    int newVal = updates[id].newVal;
+
+    if (curL &lt;= pos &amp;&amp; pos &lt;= curR) {
+        remove_value(newVal);
+        add_value(oldVal);
+    }
+    a[pos] = oldVal;
+}</code></pre>
+    <p>Why is this symmetric pair correct? In <code class="inlineCode">apply_update</code>, the array currently has <code class="inlineCode">a[pos] = oldVal</code> (the value before this particular update was applied). When <code class="inlineCode">pos</code> is in range, <code class="inlineCode">oldVal</code> is part of the Mo state, so we remove it. We then add <code class="inlineCode">newVal</code> because after the write to <code class="inlineCode">a[pos]</code>, that is the new participant. <code class="inlineCode">undo_update</code> is the mirror image: the array has <code class="inlineCode">a[pos] = newVal</code>, we remove that from the Mo state, add <code class="inlineCode">oldVal</code> back, and overwrite the array. The order of the two <code class="inlineCode">remove/add</code> calls and the assignment is interchangeable here because the Mo state and the array are decoupled within the hook's body — but write the hook in this canonical order anyway, so future-you can pattern-match it instantly.</p>
+  </section>
+
+  <!-- 3D ORDERING -->
+  <section class="card" id="ordering">
+    <h2>🔀 3D Ordering — <code class="inlineCode">(block_l, block_r, t)</code></h2>
+    <p>The comparator is a tiny extension of classic Mo's comparator. Primary key: block of <code class="inlineCode">l</code>. Secondary key: block of <code class="inlineCode">r</code>. Tertiary key: <code class="inlineCode">t</code>. There is no odd-even snake on the right axis in the canonical 3D template; the wins from doing one come from a smaller constant, and most contest setups already pass without it.</p>
+<pre><code>bool cmp(const Query&amp; a, const Query&amp; b) {
+    int al = a.l / BLOCK, bl = b.l / BLOCK;
+    if (al != bl) return al &lt; bl;
+
+    int ar = a.r / BLOCK, br = b.r / BLOCK;
+    if (ar != br) return ar &lt; br;
+
+    return a.t &lt; b.t;
+}</code></pre>
+    <p>Why two blocks of size <code class="inlineCode">B = N^(2/3)</code> on both <code class="inlineCode">l</code> and <code class="inlineCode">r</code>? Each query incurs at most <code class="inlineCode">O(B)</code> left-pointer travel within its <code class="inlineCode">(block_l, block_r)</code> cell, and the total left-pointer travel across all cells is bounded by <code class="inlineCode">O(Q · B + (N/B)² · N)</code> — the second term coming from jumps between cells. Setting <code class="inlineCode">Q · B = N³/B²</code> yields <code class="inlineCode">B = (N³/Q)^(1/3)</code>; when <code class="inlineCode">Q ≈ N</code>, this is <code class="inlineCode">N^(2/3)</code>. The time-axis cost is bounded by <code class="inlineCode">U</code> (the number of updates) times the number of cells, and the same <code class="inlineCode">B</code> balances it.</p>
+  </section>
+
+  <!-- TRACER -->
+  <section class="card" id="tracer">
+    <h2>🎮 3D Mo Tracer — All Three Pointers in Sync</h2>
+    <p>The tracer below runs a small instance of CF 940F: an array of length 6, two updates, and four queries. Every step shows one of three things: an apply/undo on the time axis, a left/right pointer step, or the recorded answer. Watch the <code class="inlineCode">curT</code> indicator move alongside <code class="inlineCode">curL</code> and <code class="inlineCode">curR</code>.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">3D Mo · array · operation log · maintained state</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="muResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="muStepBtn">▶ Next</button>
+          <button class="miniBtn" id="muAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="arrRow" id="muArr"></div>
+      <div class="queryRow" id="muQueries"></div>
+      <div class="grid2" style="margin-top:14px;">
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Maintained state</div>
+          <div class="dsBox" id="muState"></div>
+        </div>
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Operation log (input order)</div>
+          <div class="opList" id="muOpList"></div>
+        </div>
+      </div>
+      <div class="statusPanel" style="margin-top:14px;">
+        <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Description</div>
+        <div class="dsBox" id="muDesc"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MASTER TEMPLATE -->
+  <section class="card" id="master">
+    <h2>📄 Master Template — CF 940F Machine Learning</h2>
+    <p>This is the accepted Codeforces 940F template, preserved verbatim from the source corpus and lightly reformatted. The answer state uses two arrays: <code class="inlineCode">cntValue[x]</code> is the frequency of value <code class="inlineCode">x</code> in the current range, and <code class="inlineCode">cntFreq[f]</code> is the number of values whose frequency equals exactly <code class="inlineCode">f</code>. The answer is the smallest <code class="inlineCode">f ≥ 1</code> with <code class="inlineCode">cntFreq[f] = 0</code>. The MEX is found by a linear scan — perfectly fine here because the answer is bounded by the square root of the range length.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Query {
+    int l, r, t, id;
+};
+
+struct Update {
+    int pos, oldVal, newVal;
+};
+
+int BLOCK;
+
+bool cmp(const Query&amp; a, const Query&amp; b) {
+    int al = a.l / BLOCK;
+    int bl = b.l / BLOCK;
+    if (al != bl) return al &lt; bl;
+
+    int ar = a.r / BLOCK;
+    int br = b.r / BLOCK;
+    if (ar != br) return ar &lt; br;
+
+    return a.t &lt; b.t;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+
+    vector&lt;int&gt; initial(n + 1);
+    vector&lt;array&lt;int, 3&gt;&gt; operations;
+    vector&lt;int&gt; allValues;
+
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; initial[i];
+        allValues.push_back(initial[i]);
+    }
+
+    operations.reserve(m);
+    for (int i = 0; i &lt; m; i++) {
+        int type, x, y;
+        cin &gt;&gt; type &gt;&gt; x &gt;&gt; y;
+        operations.push_back({type, x, y});
+        if (type == 2) allValues.push_back(y);
+    }
+
+    sort(allValues.begin(), allValues.end());
+    allValues.erase(unique(allValues.begin(), allValues.end()), allValues.end());
+
+    auto compress = [&amp;](int x) {
+        return (int)(lower_bound(allValues.begin(), allValues.end(), x) - allValues.begin()) + 1;
+    };
+
+    vector&lt;int&gt; a(n + 1);
+    for (int i = 1; i &lt;= n; i++) a[i] = compress(initial[i]);
+
+    vector&lt;int&gt; currentForReading = a;
+    vector&lt;Query&gt; queries;
+    vector&lt;Update&gt; updates(1); // 1-based updates
+
+    int updateCount = 0;
+    int queryCount = 0;
+
+    for (auto op : operations) {
+        int type = op[0], x = op[1], y = op[2];
+
+        if (type == 1) {
+            queries.push_back({x, y, updateCount, queryCount++});
+        } else {
+            int pos = x;
+            int newVal = compress(y);
+            int oldVal = currentForReading[pos];
+            updates.push_back({pos, oldVal, newVal});
+            currentForReading[pos] = newVal;
+            updateCount++;
+        }
+    }
+
+    BLOCK = max(1, (int)pow(n, 2.0 / 3.0));
+    sort(queries.begin(), queries.end(), cmp);
+
+    vector&lt;int&gt; cntValue(allValues.size() + 2, 0);
+    vector&lt;int&gt; cntFreq(n + 2, 0);
+    vector&lt;int&gt; ans(queryCount);
+
+    int curL = 1, curR = 0, curT = 0;
+
+    auto add_value = [&amp;](int x) {
+        cntFreq[cntValue[x]]--;
+        cntValue[x]++;
+        cntFreq[cntValue[x]]++;
+    };
+
+    auto remove_value = [&amp;](int x) {
+        cntFreq[cntValue[x]]--;
+        cntValue[x]--;
+        cntFreq[cntValue[x]]++;
+    };
+
+    auto add_index = [&amp;](int idx) {
+        add_value(a[idx]);
+    };
+
+    auto remove_index = [&amp;](int idx) {
+        remove_value(a[idx]);
+    };
+
+    auto apply_update = [&amp;](int id) {
+        int pos = updates[id].pos;
+        int oldVal = updates[id].oldVal;
+        int newVal = updates[id].newVal;
+
+        if (curL &lt;= pos &amp;&amp; pos &lt;= curR) {
+            remove_value(oldVal);
+            add_value(newVal);
+        }
+
+        a[pos] = newVal;
+    };
+
+    auto undo_update = [&amp;](int id) {
+        int pos = updates[id].pos;
+        int oldVal = updates[id].oldVal;
+        int newVal = updates[id].newVal;
+
+        if (curL &lt;= pos &amp;&amp; pos &lt;= curR) {
+            remove_value(newVal);
+            add_value(oldVal);
+        }
+
+        a[pos] = oldVal;
+    };
+
+    auto get_answer = [&amp;]() {
+        int f = 1;
+        while (cntFreq[f] &gt; 0) f++;
+        return f;
+    };
+
+    for (const Query&amp; qu : queries) {
+        while (curT &lt; qu.t) apply_update(++curT);
+        while (curT &gt; qu.t) undo_update(curT--);
+
+        while (curL &gt; qu.l) add_index(--curL);
+        while (curR &lt; qu.r) add_index(++curR);
+        while (curL &lt; qu.l) remove_index(curL++);
+        while (curR &gt; qu.r) remove_index(curR--);
+
+        ans[qu.id] = get_answer();
+    }
+
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+  </section>
+
+  <!-- INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 Invariants</h2>
+
+    <h3>State invariant</h3>
+    <p>At every moment during the main loop, the maintained data structures (<code class="inlineCode">cntValue</code>, <code class="inlineCode">cntFreq</code> in 940F; more generally, whatever your answer layer needs) exactly represent the multiset of values <code class="inlineCode">{ a[i] : curL ≤ i ≤ curR }</code> in the array's snapshot after <code class="inlineCode">curT</code> updates.</p>
+
+    <h3>Array-mirror invariant</h3>
+    <p>At every moment during the main loop, <code class="inlineCode">a[]</code> equals the array's snapshot after exactly <code class="inlineCode">curT</code> updates. This is a stronger claim than just "Mo state is correct"; it says the array storage itself has been brought to the right time. Without this, the next pointer step would <em>add</em> the wrong value to the Mo state.</p>
+
+    <h3>Transition invariant</h3>
+    <p>Each time-step inside the two <code class="inlineCode">curT</code> loops touches exactly one update record and performs at most one <code class="inlineCode">remove/add</code> pair (when the update position is in range), plus a write to <code class="inlineCode">a[pos]</code>. Each step inside the four pointer loops touches exactly one array cell and performs exactly one <code class="inlineCode">add/remove</code> call.</p>
+
+    <h3>Query invariant</h3>
+    <p>Immediately before storing <code class="inlineCode">ans[qu.id]</code>, all three pointers match the query: <code class="inlineCode">(curL, curR, curT) = (qu.l, qu.r, qu.t)</code>. The maintained state therefore represents exactly the queried multiset at the queried point in time.</p>
+  </section>
+
+  <!-- PROOF -->
+  <section class="card" id="proof">
+    <h2>📜 Proof of Correctness — Why Undo Works</h2>
+    <p>The classic Mo proof shows that the four pointer loops preserve the state invariant. We need to show that the two extra time loops preserve it as well, and that <code class="inlineCode">apply_update</code> and <code class="inlineCode">undo_update</code> are exact inverses of each other.</p>
+
+    <h3>Lemma A — <code class="inlineCode">apply_update</code> preserves the state invariant</h3>
+    <p>Suppose the array-mirror invariant holds and Mo state is correct for snapshot <code class="inlineCode">curT</code>. After <code class="inlineCode">apply_update(curT+1)</code>, we want the array-mirror invariant to hold for snapshot <code class="inlineCode">curT+1</code> and the Mo state to be correct for it. By construction, the underlying array has <code class="inlineCode">a[pos] = oldVal</code> right before the hook runs (because we are at snapshot <code class="inlineCode">curT</code>, and the offline pre-pass recorded <code class="inlineCode">oldVal</code> as the value at <code class="inlineCode">pos</code> immediately before this update). After <code class="inlineCode">a[pos] = newVal</code> in the hook, the array equals snapshot <code class="inlineCode">curT+1</code>; that closes the array-mirror part. The Mo state changed by exactly one <code class="inlineCode">remove(oldVal)/add(newVal)</code> pair iff <code class="inlineCode">pos ∈ [curL, curR]</code>, which is exactly the difference between the multiset at snapshot <code class="inlineCode">curT</code> and at snapshot <code class="inlineCode">curT+1</code> restricted to <code class="inlineCode">[curL, curR]</code>.</p>
+
+    <h3>Lemma B — <code class="inlineCode">undo_update</code> preserves the state invariant</h3>
+    <p>The same argument runs in reverse. At entry, the array is at snapshot <code class="inlineCode">curT</code> with <code class="inlineCode">a[pos] = newVal</code>; on exit, it is at snapshot <code class="inlineCode">curT-1</code> with <code class="inlineCode">a[pos] = oldVal</code>. The Mo state mutation removes <code class="inlineCode">newVal</code> and adds <code class="inlineCode">oldVal</code>, undoing what <code class="inlineCode">apply_update(curT)</code> did. Crucially, the in-range check uses the <em>current</em> <code class="inlineCode">curL</code>/<code class="inlineCode">curR</code>, not the values at the moment <code class="inlineCode">apply_update</code> was called; this is fine because the invariant requires only that the Mo state match the current <code class="inlineCode">(curL, curR, curT)</code>, not the historical one.</p>
+
+    <h3>Theorem</h3>
+    <p>Combining Lemmas A and B with the classic Mo lemmas for pointer movement, the state invariant and array-mirror invariant hold at every moment of the main loop. In particular they hold immediately before each <code class="inlineCode">get_answer</code> call. Therefore every stored answer is correct.</p>
+  </section>
+
+  <!-- COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+    <p>Let <code class="inlineCode">N</code> be the array length, <code class="inlineCode">Q</code> be the number of queries, and <code class="inlineCode">U</code> be the number of updates. Let <code class="inlineCode">B</code> be the block size used by the comparator, and let <code class="inlineCode">F</code> be the cost of one <code class="inlineCode">add_value</code>/<code class="inlineCode">remove_value</code> call.</p>
+    <p>Across all queries, the left pointer travels <code class="inlineCode">O(Q · B)</code> within cells and <code class="inlineCode">O((N/B)² · N) = O(N³/B²)</code> across cell boundaries. The right pointer travels <code class="inlineCode">O(N · N/B) = O(N²/B)</code> for each <code class="inlineCode">block_l</code> bucket, times <code class="inlineCode">N/B</code> buckets, giving <code class="inlineCode">O(N³/B²)</code> in total — same as the cross-cell left jumps. The time pointer travels <code class="inlineCode">O(U)</code> per cell, times <code class="inlineCode">(N/B)²</code> cells, giving <code class="inlineCode">O(U · N²/B²)</code>.</p>
+    <p>Setting <code class="inlineCode">Q · B = N³/B²</code> gives <code class="inlineCode">B = (N³/Q)^(1/3)</code>. For <code class="inlineCode">Q ≈ N</code> this collapses to <code class="inlineCode">B = N^(2/3)</code> and the total complexity becomes <code class="inlineCode">O(Q · N^(2/3) · F)</code>. With <code class="inlineCode">F = O(1)</code> as in 940F, the practical running time is roughly <code class="inlineCode">N^(5/3)</code>. For <code class="inlineCode">N = 10⁵</code> that is on the order of <code class="inlineCode">2 · 10⁸</code> elementary operations — fast enough on a typical 2 s judge limit, often with comfortable margin.</p>
+  </section>
+
+  <!-- LINE BY LINE -->
+  <section class="card" id="lbl">
+    <h2>🔎 Line-by-Line — CF 940F Dissected</h2>
+
+    <h3>Coordinate compression over <em>both</em> sources</h3>
+    <p>The vector <code class="inlineCode">allValues</code> collects the initial array values <em>and</em> every update's new value. After sort+unique, <code class="inlineCode">compress(x)</code> maps any value that will ever appear into a small contiguous range. Missing this step — for example, only compressing the initial values — leaves the update values uncompressed and either crashes <code class="inlineCode">cntValue</code> or produces wrong frequencies.</p>
+
+    <h3>Offline pre-pass to record <code class="inlineCode">oldVal</code> correctly</h3>
+    <p>The local variable <code class="inlineCode">currentForReading</code> is a mirror of the array as it would look at the moment we are reading an update from the input stream. When we encounter a type-2 operation, the value we record as <code class="inlineCode">oldVal</code> is exactly <code class="inlineCode">currentForReading[pos]</code>, not <code class="inlineCode">initial[pos]</code>. If two consecutive updates touch the same position, the second one's <code class="inlineCode">oldVal</code> is the first one's <code class="inlineCode">newVal</code> — which is exactly what <code class="inlineCode">currentForReading</code> captures.</p>
+
+    <h3>Initial pointers</h3>
+    <p>This template uses 1-based indexing throughout, so the canonical empty interval is <code class="inlineCode">curL = 1, curR = 0</code>. <code class="inlineCode">curT = 0</code> means no updates have yet been applied. These three values together represent the "empty Mo state at the beginning of time".</p>
+
+    <h3>Block size <code class="inlineCode">pow(n, 2/3)</code></h3>
+    <p>The integer block size is computed by <code class="inlineCode">max(1, (int)pow(n, 2.0/3.0))</code>. The <code class="inlineCode">max</code> guard prevents division by zero when <code class="inlineCode">n &lt; 2</code>. Using <code class="inlineCode">cbrt(n*n)</code> is mathematically equivalent and often slightly faster in practice.</p>
+
+    <h3>The double-indexed answer layer</h3>
+    <p>The lambdas <code class="inlineCode">add_value</code> and <code class="inlineCode">remove_value</code> form the canonical "frequency-of-frequency" pattern: bump <code class="inlineCode">cntFreq</code> down for the old frequency, mutate <code class="inlineCode">cntValue</code>, and bump <code class="inlineCode">cntFreq</code> back up for the new frequency. The MEX in <code class="inlineCode">get_answer</code> is a tiny linear scan because the answer is bounded by <code class="inlineCode">⌈√N⌉</code> (no more than that many distinct frequencies can be active simultaneously without overshooting the range length).</p>
+
+    <h3>The seven-loop engine</h3>
+    <p>The main loop now has seven phases per query. First the two time loops bring the array to the right snapshot. Then the four pointer loops bring <code class="inlineCode">curL</code>/<code class="inlineCode">curR</code> to the right interval. Finally <code class="inlineCode">get_answer</code> reads off the result. The time loops come first by convention; switching the order is correct but requires more care, because the in-range check inside the update hooks then uses the not-yet-updated pointers.</p>
+  </section>
+
+  <!-- EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🪜 Centralized Edge-Case Audit</h2>
+    <p>The classic-Mo audit still applies; the items below are additional checks that specifically concern the time dimension.</p>
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Did you compress both original and update values?</td><td>Skipping one collection silently breaks the frequency layer.</td></tr>
+        <tr><td>2</td><td>Is <code class="inlineCode">oldVal</code> recorded from the post-previous-updates state?</td><td>Two consecutive updates to the same position have chained <code class="inlineCode">oldVal</code>; using <code class="inlineCode">initial[pos]</code> is wrong.</td></tr>
+        <tr><td>3</td><td>Do <code class="inlineCode">apply_update</code> and <code class="inlineCode">undo_update</code> patch <code class="inlineCode">a[pos]</code> unconditionally?</td><td>The array-mirror invariant requires updating <code class="inlineCode">a[pos]</code> even when the position is outside <code class="inlineCode">[curL, curR]</code>.</td></tr>
+        <tr><td>4</td><td>Are time loops placed <em>before</em> pointer loops?</td><td>Putting them after still works but flips the meaning of the in-range check; do not mix conventions across the same codebase.</td></tr>
+        <tr><td>5</td><td>Did you initialize <code class="inlineCode">curT = 0</code> and 1-base the updates vector?</td><td>The template uses <code class="inlineCode">updates(1)</code> so that <code class="inlineCode">updates[1]</code> is the first real update. Off-by-one here corrupts every query.</td></tr>
+        <tr><td>6</td><td>Is <code class="inlineCode">BLOCK = N^(2/3)</code>, not <code class="inlineCode">√N</code>?</td><td>Using <code class="inlineCode">√N</code> works but is asymptotically suboptimal — typically times out on the largest tests.</td></tr>
+        <tr><td>7</td><td>Are the sizes of <code class="inlineCode">cntValue</code> and <code class="inlineCode">cntFreq</code> correct?</td><td><code class="inlineCode">cntValue</code> is sized by the number of distinct values; <code class="inlineCode">cntFreq</code> by the max possible frequency, which is <code class="inlineCode">N</code>.</td></tr>
+        <tr><td>8</td><td>Did you store <code class="inlineCode">qu.t = updateCount</code> at the moment of reading the query?</td><td>Each query's <code class="inlineCode">t</code> is the number of updates that have already been applied <em>before</em> it appears in the input stream.</td></tr>
+        <tr><td>9</td><td>Is the MEX scan bounded?</td><td>The linear MEX is safe because the answer is at most <code class="inlineCode">⌈√N⌉</code>+1; if you ever see it spinning past that bound, an invariant has broken.</td></tr>
+        <tr><td>10</td><td>Are queries read with type==1 and stored only then?</td><td>Mixing query and update records in a single vector and post-filtering is a common bug; keep them in separate vectors.</td></tr>
+        <tr><td>11</td><td>Did you set <code class="inlineCode">curL = 1, curR = 0</code> (1-based)?</td><td>If you use 0-based pointers but 1-based array storage, every <code class="inlineCode">add_index</code> reads from the wrong cell.</td></tr>
+        <tr><td>12</td><td>Are <code class="inlineCode">ans</code> writes by <code class="inlineCode">qu.id</code>, not by sorted index?</td><td>Same trap as classic Mo; sorted iteration must still write back into the original output position.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+
+    <h3>Pitfall 1 — Using the wrong <code class="inlineCode">oldVal</code></h3>
+    <p>If two updates target the same position, the second update's <code class="inlineCode">oldVal</code> must be the first update's <code class="inlineCode">newVal</code>. Compute <code class="inlineCode">oldVal</code> by maintaining a running mirror of the array during the offline pre-pass, not by reading from <code class="inlineCode">initial[]</code>.</p>
+
+    <h3>Pitfall 2 — Forgetting to mutate <code class="inlineCode">a[pos]</code> when out of range</h3>
+    <p>The position-vs-range branch decides whether to touch the Mo state. The write to <code class="inlineCode">a[pos]</code> happens unconditionally, because the array-mirror invariant must hold whether or not the update affected the maintained state.</p>
+
+    <h3>Pitfall 3 — Compressing only initial values</h3>
+    <p>If you forget to include update values in the compression pool, calls like <code class="inlineCode">cntValue[compress(newVal)]</code> read garbage or out-of-bounds memory. Include every value that will ever land in the array.</p>
+
+    <h3>Pitfall 4 — <code class="inlineCode">√N</code> block size</h3>
+    <p>Plenty of submissions use <code class="inlineCode">√N</code> out of habit and pass when constraints are gentle. On the official 940F bounds (<code class="inlineCode">N, M ≤ 10⁵</code>), <code class="inlineCode">√N</code> typically TLEs while <code class="inlineCode">N^(2/3)</code> is comfortable.</p>
+
+    <h3>Pitfall 5 — Forgetting that the comparator depends on <code class="inlineCode">BLOCK</code></h3>
+    <p>If you sort queries before assigning <code class="inlineCode">BLOCK</code>, the comparator uses whatever value <code class="inlineCode">BLOCK</code> had at the time — usually zero — and division-by-zero crashes silently inside <code class="inlineCode">sort</code>. Always set <code class="inlineCode">BLOCK</code> first.</p>
+
+    <h3>Pitfall 6 — Mixing time-axis convention across hooks</h3>
+    <p>If <code class="inlineCode">apply_update</code> swaps the order of "mutate <code class="inlineCode">a[pos]</code>" and "patch Mo state" while <code class="inlineCode">undo_update</code> does not, you will produce wrong answers on a non-trivial fraction of tests. Keep the structure of the two hooks symmetric and obvious.</p>
+  </section>
+
+  <!-- DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 Decision Guide — 3D Mo vs Alternatives</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Prefer</th></tr></thead>
+      <tbody>
+        <tr><td>Offline range queries, no updates</td><td>classic Mo (see file 1).</td></tr>
+        <tr><td>Offline range queries, point updates allowed</td><td><b>3D Mo (this file)</b>.</td></tr>
+        <tr><td>Online range queries with updates and a clean merge</td><td>segment tree.</td></tr>
+        <tr><td>Online range queries with updates, frequency-based answer</td><td>online sqrt with block-precomputed structures (see file 4).</td></tr>
+        <tr><td>Tree queries with updates</td><td>HLD + segment tree, or Euler tour + 3D Mo flattening (advanced).</td></tr>
+        <tr><td>Range updates instead of point updates</td><td>3D Mo does not apply directly — use offline difference arrays + segtree.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules</h3>
+    <p>The reflex rule for 3D Mo is short: choose it when the problem is offline, the queries are range queries on a 1-D array, the updates are point updates, and the answer would already have been a Mo problem if the updates were absent. If any of these conditions fails, the right tool is something else.</p>
+  </section>
+
+  <!-- PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 Problem-Based Learning — Codeforces 940F</h2>
+
+    <details open>
+      <summary>24.1 — Codeforces 940F: Machine Learning <span class="rightHint">MEX over freq-of-freq</span></summary>
+      <div class="detailsBody">
+        <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeForces-940F">https://vjudge.net/problem/CodeForces-940F</a></p>
+        <p><b>Story.</b> Given an array and a sequence of operations, each one either queries the smallest <code class="inlineCode">f ≥ 1</code> with no value appearing exactly <code class="inlineCode">f</code> times in some range, or overwrites one position with a new value.</p>
+        <p><b>Abstraction.</b> This is 3D Mo with the double-indexed frequency answer layer. The full template above is the accepted solution. The block size is <code class="inlineCode">N^(2/3)</code>, the time axis is the third sort key, and the MEX is read in <code class="inlineCode">O(√N)</code> per query.</p>
+        <p><b>Why Mo fits.</b> The answer is fundamentally a frequency-of-frequency aggregate with no clean associative merge, the updates are point updates that can be made offline, and the queries are range queries on a 1-D array.</p>
+        <p><b>Algorithm choice.</b> 3D Mo with <code class="inlineCode">cntValue</code> + <code class="inlineCode">cntFreq</code>. The MEX scan is bounded by <code class="inlineCode">⌈√N⌉ + 1</code> so its total contribution across all queries is dominated by the Mo movement cost.</p>
+        <p><b>Complexity.</b> <code class="inlineCode">O((Q + N) · N^(2/3))</code> for the Mo engine; the MEX scan adds at most <code class="inlineCode">O(Q · √N)</code> which is dominated.</p>
+        <p><b>Pitfalls.</b> Compress both the initial values and the update values into a single pool; record each update's <code class="inlineCode">oldVal</code> from the running mirror, not from the original <code class="inlineCode">initial[]</code>; use <code class="inlineCode">N^(2/3)</code> for the block size; place the time loops before the pointer loops.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 Final Summary</h2>
+    <p>3D Mo is classic Mo plus one new axis. The state is <code class="inlineCode">(curL, curR, curT)</code>, the engine has seven loops per query instead of four, and the block size is <code class="inlineCode">N^(2/3)</code>. The hooks <code class="inlineCode">apply_update</code> and <code class="inlineCode">undo_update</code> are exact inverses; both patch <code class="inlineCode">a[pos]</code> unconditionally but patch the Mo state only when the position is inside the current pointer interval.</p>
+    <p>Three rules earn most of the correctness:</p>
+    <pre><code>1. oldVal is the value AFTER previous updates, not from initial[].
+2. The position-vs-range check is the only conditional in the hooks.
+3. Block size N^(2/3) balances all three axes.</code></pre>
+    <p>Continue with <code class="inlineCode">25-mo-other-variants.html</code> for rollback Mo (when delete is hard), 4D Mo (when there are two intervals), and the online block-precomputed variant.</p>
+  </section>
+
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">⏱</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Mo's Algorithm Family · Mo with Updates · 3D Mo</div>
+    <div class="footer-copy">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+// =============================================================
+// HELPERS
+// =============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+
+// =============================================================
+// THEME TOGGLE
+// =============================================================
+const savedTheme=localStorage.getItem('mo_upd_theme');
+if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
+$('#themeSwitch').onclick=()=>{
+  const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorage.setItem('mo_upd_theme', next);
+};
+
+// ============================================================
+// SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+// ============================================================
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (window.innerWidth > 1400) {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      } else {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+      setSidebar(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1400) {
+      setSidebar(true);
+    } else {
+      setSidebar(false);
+    }
+  });
+
+  setSidebar(open);
+})();
+// =============================================================
+// SCROLL NAV HIGHLIGHT
+// =============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<200) cur=s.id; });
+  navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+$('.content').addEventListener('scroll', updateNav);
+updateNav();
+
+// =============================================================
+// TRACER — 3D Mo on a small CF 940F instance
+// Array: 1-based, length 6, initial = [_, 2, 1, 3, 2, 4, 1]
+// Operations stream (input order):
+//   op#1  type=1  query [1,4]      -> qid 0, t=0
+//   op#2  type=2  update a[3]=2    -> uid 1, oldVal=3, newVal=2
+//   op#3  type=1  query [2,5]      -> qid 1, t=1
+//   op#4  type=2  update a[5]=1    -> uid 2, oldVal=4, newVal=1
+//   op#5  type=1  query [1,6]      -> qid 2, t=2
+//   op#6  type=1  query [3,6]      -> qid 3, t=2
+// =============================================================
+(function(){
+  const initial = [0, 2, 1, 3, 2, 4, 1];   // 1-based
+  const N = 6;
+  // Build operation log
+  const opLog = [
+    {type:'q', l:1, r:4, qid:0},
+    {type:'u', pos:3, newVal:2, oldVal:3, uid:1},
+    {type:'q', l:2, r:5, qid:1},
+    {type:'u', pos:5, newVal:1, oldVal:4, uid:2},
+    {type:'q', l:1, r:6, qid:2},
+    {type:'q', l:3, r:6, qid:3},
+  ];
+
+  // Build Mo queries
+  const queries = [];
+  let updCount = 0;
+  for(const op of opLog){
+    if(op.type==='q') queries.push({l:op.l, r:op.r, t:updCount, id:op.qid});
+    else updCount++;
+  }
+  const updates = [null]; // 1-based
+  for(const op of opLog) if(op.type==='u') updates.push({pos:op.pos, oldVal:op.oldVal, newVal:op.newVal});
+
+  const BLOCK = Math.max(1, Math.floor(Math.pow(N, 2/3)));
+  const sorted = [...queries].sort((a,b)=>{
+    const al=Math.floor(a.l/BLOCK), bl=Math.floor(b.l/BLOCK);
+    if(al!==bl) return al-bl;
+    const ar=Math.floor(a.r/BLOCK), br=Math.floor(b.r/BLOCK);
+    if(ar!==br) return ar-br;
+    return a.t - b.t;
+  });
+
+  // Build frames
+  const frames = [];
+  const a = [...initial]; // mutable mirror
+  const cntValue = new Array(10).fill(0);
+  const cntFreq  = new Array(N+2).fill(0);
+  let curL = 1, curR = 0, curT = 0;
+  const doneIds = [];
+
+  function snap(desc, curQid, lastIdx=null, justUpdatedPos=null, op=null){
+    frames.push({
+      a:[...a], curL, curR, curT,
+      cntValue:[...cntValue], cntFreq:[...cntFreq],
+      desc, curQid, doneIds:[...doneIds],
+      lastIdx, justUpdatedPos, op
+    });
+  }
+  function add_value(x){
+    cntFreq[cntValue[x]]--;
+    cntValue[x]++;
+    cntFreq[cntValue[x]]++;
+  }
+  function remove_value(x){
+    cntFreq[cntValue[x]]--;
+    cntValue[x]--;
+    cntFreq[cntValue[x]]++;
+  }
+  function apply_update(id){
+    const {pos, oldVal, newVal} = updates[id];
+    if(curL <= pos && pos <= curR){
+      remove_value(oldVal);
+      add_value(newVal);
+    }
+    a[pos] = newVal;
+  }
+  function undo_update(id){
+    const {pos, oldVal, newVal} = updates[id];
+    if(curL <= pos && pos <= curR){
+      remove_value(newVal);
+      add_value(oldVal);
+    }
+    a[pos] = oldVal;
+  }
+  function get_answer(){
+    let f = 1;
+    while(cntFreq[f] > 0) f++;
+    return f;
+  }
+
+  snap('Initial state. curL=1, curR=0 (empty), curT=0 (no updates applied). All cntValue/cntFreq zero.', -1);
+  for(const q of sorted){
+    snap(`▶ Processing query #${q.id}: target (l=${q.l}, r=${q.r}, t=${q.t}).`, q.id);
+    // Time axis — forward
+    while(curT < q.t){
+      curT++;
+      apply_update(curT);
+      snap(`Time forward: apply update #${curT} (pos=${updates[curT].pos}, ${updates[curT].oldVal}→${updates[curT].newVal}). a[${updates[curT].pos}]=${a[updates[curT].pos]}.${(curL<=updates[curT].pos && updates[curT].pos<=curR) ? ' Position is IN range → Mo state patched.' : ' Position is OUT of range → Mo state unchanged.'}`, q.id, null, updates[curT].pos, updates[curT]);
+    }
+    while(curT > q.t){
+      const id = curT;
+      undo_update(id);
+      snap(`Time backward: undo update #${id} (pos=${updates[id].pos}, ${updates[id].newVal}→${updates[id].oldVal}).${(curL<=updates[id].pos && updates[id].pos<=curR) ? ' Position is IN range → Mo state patched.' : ' Position is OUT of range → Mo state unchanged.'}`, q.id, null, updates[id].pos, updates[id]);
+      curT--;
+    }
+    // Pointer loops
+    while(curL > q.l){ curL--; add_value(a[curL]); snap(`Expand left: add a[${curL}]=${a[curL]}.`, q.id, curL); }
+    while(curR < q.r){ curR++; add_value(a[curR]); snap(`Expand right: add a[${curR}]=${a[curR]}.`, q.id, curR); }
+    while(curL < q.l){ remove_value(a[curL]); snap(`Shrink left: remove a[${curL}]=${a[curL]}.`, q.id, curL); curL++; }
+    while(curR > q.r){ remove_value(a[curR]); snap(`Shrink right: remove a[${curR}]=${a[curR]}.`, q.id, curR); curR--; }
+    const ans = get_answer();
+    doneIds.push(q.id);
+    snap(`✓ ans[${q.id}] = ${ans}.`, q.id);
+  }
+
+  let step = 0, autoTimer = null;
+  function render(){
+    const f = frames[step];
+
+    // Array row
+    const wrap = $('#muArr'); clearEl(wrap);
+    for(let i=1; i<=N; i++){
+      const cell = document.createElement('div');
+      cell.className='arrCell';
+      if(i >= f.curL && i <= f.curR) cell.classList.add('inRange');
+      if(i === f.curL) cell.classList.add('curL');
+      if(i === f.curR) cell.classList.add('curR');
+      if(f.lastIdx === i){
+        // distinguish add vs remove by checking desc
+        if(f.desc.includes('add')) cell.classList.add('justAdd');
+        else if(f.desc.includes('remove')) cell.classList.add('justRem');
+      }
+      if(f.justUpdatedPos === i) cell.classList.add('justUpdated');
+      cell.innerHTML = `${f.a[i]}<span class="idx">i=${i}</span>`;
+      wrap.appendChild(cell);
+    }
+
+    // Queries
+    const qr = $('#muQueries'); clearEl(qr);
+    for(const q of queries){
+      const chip = document.createElement('div');
+      chip.className = 'queryChip';
+      chip.textContent = `#${q.id}: l=${q.l} r=${q.r} t=${q.t}`;
+      if(f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qr.appendChild(chip);
+    }
+
+    // State panel
+    let s = '';
+    s += `curL=${f.curL}  curR=${f.curR}  curT=${f.curT}\n\n`;
+    s += `a[] = [${f.a.slice(1).join(', ')}]\n\n`;
+    s += `cntValue (non-zero only):\n`;
+    const cv = [];
+    for(let v=1; v<f.cntValue.length; v++) if(f.cntValue[v]>0) cv.push(`  v=${v} → ${f.cntValue[v]}`);
+    s += cv.length ? cv.join('\n') : '  (all zero)';
+    s += `\n\ncntFreq (non-zero only):\n`;
+    const cf = [];
+    for(let v=1; v<f.cntFreq.length; v++) if(f.cntFreq[v]>0) cf.push(`  freq=${v} → ${f.cntFreq[v]}`);
+    s += cf.length ? cf.join('\n') : '  (all zero)';
+    $('#muState').textContent = s;
+
+    // Operation log
+    const list = $('#muOpList'); clearEl(list);
+    // Mark which updates have been applied at the current step
+    opLog.forEach((op, i)=>{
+      const line = document.createElement('div');
+      line.className = 'opLine';
+      if(op.type==='q'){
+        line.innerHTML = `<span class="opTag q">Q#${op.qid}</span> query [${op.l}, ${op.r}]`;
+        if(f.doneIds.includes(op.qid)) line.classList.add('applied');
+        if(f.curQid === op.qid && !f.doneIds.includes(op.qid)) line.classList.add('cur');
+      } else {
+        line.innerHTML = `<span class="opTag u">U#${op.uid}</span> a[${op.pos}] = ${op.newVal}  (was ${op.oldVal})`;
+        if(op.uid <= f.curT) line.classList.add('applied');
+        if(f.op && f.op.pos===op.pos && f.op.oldVal===op.oldVal && f.op.newVal===op.newVal) line.classList.add('cur');
+      }
+      list.appendChild(line);
+    });
+
+    // Description
+    $('#muDesc').textContent = `step ${step+1} / ${frames.length}\n\n${f.desc}`;
+  }
+  $('#muResetBtn').onclick = ()=>{
+    step=0;
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; $('#muAutoBtn').classList.remove('active'); }
+    render();
+  };
+  $('#muStepBtn').onclick = ()=>{ if(step<frames.length-1){ step++; render(); } };
+  $('#muAutoBtn').onclick = function(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer=null; this.classList.remove('active'); }
+    else {
+      this.classList.add('active');
+      autoTimer = setInterval(()=>{
+        if(step>=frames.length-1){ clearInterval(autoTimer); autoTimer=null; $('#muAutoBtn').classList.remove('active'); }
+        else { step++; render(); }
+      }, 900);
+    }
+  };
+  render();
+})();
+</script>
+</body>
+</html>

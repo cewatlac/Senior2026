@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Lesson 11 — Persistent Lazy Segment Tree · Segment Tree Course</title>
+<style>
+
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:24px; --fs-sm:21px;
+    --fs-h1:50px; --fs-h2:36px; --fs-h3:28px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.4;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:380px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:20px 16px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:24px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 16px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:26px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:12px 4px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:14px 6px 8px;text-transform:uppercase;letter-spacing:.06em;font-size:16px;}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;border:2px solid transparent;font-weight:800;color:var(--text);margin:4px 4px;background:rgba(0,0,0,0);font-size:18px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:14px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:14px;border-left:3px dashed rgba(37,99,235,.35);padding-left:6px;}
+  .sub a{font-weight:700;font-size:17px;padding:8px 10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:12px 16px;border-radius:14px;font-weight:900;cursor:pointer;font-size:20px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .switch{width:60px;height:34px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 8px 18px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:31px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .card h4{margin:14px 0 8px;font-size:22px;color:var(--accent2);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:700;font-size:20px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:7px 11px;border-radius:999px;font-weight:900;font-size:16px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:16px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:18px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:14px 18px 18px;}
+  pre{margin:10px 0 0;background:var(--codebg);color:var(--codetext);border-radius:16px;padding:14px 16px;overflow:auto;border:2px solid rgba(255,255,255,.08);font-size:17px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;margin:14px 0;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:23px;}
+  .diagramTools{display:flex;gap:8px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .miniBtn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.35);color:var(--bad);}
+  svg.treeSvg{width:100%;height:auto;border-radius:16px;background:rgba(0,0,0,0);display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;overflow-x:auto;white-space:pre-wrap;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:3px solid var(--border);margin-top:10px;font-weight:800;font-size:19px;}
+  th,td{padding:10px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;text-align:left;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:44px;height:44px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:20px;height:14px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:380px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:74px;}
+  .statusPanel{border:3px solid var(--border);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:800;}
+  .statusPanel h3{margin:0 0 8px;font-size:22px;color:var(--accent2);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:16px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:18px;padding-top:14px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:13px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:1px 7px;font-size:19px;font-weight:900;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-weight:800;font-size:17px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;background:rgba(2,6,23,.04);padding:6px 10px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  [data-theme="dark"] .legend span{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;pointer-events:none;}
+  .edgeLine{transition:all .25s ease;}
+  .stepLabel{text-align:center;font-weight:900;font-size:18px;color:var(--muted);margin-top:8px;}
+  .arr{display:flex;flex-wrap:wrap;gap:6px;}
+  .arrCell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:48px;flex-direction:column;padding:4px 8px;border-radius:10px;border:2px solid var(--border);background:var(--panel);font-weight:950;font-family:ui-monospace,monospace;font-size:18px;}
+  .arrCell .idx{font-size:12px;color:var(--muted);font-weight:700;}
+  .arrCell.hl{border-color:var(--accent2);background:rgba(37,99,235,.15);box-shadow:0 4px 12px rgba(37,99,235,.18);}
+  .arrCell.upd{border-color:var(--warn);background:rgba(180,83,9,.15);color:var(--warn);}
+  .arrCell.done{border-color:var(--good);background:rgba(15,118,110,.15);color:var(--good);}
+  .kvLine{display:flex;align-items:center;gap:8px;font-family:ui-monospace,monospace;font-size:17px;margin:3px 0;}
+  .kvLine .k{font-weight:900;color:var(--accent2);min-width:80px;}
+  .kvLine .v{font-weight:700;}
+  .twoCol{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:flex-start;}
+  @media(max-width:1100px){.twoCol{grid-template-columns:1fr}}
+  .invariantBox{background:linear-gradient(180deg,rgba(15,118,110,.10),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .invariantBox h4{color:var(--good);margin:0 0 6px;font-size:21px;}
+  .pitfallBox{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .pitfallBox h4{color:var(--bad);margin:0 0 6px;font-size:21px;}
+  .proofBox{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .proofBox h4{color:var(--warn);margin:0 0 6px;font-size:21px;}
+
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🌳</div>
+    <div class="brandTitle">
+      <div class="t1">Segment Tree · L11</div>
+      <div class="t2">Persistent + Lazy</div>
+      <div class="by-line">Coach Academy</div>
+    </div>
+  </div>
+  <nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem">🧩 Problem Definition<small>Range updates + historic queries</small></a>
+  <a href="#intuition">💡 Intuition<small>Clone every touched node</small></a>
+  <a href="#mental">🌳 Visual Mental Model<small>Versioned forest with lazy tags</small></a>
+  <a href="#abstract">📐 Formal Abstraction<small>Clone-on-write · carry</small></a>
+  <a href="#observations">🔬 Key Observations<small>Queries never mutate</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algo">⚙️ Algorithm<small>Update · Query · Carry</small></a>
+  <div class="sub">
+  <a href="#trace-update">Clone-on-Write Tracer</a>
+  <a href="#trace-query">Carry-Pattern Query Tracer</a>
+  </div>
+  <a href="#invariants">🛡️ Invariants<small>Immutability · Sum · Lazy carry</small></a>
+  <a href="#proof">🧮 Proof of Correctness<small>Why carry preserves semantics</small></a>
+  <a href="#complexity">⏱ Complexity<small>Time · space</small></a>
+  <div class="groupTitle">Implementation</div>
+  <a href="#template-philosophy">🧰 Template Philosophy<small>No mutation during queries</small></a>
+  <a href="#master-code">💻 Master Template<small>Full C++ code</small></a>
+  <a href="#explained">🔎 Line-by-Line<small>Every routine</small></a>
+  <div class="groupTitle">Variants</div>
+  <a href="#variants">🎛️ Variants & Extensions<small>Set + add · persistent KTH</small></a>
+  <div class="groupTitle">Reference</div>
+  <a href="#edges">🧯 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls">⚠️ Common Pitfalls<small>Mutation by accident</small></a>
+  <a href="#decision">🎯 Decision Guide<small>When to combine</small></a>
+  <a href="#problems">🚀 Practice Problems<small>VJudge links</small></a>
+  <a href="#summary">🏁 Final Summary<small>Wrap-up</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:42px;height:42px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;">🎓</div>
+    <div class="sf-text">
+      Coach Academy<br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+    </div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:32px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Segment Tree Course</div>
+        <h1>Lesson 11 — Persistent Lazy Segment Tree</h1>
+        <div class="subtitle">Path Copying · Range Updates · Carry Pattern · Past Versions Stay Intact</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:18px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+
+    <p>Given an array <code>a[0..n−1]</code>, support an online sequence of operations where each operation either:</p>
+    <div class="grid2">
+      <div class="statusPanel"><h3>Modifying op (creates a new version)</h3><p><code>range_add(version_idx, ql, qr, x)</code>: produce a new version equal to <code>version_idx</code> after applying <code>+x</code> to every element of <code>[ql, qr]</code>.</p></div>
+      <div class="statusPanel"><h3>Read-only op (any version)</h3><p><code>range_sum(version_idx, ql, qr)</code>: return the sum over <code>[ql, qr]</code> in the snapshot identified by <code>version_idx</code>.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px;">Past versions remain queryable forever. Combining lesson-4 lazy propagation with lesson-5 path copying gives this in <code>O(log n)</code> per operation and <code>O(N · log n)</code> total memory for <code>N</code> modifying operations.</p>
+
+  </section>
+
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch</h2>
+
+    <p>Plain lazy propagation mutates two things during an update: the <code>sum</code>/state of the node and its lazy tag. To make the structure persistent, no mutation is allowed on existing (published) nodes — both must happen on freshly cloned nodes. The pattern is Lesson 5's path-copying applied to a node-state that now includes a lazy tag.</p>
+    <p>For <b>updates</b>, this is straightforward: every node on the path is cloned before being modified. Before a partial-cover descent, the parent's pending lazy must also be pushed into <i>freshly cloned</i> children — otherwise the later <code>pull</code> would lose it. So the update does push, but only into clones.</p>
+    <p>The harder question is the <i>query</i>. In Lesson 4, the query had to <code>push</code> pending tags down before recursing partially. But a query that pushed would mutate published nodes — corrupting older versions. The standard solution is the <b>carry pattern</b>: instead of pushing tags into the nodes, we <i>carry</i> them as a function argument while descending. The carry accumulates each ancestor's lazy tag along the query path, and contributes to the running sum at every full-overlap node.</p>
+    <p>The carry pattern (for queries) and push-into-clones (for updates) together are the discipline of persistent lazy. Once both clicks, the rest is mechanical.</p>
+
+  </section>
+
+  <section class="card" id="mental">
+    <h2>🌳 Visual Mental Model</h2>
+
+    <p>Every node now stores both a state field (e.g. <code>sum</code>) and a lazy tag (e.g. <code>add_lazy</code>). The state is what would be visible if we pushed all ancestors' tags down to and including this node — it is correct for the node's interval. The lazy tag is what is still owed to the node's children.</p>
+    <p>An <b>update</b> follows the path-copying pattern: for each level of the descent, if the node is fully inside the query range, we clone it once and apply the operation directly on the clone (no recursion). Otherwise, we clone the current node, push its pending lazy into freshly cloned left/right children, recurse into both (each may itself clone or share), update the clone's pointers, and re-pull. Off-path subtrees are shared between old and new versions.</p>
+    <p>A <b>query</b> follows the carry pattern: at every recursion level, the function receives an extra argument <code>carry</code> (cumulative pending add inherited from ancestors that contain this node's interval). At a full-overlap node, the contribution is <code>node.sum + carry · (interval length)</code>. At a partial node, the function recurses into both children passing <code>carry + node.add_lazy</code> to each, never modifying the node.</p>
+
+  </section>
+
+  <section class="card" id="abstract">
+    <h2>📐 Formal Abstraction</h2>
+
+    <p>Nodes live in a single pool. Each node has:</p>
+    <div class="dsBox">struct Node {
+  long long sum;        // correct for this interval given ancestors' applied tags
+  long long add_lazy;   // pending add owed to children, not yet pushed
+  int left = -1;        // pool index of left child
+  int right = -1;       // pool index of right child
+};</div>
+    <p><b>Update</b> primitives: <code>clone(u)</code> allocates a fresh copy of node <code>u</code>; <code>apply_add(u, l, r, x)</code> directly modifies <code>u</code> (we only call it on fresh clones); <code>pull(u)</code> recomputes <code>sum[u]</code> from children.</p>
+    <p><b>Query</b> primitive: <code>sum_with_carry(u, l, r, ql, qr, carry)</code> returns the sum of <code>[ql, qr]</code> over the subtree rooted at <code>u</code>, given that all ancestors contribute a total pending add of <code>carry</code> per element to this subtree. The function reads <code>u</code> but never writes to it.</p>
+
+  </section>
+
+  <section class="card" id="observations">
+    <h2>🔬 Key Observations</h2>
+
+    <p><b>Observation 1 (clone-on-write).</b> Every update materializes <code>O(log n)</code> fresh nodes along its path. Off-path subtrees are shared. Memory grows by <code>O(log n)</code> per update.</p>
+    <p><b>Observation 2 (no mutation during queries).</b> The carry pattern lets queries respect immutability. By passing the cumulative pending add as an argument, we avoid having to push tags into the (frozen) tree.</p>
+    <p><b>Observation 3 (full-overlap formula).</b> At a full-overlap node <code>u</code> reached with carry <code>c</code>, the contribution is <code>sum[u] + c · (r − l + 1)</code>. The node's own <code>add_lazy</code> is already &ldquo;baked into&rdquo; <code>sum[u]</code> for this node's interval — only ancestors' tags need to be carried.</p>
+    <p><b>Observation 4 (carry composes).</b> When recursing past a partial node with its own pending <code>add_lazy</code>, both children receive <code>carry + add_lazy[u]</code>. The carry simply accumulates.</p>
+
+  </section>
+
+  <section class="card" id="algo">
+    <h2>⚙️ Algorithm</h2>
+
+    <h3>range_add(prev_root, ql, qr, x)</h3>
+    <p>Returns the root of a new version. Recurse with clone-on-write:</p>
+    <ol>
+      <li>If <code>[l, r]</code> is disjoint from <code>[ql, qr]</code>, return <code>prev_u</code> unchanged (no clone).</li>
+      <li>Allocate <code>u</code> as a copy of <code>prev_u</code>.</li>
+      <li>If <code>[l, r]</code> is fully inside <code>[ql, qr]</code>, call <code>apply_add(u, l, r, x)</code> and return <code>u</code>.</li>
+      <li>Otherwise call <code>push(u, l, r)</code> first — this clones <code>u</code>'s children, applies <code>u</code>'s pending <code>add_lazy</code> to the clones, and clears <code>u.add_lazy</code>. Then recurse into both freshly cloned children, updating <code>u.left</code> and <code>u.right</code>; finally <code>pull(u)</code>.</li>
+    </ol>
+    <p><b>Why push is mandatory before partial descent.</b> If <code>u</code> carries a pending lazy from a previous full-cover update, and we now do a partial update that recurses into <code>u</code>'s children, the children's <code>sum</code> values do not yet reflect <code>u</code>'s pending lazy. After the partial recursion, <code>pull(u)</code> overwrites <code>u.sum</code> with <code>sum[left] + sum[right]</code>, which silently loses <code>u</code>'s own full-cover contribution. Push fixes this by transferring the pending lazy into freshly cloned children before any partial recursion. Old versions remain intact because we only ever mutate freshly cloned nodes — the original children are never touched.</p>
+    <h3>range_sum(root, ql, qr)</h3>
+    <p>Call <code>sum_with_carry(root, 0, base − 1, ql, qr, 0)</code>. The carry starts at 0 (no ancestor above the root). Recursion: at no-overlap return 0; at full-overlap return <code>sum[u] + carry · (r − l + 1)</code>; at partial recurse with <code>carry + add_lazy[u]</code>. Queries themselves never mutate, so the carry covers the case where a full-cover ancestor still holds <code>add_lazy</code> that has not (yet) been pushed by any update.</p>
+
+  </section>
+
+  <section class="card" id="trace-update">
+    <h2>🧪 Tracer 1 — Clone-on-Write During Updates</h2>
+
+    <p>Start with version 0 (all zeros). The tracer applies three range-add operations in sequence, each producing a new version. Watch how each update materializes a small number of new nodes (purple, cloned) while sharing most subtrees with the previous version (gray dashed).</p>
+    <p>Operations: <code>add(v0, [0, 7], +5)</code> → v1; <code>add(v1, [2, 5], +3)</code> → v2; <code>add(v2, [4, 7], +2)</code> → v3.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Clone-on-Write Tracer</span>
+        <div class="diagramTools">
+          <button class="miniBtn" id="puReset">↺ Reset</button>
+          <button class="miniBtn" id="puPrev">‹ Prev</button>
+          <button class="miniBtn" id="puNext">Next ›</button>
+          <button class="miniBtn" id="puAuto">▶ Auto</button>
+        </div>
+      </div>
+      <svg class="treeSvg" id="puSvg" viewBox="0 0 920 500"></svg>
+      <div class="twoCol" style="margin-top:10px;">
+        <div class="statusPanel"><h3>Step</h3><div id="puStatus">–</div></div>
+        <div class="statusPanel"><h3>Pool / Version</h3>
+          <div class="kvLine"><span class="k">pool size</span><span class="v" id="puPool">–</span></div>
+          <div class="kvLine"><span class="k">version shown</span><span class="v" id="puVer">–</span></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(139,92,246,.18)"></span>Cloned (this update's path)</span>
+        <span><span class="swatch" style="background:rgba(37,99,235,.10)"></span>Older clones</span>
+        <span><span class="swatch" style="background:rgba(120,120,120,.12)"></span>Shared / frozen</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Full overlap (apply_add)</span>
+      </div>
+      <div class="stepLabel" id="puStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="trace-query">
+    <h2>🧪 Tracer 2 — Range Query Without Mutation (Carry Pattern)</h2>
+
+    <p>Using the version 3 produced by Tracer 1, the tracer answers a range-sum query and shows how the <code>carry</code> argument accumulates ancestors' pending <code>add_lazy</code> values as the descent goes. At every full-overlap node, the contribution is <code>sum[u] + carry · (r − l + 1)</code>. No node is mutated anywhere.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Carry-Pattern Query Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">ql<input id="pqL" type="number" min="0" max="7" value="1" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">qr<input id="pqR" type="number" min="0" max="7" value="6" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <button class="miniBtn primary" id="pqRun">⚡ Run</button>
+          <button class="miniBtn" id="pqReset">↺ Reset</button>
+          <button class="miniBtn" id="pqPrev">‹ Prev</button>
+          <button class="miniBtn" id="pqNext">Next ›</button>
+          <button class="miniBtn" id="pqAuto">▶ Auto</button>
+        </div>
+      </div>
+      <svg class="treeSvg" id="pqSvg" viewBox="0 0 920 500"></svg>
+      <div class="twoCol" style="margin-top:10px;">
+        <div class="statusPanel"><h3>Descent State</h3>
+          <div class="kvLine"><span class="k">node sum</span><span class="v" id="pqSum">–</span></div>
+          <div class="kvLine"><span class="k">node add_lazy</span><span class="v" id="pqLazy">–</span></div>
+          <div class="kvLine"><span class="k">carry</span><span class="v" id="pqCarry">–</span></div>
+          <div class="kvLine"><span class="k">running total</span><span class="v" id="pqTotal">0</span></div>
+        </div>
+        <div class="statusPanel"><h3>Step</h3><div id="pqStatus">–</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.30)"></span>Current</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Full → return sum + carry · len</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.18)"></span>Partial → recurse with carry + lazy</span>
+        <span><span class="swatch" style="background:rgba(185,28,28,.12)"></span>No overlap → return 0</span>
+      </div>
+      <div class="stepLabel" id="pqStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="invariants">
+    <h2>🛡️ Invariants</h2>
+
+<div class="invariantBox"><h4>✅ Invariant — Immutability invariant</h4><p>Once a node has been published (its index appears as a root or as a child of a published node), its fields are never modified. All changes happen via cloning.</p></div><div class="invariantBox"><h4>✅ Invariant — Sum invariant (per node)</h4><p>For every node <code>u</code> with interval <code>[l, r]</code>, <code>sum[u]</code> is correct for <code>[l, r]</code> assuming all updates that fully covered this node have been applied to <code>u</code>, but <i>not</i> any updates that fully covered an ancestor without fully covering <code>u</code>. The latter are tracked only in the ancestor's <code>add_lazy</code> and contribute via the carry.</p></div><div class="invariantBox"><h4>✅ Invariant — Carry invariant (during a query)</h4><p>When the query descends into a subtree rooted at <code>u</code> with carry value <code>c</code>, the actual answer for that subtree includes an extra <code>c</code> per element on top of the node's stored <code>sum</code>. The recursion passes <code>c + add_lazy[u]</code> down to children.</p></div><div class="invariantBox"><h4>✅ Invariant — Push-on-partial-update invariant</h4><p>Whenever an update needs to descend partially into a node <code>u</code>, the node is first cloned and then its pending <code>add_lazy</code> is pushed into freshly cloned children via <code>apply_add</code>; <code>u.add_lazy</code> is then cleared. This is the only time the structure mutates lazy state, and it always happens on a freshly cloned (unpublished) node, preserving the immutability of older versions.</p></div><div class="invariantBox"><h4>✅ Invariant — Queries never push</h4><p>Range-sum queries are read-only. They use the carry pattern to handle any <code>add_lazy</code> still sitting on an ancestor along the query path, without mutating any node. This is essential — pushing during a query would corrupt older versions.</p></div>
+  </section>
+
+  <section class="card" id="proof">
+    <h2>🧮 Proof of Correctness</h2>
+<div class="proofBox"><h4>🧮 Proof — Why the carry pattern returns the same value as plain lazy</h4>
+    <p>Compare the persistent lazy tree to a hypothetical plain lazy tree built by replaying all updates non-persistently. Define the &ldquo;effective value&rdquo; of element <code>i</code> in the plain tree as the value <code>a[i]</code> would have if every pending lazy tag in the plain tree were pushed all the way down to its leaf.</p>
+    <p>Claim: in the persistent tree, the effective value of <code>i</code> equals <code>sum[leaf_i] + (Σ add_lazy[ancestor] over ancestors of leaf_i)</code>. By induction on the number of updates, every modifying operation preserves this property because applying <code>+x</code> to a fully-covered node <code>u</code> adds <code>x</code> to <code>sum[u]</code> (and conceptually <code>x</code> to <code>add_lazy[u]</code> for children, but in our convention we choose to add it to <code>sum[u]</code> directly for <code>u</code>'s own interval and only record <code>x</code> in <code>add_lazy[u]</code> for descendants).</p>
+    <p>The carry pattern reproduces the sum <code>Σ_{i ∈ [ql, qr]} effective(i)</code> level by level. At a full-overlap node <code>u</code>, the contribution is <code>sum[u] + carry · (r − l + 1)</code>, which equals <code>Σ effective(i)</code> for <code>i ∈ [l, r]</code>: <code>sum[u]</code> covers the node's own tags and the lower-level pending tags within the subtree, and <code>carry</code> covers ancestors' pending tags. ∎</p>
+    </div>
+  </section>
+
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+
+    <table>
+      <tr><th>Operation</th><th>Time</th><th>Memory contributed</th></tr>
+      <tr><td>Build initial version</td><td>Θ(n)</td><td>Θ(n)</td></tr>
+      <tr><td>range_add (one new version)</td><td>Θ(log n)</td><td>Θ(log n)</td></tr>
+      <tr><td>range_sum (any version)</td><td>Θ(log n)</td><td>0</td></tr>
+      <tr><td>Total for N modifying + Q query ops</td><td>Θ((N + Q) log n)</td><td>Θ(N log n)</td></tr>
+    </table>
+    <p class="note">The constant factor is roughly twice that of plain lazy because each update clones a full path. Memory is the more common bottleneck; reserve the pool generously up front (<code>pool.reserve(N · ceil(log2(base)) + 8)</code>).</p>
+
+  </section>
+
+  <section class="card" id="template-philosophy">
+    <h2>🧰 Core Template Philosophy</h2>
+
+    <p>Persistent lazy = Path copying (Lesson 5) + Lazy state on nodes (Lesson 4) + Carry pattern for queries. The single most important discipline is <b>never mutate during a query</b>. The carry pattern is the standard solution: turn the &ldquo;push&rdquo; step into a function argument.</p>
+    <p>For updates, the discipline is <b>clone before writing</b>. Every node that the update touches in a fully-covered way is cloned; every node that the update merely passes through (partial overlap) is cloned <i>and</i> its children pointers are updated to the new cloned children.</p>
+
+  </section>
+
+  <section class="card" id="master-code">
+    <h2>💻 Master Template (C++)</h2>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct PersistentLazyAddSumSegTree {
+    using T = long long;
+
+    struct Node {
+        T sum = 0;
+        T add_lazy = 0;
+        int left = -1;
+        int right = -1;
+    };
+
+    int n = 0;
+    int base = 1;
+    vector&lt;Node&gt; pool;
+    vector&lt;int&gt; roots;   // roots[v] = root index of version v
+
+    void init(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        base = 1;
+        while (base &lt; max(1, n)) base &lt;&lt;= 1;
+        pool.reserve(max(4 * base, 4 * 1024));
+        roots.clear();
+        roots.push_back(build(0, base - 1, a));
+    }
+
+    int build(int l, int r, const vector&lt;T&gt;&amp; a) {
+        int u = (int)pool.size();
+        pool.push_back({});
+        if (l == r) {
+            if (l &lt; (int)a.size()) pool[u].sum = a[l];
+            return u;
+        }
+        int mid = l + (r - l) / 2;
+        int L = build(l, mid, a);
+        int R = build(mid + 1, r, a);
+        pool[u].left = L;
+        pool[u].right = R;
+        pool[u].sum = pool[L].sum + pool[R].sum;
+        return u;
+    }
+
+    int clone(int prev) {
+        int u = (int)pool.size();
+        pool.push_back(pool[prev]);
+        return u;
+    }
+
+    void apply_add(int u, int l, int r, T x) {
+        pool[u].sum += x * (T)(r - l + 1);
+        pool[u].add_lazy += x;
+    }
+
+    void pull(int u) {
+        int L = pool[u].left, R = pool[u].right;
+        pool[u].sum = pool[L].sum + pool[R].sum;
+    }
+
+    // Push u's pending add_lazy down to freshly cloned children.
+    // CRITICAL: must be called before any partial descent into u, otherwise
+    // a later pull() would discard u's own pending lazy contribution.
+    // u must already be a freshly cloned node owned by the new version.
+    void push(int u, int l, int r) {
+        if (pool[u].add_lazy == 0) return;
+        if (l == r) { pool[u].add_lazy = 0; return; }
+        int mid = l + (r - l) / 2;
+        int newL = clone(pool[u].left);
+        int newR = clone(pool[u].right);
+        apply_add(newL, l,     mid, pool[u].add_lazy);
+        apply_add(newR, mid+1, r,   pool[u].add_lazy);
+        pool[u].left  = newL;
+        pool[u].right = newR;
+        pool[u].add_lazy = 0;
+    }
+
+    int range_add(int prev_root, int ql, int qr, T x) {
+        int newRoot = range_add(prev_root, 0, base - 1, ql, qr, x);
+        roots.push_back(newRoot);
+        return newRoot;
+    }
+
+    int range_add(int prev, int l, int r, int ql, int qr, T x) {
+        if (qr &lt; l || r &lt; ql) return prev;
+        int u = clone(prev);
+        if (ql &lt;= l &amp;&amp; r &lt;= qr) {
+            apply_add(u, l, r, x);
+            return u;
+        }
+        // PARTIAL descent: push u's pending lazy into fresh cloned children
+        // BEFORE recursing, so pull() does not lose the parent's full-cover lazy.
+        push(u, l, r);
+        int mid = l + (r - l) / 2;
+        pool[u].left  = range_add(pool[u].left,  l,      mid, ql, qr, x);
+        pool[u].right = range_add(pool[u].right, mid + 1, r,  ql, qr, x);
+        pull(u);
+        return u;
+    }
+
+    T range_sum(int root, int ql, int qr) const {
+        return range_sum(root, 0, base - 1, ql, qr, 0);
+    }
+
+    T range_sum(int u, int l, int r, int ql, int qr, T carry) const {
+        if (qr &lt; l || r &lt; ql || u == -1) return 0;
+
+        if (ql &lt;= l &amp;&amp; r &lt;= qr) {
+            return pool[u].sum + carry * (T)(r - l + 1);
+        }
+
+        int mid = l + (r - l) / 2;
+        T newCarry = carry + pool[u].add_lazy;
+
+        return range_sum(pool[u].left,  l,      mid, ql, qr, newCarry)
+             + range_sum(pool[u].right, mid + 1, r,  ql, qr, newCarry);
+    }
+};</code></pre>
+  </section>
+
+  <section class="card" id="explained">
+    <h2>🔎 Line-by-Line Explanation</h2>
+<details open>
+  <summary>apply_add(u, l, r, x) and pull(u) <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p><code>apply_add</code> directly mutates <code>u</code>'s <code>sum</code> by <code>x · length</code> and accumulates <code>x</code> into <code>add_lazy</code>. We only call this on a freshly cloned <code>u</code> — never on a node that some other root might reach. <code>pull</code> recomputes <code>sum[u]</code> as <code>sum[left] + sum[right]</code>; this is correct only if every ancestor's pending lazy that should have flowed into <code>u</code>'s subtree has already been pushed into the cloned children — otherwise <code>pull</code> would overwrite <code>sum[u]</code> with a value that silently drops the parent's full-cover update.</p>
+  </div>
+</details>
+<details open>
+  <summary>push(u, l, r) — clone-and-apply before partial descent <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>Before descending partially from <code>u</code>, any <code>add_lazy</code> sitting on <code>u</code> must be pushed into <code>u</code>'s children — but in a <i>persistent</i> setting we cannot mutate existing children, so we <b>clone</b> each child, <b>apply_add</b> the parent's lazy to the clone, and re-point <code>u</code> at the new children. Then <code>u.add_lazy</code> is cleared. This is the single most important discipline of persistent lazy: without it, <code>pull</code> after the partial recursion would lose <code>u</code>'s own pending full-cover lazy.</p>
+  </div>
+</details>
+<details open>
+  <summary>range_add — clone-on-write descent with push <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The function takes the <i>previous</i> version's node and produces a <i>new</i> node. No-overlap returns <code>prev</code> verbatim (shared). Full-overlap clones once and calls <code>apply_add</code>. Partial-overlap clones, then calls <code>push</code> (which itself clones the children and applies the pending lazy to them), recurses into both freshly cloned children, and finally <code>pull</code>s. Off-path subtrees remain shared with older versions.</p>
+  </div>
+</details>
+<details open>
+  <summary>range_sum with carry — never mutates <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The carry parameter starts at zero at the root. At a full-overlap node, the contribution is <code>pool[u].sum + carry · length</code>: the node's stored sum plus the inherited tags from any ancestor that still carries lazy. At a partial-overlap node, the recursion passes <code>carry + pool[u].add_lazy</code> down to children. The node is never written to — that is why queries never affect older versions.</p>
+  </div>
+</details>
+
+  </section>
+
+  <section class="card" id="edges">
+    <h2>🧯 Edge Cases (Centralized)</h2>
+
+    <table>
+      <tr><th>Case</th><th>What happens</th><th>Why it works</th></tr>
+      <tr><td>Update that fully covers root</td><td>Single clone, single apply_add at root</td><td>Standard full-coverage shortcut</td></tr>
+      <tr><td>No-overlap update</td><td>Returns <code>prev</code> directly, no clone</td><td>Shared reference is correct</td></tr>
+      <tr><td>Query a brand-new version</td><td>Same carry pattern, includes all prior updates' contributions</td><td>Each version's lazy tags reflect all updates applied to it</td></tr>
+      <tr><td>Mix old and new version queries</td><td>Both work independently; no interaction</td><td>Immutability ensures old versions are intact</td></tr>
+      <tr><td>Pool capacity exceeded</td><td>Vector reallocates; indices remain valid but slow</td><td>Reserve generously</td></tr>
+      <tr><td>n = 1</td><td>Single leaf; updates clone the leaf each time</td><td>Standard, no special case</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+<div class="pitfallBox"><h4>⚠️ Pitfall — Pushing lazy tags during a query</h4><p>The most common bug: copy-pasting the push step from Lesson 4 into the persistent query. This mutates published nodes — silently corrupts older versions. Always use the carry pattern instead.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Forgetting to push during a partial update</h4><p>If you go partial without first pushing <code>u</code>'s pending <code>add_lazy</code> into the cloned children, then <code>pull(u)</code> at the end recomputes <code>sum[u]</code> from children that don't reflect <code>u</code>'s own lazy — silently losing the parent's full-cover update. Symptom: a sequence like <i>full-cover add, then partial-cover add, then query</i> returns a number smaller than expected. The fix is <code>push(u, l, r)</code> before recursing partially.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Pushing into published children</h4><p>The push step must clone the children before applying the parent's lazy to them. If you apply directly to the existing children, you've mutated published nodes — corrupting older versions. Inside <code>push</code>, the only writes go to freshly cloned nodes.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Forgetting to clone in the partial-overlap case</h4><p>Even when the update doesn't apply directly at a node, the node must be cloned because its children pointers are about to change. Forgetting this clone makes the new version's child pointer leak into the old version's parent.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Double-counting tags in pull</h4><p>If you write <code>pull</code> as <code>sum[u] = sum[L] + add_lazy[L]·left_len + sum[R] + add_lazy[R]·right_len</code>, you double-count: <code>sum[L]</code> already reflects <code>L</code>'s own interval given <code>L</code>'s own tags. The correct pull is just <code>sum[u] = sum[L] + sum[R]</code> — same as Lesson 4. The piece that <code>pull</code> cannot capture (the parent's own pending lazy) is what <code>push</code> handles before <code>pull</code> runs.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Not reserving the pool</h4><p>The pool needs roughly <code>N · log₂(base) + n</code> nodes (initial build + path clones plus push-time child clones). For <code>N = 10⁵</code> and <code>n = 10⁵</code>, that's <code>~4 · 10⁶</code> nodes. Reserve up front.</p></div>
+  </section>
+
+  <section class="card" id="decision">
+    <h2>🎯 Decision Guide</h2>
+
+    <table>
+      <tr><th>Symptom</th><th>Choice</th><th>Reason</th></tr>
+      <tr><td>Range updates + need historical (versioned) queries</td><td><b>Persistent lazy (this lesson)</b></td><td>Plain lazy mutates; can't reach old versions</td></tr>
+      <tr><td>Range updates but only current version</td><td>Plain lazy (Lesson 4)</td><td>Simpler and smaller constant</td></tr>
+      <tr><td>Persistent but only point updates</td><td>Plain persistent (Lesson 5)</td><td>No lazy needed</td></tr>
+      <tr><td>Persistent range chmin/chmax/add/sum</td><td>Persistent Beats</td><td>Combination is implementable but complex; rarely needed</td></tr>
+      <tr><td>Time-traveling problem with rollback (not full versioning)</td><td>Operation log + undo</td><td>Cheaper than full path copying</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="variants">
+    <h2>🎛️ Variants &amp; Extensions</h2>
+
+    <h3>Variant 1 — Persistent set/add lazy</h3>
+    <p>Add a second lazy field <code>set_lazy</code> with <code>has_set</code> flag. The carry argument now becomes a pair <code>(carry_set, carry_add)</code>, applied in the right order (set first, then add). Same structure, just more bookkeeping.</p>
+    <h3>Variant 2 — Persistent affine</h3>
+    <p>Lazy state is a pair <code>(b, c)</code> for the affine map <code>x ↦ b · x + c</code>. The carry is also a pair, composed by function composition. Slick when you understand the composition rule.</p>
+    <h3>Variant 3 — Range KTH on a versioned sorted multiset</h3>
+    <p>Combine persistent lazy with a sorted-keys representation. Useful for problems like &ldquo;in the multiset as of time t, what is the k-th smallest?&rdquo;.</p>
+    <h3>Variant 4 — Lazy beats with persistence</h3>
+    <p>Mainly research; the carry now has to handle chmin caps, which break the simple additive carry. Rarely seen in contests.</p>
+
+  </section>
+
+  <section class="card" id="problems">
+    <h2>🚀 Practice Problems (VJudge)</h2>
+
+    <table>
+      <tr><th>Level</th><th>Problem</th><th>Link</th><th>What it teaches</th></tr>
+      <tr><td>Medium</td><td>POJ 2528 — Mayor's posters</td><td><a href="https://vjudge.net/problem/POJ-2528" target="_blank">POJ-2528</a></td><td>Classic range assign + count distinct (offline + persistent for a follow-up)</td></tr>
+      <tr><td>Hard</td><td>Codeforces 707D — Persistent Bookcase</td><td><a href="https://vjudge.net/problem/CodeForces-707D" target="_blank">CF-707D</a></td><td>Time-travel queries on an array</td></tr>
+      <tr><td>Hard</td><td>Codeforces 893F — Subtree Minimum Query</td><td><a href="https://vjudge.net/problem/CodeForces-893F" target="_blank">CF-893F</a></td><td>Persistent merge sort tree variant</td></tr>
+      <tr><td>Hard</td><td>SPOJ — TTM (To the Moon)</td><td><a href="https://vjudge.net/problem/SPOJ-TTM" target="_blank">SPOJ-TTM</a></td><td>The canonical persistent lazy problem</td></tr>
+      <tr><td>Hard</td><td>POI — Tabu Stage</td><td><a href="https://vjudge.net/problem/Kattis-tabu" target="_blank">Kattis-tabu</a></td><td>Versioned range updates</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="summary">
+    <h2>🏁 Final Summary</h2>
+
+    <p>The persistent lazy segment tree combines two ideas: clone-on-write for updates (Lesson 5) and a carry pattern for queries (this lesson's novelty). The carry pattern is the key insight: by passing the cumulative pending add as an argument during the query descent, we avoid mutating nodes — which would otherwise corrupt older versions.</p>
+    <p>Once you can write a single line of carry-aware query code (full-overlap returns <code>sum[u] + carry · len</code>; partial passes <code>carry + add_lazy[u]</code> down), the rest is just Lesson 5's path-copying machinery applied to a richer node state. The result is a structure that supports range updates and arbitrary historical queries, each in <code>O(log n)</code>.</p>
+
+  </section>
+
+
+  <div class="page-footer">
+    <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Segment Tree Course · Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">Persistent Lazy Segment Tree · Clone-on-Write · Carry Pattern</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+
+// ============================================================
+// DOM + SVG HELPERS
+// ============================================================
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function clearEl(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function makeEl(tag, attrs={}, html=''){
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if(html) el.innerHTML = html;
+  return el;
+}
+function makeSVG(tag, attrs={}){
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+function getCssVar(name){
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+// ============================================================
+// THEME TOGGLE (with localStorage persistence)
+// ============================================================
+(function(){
+  const KEY = 'segtree_theme';
+  const saved = localStorage.getItem(KEY);
+  if(saved) document.body.setAttribute('data-theme', saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme', 'dark');
+  }
+  const sw = $('#themeSwitch');
+  if(sw){
+    sw.setAttribute('role','switch');
+    sw.setAttribute('aria-checked', document.body.getAttribute('data-theme')==='dark' ? 'true':'false');
+    sw.onclick = () => {
+      const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem(KEY, next);
+      sw.setAttribute('aria-checked', next==='dark'?'true':'false');
+      // Notify any tree drawers to re-render colors
+      document.dispatchEvent(new CustomEvent('segtree:themechange'));
+    };
+  }
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+(function(){
+  const toggle = $('#sidebarToggle');
+  const sidebar = $('#sidebar');
+  const appEl = $('#app');
+  const overlay = $('#sidebarOverlay');
+  if(!toggle || !sidebar || !appEl) return;
+  let open = window.innerWidth > 1400;
+  function apply(){
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      overlay.classList.remove('show');
+      if(window.innerWidth > 1400) appEl.classList.remove('sidebar-hidden');
+    } else {
+      appEl.classList.add('sidebar-hidden');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+  }
+  if(!open) appEl.classList.add('sidebar-hidden');
+  apply();
+  toggle.setAttribute('aria-controls','sidebar');
+  toggle.onclick = () => {
+    open = !open;
+    if(open && window.innerWidth <= 1400){
+      sidebar.classList.remove('collapsed');
+      overlay.classList.add('show');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    } else {
+      apply();
+    }
+  };
+  overlay.onclick = () => {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    open = false;
+  };
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      overlay.click();
+    }
+  });
+})();
+
+// ============================================================
+// SCROLL-BASED NAV HIGHLIGHTING
+// ============================================================
+(function(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  function update(){
+    let cur = '';
+    sections.forEach(s => {
+      if(s.getBoundingClientRect().top < 200) cur = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  const contentEl = $('.content');
+  if(contentEl) contentEl.addEventListener('scroll', update);
+  update();
+})();
+
+// ============================================================
+// SEGMENT TREE LAYOUT (0-based heap indexing)
+//   left  = 2*i + 1
+//   right = 2*i + 2
+// Returns a list { x, y, r } for each node, plus tree dimensions.
+// ============================================================
+function computeSegTreeLayout(base, opts={}){
+  // base must be a power of 2. Tree has 2*base - 1 nodes.
+  const levels = Math.log2(base) + 1;
+  const W = opts.width || 880;
+  const H = opts.height || (levels * 95 + 30);
+  const radius = opts.radius || Math.max(18, Math.min(34, 280 / base));
+  const layout = [];
+  function rec(i, depth, l, r){
+    layout[i] = { i, depth, l, r };
+    if(l === r) return;
+    const left = 2*i + 1, right = left + 1;
+    const mid = l + ((r - l) >> 1);
+    rec(left, depth+1, l, mid);
+    rec(right, depth+1, mid+1, r);
+  }
+  rec(0, 0, 0, base-1);
+  // Now assign x coordinates using leaf positions
+  const leafCount = base;
+  const leafGap = (W - 40) / leafCount;
+  let leafIdx = 0;
+  function place(i){
+    const node = layout[i];
+    if(node.l === node.r){
+      node.x = 20 + leafGap * (leafIdx + 0.5);
+      leafIdx++;
+    } else {
+      const left = 2*i + 1, right = left + 1;
+      place(left); place(right);
+      node.x = (layout[left].x + layout[right].x) / 2;
+    }
+    node.y = 30 + node.depth * ((H - 60) / Math.max(1, levels - 1));
+    node.rad = radius;
+  }
+  place(0);
+  return { layout, width: W, height: H, levels, radius };
+}
+
+// ============================================================
+// SEGMENT TREE SVG DRAWER
+// Highlight categories:
+//   current      - the node we are currently processing (blue strong)
+//   visited      - already touched in this step (light blue)
+//   full         - fully covered by query (green - return)
+//   partial      - partial overlap (orange - recurse)
+//   none         - no overlap (red dashed - skip)
+//   updated      - just changed by an update (warn fill)
+//   lazyPending  - has pending lazy tag (yellow ring)
+//   cloned       - newly cloned node (purple fill)
+//   frozen       - belongs to an old persistent version (gray dashed)
+// ============================================================
+function drawSegTree(svgSel, opts){
+  const svg = (typeof svgSel === 'string') ? $(svgSel) : svgSel;
+  clearEl(svg);
+  const { base, nodes, highlights={}, queryRange=null, arrLabels=null } = opts;
+  const layoutOpts = { width: opts.width || 880, height: opts.height || 0, radius: opts.radius };
+  const L = computeSegTreeLayout(base, layoutOpts);
+  svg.setAttribute('viewBox', `0 0 ${L.width} ${L.height}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  // Draw edges first
+  L.layout.forEach(nd => {
+    if(nd.l === nd.r) return;
+    const leftI = 2*nd.i + 1, rightI = leftI + 1;
+    [leftI, rightI].forEach(child => {
+      const c = L.layout[child];
+      const lineCol = getCssVar('--border');
+      const ln = makeSVG('line', {
+        x1: nd.x, y1: nd.y, x2: c.x, y2: c.y,
+        stroke: lineCol, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+        class: 'edgeLine'
+      });
+      svg.appendChild(ln);
+    });
+  });
+
+  // Draw nodes
+  L.layout.forEach(nd => {
+    const h = highlights[nd.i] || 'idle';
+    let fill = 'var(--panel)';
+    let stroke = getCssVar('--border');
+    let sw = 3;
+    let dasharray = '';
+    switch(h){
+      case 'current':  fill = 'rgba(37,99,235,.30)'; stroke = getCssVar('--accent2'); sw = 5; break;
+      case 'visited':  fill = 'rgba(37,99,235,.10)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'full':     fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 5; break;
+      case 'partial':  fill = 'rgba(180,83,9,.18)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'none':     fill = 'rgba(185,28,28,.12)'; stroke = getCssVar('--bad'); sw = 3; dasharray='6,5'; break;
+      case 'updated':  fill = 'rgba(180,83,9,.22)'; stroke = getCssVar('--warn'); sw = 5; break;
+      case 'lazyPending': fill='rgba(180,83,9,.10)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'cloned':   fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 5; break;
+      case 'frozen':   fill = 'rgba(120,120,120,.12)'; stroke = getCssVar('--muted'); sw = 2.5; dasharray='4,4'; break;
+      case 'leaf':     fill = 'rgba(37,99,235,.08)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'kth-left': fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 4; break;
+      case 'kth-right':fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 4; break;
+    }
+    const attrs = {
+      cx: nd.x, cy: nd.y, r: nd.rad,
+      fill, stroke, 'stroke-width': sw,
+      class: 'nodeCircle'
+    };
+    if(dasharray) attrs['stroke-dasharray'] = dasharray;
+    svg.appendChild(makeSVG('circle', attrs));
+
+    // Index label (small, above)
+    const idxLab = makeSVG('text', {
+      x: nd.x, y: nd.y - nd.rad - 4,
+      'text-anchor':'middle','font-size':'11','font-weight':'700',
+      fill: getCssVar('--muted'), 'pointer-events':'none'
+    });
+    idxLab.textContent = `i=${nd.i}`;
+    svg.appendChild(idxLab);
+
+    // Interval label inside
+    const intervalLab = makeSVG('text', {
+      x: nd.x, y: nd.y - 3,
+      'text-anchor':'middle','font-size': nd.rad >= 26 ? '13' : '11', 'font-weight':'900',
+      fill: getCssVar('--text'), 'pointer-events':'none'
+    });
+    intervalLab.textContent = `[${nd.l},${nd.r}]`;
+    svg.appendChild(intervalLab);
+
+    // Node value (passed in nodes[i])
+    const v = nodes ? nodes[nd.i] : undefined;
+    if(v !== undefined && v !== null){
+      const valLab = makeSVG('text', {
+        x: nd.x, y: nd.y + 14,
+        'text-anchor':'middle','font-size': nd.rad >= 26 ? '15' : '12','font-weight':'950',
+        fill: h === 'current' ? getCssVar('--accent2') :
+              h === 'updated' ? getCssVar('--warn') :
+              h === 'full'    ? getCssVar('--good') :
+              getCssVar('--text'),
+        'pointer-events':'none'
+      });
+      valLab.textContent = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      svg.appendChild(valLab);
+    }
+  });
+
+  // Optional: query range bar at top
+  if(queryRange){
+    const [ql, qr] = queryRange;
+    const leafLayer = L.layout.filter(n => n.l === n.r);
+    if(leafLayer.length){
+      const lx = leafLayer[ql] ? leafLayer[ql].x : null;
+      const rx = leafLayer[qr] ? leafLayer[qr].x : null;
+      if(lx !== null && rx !== null){
+        const y = L.layout[L.layout.length-1].y + L.radius + 16;
+        svg.appendChild(makeSVG('line', {
+          x1: lx - L.radius, y1: y, x2: rx + L.radius, y2: y,
+          stroke: getCssVar('--accent2'), 'stroke-width': 5, 'stroke-linecap':'round'
+        }));
+        const t = makeSVG('text', {
+          x: (lx+rx)/2, y: y+20, 'text-anchor':'middle','font-size':'14','font-weight':'900',
+          fill: getCssVar('--accent2')
+        });
+        t.textContent = `query [${ql}, ${qr}]`;
+        svg.appendChild(t);
+      }
+    }
+  }
+
+  return L;
+}
+
+// ============================================================
+// HORIZONTAL ARRAY DRAWER
+// nodes: array of values; highlights: index -> class ('hl','upd','done')
+// ============================================================
+function drawArray(containerSel, values, opts={}){
+  const c = (typeof containerSel === 'string') ? $(containerSel) : containerSel;
+  if(!c) return;
+  clearEl(c);
+  c.classList.add('arr');
+  const highlights = opts.highlights || {};
+  const showIdx = opts.showIdx !== false;
+  values.forEach((v, i) => {
+    const cls = highlights[i] ? ('arrCell '+highlights[i]) : 'arrCell';
+    const cell = makeEl('div', { class: cls });
+    if(showIdx){
+      const idx = makeEl('span', { class: 'idx' });
+      idx.textContent = String(i);
+      cell.appendChild(idx);
+    }
+    const val = makeEl('span', {});
+    val.textContent = (v === null || v === undefined) ? '·' : String(v);
+    cell.appendChild(val);
+    c.appendChild(cell);
+  });
+}
+
+// ============================================================
+// COMMON STEP CONTROLLER (Reset / Prev / Next / Auto)
+// Pass: { ids:{reset,prev,next,auto,step,status}, totalFn, renderFn,
+//         interval(ms), startStep=0 }
+// ============================================================
+function makeStepController(cfg){
+  const { ids, totalFn, renderFn } = cfg;
+  let step = cfg.startStep || 0;
+  let timer = null;
+  function render(){
+    const total = totalFn();
+    if(step >= total) step = total - 1;
+    if(step < 0) step = 0;
+    renderFn(step);
+    if(ids.step){
+      const el = $(ids.step);
+      if(el) el.textContent = `Step ${step+1} / ${total}`;
+    }
+  }
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if(ids.auto){ const a = $(ids.auto); if(a) a.classList.remove('active'); }
+  }
+  function reset(){ step = 0; stopAuto(); render(); }
+  function prev(){ stopAuto(); step--; render(); }
+  function next(){ step++; render(); }
+  function autoToggle(){
+    if(timer){ stopAuto(); return; }
+    const a = $(ids.auto); if(a) a.classList.add('active');
+    timer = setInterval(() => {
+      const total = totalFn();
+      if(step >= total - 1){ stopAuto(); return; }
+      step++; render();
+    }, cfg.interval || 800);
+  }
+  if(ids.reset){ const e = $(ids.reset); if(e) e.onclick = reset; }
+  if(ids.prev) { const e = $(ids.prev);  if(e) e.onclick = prev;  }
+  if(ids.next) { const e = $(ids.next);  if(e) e.onclick = next;  }
+  if(ids.auto) { const e = $(ids.auto);  if(e) e.onclick = autoToggle; }
+  document.addEventListener('segtree:themechange', () => render());
+  render();
+  return { reset, prev, next, autoToggle, render, get step(){return step;}, set step(v){step=v;render();} };
+}
+
+
+// ============================================================
+// LESSON-SPECIFIC SCRIPT
+// ============================================================
+
+const BASE_L11 = 8;
+const N_L11 = 8;
+
+// Pool of nodes for persistent lazy add-sum tree
+const PLPool = [];
+function PLnew(sum, addL, left, right, iv, ver){
+  const id = PLPool.length;
+  PLPool.push({ sum, addL, left, right, iv, ver });
+  return id;
+}
+// Build initial empty tree (all zeros)
+function PLbuildEmpty(){
+  function rec(lo, hi, iv){
+    if(lo === hi) return PLnew(0, 0, -1, -1, iv, 0);
+    const mid = lo + ((hi-lo) >> 1);
+    const L = rec(lo, mid, 2*iv+1);
+    const R = rec(mid+1, hi, 2*iv+2);
+    const u = PLnew(0, 0, L, R, iv, 0);
+    return u;
+  }
+  return rec(0, BASE_L11 - 1, 0);
+}
+const VERSIONS = [PLbuildEmpty()];
+
+// Clone-on-write range add producing a new root, returning event log
+function PLclone(prev, ver){
+  const id = PLPool.length;
+  const p = PLPool[prev];
+  PLPool.push({ sum: p.sum, addL: p.addL, left: p.left, right: p.right, iv: p.iv, ver });
+  return id;
+}
+function PLrangeAdd(prevRoot, ql, qr, x, ver, eventLog){
+  function rec(prev, lo, hi){
+    if(qr < lo || hi < ql){
+      eventLog.push({ kind: 'noop', prev, lo, hi });
+      return prev;
+    }
+    const u = PLclone(prev, ver);
+    eventLog.push({ kind: 'clone', prev, u, lo, hi });
+    if(ql <= lo && hi <= qr){
+      PLPool[u].sum += x * (hi - lo + 1);
+      PLPool[u].addL += x;
+      eventLog.push({ kind: 'apply', u, lo, hi, x });
+      return u;
+    }
+    const mid = lo + ((hi - lo) >> 1);
+    const newL = rec(PLPool[prev].left, lo, mid);
+    PLPool[u].left = newL;
+    const newR = rec(PLPool[prev].right, mid+1, hi);
+    PLPool[u].right = newR;
+    PLPool[u].sum = PLPool[newL].sum + PLPool[newR].sum;
+    eventLog.push({ kind: 'pull', u, lo, hi });
+    return u;
+  }
+  return rec(prevRoot, 0, BASE_L11 - 1);
+}
+
+// Carry-pattern range sum, producing event log of (node, carry, action)
+function PLrangeSum(root, ql, qr, eventLog){
+  function rec(u, lo, hi, carry){
+    if(qr < lo || hi < ql || u === -1){
+      eventLog.push({ kind: 'noop', u, lo, hi, carry });
+      return 0;
+    }
+    if(ql <= lo && hi <= qr){
+      const contribution = PLPool[u].sum + carry * (hi - lo + 1);
+      eventLog.push({ kind: 'full', u, lo, hi, carry, contribution });
+      return contribution;
+    }
+    const mid = lo + ((hi - lo) >> 1);
+    const newCarry = carry + PLPool[u].addL;
+    eventLog.push({ kind: 'partial', u, lo, hi, carry, newCarry });
+    const a = rec(PLPool[u].left, lo, mid, newCarry);
+    const b = rec(PLPool[u].right, mid+1, hi, newCarry);
+    return a + b;
+  }
+  return rec(root, 0, BASE_L11 - 1, 0);
+}
+
+// ----------------------------------------------------------------
+// Tracer 1: clone-on-write across three sequential updates
+// ----------------------------------------------------------------
+(function(){
+  // Build three new versions
+  const log1 = [];
+  VERSIONS.push(PLrangeAdd(VERSIONS[0], 0, 7, 5, 1, log1));
+  const log2 = [];
+  VERSIONS.push(PLrangeAdd(VERSIONS[1], 2, 5, 3, 2, log2));
+  const log3 = [];
+  VERSIONS.push(PLrangeAdd(VERSIONS[2], 4, 7, 2, 3, log3));
+
+  // Build frames: show each event as a step
+  const frames = [];
+  function nodesAndHighlights(rootIdx, cloned, currentIv, freshIv, full){
+    const nodes = {};
+    const highlights = {};
+    for(let i = 0; i < 2 * BASE_L11 - 1; i++){
+      nodes[i] = '·';
+      highlights[i] = 'frozen';
+    }
+    function walk(u){
+      if(u < 0) return;
+      const n = PLPool[u];
+      let label = `${n.sum}`;
+      if(n.addL !== 0) label += `\n+${n.addL}`;
+      nodes[n.iv] = label;
+      const ageVer = n.ver;
+      if(ageVer === cloned.curVer) highlights[n.iv] = 'cloned';
+      else highlights[n.iv] = 'visited';
+      walk(n.left); walk(n.right);
+    }
+    walk(rootIdx);
+    if(freshIv !== undefined && freshIv !== null) highlights[freshIv] = 'cloned';
+    if(full !== undefined && full !== null) highlights[full] = 'full';
+    if(currentIv !== undefined && currentIv !== null) highlights[currentIv] = 'current';
+    return { nodes, highlights };
+  }
+  frames.push({
+    root: VERSIONS[0], ver: 0, currentIv: null, freshIv: null, full: null,
+    cloned: { curVer: 0 },
+    note: `Version 0 (initial): all zeros. Pool size = ${VERSIONS[0] + 1}.`
+  });
+  function logEvents(log, prevVerLabel, newVer, opDesc){
+    frames.push({
+      root: VERSIONS[newVer], ver: newVer, currentIv: null, freshIv: null, full: null,
+      cloned: { curVer: newVer },
+      note: `--- Starting ${opDesc} from version ${prevVerLabel}. ---`
+    });
+    log.forEach(ev => {
+      if(ev.kind === 'clone'){
+        frames.push({
+          root: VERSIONS[newVer], ver: newVer,
+          currentIv: PLPool[ev.u].iv, freshIv: PLPool[ev.u].iv, full: null,
+          cloned: { curVer: newVer },
+          note: `Clone: new pool node ${ev.u} (copy of ${ev.prev}) at interval iv=${PLPool[ev.u].iv} [${ev.lo},${ev.hi}].`
+        });
+      } else if(ev.kind === 'apply'){
+        frames.push({
+          root: VERSIONS[newVer], ver: newVer,
+          currentIv: PLPool[ev.u].iv, freshIv: null, full: PLPool[ev.u].iv,
+          cloned: { curVer: newVer },
+          note: `apply_add on node ${ev.u} [${ev.lo},${ev.hi}]: sum += ${ev.x}·${ev.hi-ev.lo+1}, add_lazy += ${ev.x}.`
+        });
+      } else if(ev.kind === 'pull'){
+        frames.push({
+          root: VERSIONS[newVer], ver: newVer,
+          currentIv: PLPool[ev.u].iv, freshIv: null, full: null,
+          cloned: { curVer: newVer },
+          note: `pull node ${ev.u} [${ev.lo},${ev.hi}]: sum recomputed from children.`
+        });
+      }
+    });
+    frames.push({
+      root: VERSIONS[newVer], ver: newVer, currentIv: null, freshIv: null, full: null,
+      cloned: { curVer: newVer },
+      note: `Version ${newVer} complete. Pool size = ${PLPool.length}.`
+    });
+  }
+  logEvents(log1, '0', 1, 'add([0,7], +5)');
+  logEvents(log2, '1', 2, 'add([2,5], +3)');
+  logEvents(log3, '2', 3, 'add([4,7], +2)');
+
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    const data = nodesAndHighlights(f.root, f.cloned, f.currentIv, f.freshIv, f.full);
+    drawSegTree('#puSvg', { base: BASE_L11, nodes: data.nodes,
+                            highlights: data.highlights, width: 920, height: 500 });
+    $('#puStatus').textContent = f.note;
+    $('#puPool').textContent = String(PLPool.length);
+    $('#puVer').textContent = String(f.ver);
+  }
+  makeStepController({
+    ids: { reset:'#puReset', prev:'#puPrev', next:'#puNext',
+           auto:'#puAuto', step:'#puStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 600
+  });
+})();
+
+// ----------------------------------------------------------------
+// Tracer 2: carry-pattern range sum on version 3
+// ----------------------------------------------------------------
+(function(){
+  let frames = [];
+  function compute(){
+    let ql = parseInt($('#pqL').value, 10);
+    let qr = parseInt($('#pqR').value, 10);
+    if(!Number.isFinite(ql)) ql = 0;
+    if(!Number.isFinite(qr)) qr = N_L11 - 1;
+    ql = Math.max(0, Math.min(N_L11 - 1, ql));
+    qr = Math.max(0, Math.min(N_L11 - 1, qr));
+    if(ql > qr) [ql, qr] = [qr, ql];
+    const log = [];
+    frames = [];
+    const totalRet = PLrangeSum(VERSIONS[3], ql, qr, log);
+    let total = 0;
+
+    function nodesAndHighlights(currentU, action){
+      const nodes = {};
+      const highlights = {};
+      for(let i = 0; i < 2 * BASE_L11 - 1; i++){
+        nodes[i] = '·'; highlights[i] = 'frozen';
+      }
+      function walk(u){
+        if(u < 0) return;
+        const n = PLPool[u];
+        let label = `${n.sum}`;
+        if(n.addL !== 0) label += `\n+${n.addL}`;
+        nodes[n.iv] = label;
+        highlights[n.iv] = 'visited';
+        walk(n.left); walk(n.right);
+      }
+      walk(VERSIONS[3]);
+      if(currentU !== undefined && currentU >= 0){
+        highlights[PLPool[currentU].iv] = action;
+      }
+      return { nodes, highlights };
+    }
+
+    frames.push({
+      data: nodesAndHighlights(VERSIONS[3], 'current'),
+      currentU: VERSIONS[3], carry: 0, total: 0,
+      note: `Start: range_sum(root v3, [${ql}, ${qr}]) with carry = 0.`,
+      sumField: PLPool[VERSIONS[3]].sum,
+      addLField: PLPool[VERSIONS[3]].addL
+    });
+    log.forEach(ev => {
+      if(ev.kind === 'noop' && ev.u >= 0){
+        frames.push({
+          data: nodesAndHighlights(ev.u, 'none'),
+          currentU: ev.u, carry: ev.carry, total,
+          note: `u=${ev.u} iv=${PLPool[ev.u].iv} [${ev.lo},${ev.hi}]: NO overlap → return 0.`,
+          sumField: PLPool[ev.u].sum, addLField: PLPool[ev.u].addL
+        });
+      } else if(ev.kind === 'full'){
+        total += ev.contribution;
+        frames.push({
+          data: nodesAndHighlights(ev.u, 'full'),
+          currentU: ev.u, carry: ev.carry, total,
+          note: `u=${ev.u} iv=${PLPool[ev.u].iv} [${ev.lo},${ev.hi}]: FULL → return sum=${PLPool[ev.u].sum} + carry=${ev.carry}·${ev.hi-ev.lo+1} = ${ev.contribution}. Running total = ${total}.`,
+          sumField: PLPool[ev.u].sum, addLField: PLPool[ev.u].addL
+        });
+      } else if(ev.kind === 'partial'){
+        frames.push({
+          data: nodesAndHighlights(ev.u, 'partial'),
+          currentU: ev.u, carry: ev.carry, total,
+          note: `u=${ev.u} iv=${PLPool[ev.u].iv} [${ev.lo},${ev.hi}]: PARTIAL → recurse with newCarry = carry(${ev.carry}) + add_lazy(${PLPool[ev.u].addL}) = ${ev.newCarry}.`,
+          sumField: PLPool[ev.u].sum, addLField: PLPool[ev.u].addL
+        });
+      }
+    });
+    frames.push({
+      data: nodesAndHighlights(-1, ''),
+      currentU: -1, carry: '–', total,
+      note: `Done. range_sum = ${totalRet}.`,
+      sumField: '–', addLField: '–'
+    });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    drawSegTree('#pqSvg', { base: BASE_L11, nodes: f.data.nodes,
+                            highlights: f.data.highlights, width: 920, height: 500 });
+    $('#pqSum').textContent   = String(f.sumField);
+    $('#pqLazy').textContent  = String(f.addLField);
+    $('#pqCarry').textContent = String(f.carry);
+    $('#pqTotal').textContent = String(f.total);
+    $('#pqStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#pqReset', prev:'#pqPrev', next:'#pqNext',
+           auto:'#pqAuto', step:'#pqStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#pqRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+</script>
+</body>
+</html>

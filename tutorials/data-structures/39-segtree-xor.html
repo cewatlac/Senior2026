@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Lesson 10 — XOR Segment Tree · Segment Tree Course</title>
+<style>
+
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:24px; --fs-sm:21px;
+    --fs-h1:50px; --fs-h2:36px; --fs-h3:28px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.4;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:380px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:20px 16px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:24px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 16px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:26px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:12px 4px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:14px 6px 8px;text-transform:uppercase;letter-spacing:.06em;font-size:16px;}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;border:2px solid transparent;font-weight:800;color:var(--text);margin:4px 4px;background:rgba(0,0,0,0);font-size:18px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:14px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:14px;border-left:3px dashed rgba(37,99,235,.35);padding-left:6px;}
+  .sub a{font-weight:700;font-size:17px;padding:8px 10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:12px 16px;border-radius:14px;font-weight:900;cursor:pointer;font-size:20px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .switch{width:60px;height:34px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 8px 18px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:31px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .card h4{margin:14px 0 8px;font-size:22px;color:var(--accent2);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:700;font-size:20px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:7px 11px;border-radius:999px;font-weight:900;font-size:16px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:16px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:18px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:14px 18px 18px;}
+  pre{margin:10px 0 0;background:var(--codebg);color:var(--codetext);border-radius:16px;padding:14px 16px;overflow:auto;border:2px solid rgba(255,255,255,.08);font-size:17px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;margin:14px 0;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:23px;}
+  .diagramTools{display:flex;gap:8px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .miniBtn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.35);color:var(--bad);}
+  svg.treeSvg{width:100%;height:auto;border-radius:16px;background:rgba(0,0,0,0);display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;overflow-x:auto;white-space:pre-wrap;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:3px solid var(--border);margin-top:10px;font-weight:800;font-size:19px;}
+  th,td{padding:10px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;text-align:left;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:44px;height:44px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:20px;height:14px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:380px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:74px;}
+  .statusPanel{border:3px solid var(--border);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:800;}
+  .statusPanel h3{margin:0 0 8px;font-size:22px;color:var(--accent2);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:16px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:18px;padding-top:14px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:13px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:1px 7px;font-size:19px;font-weight:900;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-weight:800;font-size:17px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;background:rgba(2,6,23,.04);padding:6px 10px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  [data-theme="dark"] .legend span{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;pointer-events:none;}
+  .edgeLine{transition:all .25s ease;}
+  .stepLabel{text-align:center;font-weight:900;font-size:18px;color:var(--muted);margin-top:8px;}
+  .arr{display:flex;flex-wrap:wrap;gap:6px;}
+  .arrCell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:48px;flex-direction:column;padding:4px 8px;border-radius:10px;border:2px solid var(--border);background:var(--panel);font-weight:950;font-family:ui-monospace,monospace;font-size:18px;}
+  .arrCell .idx{font-size:12px;color:var(--muted);font-weight:700;}
+  .arrCell.hl{border-color:var(--accent2);background:rgba(37,99,235,.15);box-shadow:0 4px 12px rgba(37,99,235,.18);}
+  .arrCell.upd{border-color:var(--warn);background:rgba(180,83,9,.15);color:var(--warn);}
+  .arrCell.done{border-color:var(--good);background:rgba(15,118,110,.15);color:var(--good);}
+  .kvLine{display:flex;align-items:center;gap:8px;font-family:ui-monospace,monospace;font-size:17px;margin:3px 0;}
+  .kvLine .k{font-weight:900;color:var(--accent2);min-width:80px;}
+  .kvLine .v{font-weight:700;}
+  .twoCol{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:flex-start;}
+  @media(max-width:1100px){.twoCol{grid-template-columns:1fr}}
+  .invariantBox{background:linear-gradient(180deg,rgba(15,118,110,.10),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .invariantBox h4{color:var(--good);margin:0 0 6px;font-size:21px;}
+  .pitfallBox{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .pitfallBox h4{color:var(--bad);margin:0 0 6px;font-size:21px;}
+  .proofBox{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .proofBox h4{color:var(--warn);margin:0 0 6px;font-size:21px;}
+
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🌳</div>
+    <div class="brandTitle">
+      <div class="t1">Segment Tree · L10</div>
+      <div class="t2">XOR · Block-permuted array</div>
+      <div class="by-line">Coach Academy</div>
+    </div>
+  </div>
+  <nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem">🧩 Problem Definition<small>Range sum on a XOR-permuted array</small></a>
+  <a href="#intuition">💡 Intuition<small>XOR is a block swap</small></a>
+  <a href="#mental">🌳 Visual Mental Model<small>Each level: swap or no swap</small></a>
+  <a href="#abstract">📐 Formal Abstraction<small>Effective mask per level</small></a>
+  <a href="#observations">🔬 Key Observations<small>Three-piece split</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algo">⚙️ Algorithm<small>Descent with mask</small></a>
+  <div class="sub">
+  <a href="#trace-mask">Mask Permutation Tracer</a>
+  <a href="#trace-query">Range Sum Tracer</a>
+  </div>
+  <a href="#invariants">🛡️ Invariants<small>Block size · level mapping</small></a>
+  <a href="#proof">🧮 Proof of Correctness<small>Why high bits suffice</small></a>
+  <a href="#complexity">⏱ Complexity<small>Same as base</small></a>
+  <div class="groupTitle">Implementation</div>
+  <a href="#template-philosophy">🧰 Template Philosophy<small>Recurse with mask</small></a>
+  <a href="#master-code">💻 Master Template<small>Full C++ code</small></a>
+  <a href="#explained">🔎 Line-by-Line<small>Every routine</small></a>
+  <div class="groupTitle">Variants</div>
+  <a href="#variants">🎛️ Variants & Extensions<small>Multiple permutations, k-th</small></a>
+  <div class="groupTitle">Reference</div>
+  <a href="#edges">🧯 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls">⚠️ Common Pitfalls<small>Off-by-bit bugs</small></a>
+  <a href="#decision">🎯 Decision Guide<small>When to use XOR seg tree</small></a>
+  <a href="#problems">🚀 Practice Problems<small>VJudge links</small></a>
+  <a href="#summary">🏁 Final Summary<small>Wrap-up</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:42px;height:42px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;">🎓</div>
+    <div class="sf-text">
+      Coach Academy<br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+    </div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:32px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Segment Tree Course</div>
+        <h1>Lesson 10 — XOR Segment Tree</h1>
+        <div class="subtitle">Virtual b[i] = a[i ⊕ mask] · Sum Without Materializing · O(log n) per Query</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:18px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+
+    <p>Given an array <code>a[0..n−1]</code> with <code>n</code> a power of two, and a non-negative integer mask <code>m</code>, define the virtual array <code>b[i] = a[i ⊕ m]</code> for <code>0 ≤ i &lt; n</code>. We want to support:</p>
+    <div class="grid2">
+      <div class="statusPanel"><h3>Range sum</h3><p>For query <code>(m, l, r)</code>, return <code>b[l] + b[l+1] + ... + b[r]</code> where <code>b[i] = a[i ⊕ m]</code>.</p></div>
+      <div class="statusPanel"><h3>Point update</h3><p>Set <code>a[p] = v</code>, which simultaneously changes <code>b[p ⊕ m]</code> for every conceivable mask <code>m</code>.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px;">Materializing <code>b</code> for each query would take <code>O(n)</code>. The XOR segment tree answers each query in <code>O(log n)</code> by exploiting the bit-level structure of XOR: the mask permutes <i>blocks</i> of the array, not individual elements, in a way that respects the segment tree's binary partitioning.</p>
+
+  </section>
+
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch</h2>
+
+    <p>XOR is the most segment-tree-friendly permutation imaginable. At the top of the tree, the mask's top bit decides whether the left half and the right half are swapped. Move down one level — the second-from-top bit decides whether <i>each</i> sub-half's left and right are swapped, independently. And so on, all the way down to the leaves.</p>
+    <p>So at level <code>k</code> (counting from the top, level 0 being the root, level <code>logn − 1</code> being the leaves), the relevant bit of the mask is <code>(mask &gt;&gt; (logn − 1 − k)) &amp; 1</code>. If that bit is 1, every node at level <code>k</code> conceptually swaps its left and right children for the purpose of <i>this query's</i> view of the array. If 0, no swap.</p>
+    <p>That gives us the algorithm: descend the tree as usual, but at every level decide which physical child (left or right of <code>a</code>) corresponds to the &ldquo;logical left&rdquo; (small-index half of <code>b</code>) based on the mask bit for that level. Once we land on a fully-covered node, the sum we want is exactly the precomputed sum of that node — because XOR preserves multisets, the sum of a node's interval in <code>b</code> equals the sum of the corresponding swapped node in <code>a</code>.</p>
+
+  </section>
+
+  <section class="card" id="mental">
+    <h2>🌳 Visual Mental Model</h2>
+
+    <p>Suppose <code>n = 8</code> and <code>mask = 5</code> in binary <code>101</code>. The three bits of the mask, read from most significant to least, determine the swap pattern level by level:</p>
+    <div class="dsBox">level 0  (top bit = 1):  swap left half &amp; right half
+level 1  (mid bit = 0):  no swap within each half
+level 2  (low bit = 1):  swap each pair of leaves
+
+Original a:        [a0 a1 a2 a3 a4 a5 a6 a7]
+After level-0:     [a4 a5 a6 a7 | a0 a1 a2 a3]
+After level-1:     [a4 a5 a6 a7 | a0 a1 a2 a3]  (no change)
+After level-2:     [a5 a4 a7 a6 | a1 a0 a3 a2]  ← this is b[]</div>
+    <p>Equivalently, <code>b[i] = a[i ⊕ 5]</code>: e.g. <code>b[0] = a[0 ⊕ 5] = a[5]</code>, <code>b[1] = a[1 ⊕ 5] = a[4]</code>, etc. The level-by-level swap pattern is just the bit-level unrolling of XOR.</p>
+
+  </section>
+
+  <section class="card" id="abstract">
+    <h2>📐 Formal Abstraction</h2>
+
+    <p>Number the levels so level 0 is the root and level <code>L = log₂(base)</code> is the leaves. A node at level <code>k</code> covers a block of size <code>base / 2^k</code>. The mask bit relevant at level <code>k</code> (deciding the swap at that level's children) is bit <code>(L − 1 − k)</code> of the mask:</p>
+    <div class="dsBox">bit_at_level(k) = (mask >> (L - 1 - k)) & 1
+    // controls left/right swap when descending past a node at level k</div>
+    <p>Equivalently, the &ldquo;high_mask&rdquo; relevant when our recursion is inside a node of length <code>len</code> is <code>mask &amp; ~(len − 1)</code>. The bit deciding whether to swap at this node's children is <code>mask &amp; (len / 2)</code>.</p>
+    <p>The recursion processes a query <code>(l, r)</code> in <i>logical</i> b-space. At each node, it uses the level's mask bit to decide which physical child of <code>a</code>'s segment tree corresponds to the lower (logical-left) half of <code>b</code> at this node's interval.</p>
+
+  </section>
+
+  <section class="card" id="observations">
+    <h2>🔬 Key Observations</h2>
+
+    <p><b>Observation 1 (XOR distributes over level).</b> Because <code>i ⊕ m</code> has the same high bits as <code>i</code> XOR-ed with the high bits of <code>m</code>, and the same low bits as <code>i</code> XOR-ed with the low bits of <code>m</code>, every level of the segment tree gets a clean &ldquo;swap or don't swap&rdquo; decision based on a single bit of the mask.</p>
+    <p><b>Observation 2 (full-overlap sums are XOR-invariant).</b> A segment tree node covers a contiguous block of <code>a</code>. Under XOR with mask <code>m</code>, the same node's interval in <code>b</code> is also a contiguous block (because the swap at this node's level either keeps the block in place or moves it to the sibling block). And since the sum is the same on either side (the XOR just permutes the elements within), <code>sum_a(node) = sum_b(corresponding-node-in-b-tree)</code> — we can read it off without recomputation.</p>
+    <p><b>Observation 3 (three-piece split).</b> For a partial-overlap node at level <code>k</code>, the descent uses the mask bit at level <code>k</code> to decide which physical child to recurse into for the logical-left part of the query and which for the logical-right part. If the mask bit is 0, no swap: left of <code>a</code> is left of <code>b</code>. If the mask bit is 1, swap: left of <code>a</code> is right of <code>b</code>. The query then bifurcates as usual.</p>
+
+  </section>
+
+  <section class="card" id="algo">
+    <h2>⚙️ Algorithm</h2>
+
+    <p>The data structure is a normal recursive segment tree from Lesson 1 over <code>a</code>. The clever part is only in the query.</p>
+    <h3>build / point update</h3>
+    <p>Exactly as Lesson 1.</p>
+    <h3>query(mask, ql, qr)</h3>
+    <p>Recurse from the root. At each node with interval <code>[lo, hi]</code>:</p>
+    <ol>
+      <li>If <code>[lo, hi]</code> is fully inside the logical query <code>[ql, qr]</code> (in <code>b</code>-space), return <code>tree[i]</code> — by Observation 2, this is the b-sum we want.</li>
+      <li>If <code>[lo, hi]</code> is disjoint from the logical query, return 0.</li>
+      <li>Otherwise compute the level's mask bit, decide swap, and recurse into the children in the swapped order. The query range in <code>b</code> maps to the same range — we are descending in <code>b</code>-space, not <code>a</code>-space, so the children's <code>[lo, mid]</code> and <code>[mid+1, hi]</code> intervals are interpreted in <code>b</code> while the physical tree nodes we recurse into are in <code>a</code>.</li>
+    </ol>
+    <p>In code, this is conveniently expressed by passing the mask down and at each recursion deciding which physical child to call.</p>
+
+  </section>
+
+  <section class="card" id="trace-mask">
+    <h2>🧪 Tracer 1 — The XOR Mask as a Sequence of Block Swaps</h2>
+
+    <p>The array <code>a = [2, 1, 5, 3, 4, 7, 6, 8]</code> is shown alongside the virtual array <code>b[i] = a[i ⊕ mask]</code>. Type a mask from 0 to 7 (3 bits for <code>n = 8</code>) and the tracer animates how the mask is applied bit by bit, level by level, swapping pairs of blocks. The final state shows the b array.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Mask-as-Block-Swap Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">mask
+            <input id="xmM" type="number" min="0" max="7" value="5" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;">
+          </label>
+          <button class="miniBtn primary" id="xmRun">⚡ Apply</button>
+          <button class="miniBtn" id="xmReset">↺ Reset</button>
+          <button class="miniBtn" id="xmPrev">‹ Prev</button>
+          <button class="miniBtn" id="xmNext">Next ›</button>
+          <button class="miniBtn" id="xmAuto">▶ Auto</button>
+        </div>
+      </div>
+      <div class="statusPanel"><h3>Original a</h3><div class="arr" id="xmA"></div></div>
+      <div class="statusPanel" style="margin-top:10px;"><h3>Current state (will become b)</h3><div class="arr" id="xmB"></div></div>
+      <div class="statusPanel" style="margin-top:10px;"><h3>Step</h3><div id="xmStatus">–</div></div>
+      <div class="stepLabel" id="xmStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="trace-query">
+    <h2>🧪 Tracer 2 — Range Sum on b Without Materializing</h2>
+
+    <p>Pick a mask, range <code>[ql, qr]</code> over <code>b</code>. The tracer walks the segment tree over <code>a</code>, at each level deciding swap-or-no based on the current bit of the mask. Full-overlap nodes contribute their precomputed <code>tree[i]</code> directly (the XOR doesn't change the sum), so the query is <code>O(log n)</code>.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Range Sum Tracer (XOR)</span>
+        <div class="diagramTools">
+          <label class="pill">mask<input id="xqM" type="number" min="0" max="7" value="5" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">ql<input id="xqL" type="number" min="0" max="7" value="1" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">qr<input id="xqR" type="number" min="0" max="7" value="5" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <button class="miniBtn primary" id="xqRun">⚡ Run</button>
+          <button class="miniBtn" id="xqReset">↺ Reset</button>
+          <button class="miniBtn" id="xqPrev">‹ Prev</button>
+          <button class="miniBtn" id="xqNext">Next ›</button>
+          <button class="miniBtn" id="xqAuto">▶ Auto</button>
+        </div>
+      </div>
+      <svg class="treeSvg" id="xqSvg" viewBox="0 0 920 500"></svg>
+      <div class="twoCol" style="margin-top:10px;">
+        <div class="statusPanel"><h3>Descent State</h3>
+          <div class="kvLine"><span class="k">level</span><span class="v" id="xqLevel">–</span></div>
+          <div class="kvLine"><span class="k">block length</span><span class="v" id="xqLen">–</span></div>
+          <div class="kvLine"><span class="k">level mask bit</span><span class="v" id="xqBit">–</span></div>
+          <div class="kvLine"><span class="k">swap?</span><span class="v" id="xqSwap">–</span></div>
+          <div class="kvLine"><span class="k">running total</span><span class="v" id="xqTotal">0</span></div>
+        </div>
+        <div class="statusPanel"><h3>Step</h3><div id="xqStatus">–</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.30)"></span>Current</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Full overlap → return sum</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.18)"></span>Partial → recurse (with swap)</span>
+        <span><span class="swatch" style="background:rgba(185,28,28,.12)"></span>No overlap → return 0</span>
+      </div>
+      <div class="stepLabel" id="xqStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="invariants">
+    <h2>🛡️ Invariants</h2>
+
+<div class="invariantBox"><h4>✅ Invariant — Tree invariant</h4><p>The segment tree over <code>a</code> obeys the standard invariant from Lesson 1: every node's stored sum equals the sum of its interval in <code>a</code>.</p></div><div class="invariantBox"><h4>✅ Invariant — Permutation invariant</h4><p>For every mask <code>m</code> and every segment-tree node <code>u</code> covering interval <code>[lo, hi]</code> in <code>a</code>, the same interval <code>[lo, hi]</code> in <code>b = a ⊕ m</code> is also a contiguous interval (because XOR with mask <code>m</code> permutes blocks of size <code>hi − lo + 1</code> as wholes), and its sum equals <code>tree[u]</code>. So full-overlap nodes are <i>sum-invariant</i> under any XOR mask.</p></div><div class="invariantBox"><h4>✅ Invariant — Level-bit invariant</h4><p>At level <code>k</code> of the descent (block length <code>len = base / 2^k</code>), the relevant bit of the mask is <code>mask &amp; (len / 2)</code>. This bit decides whether the two children are swapped in <code>b</code>'s view: bit = 0 keeps the order; bit = 1 swaps.</p></div>
+  </section>
+
+  <section class="card" id="proof">
+    <h2>🧮 Proof of Correctness</h2>
+<div class="proofBox"><h4>🧮 Proof — Why full-overlap nodes are sum-invariant under XOR</h4>
+    <p>Let <code>[lo, hi]</code> be the interval of segment-tree node <code>u</code>. Because the tree is built with power-of-two block sizes, <code>[lo, hi]</code> has the form <code>[k · L, (k+1) · L − 1]</code> where <code>L</code> is the block length at <code>u</code>'s level and <code>k</code> is the block index.</p>
+    <p>Consider the map <code>φ: i ↦ i ⊕ m</code> restricted to <code>[lo, hi]</code>. The high bits of <code>i</code> (above the bits used to address within <code>L</code>) are fixed inside <code>[lo, hi]</code>; XOR-ing them with the corresponding high bits of <code>m</code> produces a new fixed prefix — which addresses a <i>different</i> block of length <code>L</code> in <code>a</code>, but still a length-<code>L</code> block. The low bits of <code>i</code> range over <code>[0, L − 1]</code>; XOR-ing them with the low bits of <code>m</code> permutes <code>[0, L − 1]</code> back onto itself.</p>
+    <p>So <code>φ([lo, hi])</code> is another length-<code>L</code> block, and <code>φ</code> restricted to <code>[lo, hi]</code> is a bijection onto that block. Sums of bijectively-related multisets are equal, so the sum of <code>b</code> over <code>[lo, hi]</code> equals the sum of <code>a</code> over <code>φ([lo, hi])</code> — but in the descent we read <code>tree[u]</code>, which is the sum of <code>a</code> over <code>[lo, hi]</code>. These two sums are equal because they're both equal to the sum over the same block-length-<code>L</code> contiguous interval in <code>a</code>… as long as the descent reaches the <i>correct</i> physical node, namely the one whose interval is <code>φ([lo, hi])</code>.</p>
+    <p>That is precisely what the swap-or-no decision at each level does: it picks the child of <code>a</code> whose interval corresponds to the logical child of <code>b</code>, by reading the relevant bit of the mask. By induction over the depth of the descent, the node we land on at full overlap is the right one. ∎</p>
+    </div>
+  </section>
+
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+
+    <table>
+      <tr><th>Operation</th><th>Time</th><th>Memory</th></tr>
+      <tr><td>Build</td><td>Θ(n)</td><td>Θ(n)</td></tr>
+      <tr><td>Point update</td><td>Θ(log n)</td><td>—</td></tr>
+      <tr><td>XOR range sum</td><td>Θ(log n)</td><td>—</td></tr>
+    </table>
+    <p class="note">Same asymptotics as the base segment tree, with a tiny constant-factor overhead per recursion to read the level's mask bit. The structure shines when many queries use many different masks (otherwise you could just materialize <code>b</code> once).</p>
+
+  </section>
+
+  <section class="card" id="template-philosophy">
+    <h2>🧰 Core Template Philosophy</h2>
+
+    <p>The XOR segment tree is a tiny addition to Lesson 1. The only new code is in the query function: it receives a mask, and at each recursion it decides which physical child to descend into based on a single bit of the mask. Build, update, and the rest of the structure are unchanged.</p>
+    <p>The mental discipline: separate the <i>logical</i> coordinate (what <code>b</code> sees) from the <i>physical</i> coordinate (what <code>a</code> stores). The descent talks about the logical coordinate; at each level, it maps the logical child it wants to enter into the physical child by XOR-ing with the level's bit.</p>
+
+  </section>
+
+  <section class="card" id="master-code">
+    <h2>💻 Master Template (C++)</h2>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct XorSumSegTree {
+    using T = long long;
+
+    int n = 0;
+    int base = 1;
+    vector&lt;T&gt; tree;
+
+    XorSumSegTree() {}
+    XorSumSegTree(const vector&lt;T&gt;&amp; a) { init(a); }
+
+    void init(const vector&lt;T&gt;&amp; a) {
+        n = (int)a.size();
+        base = 1;
+        while (base &lt; max(1, n)) base &lt;&lt;= 1;
+        tree.assign(2 * base, 0);
+        for (int i = 0; i &lt; n; i++) tree[base - 1 + i] = a[i];
+        for (int i = base - 2; i &gt;= 0; i--)
+            tree[i] = tree[2*i + 1] + tree[2*i + 2];
+    }
+
+    void point_set(int pos, T value) {
+        int i = base - 1 + pos;
+        tree[i] = value;
+        while (i &gt; 0) {
+            i = (i - 1) / 2;
+            tree[i] = tree[2*i + 1] + tree[2*i + 2];
+        }
+    }
+
+    // Returns sum_{i in [ql, qr]} a[i ^ mask]
+    T xor_range_sum(int mask, int ql, int qr) const {
+        return xor_range_sum(mask, ql, qr, 0, 0, base - 1);
+    }
+
+    T xor_range_sum(int mask, int ql, int qr,
+                    int i, int lo, int hi) const {
+        if (qr &lt; lo || hi &lt; ql) return 0;
+        if (ql &lt;= lo &amp;&amp; hi &lt;= qr) return tree[i];
+
+        int len = hi - lo + 1;
+        int half = len &gt;&gt; 1;
+        int mid = lo + half - 1;
+
+        // Which physical child corresponds to b's left half?
+        bool swap = (mask &amp; half) != 0;
+
+        int leftPhys  = swap ? 2*i + 2 : 2*i + 1;
+        int rightPhys = swap ? 2*i + 1 : 2*i + 2;
+
+        return xor_range_sum(mask, ql, qr, leftPhys,  lo,    mid)
+             + xor_range_sum(mask, ql, qr, rightPhys, mid+1, hi);
+    }
+};</code></pre>
+  </section>
+
+  <section class="card" id="explained">
+    <h2>🔎 Line-by-Line Explanation</h2>
+<details open>
+  <summary>Build / point_set — unchanged <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The segment tree is constructed and updated exactly as in Lesson 1, with a 0-based heap layout. The mask is invisible to these routines.</p>
+  </div>
+</details>
+<details open>
+  <summary>xor_range_sum — the swap-aware descent <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The interesting work happens at every internal node. We compute the current block length <code>len = hi − lo + 1</code> and the bit of the mask that controls the swap at this level: <code>mask &amp; (len &gt;&gt; 1)</code>. If that bit is set, the physical-left child of <code>a</code> is actually the logical-right child of <code>b</code>, so we route the descent accordingly. The two recursive calls are then identical to Lesson 1's structure — the only difference is which physical child each call addresses.</p>
+  </div>
+</details>
+<details open>
+  <summary>Why the no-overlap and full-overlap cases don't need the mask <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>Both early-exit cases compare the <i>logical</i> coordinate to the query range — and the recursion has been keeping the logical coordinate <code>[lo, hi]</code> consistent with the b-view. Full-overlap returns <code>tree[i]</code> directly because of the Permutation invariant: the sum over a block-aligned interval in <code>a</code> equals the sum over the same logical interval in <code>b</code>.</p>
+  </div>
+</details>
+
+  </section>
+
+  <section class="card" id="edges">
+    <h2>🧯 Edge Cases (Centralized)</h2>
+
+    <table>
+      <tr><th>Case</th><th>What happens</th><th>Why it works</th></tr>
+      <tr><td>mask = 0</td><td>No swap at any level; behaves like normal Lesson-1 query</td><td>Every level bit is 0, no swap</td></tr>
+      <tr><td>mask = base − 1 (all bits set)</td><td>Swap at every level; reads <code>a</code> in reverse order</td><td>Equivalent to <code>b[i] = a[n − 1 − i]</code> when <code>n</code> is a power of 2</td></tr>
+      <tr><td>ql = qr (single element)</td><td>Descent goes to one leaf; full overlap at that leaf returns its value</td><td>Standard</td></tr>
+      <tr><td>n not a power of 2</td><td><b>Don't</b>. XOR over a non-power-of-2 universe loses the block-permutation property</td><td>Pad <code>a</code> with identity elements to the next power of 2 before applying XOR queries</td></tr>
+      <tr><td>Updates between queries</td><td>Each update is O(log n); subsequent queries reflect the updated values</td><td>Update doesn't depend on mask; mask is per-query</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+<div class="pitfallBox"><h4>⚠️ Pitfall — Treating n = non-power-of-2 like power-of-2</h4><p>The block-swap property of XOR only works when the universe is a power of 2. If <code>n</code> isn't, you must pad <code>a</code> with identity elements (0 for sum, +∞ for min, etc.) up to the next power of 2, then accept that queries on the padded portion return identity.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Using the wrong mask bit</h4><p>At block length <code>len</code>, the relevant mask bit is <code>mask &amp; (len &gt;&gt; 1)</code>, not <code>mask &amp; (len − 1)</code> or <code>mask &amp; len</code>. The bit you want is the one that decides between the two halves of the current block.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Forgetting that point_set is in physical (a) coordinates</h4><p>Point updates always target <code>a[p]</code>, not <code>b[p]</code>. If the problem asks to update <code>b[p]</code> for some mask <code>m</code>, you must update <code>a[p ⊕ m]</code> instead.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Computing mid as (lo + hi) &gt;&gt; 1 with sign issues</h4><p>For coordinates that can be very large or negative, use <code>lo + (hi − lo) / 2</code>. For the XOR segment tree the coordinates are non-negative array indices, so this is rarely an issue — but watch out if you adapt the template to a 2D or huge-coordinate variant.</p></div>
+  </section>
+
+  <section class="card" id="decision">
+    <h2>🎯 Decision Guide</h2>
+
+    <table>
+      <tr><th>Symptom</th><th>Choice</th><th>Reason</th></tr>
+      <tr><td>Many queries with many different XOR masks</td><td><b>XOR segment tree</b></td><td>O(log n) per query, much better than materializing</td></tr>
+      <tr><td>Single fixed mask, many queries</td><td>Materialize b once, use Lesson 1</td><td>O(n) precompute, O(log n) per query, simpler code</td></tr>
+      <tr><td>Permutation is not XOR (e.g. arbitrary permutation)</td><td>Need a different idea (often Mo's algorithm or sqrt)</td><td>Arbitrary permutations don't respect the segment tree's block structure</td></tr>
+      <tr><td>Point updates + XOR range queries</td><td><b>XOR segment tree</b></td><td>Standard fit</td></tr>
+      <tr><td>Need k-th smallest under XOR mask</td><td>Persistent XOR segment tree (Variant 1)</td><td>Combine persistence with XOR descent</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="variants">
+    <h2>🎛️ Variants &amp; Extensions</h2>
+
+    <h3>Variant 1 — Persistent XOR segment tree</h3>
+    <p>Combine the path-copying machinery of Lesson 5 with the XOR descent of this lesson. Used for &ldquo;sum of values ≤ x in b[l..r]&rdquo; and similar order queries on the XOR-permuted array.</p>
+    <h3>Variant 2 — Multiple chained XORs</h3>
+    <p>If the problem applies multiple XORs in sequence, the result is a single XOR (XOR is associative and commutative). So the structure is unchanged; just precompute the cumulative mask.</p>
+    <h3>Variant 3 — Min / Max / GCD instead of Sum</h3>
+    <p>Any operation that respects multisets — min, max, gcd, xor, multiplication mod p — works with the same descent. The Permutation invariant still applies because the sum is replaced by the operation.</p>
+    <h3>Variant 4 — XOR on a 2D grid</h3>
+    <p>Apply the same idea to a 2D segment tree: at each level, two mask bits (one for x, one for y) determine which of the four physical quadrants corresponds to each logical quadrant. Used in some FFT-related contest problems.</p>
+
+  </section>
+
+  <section class="card" id="problems">
+    <h2>🚀 Practice Problems (VJudge)</h2>
+
+    <table>
+      <tr><th>Level</th><th>Problem</th><th>Link</th><th>What it teaches</th></tr>
+      <tr><td>Medium</td><td>Codeforces 482B — Interesting Array</td><td><a href="https://vjudge.net/problem/CodeForces-482B" target="_blank">CF-482B</a></td><td>Bitmask range constraints (related)</td></tr>
+      <tr><td>Medium</td><td>Codeforces 339D — XOR Tree</td><td><a href="https://vjudge.net/problem/CodeForces-339D" target="_blank">CF-339D</a></td><td>XOR over level-aligned operations</td></tr>
+      <tr><td>Hard</td><td>Codeforces 1788E — Sum over Zero</td><td><a href="https://vjudge.net/problem/CodeForces-1788E" target="_blank">CF-1788E</a></td><td>XOR-permuted prefix sums</td></tr>
+      <tr><td>Hard</td><td>Codeforces 1093G — Multidimensional Queries</td><td><a href="https://vjudge.net/problem/CodeForces-1093G" target="_blank">CF-1093G</a></td><td>Bit-level decomposition on segment trees</td></tr>
+      <tr><td>Hard</td><td>Atcoder Educational — XOR Segment Tree (search)</td><td><a href="https://vjudge.net/problem/AtCoder-arc145_d" target="_blank">AtCoder ARC145D</a></td><td>Permuted XOR queries</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="summary">
+    <h2>🏁 Final Summary</h2>
+
+    <p>The XOR segment tree answers range-sum queries on a virtual array <code>b[i] = a[i ⊕ mask]</code> in <code>O(log n)</code>, without ever materializing <code>b</code>. The key insight is that XOR with a mask permutes <i>blocks</i> of <code>a</code> in a way that respects the segment tree's binary partitioning: at every level of the descent, a single bit of the mask decides whether to swap the two physical children.</p>
+    <p>The structure is just Lesson 1 with a swap-aware query function. No changes to build or point update. The technique generalizes: you can combine XOR with persistence (Variant 1), with composite nodes (Variant 3), or with 2D (Variant 4). The pattern of separating <i>logical coordinate</i> (what the query sees) from <i>physical coordinate</i> (what the tree stores) is broadly useful.</p>
+
+  </section>
+
+
+  <div class="page-footer">
+    <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Segment Tree Course · Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">XOR Segment Tree · Virtual b[i] = a[i ⊕ mask] · O(log n) per Query</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+
+// ============================================================
+// DOM + SVG HELPERS
+// ============================================================
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function clearEl(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function makeEl(tag, attrs={}, html=''){
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if(html) el.innerHTML = html;
+  return el;
+}
+function makeSVG(tag, attrs={}){
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+function getCssVar(name){
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+// ============================================================
+// THEME TOGGLE (with localStorage persistence)
+// ============================================================
+(function(){
+  const KEY = 'segtree_theme';
+  const saved = localStorage.getItem(KEY);
+  if(saved) document.body.setAttribute('data-theme', saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme', 'dark');
+  }
+  const sw = $('#themeSwitch');
+  if(sw){
+    sw.setAttribute('role','switch');
+    sw.setAttribute('aria-checked', document.body.getAttribute('data-theme')==='dark' ? 'true':'false');
+    sw.onclick = () => {
+      const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem(KEY, next);
+      sw.setAttribute('aria-checked', next==='dark'?'true':'false');
+      // Notify any tree drawers to re-render colors
+      document.dispatchEvent(new CustomEvent('segtree:themechange'));
+    };
+  }
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+(function(){
+  const toggle = $('#sidebarToggle');
+  const sidebar = $('#sidebar');
+  const appEl = $('#app');
+  const overlay = $('#sidebarOverlay');
+  if(!toggle || !sidebar || !appEl) return;
+  let open = window.innerWidth > 1400;
+  function apply(){
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      overlay.classList.remove('show');
+      if(window.innerWidth > 1400) appEl.classList.remove('sidebar-hidden');
+    } else {
+      appEl.classList.add('sidebar-hidden');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+  }
+  if(!open) appEl.classList.add('sidebar-hidden');
+  apply();
+  toggle.setAttribute('aria-controls','sidebar');
+  toggle.onclick = () => {
+    open = !open;
+    if(open && window.innerWidth <= 1400){
+      sidebar.classList.remove('collapsed');
+      overlay.classList.add('show');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    } else {
+      apply();
+    }
+  };
+  overlay.onclick = () => {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    open = false;
+  };
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      overlay.click();
+    }
+  });
+})();
+
+// ============================================================
+// SCROLL-BASED NAV HIGHLIGHTING
+// ============================================================
+(function(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  function update(){
+    let cur = '';
+    sections.forEach(s => {
+      if(s.getBoundingClientRect().top < 200) cur = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  const contentEl = $('.content');
+  if(contentEl) contentEl.addEventListener('scroll', update);
+  update();
+})();
+
+// ============================================================
+// SEGMENT TREE LAYOUT (0-based heap indexing)
+//   left  = 2*i + 1
+//   right = 2*i + 2
+// Returns a list { x, y, r } for each node, plus tree dimensions.
+// ============================================================
+function computeSegTreeLayout(base, opts={}){
+  // base must be a power of 2. Tree has 2*base - 1 nodes.
+  const levels = Math.log2(base) + 1;
+  const W = opts.width || 880;
+  const H = opts.height || (levels * 95 + 30);
+  const radius = opts.radius || Math.max(18, Math.min(34, 280 / base));
+  const layout = [];
+  function rec(i, depth, l, r){
+    layout[i] = { i, depth, l, r };
+    if(l === r) return;
+    const left = 2*i + 1, right = left + 1;
+    const mid = l + ((r - l) >> 1);
+    rec(left, depth+1, l, mid);
+    rec(right, depth+1, mid+1, r);
+  }
+  rec(0, 0, 0, base-1);
+  // Now assign x coordinates using leaf positions
+  const leafCount = base;
+  const leafGap = (W - 40) / leafCount;
+  let leafIdx = 0;
+  function place(i){
+    const node = layout[i];
+    if(node.l === node.r){
+      node.x = 20 + leafGap * (leafIdx + 0.5);
+      leafIdx++;
+    } else {
+      const left = 2*i + 1, right = left + 1;
+      place(left); place(right);
+      node.x = (layout[left].x + layout[right].x) / 2;
+    }
+    node.y = 30 + node.depth * ((H - 60) / Math.max(1, levels - 1));
+    node.rad = radius;
+  }
+  place(0);
+  return { layout, width: W, height: H, levels, radius };
+}
+
+// ============================================================
+// SEGMENT TREE SVG DRAWER
+// Highlight categories:
+//   current      - the node we are currently processing (blue strong)
+//   visited      - already touched in this step (light blue)
+//   full         - fully covered by query (green - return)
+//   partial      - partial overlap (orange - recurse)
+//   none         - no overlap (red dashed - skip)
+//   updated      - just changed by an update (warn fill)
+//   lazyPending  - has pending lazy tag (yellow ring)
+//   cloned       - newly cloned node (purple fill)
+//   frozen       - belongs to an old persistent version (gray dashed)
+// ============================================================
+function drawSegTree(svgSel, opts){
+  const svg = (typeof svgSel === 'string') ? $(svgSel) : svgSel;
+  clearEl(svg);
+  const { base, nodes, highlights={}, queryRange=null, arrLabels=null } = opts;
+  const layoutOpts = { width: opts.width || 880, height: opts.height || 0, radius: opts.radius };
+  const L = computeSegTreeLayout(base, layoutOpts);
+  svg.setAttribute('viewBox', `0 0 ${L.width} ${L.height}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  // Draw edges first
+  L.layout.forEach(nd => {
+    if(nd.l === nd.r) return;
+    const leftI = 2*nd.i + 1, rightI = leftI + 1;
+    [leftI, rightI].forEach(child => {
+      const c = L.layout[child];
+      const lineCol = getCssVar('--border');
+      const ln = makeSVG('line', {
+        x1: nd.x, y1: nd.y, x2: c.x, y2: c.y,
+        stroke: lineCol, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+        class: 'edgeLine'
+      });
+      svg.appendChild(ln);
+    });
+  });
+
+  // Draw nodes
+  L.layout.forEach(nd => {
+    const h = highlights[nd.i] || 'idle';
+    let fill = 'var(--panel)';
+    let stroke = getCssVar('--border');
+    let sw = 3;
+    let dasharray = '';
+    switch(h){
+      case 'current':  fill = 'rgba(37,99,235,.30)'; stroke = getCssVar('--accent2'); sw = 5; break;
+      case 'visited':  fill = 'rgba(37,99,235,.10)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'full':     fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 5; break;
+      case 'partial':  fill = 'rgba(180,83,9,.18)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'none':     fill = 'rgba(185,28,28,.12)'; stroke = getCssVar('--bad'); sw = 3; dasharray='6,5'; break;
+      case 'updated':  fill = 'rgba(180,83,9,.22)'; stroke = getCssVar('--warn'); sw = 5; break;
+      case 'lazyPending': fill='rgba(180,83,9,.10)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'cloned':   fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 5; break;
+      case 'frozen':   fill = 'rgba(120,120,120,.12)'; stroke = getCssVar('--muted'); sw = 2.5; dasharray='4,4'; break;
+      case 'leaf':     fill = 'rgba(37,99,235,.08)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'kth-left': fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 4; break;
+      case 'kth-right':fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 4; break;
+    }
+    const attrs = {
+      cx: nd.x, cy: nd.y, r: nd.rad,
+      fill, stroke, 'stroke-width': sw,
+      class: 'nodeCircle'
+    };
+    if(dasharray) attrs['stroke-dasharray'] = dasharray;
+    svg.appendChild(makeSVG('circle', attrs));
+
+    // Index label (small, above)
+    const idxLab = makeSVG('text', {
+      x: nd.x, y: nd.y - nd.rad - 4,
+      'text-anchor':'middle','font-size':'11','font-weight':'700',
+      fill: getCssVar('--muted'), 'pointer-events':'none'
+    });
+    idxLab.textContent = `i=${nd.i}`;
+    svg.appendChild(idxLab);
+
+    // Interval label inside
+    const intervalLab = makeSVG('text', {
+      x: nd.x, y: nd.y - 3,
+      'text-anchor':'middle','font-size': nd.rad >= 26 ? '13' : '11', 'font-weight':'900',
+      fill: getCssVar('--text'), 'pointer-events':'none'
+    });
+    intervalLab.textContent = `[${nd.l},${nd.r}]`;
+    svg.appendChild(intervalLab);
+
+    // Node value (passed in nodes[i])
+    const v = nodes ? nodes[nd.i] : undefined;
+    if(v !== undefined && v !== null){
+      const valLab = makeSVG('text', {
+        x: nd.x, y: nd.y + 14,
+        'text-anchor':'middle','font-size': nd.rad >= 26 ? '15' : '12','font-weight':'950',
+        fill: h === 'current' ? getCssVar('--accent2') :
+              h === 'updated' ? getCssVar('--warn') :
+              h === 'full'    ? getCssVar('--good') :
+              getCssVar('--text'),
+        'pointer-events':'none'
+      });
+      valLab.textContent = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      svg.appendChild(valLab);
+    }
+  });
+
+  // Optional: query range bar at top
+  if(queryRange){
+    const [ql, qr] = queryRange;
+    const leafLayer = L.layout.filter(n => n.l === n.r);
+    if(leafLayer.length){
+      const lx = leafLayer[ql] ? leafLayer[ql].x : null;
+      const rx = leafLayer[qr] ? leafLayer[qr].x : null;
+      if(lx !== null && rx !== null){
+        const y = L.layout[L.layout.length-1].y + L.radius + 16;
+        svg.appendChild(makeSVG('line', {
+          x1: lx - L.radius, y1: y, x2: rx + L.radius, y2: y,
+          stroke: getCssVar('--accent2'), 'stroke-width': 5, 'stroke-linecap':'round'
+        }));
+        const t = makeSVG('text', {
+          x: (lx+rx)/2, y: y+20, 'text-anchor':'middle','font-size':'14','font-weight':'900',
+          fill: getCssVar('--accent2')
+        });
+        t.textContent = `query [${ql}, ${qr}]`;
+        svg.appendChild(t);
+      }
+    }
+  }
+
+  return L;
+}
+
+// ============================================================
+// HORIZONTAL ARRAY DRAWER
+// nodes: array of values; highlights: index -> class ('hl','upd','done')
+// ============================================================
+function drawArray(containerSel, values, opts={}){
+  const c = (typeof containerSel === 'string') ? $(containerSel) : containerSel;
+  if(!c) return;
+  clearEl(c);
+  c.classList.add('arr');
+  const highlights = opts.highlights || {};
+  const showIdx = opts.showIdx !== false;
+  values.forEach((v, i) => {
+    const cls = highlights[i] ? ('arrCell '+highlights[i]) : 'arrCell';
+    const cell = makeEl('div', { class: cls });
+    if(showIdx){
+      const idx = makeEl('span', { class: 'idx' });
+      idx.textContent = String(i);
+      cell.appendChild(idx);
+    }
+    const val = makeEl('span', {});
+    val.textContent = (v === null || v === undefined) ? '·' : String(v);
+    cell.appendChild(val);
+    c.appendChild(cell);
+  });
+}
+
+// ============================================================
+// COMMON STEP CONTROLLER (Reset / Prev / Next / Auto)
+// Pass: { ids:{reset,prev,next,auto,step,status}, totalFn, renderFn,
+//         interval(ms), startStep=0 }
+// ============================================================
+function makeStepController(cfg){
+  const { ids, totalFn, renderFn } = cfg;
+  let step = cfg.startStep || 0;
+  let timer = null;
+  function render(){
+    const total = totalFn();
+    if(step >= total) step = total - 1;
+    if(step < 0) step = 0;
+    renderFn(step);
+    if(ids.step){
+      const el = $(ids.step);
+      if(el) el.textContent = `Step ${step+1} / ${total}`;
+    }
+  }
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if(ids.auto){ const a = $(ids.auto); if(a) a.classList.remove('active'); }
+  }
+  function reset(){ step = 0; stopAuto(); render(); }
+  function prev(){ stopAuto(); step--; render(); }
+  function next(){ step++; render(); }
+  function autoToggle(){
+    if(timer){ stopAuto(); return; }
+    const a = $(ids.auto); if(a) a.classList.add('active');
+    timer = setInterval(() => {
+      const total = totalFn();
+      if(step >= total - 1){ stopAuto(); return; }
+      step++; render();
+    }, cfg.interval || 800);
+  }
+  if(ids.reset){ const e = $(ids.reset); if(e) e.onclick = reset; }
+  if(ids.prev) { const e = $(ids.prev);  if(e) e.onclick = prev;  }
+  if(ids.next) { const e = $(ids.next);  if(e) e.onclick = next;  }
+  if(ids.auto) { const e = $(ids.auto);  if(e) e.onclick = autoToggle; }
+  document.addEventListener('segtree:themechange', () => render());
+  render();
+  return { reset, prev, next, autoToggle, render, get step(){return step;}, set step(v){step=v;render();} };
+}
+
+
+// ============================================================
+// LESSON-SPECIFIC SCRIPT
+// ============================================================
+
+const A_L10 = [2, 1, 5, 3, 4, 7, 6, 8];
+const N_L10 = 8;
+const BASE_L10 = 8;
+const LOG_L10 = 3;
+
+// Build the segtree
+const TREE_L10 = new Array(2 * BASE_L10).fill(0);
+for(let i = 0; i < N_L10; i++) TREE_L10[BASE_L10 - 1 + i] = A_L10[i];
+for(let i = BASE_L10 - 2; i >= 0; i--) TREE_L10[i] = TREE_L10[2*i+1] + TREE_L10[2*i+2];
+
+// ----------------------------------------------------------------
+// Tracer 1: Mask-as-block-swap visualization
+// ----------------------------------------------------------------
+(function(){
+  let frames = [];
+  function compute(){
+    let m = parseInt($('#xmM').value, 10);
+    if(!Number.isFinite(m)) m = 0;
+    m = Math.max(0, Math.min(BASE_L10 - 1, m));
+    frames = [];
+    // Step 0: original
+    frames.push({
+      a: A_L10.slice(),
+      cur: A_L10.slice(),
+      hi: [],
+      note: `Start: array a = [${A_L10.join(', ')}]. Mask = ${m} (binary ${m.toString(2).padStart(LOG_L10,'0')}). Will apply level by level, top bit first.`
+    });
+    // Apply each bit from top to bottom
+    let cur = A_L10.slice();
+    for(let bit = LOG_L10 - 1; bit >= 0; bit--){
+      const swapBit = (m >> bit) & 1;
+      const blockSize = 1 << bit; // size of pieces being swapped at this level
+      const levelDownFromTop = LOG_L10 - 1 - bit;
+      if(swapBit){
+        const next = cur.slice();
+        const hi = [];
+        for(let start = 0; start < N_L10; start += 2 * blockSize){
+          // swap [start..start+block-1] with [start+block..start+2*block-1]
+          for(let k = 0; k < blockSize; k++){
+            next[start + k] = cur[start + blockSize + k];
+            next[start + blockSize + k] = cur[start + k];
+            hi.push(start + k);
+            hi.push(start + blockSize + k);
+          }
+        }
+        frames.push({
+          a: A_L10.slice(), cur: next.slice(), hi,
+          note: `Level ${levelDownFromTop}: bit ${bit} of mask is 1 → swap each pair of blocks of length ${blockSize}.`
+        });
+        cur = next;
+      } else {
+        frames.push({
+          a: A_L10.slice(), cur: cur.slice(), hi: [],
+          note: `Level ${levelDownFromTop}: bit ${bit} of mask is 0 → no swap at this level.`
+        });
+      }
+    }
+    frames.push({
+      a: A_L10.slice(), cur: cur.slice(), hi: [],
+      note: `Done. b = a ⊕ ${m} = [${cur.join(', ')}].`
+    });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    const aHi = {};
+    drawArray('#xmA', f.a, { highlights: aHi });
+    const bHi = {};
+    f.hi.forEach(idx => { bHi[idx] = 'upd'; });
+    drawArray('#xmB', f.cur, { highlights: bHi });
+    $('#xmStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#xmReset', prev:'#xmPrev', next:'#xmNext',
+           auto:'#xmAuto', step:'#xmStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 900
+  });
+  $('#xmRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+// ----------------------------------------------------------------
+// Tracer 2: XOR range sum on segment tree
+// ----------------------------------------------------------------
+(function(){
+  let frames = [];
+  function compute(){
+    let m  = parseInt($('#xqM').value, 10);
+    let ql = parseInt($('#xqL').value, 10);
+    let qr = parseInt($('#xqR').value, 10);
+    if(!Number.isFinite(m)) m = 0;
+    if(!Number.isFinite(ql)) ql = 0;
+    if(!Number.isFinite(qr)) qr = N_L10 - 1;
+    m  = Math.max(0, Math.min(BASE_L10 - 1, m));
+    ql = Math.max(0, Math.min(N_L10 - 1, ql));
+    qr = Math.max(0, Math.min(N_L10 - 1, qr));
+    if(ql > qr) [ql, qr] = [qr, ql];
+    frames = [];
+
+    function nodes(){
+      const obj = {};
+      for(let i = 0; i < 2 * BASE_L10 - 1; i++){
+        obj[i] = String(TREE_L10[i]);
+      }
+      return obj;
+    }
+
+    let total = 0;
+    frames.push({
+      nodes: nodes(), hi: { 0: 'current' },
+      level: 0, len: BASE_L10, bit: '–', swap: '–', total,
+      note: `Start: xor_range_sum(mask=${m}, ql=${ql}, qr=${qr}). At root i=0, [lo,hi]=[0,${BASE_L10-1}].`
+    });
+
+    function rec(i, lo, hi, level){
+      if(qr < lo || hi < ql){
+        frames.push({
+          nodes: nodes(), hi: { [i]: 'none' },
+          level, len: hi-lo+1, bit: '–', swap: '–', total,
+          note: `i=${i} [${lo},${hi}]: NO overlap → return 0.`
+        });
+        return 0;
+      }
+      if(ql <= lo && hi <= qr){
+        total += TREE_L10[i];
+        frames.push({
+          nodes: nodes(), hi: { [i]: 'full' },
+          level, len: hi-lo+1, bit: '–', swap: '–', total,
+          note: `i=${i} [${lo},${hi}]: FULL overlap → return tree[${i}]=${TREE_L10[i]}. Running total = ${total}.`
+        });
+        return TREE_L10[i];
+      }
+      const len = hi - lo + 1;
+      const half = len >> 1;
+      const mid = lo + half - 1;
+      const swap = (m & half) !== 0;
+      const leftPhys  = swap ? 2*i + 2 : 2*i + 1;
+      const rightPhys = swap ? 2*i + 1 : 2*i + 2;
+      frames.push({
+        nodes: nodes(), hi: { [i]: 'partial', [leftPhys]: 'kth-left', [rightPhys]: 'kth-right' },
+        level, len, bit: (m & half) ? 1 : 0, swap: swap ? 'YES (swap children)' : 'no', total,
+        note: `i=${i} [${lo},${hi}]: PARTIAL. Block length=${len}, swap bit = mask&${half} = ${(m & half)} → ${swap?'swap':'no swap'}. Physical left child = ${leftPhys}, physical right child = ${rightPhys}.`
+      });
+      const a = rec(leftPhys, lo, mid, level+1);
+      const b = rec(rightPhys, mid+1, hi, level+1);
+      frames.push({
+        nodes: nodes(), hi: { [i]: 'visited' },
+        level, len, bit: (m & half) ? 1 : 0, swap: swap ? 'YES' : 'no', total,
+        note: `BACK at i=${i}: ${a} + ${b} = ${a+b}.`
+      });
+      return a + b;
+    }
+    rec(0, 0, BASE_L10 - 1, 0);
+    frames.push({
+      nodes: nodes(), hi: {},
+      level: '–', len: '–', bit: '–', swap: '–', total,
+      note: `Done. xor_range_sum = ${total}.`
+    });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    drawSegTree('#xqSvg', { base: BASE_L10, nodes: f.nodes,
+                            highlights: f.hi, width: 920, height: 500 });
+    $('#xqLevel').textContent = String(f.level);
+    $('#xqLen').textContent   = String(f.len);
+    $('#xqBit').textContent   = String(f.bit);
+    $('#xqSwap').textContent  = String(f.swap);
+    $('#xqTotal').textContent = String(f.total);
+    $('#xqStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#xqReset', prev:'#xqPrev', next:'#xqNext',
+           auto:'#xqAuto', step:'#xqStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 800
+  });
+  $('#xqRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+</script>
+</body>
+</html>

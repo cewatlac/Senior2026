@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 09 · Polygon Cut &amp; Convex Hull</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">⬡</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 09 · Polygon Cut &amp; Convex Hull</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Cut &amp; wrap</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Half-planes &amp; rubber bands</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Keep one side · wrap a cloud</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>Sutherland–Hodgman · pivot &amp; angle sort</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Sign of cross decides all</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>Clip edges · pivot &amp; angle sort</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Order &amp; convexity contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Clip soundness · hull minimality</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(n) cut · O(n log n) hull</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Integer hull · float cut</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every routine explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>On-line · collinear · dups</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>≤ vs &lt; · overflow · EPS</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Calipers · area after cut</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>CSES hull · cut &amp; area drills</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">⬡</div>
+    <div class="sf-text">Coach Academy · Geometry Class 09<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">⬡</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 09 — Polygon Cut &amp; Convex Hull</h1>
+        <div class="subtitle">Two operations that reshape a set of points. <b>Polygon cut</b> slices a polygon by a directed line and keeps one side, splicing in new vertices where edges cross. The <b>convex hull</b> wraps a point cloud in the tightest convex polygon that contains it. Both turn on the same primitive from Class 08 — the sign of a cross product — to decide which side of a line a point falls on.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>This class joins two classic polygon operations. The <b>polygon cut</b> takes a polygon and a <i>directed</i> line, and returns the part of the polygon lying on one chosen side of that line — the half-plane clip. The <b>convex hull</b> takes a set of points and returns the smallest convex polygon enclosing all of them.</p>
+    <div class="chips">
+      <span class="chip">Cut a polygon by a directed line, keep one side</span>
+      <span class="chip">Splice in intersection points where edges cross</span>
+      <span class="chip">Wrap a point cloud in its tightest convex polygon</span>
+      <span class="chip">Keep or drop collinear boundary points</span>
+    </div>
+    <p style="margin-top:16px;">Both reduce to one question asked repeatedly: <b>which side of a directed line is this point on?</b> The signed cross product answers it — positive on the left, negative on the right, zero on the line. The cut keeps left-side vertices and adds crossings; the hull keeps only the points that make left turns around the boundary.</p>
+    <div class="callout warn">
+      <b>Two convex-hull APIs, on purpose.</b> The <b>primary</b> <span class="inlineCode">convexHull</span> follows the Markdown tutorial's pivot/angle-sort recipe on the floating <span class="inlineCode">Point = complex&lt;T&gt;</span> type and returns the strict-corner hull (no intermediate collinear vertices). The <b>secondary</b> <span class="inlineCode">convexHullAndrew</span> stays on the integer <span class="inlineCode">Pt</span> type with <span class="inlineCode">__int128</span> cross products — use it when coordinates are bit-exact long longs, or pass <span class="inlineCode">inclusive = true</span> for CSES-style hulls that must keep collinear boundary points. The polygon cut creates intersection points that are generally not integers, so it always runs in <span class="inlineCode">long double</span> with an EPS-based side test.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — Cutting is walking the boundary and deciding per edge</h3>
+    <p>Imagine tracing the polygon's boundary edge by edge while a directed line divides the plane into a "keep" side and a "discard" side. For each edge you ask two questions: is the current vertex on the keep side, and does this edge cross the line? Keep every vertex on the chosen side; whenever an edge passes from one side to the other, the crossing point becomes a new vertex of the result. Walking all the way around stitches together exactly the kept region.</p>
+
+    <h3>2.2 — The hull is a rubber band around nails</h3>
+    <p>Picture a nail at each point and a rubber band stretched around all of them. When released, the band snaps to the outermost points and forms a convex polygon — the convex hull. Points strictly inside never touch the band; intermediate points lying on a straight edge of the band are removed by default (the hull keeps only true corners). To build the band algorithmically, we anchor at a pivot — the leftmost (and, on ties, bottommost) point — sort every other point by polar angle around the pivot, and walk through them once while popping the stack on any non-left turn.</p>
+
+    <h3>2.3 — Left turns only</h3>
+    <p>Once the points are processed in pivot-angular order, building the hull is a single stack walk: add the next point, then look at the turn made by the last three vertices. A left turn (counterclockwise) is fine; a right turn means the middle point caved inward, so you pop it. The Markdown tutorial's default policy also pops on a <i>straight</i> (collinear) turn, so the result is the <b>strict-corner hull</b> — no intermediate collinear vertices, just the true corners. (A clearly named alternative below — <span class="inlineCode">convexHullAndrew</span> — keeps collinear boundary points when you need the inclusive form.)</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — Cutting a polygon by a directed line</h3>
+    <p>The directed line splits the plane; we keep the left side. Vertices on the kept side survive, and edges that straddle the line contribute one intersection point each.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Polygon cut by a directed line, kept side highlighted</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 420" preserveAspectRatio="xMidYMid meet">
+        <!-- polygon -->
+        <polygon points="120,330 600,330 600,90 120,90" fill="none" stroke="var(--accent2)" stroke-width="2.5" opacity="0.5"/>
+        <!-- kept (left) region x<=360 -->
+        <polygon points="120,330 360,330 360,90 120,90" fill="rgba(15,118,110,.16)" stroke="var(--good)" stroke-width="3"/>
+        <!-- directed cut line (vertical, pointing up) at x=360 -->
+        <line x1="360" y1="380" x2="360" y2="60" stroke="var(--bad)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="372" y="80" font-size="17" font-weight="900" fill="var(--bad)">directed line</text>
+        <text x="180" y="215" font-size="20" font-weight="950" fill="var(--good)">KEEP (left)</text>
+        <text x="430" y="215" font-size="18" font-weight="900" fill="var(--muted)">discard (right)</text>
+        <!-- intersection points -->
+        <circle cx="360" cy="330" r="8" fill="var(--warn)"/><circle cx="360" cy="90" r="8" fill="var(--warn)"/>
+        <text x="368" y="356" font-size="15" font-weight="900" fill="var(--warn)">new vertex</text>
+        <text x="368" y="120" font-size="15" font-weight="900" fill="var(--warn)">new vertex</text>
+      </svg>
+    </div>
+
+    <h3>3.2 — Wrapping a point cloud</h3>
+    <p>The convex hull is the outer fence; interior points are irrelevant to it.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Convex hull wrapping a point cloud</div></div>
+      <svg class="graphsvg" viewBox="0 0 720 420" preserveAspectRatio="xMidYMid meet">
+        <polygon points="120,330 320,360 560,300 600,150 380,80 160,160" fill="rgba(37,99,235,.10)" stroke="var(--accent2)" stroke-width="3"/>
+        <!-- hull points -->
+        <g fill="var(--accent)">
+          <circle cx="120" cy="330" r="9"/><circle cx="320" cy="360" r="9"/><circle cx="560" cy="300" r="9"/>
+          <circle cx="600" cy="150" r="9"/><circle cx="380" cy="80" r="9"/><circle cx="160" cy="160" r="9"/>
+        </g>
+        <!-- interior points -->
+        <g fill="var(--muted)">
+          <circle cx="300" cy="220" r="7"/><circle cx="420" cy="250" r="7"/><circle cx="250" cy="290" r="7"/><circle cx="450" cy="170" r="7"/>
+        </g>
+        <text x="150" y="400" font-size="17" font-weight="900" fill="var(--accent)">● hull vertices</text>
+        <text x="430" y="400" font-size="17" font-weight="900" fill="var(--muted)">● interior (ignored)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — Side classification by signed cross product</h3>
+    <p>For a directed line through <span class="inlineCode">a → b</span> and a query point <span class="inlineCode">p</span>, the sign of <span class="inlineCode">cross(b − a, p − a)</span> classifies <span class="inlineCode">p</span>: positive means left, negative means right, zero means on the line. With floating coordinates the zero band is widened to <span class="inlineCode">±EPS</span> so points within tolerance are treated as on-line.</p>
+
+    <h3>4.2 — Polygon cut (Sutherland–Hodgman against one half-plane)</h3>
+    <p>Walk the polygon's edges <span class="inlineCode">(cur, nxt)</span>. Let <span class="inlineCode">sc, sn</span> be the side classifications of the two endpoints. The output is built by two rules:</p>
+<pre><code>if (sc &gt;= 0)        keep cur               // vertex on the kept side or on the line
+if (sc * sn &lt; 0)    add intersection(cur,nxt, line)   // edge strictly crosses the line</code></pre>
+    <p>Keeping vertices with <span class="inlineCode">sc ≥ 0</span> retains on-line vertices; an intersection is added only when the two endpoints are strictly on opposite sides (<span class="inlineCode">sc·sn &lt; 0</span>), so an edge that merely touches the line at a vertex adds nothing spurious.</p>
+
+    <h3>4.3 — Segment–line intersection for the crossing point</h3>
+    <p>When edge <span class="inlineCode">p → q</span> crosses the line <span class="inlineCode">a → b</span>, parameterize the edge as <span class="inlineCode">p + t(q − p)</span> and solve for the <span class="inlineCode">t</span> that lands on the line. With <span class="inlineCode">c₁ = cross(a,b,p)</span> and <span class="inlineCode">c₂ = cross(a,b,q)</span>,</p>
+<pre><code>t = c₁ / (c₁ − c₂),     intersection = p + t·(q − p)</code></pre>
+    <p>Because the endpoints are on opposite sides, <span class="inlineCode">c₁</span> and <span class="inlineCode">c₂</span> have opposite signs, so the denominator is nonzero and <span class="inlineCode">t ∈ (0,1)</span>.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Edge crossing the cut line creates an intersection point</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="380" y1="320" x2="380" y2="40" stroke="var(--bad)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="392" y="60" font-size="16" font-weight="900" fill="var(--bad)">cut line a→b</text>
+        <line x1="200" y1="120" x2="560" y2="260" stroke="var(--accent2)" stroke-width="3"/>
+        <circle cx="200" cy="120" r="9" fill="var(--good)"/><text x="160" y="115" font-size="16" font-weight="900" fill="var(--good)">p (left)</text>
+        <circle cx="560" cy="260" r="9" fill="var(--muted)"/><text x="570" y="262" font-size="16" font-weight="900" fill="var(--muted)">q (right)</text>
+        <circle cx="380" cy="190" r="9" fill="var(--warn)"/><text x="392" y="190" font-size="15" font-weight="900" fill="var(--warn)">p + t(q−p)</text>
+        <text x="150" y="330" font-size="16" font-weight="850" fill="var(--muted)">t = c₁ / (c₁ − c₂), with c₁, c₂ the signed sides of p and q</text>
+      </svg>
+    </div>
+
+    <h3>4.4 — Convex hull (pivot + angle sort, default policy)</h3>
+    <p>The primary hull this class teaches follows the Markdown tutorial's pivot/angle-sort recipe:</p>
+    <ol style="padding-left:24px;">
+      <li><b>Pivot.</b> Choose the leftmost point (ties broken by smallest <span class="inlineCode">y</span>) as the anchor.</li>
+      <li><b>Angle sort.</b> Sort every other point by polar angle around the pivot using <span class="inlineCode">cross</span>. For collinear ties (same direction from the pivot), order by <span class="inlineCode">(x, y)</span> so the chain enters from the nearest point first.</li>
+      <li><b>Single stack walk.</b> Iterate through the sorted points and pop the top of the stack while the last three vertices make a non-left turn — i.e. while <span class="inlineCode">cross(top − below, p − top) ≤ 0</span>. The default policy <em>drops intermediate collinear vertices</em>, returning only true corners.</li>
+      <li><b>All-collinear fallback.</b> If every input point is collinear, the stack collapses to a single survivor; return the two extremes from the lex-sorted list instead. (The Markdown returns <span class="inlineCode">{front, back}</span>.)</li>
+    </ol>
+    <p>The Markdown tutorial labels this "Graham-style with a pivot". Andrew's monotonic chain is a valid alternative — it builds a lower hull left-to-right and an upper hull right-to-left and concatenates them — but it is kept here as the secondary <span class="inlineCode">convexHullAndrew</span> for inputs that need the <em>inclusive</em> (keep-collinear) boundary.</p>
+<pre><code>// primary, pivot/angle-sort policy (Markdown default): drop collinear corners.
+pop while  cross(h[k-2], h[k-1], p[i])  &lt;= 0
+
+// secondary, convexHullAndrew(..., /*inclusive=*/true): keep collinear.
+pop while  cross(h[k-2], h[k-1], p[i])  &lt;  0</code></pre>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — One primitive drives both algorithms.</b> The signed cross product classifies a point against a directed line; the cut and the hull are both built entirely on its sign.</li>
+      <li><b>O2 — The cut keeps <span class="inlineCode">sc ≥ 0</span> and adds a crossing only on <span class="inlineCode">sc·sn &lt; 0</span>.</b> This pair of rules retains on-line vertices and never adds a phantom intersection at a grazing vertex.</li>
+      <li><b>O3 — Hull orientation is exact in integers.</b> Cross products of integer points are integers, so the hull never needs floating point — only the cut does.</li>
+      <li><b>O4 — Strict-corner is the default; inclusive is a labelled variant.</b> Popping on <span class="inlineCode">≤ 0</span> drops collinear boundary points (Markdown default, this class's primary <span class="inlineCode">convexHull</span>). Popping on <span class="inlineCode">&lt; 0</span> keeps them (use <span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span>). Nothing else changes.</li>
+      <li><b>O5 — Pivot + angle sort + one stack walk is the whole hull.</b> Sorting by polar angle around the leftmost-bottommost pivot visits every candidate corner in circular order, so a single pass with popping suffices.</li>
+      <li><b>O6 — Degenerate inputs collapse cleanly.</b> Duplicates are removed up front; if every input is collinear, the primary hull returns the two extremes from the lex-sorted list, while the inclusive Andrew variant returns every unique boundary point once.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — The cut, vertex on the line</h3>
+    <p>A vertex lying exactly on the cut line has <span class="inlineCode">sc = 0</span>. The rule <span class="inlineCode">sc ≥ 0</span> keeps it, and because <span class="inlineCode">sc·sn = 0</span> for any neighbor, no intersection is spuriously added at that vertex. This is what makes on-line vertices behave gracefully rather than duplicating points.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · A vertex exactly on the cut line</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 340" preserveAspectRatio="xMidYMid meet">
+        <line x1="380" y1="300" x2="380" y2="40" stroke="var(--bad)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="392" y="60" font-size="16" font-weight="900" fill="var(--bad)">cut line</text>
+        <polygon points="200,260 380,150 560,260 380,90" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <circle cx="380" cy="150" r="9" fill="var(--warn)"/><text x="392" y="150" font-size="15" font-weight="900" fill="var(--warn)">vertex on line (sc=0, kept)</text>
+        <circle cx="200" cy="260" r="8" fill="var(--good)"/><circle cx="380" cy="90" r="8" fill="var(--good)"/>
+        <circle cx="560" cy="260" r="8" fill="var(--muted)"/>
+        <text x="150" y="320" font-size="15" font-weight="850" fill="var(--muted)">on-line vertex kept once; no duplicate intersection added</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — Before and after the clip</h3>
+    <p>The result of one half-plane clip is itself a polygon: the kept vertices in order, with crossings inserted where the boundary entered or left the half-plane.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Before and after polygon clipping</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <text x="190" y="40" font-size="18" font-weight="950" fill="var(--text)" text-anchor="middle">before</text>
+        <polygon points="80,300 300,300 300,90 80,90" fill="none" stroke="var(--accent2)" stroke-width="2.5"/>
+        <line x1="220" y1="320" x2="220" y2="70" stroke="var(--bad)" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <line x1="380" y1="200" x2="440" y2="200" stroke="currentColor" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="600" y="40" font-size="18" font-weight="950" fill="var(--good)" text-anchor="middle">after</text>
+        <polygon points="500,300 640,300 640,90 500,90" fill="rgba(15,118,110,.16)" stroke="var(--good)" stroke-width="3"/>
+        <circle cx="640" cy="300" r="7" fill="var(--warn)"/><circle cx="640" cy="90" r="7" fill="var(--warn)"/>
+        <text x="500" y="335" font-size="15" font-weight="850" fill="var(--muted)">kept side becomes a new polygon</text>
+      </svg>
+    </div>
+
+    <h3>6.3 — Pivot anchor and polar-angle sweep</h3>
+    <p>The Markdown tutorial's primary hull anchors at the <b>pivot</b> — the leftmost point in the cloud, ties broken by smallest <span class="inlineCode">y</span> — and then visits every other point in CCW order of polar angle around the pivot. Equal-angle ties (points collinear with the pivot) are resolved by lex order on <span class="inlineCode">(x, y)</span>, so the nearer point comes first. After sorting, a single stack walk pops the previous top while the last three vertices fail to make a left turn (or sit collinear) — the survivors form the strict-corner hull in CCW order.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Pivot and polar-angle sweep around it</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 400" preserveAspectRatio="xMidYMid meet">
+        <g fill="var(--muted)">
+          <circle cx="220" cy="320" r="8"/><circle cx="360" cy="300" r="8"/>
+          <circle cx="500" cy="330" r="8"/><circle cx="640" cy="240" r="8"/>
+          <circle cx="280" cy="120" r="8"/><circle cx="460" cy="100" r="8"/><circle cx="380" cy="200" r="8"/>
+        </g>
+        <!-- pivot -->
+        <circle cx="100" cy="250" r="11" fill="var(--bad)"/>
+        <text x="50" y="240" font-size="16" font-weight="900" fill="var(--bad)">pivot</text>
+        <!-- angular fan rays from pivot -->
+        <g stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="4 5" opacity="0.7">
+          <line x1="100" y1="250" x2="220" y2="320"/>
+          <line x1="100" y1="250" x2="280" y2="120"/>
+          <line x1="100" y1="250" x2="360" y2="300"/>
+          <line x1="100" y1="250" x2="460" y2="100"/>
+          <line x1="100" y1="250" x2="500" y2="330"/>
+          <line x1="100" y1="250" x2="640" y2="240"/>
+        </g>
+        <!-- final hull -->
+        <polyline points="100,250 220,320 500,330 640,240 460,100 280,120 100,250" fill="none" stroke="var(--good)" stroke-width="4"/>
+        <text x="200" y="370" font-size="17" font-weight="900" fill="var(--good)">stack-walked hull (single CCW pass after sorting)</text>
+      </svg>
+    </div>
+
+    <h3>6.4 — The orientation test and popping</h3>
+    <p>When a new point would make the last three turn the wrong way, the middle point is popped. The diagram shows a right turn being undone: the caved-in vertex is removed so the chain stays convex.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Orientation test and popping in the stack walk (cross ≤ 0 ⇒ pop)</div></div>
+      <svg class="graphsvg" viewBox="0 0 760 360" preserveAspectRatio="xMidYMid meet">
+        <!-- chain with a right turn at the middle point -->
+        <polyline points="120,280 360,200 540,260" fill="none" stroke="var(--bad)" stroke-width="3" stroke-dasharray="7 6"/>
+        <circle cx="120" cy="280" r="9" fill="var(--accent)"/><text x="96" y="312" font-size="15" font-weight="900" fill="var(--accent)">h[k-2]</text>
+        <circle cx="360" cy="200" r="9" fill="var(--bad)"/><text x="336" y="186" font-size="15" font-weight="900" fill="var(--bad)">h[k-1] popped</text>
+        <circle cx="540" cy="260" r="9" fill="var(--accent)"/><text x="548" y="262" font-size="15" font-weight="900" fill="var(--accent)">p[i]</text>
+        <!-- corrected straight chain -->
+        <line x1="120" y1="280" x2="540" y2="260" stroke="var(--good)" stroke-width="4"/>
+        <text x="150" y="330" font-size="16" font-weight="850" fill="var(--muted)">cross(h[k-2], h[k-1], p[i]) ≤ 0 ⇒ pop the middle point</text>
+      </svg>
+    </div>
+
+    <h3>6.5 — Collinear boundary points and the degenerate case</h3>
+    <p>On a straight edge of the hull, intermediate points are collinear with the endpoints. The default (Markdown) policy pops them — the comparison <span class="inlineCode">cross ≤ 0</span> triggers a pop — so only true corners survive. The secondary inclusive <span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span> keeps them. When <em>all</em> points are collinear there is no enclosed area: the primary hull returns the two extremes from the lex-sorted list, while the inclusive Andrew variant returns every unique collinear boundary point once.</p>
+
+    <div class="grid2">
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Collinear boundary: strict vs inclusive</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid meet" style="height:300px;">
+          <polygon points="80,250 400,250 240,80" fill="rgba(37,99,235,.06)" stroke="var(--accent2)" stroke-width="2.5"/>
+          <!-- collinear points on the bottom edge -->
+          <circle cx="80" cy="250" r="8" fill="var(--accent)"/><circle cx="400" cy="250" r="8" fill="var(--accent)"/>
+          <circle cx="160" cy="250" r="8" fill="var(--warn)"/><circle cx="240" cy="250" r="8" fill="var(--warn)"/><circle cx="320" cy="250" r="8" fill="var(--warn)"/>
+          <circle cx="240" cy="80" r="8" fill="var(--accent)"/>
+          <text x="70" y="300" font-size="14" font-weight="850" fill="var(--warn)">● dropped by strict, kept by inclusive</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">All points collinear</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid meet" style="height:300px;">
+          <line x1="80" y1="240" x2="400" y2="120" stroke="var(--good)" stroke-width="4"/>
+          <g fill="var(--muted)">
+            <circle cx="160" cy="210" r="8"/><circle cx="240" cy="180" r="8"/><circle cx="320" cy="150" r="8"/>
+          </g>
+          <circle cx="80" cy="240" r="9" fill="var(--accent)"/><circle cx="400" cy="120" r="9" fill="var(--accent)"/>
+          <text x="90" y="285" font-size="14" font-weight="850" fill="var(--accent)">strict: two extremes</text>
+          <text x="90" y="305" font-size="14" font-weight="850" fill="var(--accent)">inclusive: all points once</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Each hull chain stays convex.</b> After every step of a chain, the kept points turn consistently (left for the counterclockwise result), because any offending middle point was popped.</li>
+      <li><b>I2 — The cut output traces the kept region in order.</b> Vertices are appended in boundary order, so the result is a valid polygon, not a scrambled point set.</li>
+      <li><b>I3 — Hull arithmetic is integer-exact.</b> Orientation tests use integer cross products; only the cut forms floating intersection points.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — A crossing is added exactly when endpoints differ in strict side.</b> The test <span class="inlineCode">sc·sn &lt; 0</span> fires once per genuine crossing and never at a grazing vertex.</li>
+      <li><b>I5 — Popping only removes non-convex or (strict) collinear vertices.</b> A pop never discards a point that belongs on the final hull boundary under the chosen strictness.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Each hull chain appends every point once and pops each at most once, so the two sweeps are linear after the sort. The cut visits each edge once. Both terminate in a single pass over their input.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> The polygon cut assumes vertices are given <b>in boundary order</b> and the cut line is <b>directed</b>; a general non-convex polygon may be split into several pieces by one line, which a single-output clip cannot represent. The convex hull assumes a finite point set and may receive <b>duplicates</b>, which it removes; an empty or single-point input returns itself.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — The clip keeps exactly the chosen half-plane</h3>
+    <p>Consider the kept half-plane <span class="inlineCode">H</span> (side <span class="inlineCode">≥ 0</span> of the directed line). Walking the boundary, each maximal run of vertices inside <span class="inlineCode">H</span> is emitted in order; when the boundary leaves <span class="inlineCode">H</span> across an edge, the exit crossing is inserted, and when it re-enters, the entry crossing is inserted. Thus the emitted sequence alternates between the polygon's boundary inside <span class="inlineCode">H</span> and chords along the cut line, which is precisely the boundary of <span class="inlineCode">polygon ∩ H</span>. On-line vertices satisfy <span class="inlineCode">sc = 0 ≥ 0</span> and are kept once, with no spurious crossing because <span class="inlineCode">sc·sn = 0</span> there.</p>
+
+    <h3>8.2 — The intersection point is correct</h3>
+    <p>For a crossed edge <span class="inlineCode">p → q</span>, the signed sides <span class="inlineCode">c₁ = cross(a,b,p)</span> and <span class="inlineCode">c₂ = cross(a,b,q)</span> are an affine function of position along the edge. The point where that function is zero is at parameter <span class="inlineCode">t = c₁/(c₁−c₂)</span>, and since <span class="inlineCode">c₁, c₂</span> have opposite signs the denominator is nonzero and <span class="inlineCode">t ∈ (0,1)</span>, placing the intersection strictly inside the edge and exactly on the line.</p>
+
+    <h3>8.3 — Pivot + angle sort + stack walk produces the convex hull</h3>
+    <p>After choosing the pivot (leftmost, ties by smallest <span class="inlineCode">y</span>) every other point lies strictly above or at the pivot's <span class="inlineCode">y</span>, and the angular order around the pivot is a well-defined CCW sweep from "east" through "north" to "west". Processing points in that order with the stack-walk rule maintains the invariant:</p>
+    <blockquote style="border-left:4px solid var(--accent2);padding-left:14px;color:var(--muted);">After step <span class="inlineCode">i</span>, the stack is the convex boundary of the points processed so far, in CCW order, with no intermediate collinear vertex.</blockquote>
+    <p>The pop condition <span class="inlineCode">cross(top − below, p − top) ≤ 0</span> fires exactly when adding <span class="inlineCode">p</span> would either bend inward (right turn) or leave the previous top sitting on a straight edge (collinear) — both cases mean <span class="inlineCode">top</span> is not a true corner and must be removed. When all points have been processed, the surviving stack is the convex boundary of the whole input. No point lies outside it (each was either a corner or popped on its way in), and every consecutive triple makes a strict left turn, so the result is convex.</p>
+
+    <h3>8.4 — Default (strict-corner) and inclusive variants are both correct hulls</h3>
+    <p>The convex hull as a <i>set</i> is unique, but its <i>vertex list</i> is not: collinear points on an edge lie on the hull boundary yet are not corners. The primary <span class="inlineCode">convexHull</span> pops on <span class="inlineCode">cross ≤ 0</span>, giving the minimal corner list (Markdown default). The secondary <span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span> pops only on <span class="inlineCode">cross &lt; 0</span>, retaining every boundary point. Both describe the same convex region; they differ only in whether non-corner boundary points appear in the returned vertex list.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Polygon cut (one half-plane)</td><td>O(n)</td><td>One pass over the polygon's edges.</td></tr>
+        <tr><td>Convex hull (pivot + angle sort, primary)</td><td>O(n log n)</td><td>Dominated by the polar-angle sort around the pivot; the single stack walk is linear.</td></tr>
+        <tr><td><span class="inlineCode">convexHullAndrew</span> (secondary, inclusive option)</td><td>O(n log n)</td><td>Lexicographic sort, then lower + upper monotonic chains. Use when you must keep collinear boundary points.</td></tr>
+        <tr><td>Hull sweeps after sorting</td><td>O(n)</td><td>Each point is pushed once and popped at most once.</td></tr>
+        <tr><td>Hull / cut polygon area</td><td>O(n)</td><td>Shoelace over the result; integer for the hull, floating for a cut result.</td></tr>
+        <tr><td>Side classification</td><td>O(1)</td><td>One cross product and a sign test.</td></tr>
+        <tr><td><span class="inlineCode">pointInConvex</span> (CCW hull, binary search)</td><td>O(log n)</td><td>Fan from <span class="inlineCode">p[0]</span>, binary-search the sector, one triangle test. See §16.4.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">The hull's sort is the only super-linear step; everything else is a single linear pass. For repeated cuts by many lines, each cut is independent and linear in the current polygon size.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Primary hull = pivot + angle sort (Markdown style).</b> The default <span class="inlineCode">convexHull</span> uses the same pivot/cross-sort recipe as the Markdown tutorial: leftmost (then bottommost) anchor, polar-angle sort, single stack walk, drop collinear corners. The integer Andrew monotonic chain is kept as <span class="inlineCode">convexHullAndrew</span> for inclusive (CSES) outputs and for cases that need exact integer cross products.</li>
+      <li><b>Integer hull (variant), floating cut.</b> When you have exact integer coordinates, prefer <span class="inlineCode">convexHullAndrew</span> on <span class="inlineCode">Pt</span> so the orientation stays bit-exact; the polygon cut still uses <span class="inlineCode">long double</span> + <span class="inlineCode">EPS</span> because intersection points are not generally integers.</li>
+      <li><b>One side test, reused.</b> The signed cross product is the single primitive; write it once and let both algorithms call it.</li>
+      <li><b>Make the boundary policy an explicit switch.</b> Expose <span class="inlineCode">inclusive</span> on <span class="inlineCode">convexHullAndrew</span> rather than hard-coding whether collinear boundary points are kept.</li>
+      <li><b>Remove duplicates before building.</b> Deduplicate sorted points (under <span class="inlineCode">samePoint</span> / EPS for the primary, exact for the integer variant) so degenerate inputs do not corrupt the chain.</li>
+      <li><b>Guard the cross product's width.</b> For integer coordinates up to <span class="inlineCode">10⁹</span>, the integer Andrew variant computes cross products in <span class="inlineCode">__int128</span>.</li>
+      <li><b>Keep the rotation helper typed.</b> If a rotation is ever needed it is <span class="inlineCode">Point rot(const Point&amp; v, T t)</span>, never a <span class="inlineCode">rotate</span> macro.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Library/template block; compiles as a translation unit with <span class="inlineCode">g++ -std=c++17 -c</span>, or after adding a <span class="inlineCode">main</span>. Two convex-hull APIs ship side by side:</p>
+    <ul style="padding-left:24px;">
+      <li><b>Primary <span class="inlineCode">convexHull(vector&lt;Point&gt;)</span></b> — Markdown-tutorial style. Pivot at the leftmost-bottommost point, polar-angle sort around it, single stack walk that drops collinear corners. Works on the floating <span class="inlineCode">Point = complex&lt;T&gt;</span> type, so it slots into the rest of the geometry library.</li>
+      <li><b>Secondary <span class="inlineCode">convexHullAndrew(vector&lt;Pt&gt;, bool inclusive = false)</span></b> — integer-exact Andrew monotonic chain. Use it for inclusive (keep-collinear, CSES) hulls and for problems whose coordinates fit in <span class="inlineCode">long long</span> and need bit-exact orientation. Cross products run in <span class="inlineCode">__int128</span>.</li>
+    </ul>
+    <p>The cut half is floating because intersection points are generally not integers.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// ===================================================================
+// CLASS 09 — polygon cut &amp; convex hull.
+//  * Primary convex hull (convexHull) uses the Markdown pivot/angle-sort
+//    recipe on the floating Point type (the rest of the geometry library).
+//  * Secondary convex hull (convexHullAndrew) uses EXACT INTEGER cross
+//    products (orientation only) for inclusive / CSES-style outputs.
+//  * Polygon cut produces intersection points that are generally NOT
+//    integers, so the cut works in long double with EPS classification.
+// ===================================================================
+
+// ---------- INTEGER substrate (convex hull) -----------------------
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+bool operator&lt;(const Pt&amp; a, const Pt&amp; b) { return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y; }
+bool operator==(const Pt&amp; a, const Pt&amp; b) { return a.x == b.x &amp;&amp; a.y == b.y; }
+
+// cross product (b-a) x (c-a), exact in __int128.
+lll crossI(const Pt&amp; a, const Pt&amp; b, const Pt&amp; c) {
+    return (lll)(b.x - a.x) * (c.y - a.y) - (lll)(b.y - a.y) * (c.x - a.x);
+}
+
+// ----- SECONDARY: Andrew's monotonic chain on EXACT INTEGER points --
+// Use this when you need the inclusive (keep-collinear-boundary) hull, or
+// when coordinates must stay in exact integers (e.g. CSES "Convex Hull").
+// inclusive=false drops collinear boundary points; inclusive=true keeps them.
+// Returns the hull in counterclockwise order.
+vector&lt;Pt&gt; convexHullAndrew(vector&lt;Pt&gt; p, bool inclusive = false) {
+    sort(p.begin(), p.end());
+    p.erase(unique(p.begin(), p.end()), p.end());   // remove duplicate points
+    int n = (int)p.size();
+    if (n &lt;= 2) return p;                            // 0,1,2 distinct points: hull is themselves
+
+    // all-collinear: the monotone chain would otherwise duplicate middle points
+    // in the inclusive sweep, so handle it explicitly.
+    bool allCollinear = true;
+    for (int i = 2; i &lt; n; i++) {
+        if (crossI(p[0], p[1], p[i]) != 0) { allCollinear = false; break; }
+    }
+    if (allCollinear) {
+        if (!inclusive) return {p.front(), p.back()};    // strict-corner: two extremes
+        return p;                                        // inclusive: every boundary point once, sorted
+    }
+
+    vector&lt;Pt&gt; h(2 * n);
+    int k = 0;
+    // lower hull, left to right
+    for (int i = 0; i &lt; n; i++) {
+        while (k &gt;= 2 &amp;&amp; (inclusive ? crossI(h[k-2], h[k-1], p[i]) &lt;  0
+                                    : crossI(h[k-2], h[k-1], p[i]) &lt;= 0)) k--;
+        h[k++] = p[i];
+    }
+    // upper hull, right to left
+    int lower = k + 1;
+    for (int i = n - 2; i &gt;= 0; i--) {
+        while (k &gt;= lower &amp;&amp; (inclusive ? crossI(h[k-2], h[k-1], p[i]) &lt;  0
+                                        : crossI(h[k-2], h[k-1], p[i]) &lt;= 0)) k--;
+        h[k++] = p[i];
+    }
+    h.resize(k - 1);                                 // drop the duplicated start point
+    return h;
+}
+
+// doubled area magnitude of an integer polygon, |2A| (Class 08 philosophy).
+lll doubledArea(const vector&lt;Pt&gt;&amp; poly) {
+    int n = (int)poly.size();
+    lll s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const Pt&amp; a = poly[i]; const Pt&amp; b = poly[(i + 1) % n];
+        s += (lll)a.x * b.y - (lll)b.x * a.y;
+    }
+    return s &lt; 0 ? -s : s;
+}
+
+// ---------- FLOATING substrate (polygon cut) ----------------------
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+const long double EPS = 1e-12L;
+
+// typed rotation helper (never a macro, never named rotate)
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }
+
+T crossF(const Point&amp; O, const Point&amp; A, const Point&amp; B) {
+    return (A.X - O.X) * (B.Y - O.Y) - (A.Y - O.Y) * (B.X - O.X);
+}
+
+// sign of cross(b-a, p-a): +1 left, 0 on the line, -1 right of directed a-&gt;b.
+int sideOf(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    T c = crossF(a, b, p);
+    if (c &gt;  EPS) return +1;
+    if (c &lt; -EPS) return -1;
+    return 0;
+}
+
+// ---- Helpers used by the primary (Markdown-style) convex hull ----
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmpInt(const U&amp; a, const U&amp; b = U(0)) {
+    return (a &gt; b) - (a &lt; b);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+// 2-arg cross/dot in the standard Markdown form.
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+// Lex order on (X, Y) using EPS-aware cmp.
+bool cmpPoint(const Point&amp; a, const Point&amp; b) {
+    int cx = cmp(a.X, b.X);
+    if (cx != 0) return cx &lt; 0;
+    return cmp(a.Y, b.Y) &lt; 0;
+}
+
+// ----- PRIMARY: pivot + angle-sort convex hull (Markdown style) ---
+// Default policy:
+//   * remove duplicate points;
+//   * return only true corners (no intermediate collinear vertices);
+//   * if all points are collinear, return the two extreme endpoints.
+// The pivot is the leftmost point (ties broken by smallest y), and every
+// other point is sorted by polar angle around it using cross. A single
+// stack walk then pops on every non-left turn (cross &lt;= 0). The result is
+// in CCW order, with no duplicate first/last vertex.
+//
+// For exact integer coordinates, prefer convexHullAndrew (above) on Pt;
+// when you need to keep collinear boundary points (CSES-style hulls),
+// call convexHullAndrew(..., /*inclusive=*/true).
+vector&lt;Point&gt; convexHull(vector&lt;Point&gt; p) {
+    sort(p.begin(), p.end(), cmpPoint);
+    p.erase(unique(p.begin(), p.end(), samePoint), p.end());
+    int n = (int)p.size();
+    if (n &lt;= 2) return p;
+
+    Point piv = p[0];
+    sort(p.begin() + 1, p.end(),
+         [&amp;](const Point&amp; a, const Point&amp; b) {
+             int cr = cmp(cross(a - piv, b - piv));
+             if (cr != 0) return cr &gt; 0;       // CCW first
+             return cmpPoint(a, b);             // collinear with pivot: nearer first
+         });
+
+    vector&lt;Point&gt; h;
+    for (const Point&amp; pt : p) {
+        while (h.size() &gt;= 2 &amp;&amp;
+               cmp(cross(h.back() - h[h.size()-2], pt - h.back())) &lt;= 0)
+            h.pop_back();
+        h.push_back(pt);
+    }
+    // All-collinear fallback: stack collapses to a single survivor; return the extremes.
+    if (h.size() == 1 &amp;&amp; n &gt; 1) return { p.front(), p.back() };
+    return h;
+}
+
+// intersection of edge p-&gt;q with the infinite line a-&gt;b (endpoints on opposite sides).
+Point lineSegInt(const Point&amp; a, const Point&amp; b, const Point&amp; p, const Point&amp; q) {
+    T c1 = crossF(a, b, p);
+    T c2 = crossF(a, b, q);
+    T t  = c1 / (c1 - c2);          // p + t(q-p) lands on the line a-&gt;b
+    return p + (q - p) * t;
+}
+
+// Cut a polygon by the directed line a-&gt;b, KEEPING the LEFT side (cross &gt;= 0).
+// Sutherland-Hodgman against one half-plane. Vertices on the line are kept.
+vector&lt;Point&gt; cutPolygonLeft(const vector&lt;Point&gt;&amp; poly, const Point&amp; a, const Point&amp; b) {
+    vector&lt;Point&gt; out;
+    int n = (int)poly.size();
+    for (int i = 0; i &lt; n; i++) {
+        Point cur = poly[i];
+        Point nxt = poly[(i + 1) % n];
+        int sc = sideOf(a, b, cur);
+        int sn = sideOf(a, b, nxt);
+        if (sc &gt;= 0) out.push_back(cur);             // keep inside / on-line vertex
+        if (sc * sn &lt; 0) {                           // edge strictly crosses the line
+            out.push_back(lineSegInt(a, b, cur, nxt));
+        }
+    }
+    return out;
+}
+
+// doubled area magnitude of a floating polygon (for area-after-cut).
+T doubledAreaF(const vector&lt;Point&gt;&amp; poly) {
+    int n = (int)poly.size();
+    T s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const Point&amp; u = poly[i]; const Point&amp; v = poly[(i + 1) % n];
+        s += u.X * v.Y - v.X * u.Y;
+    }
+    return s &lt; 0 ? -s : s;
+}
+</code></pre>
+    <div class="callout">
+      <b>Why two number types in one file.</b> The hull only ever asks "left, right, or on?", which integer cross products answer exactly — no rounding, just a sign. A polygon cut, by contrast, computes <i>where</i> an edge meets a line, and that point usually has fractional coordinates, so it must be floating. Mixing the two deliberately keeps each operation as exact as its geometry allows.
+    </div>
+    <div class="callout warn">
+      <b>Cut precondition.</b> One directed line can split a non-convex polygon into multiple disconnected pieces, which a single returned polygon cannot represent. <span class="inlineCode">cutPolygonLeft</span> is exact for a <b>convex</b> polygon (the kept side is always one piece); for a general simple polygon it is the standard single-half-plane Sutherland–Hodgman step, correct when the kept side stays connected.
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>convexHull (primary, pivot + angle sort) <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">sort(p.begin(), p.end(), cmpPoint);</div><div class="lineExpl">Lex order by <span class="inlineCode">(X, Y)</span> using EPS-aware <span class="inlineCode">cmp</span>. After this, <span class="inlineCode">p[0]</span> is the leftmost-bottommost point — the pivot.</div>
+        <div class="lineNo">2</div><div class="lineCode">p.erase(unique(p.begin(), p.end(), samePoint), p.end());</div><div class="lineExpl">Drop duplicates under the same EPS policy so the angle sort never sees coincident inputs.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (n &lt;= 2) return p;</div><div class="lineExpl">Zero, one, or two distinct points form their own degenerate hull.</div>
+        <div class="lineNo">4</div><div class="lineCode">Point piv = p[0];</div><div class="lineExpl">Lock in the pivot — the anchor for the polar-angle sweep.</div>
+        <div class="lineNo">5</div><div class="lineCode">sort(p.begin()+1, p.end(), [&amp;](a,b){ … cross(a-piv,b-piv) … });</div><div class="lineExpl">Sort the rest by CCW polar angle around the pivot via the sign of <span class="inlineCode">cross</span>. For equal angles (collinear with the pivot), fall back to lex order so the nearer point comes first — that lets the stack pop them off naturally as intermediate collinear vertices.</div>
+        <div class="lineNo">6</div><div class="lineCode">while (h.size() &gt;= 2 &amp;&amp; cmp(cross(...)) &lt;= 0) h.pop_back();</div><div class="lineExpl">Single stack walk. Pop the previous top whenever the last three vertices fail to make a strict left turn (right turn OR collinear) — that drops intermediate collinear corners by default, matching the Markdown tutorial's policy.</div>
+        <div class="lineNo">7</div><div class="lineCode">if (h.size() == 1 &amp;&amp; n &gt; 1) return { p.front(), p.back() };</div><div class="lineExpl">All-collinear fallback: every push either trivially advanced or got popped, so the stack ends with just the pivot. Return the two extremes from the lex-sorted list (matches the Markdown default).</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>convexHullAndrew (secondary, integer monotonic chain) <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">sort(p.begin(), p.end());</div><div class="lineExpl">Lex order by <span class="inlineCode">(x, y)</span> on the integer <span class="inlineCode">Pt</span> type — exact, no EPS.</div>
+        <div class="lineNo">2</div><div class="lineCode">p.erase(unique(...), p.end());</div><div class="lineExpl">Drop exact duplicates so the popping logic is not corrupted by repeated coordinates.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (n &lt;= 2) return p;</div><div class="lineExpl">Zero, one, or two distinct points form their own degenerate hull.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (allCollinear) return inclusive ? p : {p.front(), p.back()};</div><div class="lineExpl">Special-case a fully collinear set. The default returns the two extremes; <span class="inlineCode">inclusive=true</span> lists every unique boundary point once.</div>
+        <div class="lineNo">5</div><div class="lineCode">while (k&gt;=2 &amp;&amp; crossI(...) &lt;=/&lt; 0) k--;</div><div class="lineExpl">Pop the middle point on a non-left turn; <span class="inlineCode">≤</span> drops collinear (default), <span class="inlineCode">&lt;</span> keeps them (inclusive).</div>
+        <div class="lineNo">6</div><div class="lineCode">int lower = k + 1;</div><div class="lineExpl">Lock in the lower hull so the upper sweep cannot pop into it.</div>
+        <div class="lineNo">7</div><div class="lineCode">h.resize(k - 1);</div><div class="lineExpl">Drop the start point duplicated at the very end of the second chain.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>cutPolygonLeft (Sutherland–Hodgman) <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">int sc = sideOf(a, b, cur);</div><div class="lineExpl">Classify the current vertex against the directed line: left, on, or right.</div>
+        <div class="lineNo">2</div><div class="lineCode">int sn = sideOf(a, b, nxt);</div><div class="lineExpl">Classify the next vertex; together they tell whether the edge crosses.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (sc &gt;= 0) out.push_back(cur);</div><div class="lineExpl">Keep the vertex if it is on the kept side or exactly on the line.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (sc * sn &lt; 0) out.push_back(...);</div><div class="lineExpl">Only a strict sign change means a genuine crossing; insert the intersection point.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>sideOf · lineSegInt <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (c &gt; EPS) return +1;</div><div class="lineExpl">A clearly positive cross means the point is left of the directed line.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (c &lt; -EPS) return -1;</div><div class="lineExpl">A clearly negative cross means right; the band between is treated as on-line.</div>
+        <div class="lineNo">3</div><div class="lineCode">T t = c1 / (c1 - c2);</div><div class="lineExpl">Opposite-signed endpoints give a nonzero denominator and <span class="inlineCode">t ∈ (0,1)</span>.</div>
+        <div class="lineNo">4</div><div class="lineCode">return p + (q - p) * t;</div><div class="lineExpl">The point along the edge that lies exactly on the cut line.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Vertex exactly on the cut line</td><td><span class="inlineCode">sc = 0</span>.</td><td>Kept once via <span class="inlineCode">sc ≥ 0</span>; no spurious crossing since <span class="inlineCode">sc·sn = 0</span>.</td></tr>
+        <tr><td>Edge crosses the line</td><td>Endpoints on opposite sides.</td><td><span class="inlineCode">sc·sn &lt; 0</span> inserts one intersection point at <span class="inlineCode">t = c₁/(c₁−c₂)</span>.</td></tr>
+        <tr><td>Whole polygon on the kept side</td><td>No edge crosses.</td><td>All vertices kept; the polygon is returned unchanged.</td></tr>
+        <tr><td>Whole polygon discarded</td><td>Every vertex on the discard side.</td><td>Output has fewer than three vertices — an empty (degenerate) result.</td></tr>
+        <tr><td>Non-convex polygon split in two</td><td>One line yields two pieces.</td><td>A single-output clip cannot represent both; documented as a convex-cut precondition.</td></tr>
+        <tr><td>Duplicate input points (hull)</td><td>Repeated coordinates.</td><td>Removed by <span class="inlineCode">sort</span> + <span class="inlineCode">unique</span> (under <span class="inlineCode">samePoint</span> / EPS for the primary; exact for <span class="inlineCode">convexHullAndrew</span>).</td></tr>
+        <tr><td>Collinear boundary points (hull)</td><td>Points on a straight edge.</td><td>Primary <span class="inlineCode">convexHull</span> drops them by default (<span class="inlineCode">cross ≤ 0</span> pops); call <span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span> to keep them.</td></tr>
+        <tr><td>All points collinear (hull)</td><td>No enclosed area.</td><td>Primary <span class="inlineCode">convexHull</span> returns the two extremes from the lex-sorted list (Markdown default). Inclusive Andrew variant returns every unique boundary point once.</td></tr>
+        <tr><td>Fewer than three points (hull)</td><td>Zero, one, or two points.</td><td>Returned as-is; no polygon to wrap.</td></tr>
+        <tr><td>Large coordinates (hull)</td><td>Cross products approach <span class="inlineCode">10¹⁸</span>.</td><td>Use the integer <span class="inlineCode">convexHullAndrew</span> on <span class="inlineCode">Pt</span> when exactness matters — <span class="inlineCode">__int128</span> keeps the orientation exact. The primary floating <span class="inlineCode">convexHull</span> handles general geometry but, like all floating code, loses bits at extreme magnitudes.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Confusing <span class="inlineCode">≤</span> and <span class="inlineCode">&lt;</span> in the hull pop.</b> Popping on <span class="inlineCode">≤ 0</span> gives the strict-corner hull (the Markdown / primary default); on <span class="inlineCode">&lt; 0</span> the inclusive hull (<span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span>). Choosing the wrong one silently keeps or drops collinear boundary points.</li>
+      <li><b>P2 — 64-bit overflow in the hull cross product.</b> With coordinates near <span class="inlineCode">10⁹</span>, the product reaches <span class="inlineCode">10¹⁸</span>; compute the cross in <span class="inlineCode">__int128</span> (or guarantee small coordinates).</li>
+      <li><b>P3 — Forgetting to remove duplicate points.</b> Repeated points can stall the popping logic or produce zero-length edges; deduplicate after sorting.</li>
+      <li><b>P4 — Using floating point for the hull.</b> Orientation is exact in integers; a <span class="inlineCode">double</span> cross can mis-sign a near-collinear triple and corrupt the hull. Keep the hull integer.</li>
+      <li><b>P5 — Adding an intersection at an on-line vertex.</b> Testing <span class="inlineCode">sc·sn &lt;= 0</span> instead of <span class="inlineCode">&lt; 0</span> inserts a duplicate point when an endpoint lies on the line. Use the strict product.</li>
+      <li><b>P6 — Cutting a non-convex polygon with a single-output clip.</b> If the kept side is disconnected, one polygon cannot hold it; restrict to convex input or split explicitly.</li>
+      <li><b>P7 — Wrong winding assumption.</b> The cut keeps the <i>left</i> of the directed line; reversing the line direction flips which side is kept. Be deliberate about the line's orientation.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>Keep one side of a polygon past a line?</td><td><span class="inlineCode">cutPolygonLeft</span> (reverse the line to keep the other side).</td></tr>
+        <tr><td>Smallest convex polygon around points?</td><td><b><span class="inlineCode">convexHull</span></b> (primary, pivot + angle sort, Markdown style). For exact-integer or inclusive (CSES-style) hulls, use <span class="inlineCode">convexHullAndrew</span> with <span class="inlineCode">inclusive=true</span>.</td></tr>
+        <tr><td>Need only the hull corners?</td><td>Strict hull (<span class="inlineCode">strict = true</span>, pop on <span class="inlineCode">≤ 0</span>).</td></tr>
+        <tr><td>Need every boundary point on the hull?</td><td>Inclusive hull (<span class="inlineCode">strict = false</span>, pop on <span class="inlineCode">&lt; 0</span>).</td></tr>
+        <tr><td>Which side of a directed line is p?</td><td><span class="inlineCode">sideOf</span> → <span class="inlineCode">+1/0/−1</span>.</td></tr>
+        <tr><td>Area of the hull or a cut result?</td><td><span class="inlineCode">doubledArea</span> (integer hull) or <span class="inlineCode">doubledAreaF</span> (floating cut).</td></tr>
+        <tr><td>Coordinates up to 10⁹?</td><td>Hull cross products in <span class="inlineCode">__int128</span>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Side = sign of cross(b−a, p−a).</span>
+      <span class="chip good">Cut: keep sc ≥ 0, add crossing on sc·sn &lt; 0.</span>
+      <span class="chip good">Hull: sort, dedup, two sweeps, pop non-left turns.</span>
+      <span class="chip good">Strict ≤ 0 pops collinear; inclusive &lt; 0 keeps them.</span>
+      <span class="chip warn">Hull integer + __int128; cut floating + EPS.</span>
+      <span class="chip warn">Single-line cut assumes a connected kept side.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"A polygon cut by one line always gives one polygon."</b> Only for a convex polygon. A non-convex polygon can be split into two or more disconnected pieces by a single line, and a single returned polygon cannot represent that — cut convex shapes, or handle the split explicitly.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Area of the convex hull</h3>
+    <p>Once the hull is built, its area follows from the integer shoelace of Class 08. Because hull vertices are integers, the doubled area is exact. <b>When to use:</b> the smallest convex region's area, or the area enclosed by extreme points.</p>
+<pre><code>// Exact doubled area of the convex hull of a point set.
+lll hullDoubledArea(vector&lt;Pt&gt; pts) {
+    vector&lt;Pt&gt; h = convexHullAndrew(pts);   // exact-integer hull, corners suffice for area
+    return doubledArea(h);
+}</code></pre>
+
+    <h3>16.2 — Rotating calipers (preview)</h3>
+    <p>With the hull in counterclockwise order, two parallel support lines rotated around it touch antipodal vertex pairs. Sweeping them yields the diameter (farthest pair), the width, and the minimum-area enclosing rectangle in <span class="inlineCode">O(n)</span> after the hull. <b>When to use:</b> farthest-pair and bounding-box problems on a point set.</p>
+<pre><code>// Squared diameter via rotating calipers over a CCW hull (sketch).
+// Advance the opposite vertex while it increases the distance to the
+// current hull edge; track the maximum squared distance between vertices.
+// Full implementation builds on convexHull(...) / convexHullAndrew(...) above.</code></pre>
+
+    <h3>16.3 — Keeping the other side of the cut</h3>
+    <p>To keep the right side of the directed line instead of the left, reverse the line's direction (swap <span class="inlineCode">a</span> and <span class="inlineCode">b</span>); the same routine then keeps the opposite half-plane. <b>When to use:</b> clipping to the intersection of several half-planes by repeated cuts.</p>
+<pre><code>// Keep the RIGHT side by reversing the directed line.
+vector&lt;Point&gt; cutPolygonRight(const vector&lt;Point&gt;&amp; poly, const Point&amp; a, const Point&amp; b) {
+    return cutPolygonLeft(poly, b, a);
+}</code></pre>
+
+    <h3>16.4 — Point in convex polygon, <span class="inlineCode">O(log n)</span></h3>
+    <p>Once you have a convex hull, the dual question "is this query point inside it?" admits a far faster answer than a generic point-in-polygon scan. Fan the polygon from vertex <span class="inlineCode">p[0]</span>: every other vertex pairs with the next one to form a triangle, and these triangles tile the interior with no overlap. The angle that a query <span class="inlineCode">q</span> makes with the rays <span class="inlineCode">p[0]→p[i]</span> grows monotonically with <span class="inlineCode">i</span>, so a binary search finds the unique fan sector containing <span class="inlineCode">q</span>, and a single triangle test finishes the job.</p>
+
+    <p><b>Preconditions.</b> The polygon must be <em>strictly</em> convex (no three vertices collinear), given in <b>CCW</b> order, with no duplicate first/last vertex. If you only have a generic simple polygon, use the ray-casting test from earlier (<span class="inlineCode">O(n)</span>); this fast version is only sound after a real convex hull.</p>
+
+    <p><b>How the search works.</b></p>
+    <ol style="padding-left:24px;">
+      <li>Two early rejects: if <span class="inlineCode">q</span> is to the right of the first fan ray <span class="inlineCode">p[0]→p[1]</span>, or to the left of the last fan ray <span class="inlineCode">p[0]→p[n-1]</span>, it lies <em>outside</em> the polygon's angular sweep entirely.</li>
+      <li>Binary search on indices <span class="inlineCode">l = 1</span>, <span class="inlineCode">r = n-1</span>. While more than one slot apart, take <span class="inlineCode">m = (l+r)/2</span>. If <span class="inlineCode">q</span> is on the CCW side of <span class="inlineCode">p[0]→p[m]</span>, the answer fan lies further around (<span class="inlineCode">l = m</span>); otherwise it lies before <span class="inlineCode">m</span> (<span class="inlineCode">r = m</span>).</li>
+      <li>When the loop exits with <span class="inlineCode">r − l == 1</span>, the candidate triangle is <span class="inlineCode">(p[0], p[l], p[l+1])</span>. One triangle containment test decides the answer.</li>
+    </ol>
+<pre><code>// Inclusive triangle containment: returns true when p lies on or inside
+// triangle a-b-c. Works regardless of vertex order.
+bool pointInTriangle(const Point&amp; a, const Point&amp; b, const Point&amp; c, const Point&amp; p) {
+    int s1 = orient(a, b, p);
+    int s2 = orient(b, c, p);
+    int s3 = orient(c, a, p);
+    return (s1 &gt;= 0 &amp;&amp; s2 &gt;= 0 &amp;&amp; s3 &gt;= 0)
+        || (s1 &lt;= 0 &amp;&amp; s2 &lt;= 0 &amp;&amp; s3 &lt;= 0);
+}
+
+// O(log n) point-in-strictly-convex-polygon test.
+// Precondition: poly is CCW, has no duplicate first/last vertex,
+//               and contains no three collinear vertices.
+bool pointInConvex(const vector&lt;Point&gt;&amp; poly, const Point&amp; q) {
+    int n = (int)poly.size();
+    if (n == 0) return false;
+    if (n == 1) return samePoint(poly[0], q);
+    if (n == 2) return pointOnSegment(poly[0], poly[1], q);
+
+    const Point&amp; p0 = poly[0];
+    // Outside the angular fan from p0.
+    if (orient(p0, poly[1],   q) &lt; 0) return false;
+    if (orient(p0, poly[n-1], q) &gt; 0) return false;
+
+    // Binary search for the fan sector [l, l+1].
+    int l = 1, r = n - 1;
+    while (r - l &gt; 1) {
+        int m = (l + r) / 2;
+        if (orient(p0, poly[m], q) &gt;= 0) l = m;
+        else                              r = m;
+    }
+    return pointInTriangle(p0, poly[l], poly[l+1], q);
+}</code></pre>
+
+    <p><b>Edge cases worth testing.</b></p>
+    <ul style="padding-left:24px;">
+      <li><b>Outside the fan.</b> A query strictly to the right of <span class="inlineCode">p[0]→p[1]</span> or strictly to the left of <span class="inlineCode">p[0]→p[n-1]</span> short-circuits with <span class="inlineCode">false</span>.</li>
+      <li><b>On an edge.</b> <span class="inlineCode">pointInTriangle</span> is inclusive, so points on hull edges and at vertices return <span class="inlineCode">true</span>. If you need <em>strict</em> interior, replace <span class="inlineCode">&gt;= 0</span> / <span class="inlineCode">&lt;= 0</span> with <span class="inlineCode">&gt; 0</span> / <span class="inlineCode">&lt; 0</span> there.</li>
+      <li><b>Tiny polygons.</b> <span class="inlineCode">n &lt; 3</span> is handled explicitly: a single point compares for equality, a "two-point polygon" degenerates to a segment containment.</li>
+      <li><b>Clockwise input.</b> The orientation tests assume CCW. If the source data is CW, reverse the vertex list before calling; otherwise the early reject branches will fire for valid interior points.</li>
+      <li><b>Three collinear hull vertices.</b> The primary <span class="inlineCode">convexHull</span> (pivot + angle sort) already strips intermediate collinear corners; <span class="inlineCode">convexHullAndrew</span> with the default <span class="inlineCode">inclusive = false</span> does too. If you stored a hull built with <span class="inlineCode">inclusive = true</span> (collinear boundary points kept, as required by CSES), run <span class="inlineCode">pointInConvex</span> against the strict-corner version of that same hull instead.</li>
+    </ul>
+
+    <p><b>Checklist before shipping.</b></p>
+    <ul style="padding-left:24px;">
+      <li>✅ Centroid of the polygon &rarr; <span class="inlineCode">true</span>.</li>
+      <li>✅ Each hull vertex itself &rarr; <span class="inlineCode">true</span>.</li>
+      <li>✅ Midpoint of each hull edge &rarr; <span class="inlineCode">true</span>.</li>
+      <li>✅ Point reflected just outside each edge &rarr; <span class="inlineCode">false</span>.</li>
+      <li>✅ A query collinear with <span class="inlineCode">p[0]→p[k]</span> but well outside the polygon &rarr; <span class="inlineCode">false</span>.</li>
+    </ul>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications</h2>
+
+    <details open><summary>CSES — Convex Hull <span class="rightHint">inclusive hull: all boundary points</span></summary>
+    <div class="detailsBody">
+      <p><b>Problem URL.</b> <a href="https://cses.fi/problemset/task/2195" target="_blank" rel="noopener">https://cses.fi/problemset/task/2195</a></p>
+      <p><b>Story.</b> Given <span class="inlineCode">n</span> points, output the convex hull. CSES expects every point on the hull boundary, including collinear ones, so the <b>inclusive</b> variant is used.</p>
+      <p><b>Abstraction.</b> Sort, deduplicate, and run the inclusive Andrew monotonic chain — popping only on a strict right turn (<span class="inlineCode">cross &lt; 0</span>) so collinear boundary points are retained. In the master library this is <span class="inlineCode">convexHullAndrew(..., /*inclusive=*/true)</span>. The drill below inlines a CSES-sized version for clarity; the primary <span class="inlineCode">convexHull</span> (pivot + angle sort, Markdown style) returns the strict-corner hull and is NOT directly the CSES answer.</p>
+      <p><b>Why this geometry model fits.</b> The hull is exactly the boundary of the smallest convex region (§8.3); keeping collinear points gives the full boundary listing CSES asks for (§8.4).</p>
+      <p><b>Algorithm.</b> Lexicographic sort; dedup; lower then upper chain with the inclusive pop; print the hull size and vertices.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+bool operator&lt;(const Pt&amp; a, const Pt&amp; b) { return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y; }
+bool operator==(const Pt&amp; a, const Pt&amp; b) { return a.x == b.x &amp;&amp; a.y == b.y; }
+
+lll cross(const Pt&amp; a, const Pt&amp; b, const Pt&amp; c) {
+    return (lll)(b.x - a.x) * (c.y - a.y) - (lll)(b.y - a.y) * (c.x - a.x);
+}
+
+// inclusive hull: keep collinear boundary points (pop only on strict right turn).
+vector&lt;Pt&gt; hull(vector&lt;Pt&gt; p) {
+    sort(p.begin(), p.end());
+    p.erase(unique(p.begin(), p.end()), p.end());
+    int n = (int)p.size();
+    if (n &lt;= 2) return p;
+    bool allCollinear = true;
+    for (int i = 2; i &lt; n; i++) {
+        if (cross(p[0], p[1], p[i]) != 0) { allCollinear = false; break; }
+    }
+    if (allCollinear) return p;      // inclusive hull: every boundary point once
+    vector&lt;Pt&gt; h(2 * n);
+    int k = 0;
+    for (int i = 0; i &lt; n; i++) {
+        while (k &gt;= 2 &amp;&amp; cross(h[k-2], h[k-1], p[i]) &lt; 0) k--;
+        h[k++] = p[i];
+    }
+    int lower = k + 1;
+    for (int i = n - 2; i &gt;= 0; i--) {
+        while (k &gt;= lower &amp;&amp; cross(h[k-2], h[k-1], p[i]) &lt; 0) k--;
+        h[k++] = p[i];
+    }
+    h.resize(k - 1);
+    return h;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Pt&gt; p(n);
+    for (auto&amp; q : p) cin &gt;&gt; q.x &gt;&gt; q.y;
+
+    vector&lt;Pt&gt; h = hull(p);
+    cout &lt;&lt; h.size() &lt;&lt; "\n";
+    for (auto&amp; q : h) cout &lt;&lt; q.x &lt;&lt; " " &lt;&lt; q.y &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log n)</span>, integer-exact.</p>
+      <p><b>Pitfalls.</b> Pop on <span class="inlineCode">cross &lt; 0</span> (not <span class="inlineCode">≤ 0</span>) so collinear boundary points stay; use <span class="inlineCode">__int128</span> for the cross product on large coordinates.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — cut a convex polygon by a directed line <span class="rightHint">keep the left half-plane</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A focused drill on the half-plane clip, not a contest problem.</p>
+      <p><b>Story.</b> Given a convex polygon in order and a directed line <span class="inlineCode">a → b</span>, output the polygon kept on the left side, with its area.</p>
+      <p><b>Abstraction.</b> One Sutherland–Hodgman pass keeping <span class="inlineCode">sc ≥ 0</span> and inserting a crossing on <span class="inlineCode">sc·sn &lt; 0</span>.</p>
+      <p><b>Why this geometry model fits.</b> A convex polygon's kept side is always one connected piece (§8.1), so a single-output clip is exact.</p>
+      <p><b>Algorithm.</b> Read the polygon and the line; clip; if the result has at least three vertices, print the count, the area, and the vertices, else print <span class="inlineCode">EMPTY</span>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+const long double EPS = 1e-12L;
+
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }   // typed helper, never a macro
+
+T crossF(const Point&amp; O, const Point&amp; A, const Point&amp; B) {
+    return (A.X - O.X) * (B.Y - O.Y) - (A.Y - O.Y) * (B.X - O.X);
+}
+int sideOf(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    T c = crossF(a, b, p);
+    if (c &gt;  EPS) return +1;
+    if (c &lt; -EPS) return -1;
+    return 0;
+}
+Point lineSegInt(const Point&amp; a, const Point&amp; b, const Point&amp; p, const Point&amp; q) {
+    T c1 = crossF(a, b, p);
+    T c2 = crossF(a, b, q);
+    T t  = c1 / (c1 - c2);
+    return p + (q - p) * t;
+}
+vector&lt;Point&gt; cutLeft(const vector&lt;Point&gt;&amp; poly, const Point&amp; a, const Point&amp; b) {
+    vector&lt;Point&gt; out;
+    int n = (int)poly.size();
+    for (int i = 0; i &lt; n; i++) {
+        Point cur = poly[i];
+        Point nxt = poly[(i + 1) % n];
+        int sc = sideOf(a, b, cur);
+        int sn = sideOf(a, b, nxt);
+        if (sc &gt;= 0) out.push_back(cur);
+        if (sc * sn &lt; 0) out.push_back(lineSegInt(a, b, cur, nxt));
+    }
+    return out;
+}
+T doubledAreaF(const vector&lt;Point&gt;&amp; poly) {
+    int n = (int)poly.size();
+    T s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const Point&amp; u = poly[i]; const Point&amp; v = poly[(i + 1) % n];
+        s += u.X * v.Y - v.X * u.Y;
+    }
+    return s &lt; 0 ? -s : s;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Point&gt; poly(n);
+    for (int i = 0; i &lt; n; i++) {
+        long double x, y; cin &gt;&gt; x &gt;&gt; y; poly[i] = Point(x, y);
+    }
+    long double ax, ay, bx, by;
+    cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; bx &gt;&gt; by;
+
+    vector&lt;Point&gt; res = cutLeft(poly, Point(ax, ay), Point(bx, by));
+    if ((int)res.size() &lt; 3) { cout &lt;&lt; "EMPTY\n"; return 0; }
+
+    cout &lt;&lt; fixed &lt;&lt; setprecision(4);
+    cout &lt;&lt; res.size() &lt;&lt; " " &lt;&lt; (long double)doubledAreaF(res) / 2.0L &lt;&lt; "\n";
+    for (auto&amp; q : res) cout &lt;&lt; (long double)q.X &lt;&lt; " " &lt;&lt; (long double)q.Y &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n)</span> per cut.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">EMPTY</span> is printed when the kept side has fewer than three vertices; otherwise the kept polygon's vertex count, area, and vertices in order. Floating output carries <span class="inlineCode">EPS</span>-level rounding, so compare areas with a tolerance.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — convex hull area <span class="rightHint">exact doubled area of the hull</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A drill combining the hull with the Class 08 integer area, not a contest problem.</p>
+      <p><b>Story.</b> Given <span class="inlineCode">n</span> integer points, output the area of their convex hull.</p>
+      <p><b>Abstraction.</b> Build the strict hull (corners suffice for area), then take its doubled area and report it exactly as an integer plus a <span class="inlineCode">.0</span> or <span class="inlineCode">.5</span> half.</p>
+      <p><b>Why this geometry model fits.</b> Hull vertices are integers, so the doubled area is exact (Class 08); halving it yields an exact multiple of one-half.</p>
+      <p><b>Algorithm.</b> Hull the points; shoelace the result in <span class="inlineCode">__int128</span>; print <span class="inlineCode">2A/2</span> with the correct half.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll  = long long;
+using lll = __int128_t;
+
+struct Pt { ll x, y; };
+bool operator&lt;(const Pt&amp; a, const Pt&amp; b) { return a.x != b.x ? a.x &lt; b.x : a.y &lt; b.y; }
+bool operator==(const Pt&amp; a, const Pt&amp; b) { return a.x == b.x &amp;&amp; a.y == b.y; }
+
+lll cross(const Pt&amp; a, const Pt&amp; b, const Pt&amp; c) {
+    return (lll)(b.x - a.x) * (c.y - a.y) - (lll)(b.y - a.y) * (c.x - a.x);
+}
+vector&lt;Pt&gt; hull(vector&lt;Pt&gt; p) {
+    sort(p.begin(), p.end());
+    p.erase(unique(p.begin(), p.end()), p.end());
+    int n = (int)p.size();
+    if (n &lt;= 2) return p;
+    bool allCollinear = true;
+    for (int i = 2; i &lt; n; i++) {
+        if (cross(p[0], p[1], p[i]) != 0) { allCollinear = false; break; }
+    }
+    if (allCollinear) return {p.front(), p.back()};
+    vector&lt;Pt&gt; h(2 * n);
+    int k = 0;
+    for (int i = 0; i &lt; n; i++) {
+        while (k &gt;= 2 &amp;&amp; cross(h[k-2], h[k-1], p[i]) &lt;= 0) k--;
+        h[k++] = p[i];
+    }
+    int lower = k + 1;
+    for (int i = n - 2; i &gt;= 0; i--) {
+        while (k &gt;= lower &amp;&amp; cross(h[k-2], h[k-1], p[i]) &lt;= 0) k--;
+        h[k++] = p[i];
+    }
+    h.resize(k - 1);
+    return h;
+}
+lll doubledArea(const vector&lt;Pt&gt;&amp; poly) {
+    int n = (int)poly.size();
+    lll s = 0;
+    for (int i = 0; i &lt; n; i++) {
+        const Pt&amp; a = poly[i]; const Pt&amp; b = poly[(i + 1) % n];
+        s += (lll)a.x * b.y - (lll)b.x * a.y;
+    }
+    return s &lt; 0 ? -s : s;
+}
+string i128(lll v) {
+    if (v == 0) return "0";
+    string s;
+    while (v) { s += char('0' + (int)(v % 10)); v /= 10; }
+    reverse(s.begin(), s.end());
+    return s;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    if (!(cin &gt;&gt; n)) return 0;
+    vector&lt;Pt&gt; p(n);
+    for (auto&amp; q : p) cin &gt;&gt; q.x &gt;&gt; q.y;
+
+    vector&lt;Pt&gt; h = hull(p);
+    lll d2 = doubledArea(h);
+    cout &lt;&lt; i128(d2 / 2) &lt;&lt; (d2 % 2 ? ".5" : ".0") &lt;&lt; "\n";
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(n log n)</span>, integer-exact.</p>
+      <p><b>Output meaning.</b> The exact hull area, printed as an integer with a <span class="inlineCode">.0</span> or <span class="inlineCode">.5</span> fractional part since a lattice polygon's area is always a multiple of one-half.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Side test</b>: sign of <span class="inlineCode">cross(b−a, p−a)</span>.</li>
+          <li><b>Cut</b>: keep <span class="inlineCode">sc ≥ 0</span>, add a crossing on <span class="inlineCode">sc·sn &lt; 0</span>.</li>
+          <li><b>Intersection</b>: <span class="inlineCode">t = c₁/(c₁−c₂)</span>, point <span class="inlineCode">p + t(q−p)</span>.</li>
+          <li><b>Hull</b>: sort, dedup, lower then upper chain.</li>
+          <li><b>Pop</b>: on non-left turns; <span class="inlineCode">≤ 0</span> strict, <span class="inlineCode">&lt; 0</span> inclusive.</li>
+          <li><b>Area</b>: integer shoelace of the hull, exact.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Hull is integer-exact; cut is floating with <span class="inlineCode">EPS</span>.</li>
+          <li>Use <span class="inlineCode">__int128</span> for hull cross products on big coordinates.</li>
+          <li>Add a crossing only on a strict sign change.</li>
+          <li>Remove duplicates before building the hull.</li>
+          <li>A single-line cut assumes a connected (convex) kept side.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 09 reshapes point sets two ways with one primitive: the directed-line side test drives both the half-plane cut and the convex hull. The hull's exact integer area links straight back to Class 08, and its counterclockwise vertex order sets up the rotating-calipers techniques for farthest-pair and bounding-box problems.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 10 gathers the series into closest-pair and advanced mixed geometry, where the convex hull, signed area, and intersection tools combine on harder, multi-step problems.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using these polygon-cut and convex-hull routines in a contest solution, verify each item below. The Class 01–08 numeric, geometric, and integer-area checklists still apply underneath where relevant.</p>
+
+    <h4>Convex hull</h4>
+    <ul class="checklist">
+      <li>Points are sorted lexicographically and de-duplicated before the chains are built.</li>
+      <li>The pop test matches the intent: <span class="inlineCode">cross ≤ 0</span> for the strict hull (corners only), <span class="inlineCode">cross &lt; 0</span> for the inclusive hull (all boundary points).</li>
+      <li>Cross products are computed in an integer type wide enough for the coordinates (<span class="inlineCode">__int128</span> up to <span class="inlineCode">10⁹</span>).</li>
+      <li>Fewer than three distinct points returns the points themselves; all-collinear returns the two extremes for the strict hull, and every unique collinear boundary point once for the inclusive hull.</li>
+    </ul>
+
+    <h4>Polygon cut</h4>
+    <ul class="checklist">
+      <li>The side test uses <span class="inlineCode">EPS</span> so points within tolerance count as on-line.</li>
+      <li>A vertex is kept when <span class="inlineCode">sc ≥ 0</span>; an intersection is added only when <span class="inlineCode">sc·sn &lt; 0</span> (strict crossing).</li>
+      <li>The input polygon is convex (or its kept side is known to stay connected) so one output polygon suffices.</li>
+      <li>Floating output is compared with a tolerance, never for exact equality.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li>Strict hull of a 4×4 square plus its center and all four edge-midpoints: <span class="inlineCode">4</span> corners, doubled area <span class="inlineCode">32</span>.</li>
+      <li>Inclusive hull of the same set: <span class="inlineCode">8</span> boundary points (4 corners plus 4 edge-midpoints; the center is ignored).</li>
+      <li>All-collinear points <span class="inlineCode">(0,0),(1,1),(2,2),(3,3)</span>: strict hull returns only <span class="inlineCode">(0,0)</span> and <span class="inlineCode">(3,3)</span>; inclusive hull returns all four points once.</li>
+      <li>Cutting the 4×4 square by the directed line <span class="inlineCode">(2,0)→(2,4)</span>, keep left: a <span class="inlineCode">2×4</span> rectangle, area <span class="inlineCode">8</span>.</li>
+      <li>Cutting that square by its diagonal <span class="inlineCode">(0,0)→(4,4)</span>, keep left: triangle <span class="inlineCode">(0,0),(4,4),(0,4)</span>, area <span class="inlineCode">8</span>.</li>
+      <li>Hull area drill on the square set prints <span class="inlineCode">16.0</span>; on triangle <span class="inlineCode">(0,0),(4,0),(0,4)</span> prints <span class="inlineCode">8.0</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 09</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Polygon cut &amp; convex hull · Reshaping point sets with one primitive.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

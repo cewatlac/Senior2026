@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 04 · Segment Intersection</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">✖</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 04 · Segment Intersection</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Do two segments meet?</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Sides &amp; straddling</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Five intersection shapes</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>Four orientations · bbox</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Proper vs collinear</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>The test · line-line point</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>Symmetry · containment</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Straddle · collinear · point</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(1) per pair</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>orient-first · reuse</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every branch explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Centralized audit</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>Collinear · parallel · div0</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Integer · line relation</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>Intersection drills</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">✖</div>
+    <div class="sf-text">Coach Academy · Geometry Class 04<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">✖</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 04 — Segment Intersection</h1>
+        <div class="subtitle">When do two segments meet? We build the four-orientation straddle test, the bounding-box pre-filter, the collinear-overlap handling, and the line-line intersection point — all on top of the <span class="inlineCode">orient</span> and <span class="inlineCode">pointOnSegment</span> tools from Classes 02–03.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Two line segments are scattered on the plane. Class 04 answers the questions that every higher geometry algorithm eventually needs:</p>
+    <div class="chips">
+      <span class="chip">Do segments <b>[a, b]</b> and <b>[c, d]</b> intersect at all?</span>
+      <span class="chip">Do they cross cleanly, or just touch at an endpoint?</span>
+      <span class="chip">Are they collinear and overlapping — or collinear and disjoint?</span>
+      <span class="chip">If two infinite lines cross, where is the point?</span>
+    </div>
+    <p style="margin-top:16px;">The headline tool is <span class="inlineCode">segmentsIntersect(a, b, c, d)</span>, built from four <span class="inlineCode">orient</span> evaluations plus a handful of <span class="inlineCode">pointOnSegment</span> checks for the degenerate cases. Separately, the safe <span class="inlineCode">bool lineLineIntersection(a, b, c, d, ret)</span> returns <span class="inlineCode">true</span> and fills the unique crossing point into <span class="inlineCode">ret</span> when the two infinite lines cross, and returns <span class="inlineCode">false</span> for parallel or coincident lines — never divides by zero. When the caller needs to tell parallel apart from coincident, classify with <span class="inlineCode">lineRelation</span> first; for hot loops that have already classified, the legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span> skips the guard and divides directly.</p>
+    <div class="callout warn">
+      <b>Recall the four classic geometry bugs (Class 01).</b> Segment intersection is the textbook home of bug <b>3</b> ("forgetting degenerate cases") and bug <b>4</b> ("mixing line / ray / segment"). Endpoint touches, collinear overlaps, and parallel lines are exactly where naive code silently returns the wrong answer. We treat each explicitly.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — "Straddling" is the whole idea</h3>
+    <p>Picture segment <span class="inlineCode">[a, b]</span> as an infinite fence line. If segment <span class="inlineCode">[c, d]</span> is going to cross it, then <span class="inlineCode">c</span> and <span class="inlineCode">d</span> must sit on <b>opposite sides</b> of that fence — one to the left, one to the right. That "opposite sides" condition is precisely a sign change in <span class="inlineCode">orient</span> (Class 02): <span class="inlineCode">orient(a, b, c)</span> and <span class="inlineCode">orient(a, b, d)</span> have different signs.</p>
+    <p>But straddling one fence is not enough. <span class="inlineCode">[c, d]</span> could cross the <i>infinite line</i> through <span class="inlineCode">a, b</span> while missing the actual segment. So we require the condition to hold <b>both ways</b>: <span class="inlineCode">a</span> and <span class="inlineCode">b</span> must also straddle the line through <span class="inlineCode">c, d</span>. When each segment straddles the other's line, they genuinely cross.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Mutual straddling — each segment crosses the other's line</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="120" y1="120" x2="780" y2="240" stroke="var(--accent)" stroke-width="5"/>
+        <circle cx="120" cy="120" r="9" fill="var(--accent)"/><text x="92" y="112" font-size="18" font-weight="900" fill="var(--accent)">a</text>
+        <circle cx="780" cy="240" r="9" fill="var(--accent)"/><text x="790" y="234" font-size="18" font-weight="900" fill="var(--accent)">b</text>
+        <line x1="300" y1="320" x2="560" y2="60" stroke="var(--bad)" stroke-width="5"/>
+        <circle cx="300" cy="320" r="9" fill="var(--bad)"/><text x="272" y="345" font-size="18" font-weight="900" fill="var(--bad)">c</text>
+        <circle cx="560" cy="60" r="9" fill="var(--bad)"/><text x="572" y="54" font-size="18" font-weight="900" fill="var(--bad)">d</text>
+        <circle cx="430" cy="182" r="8" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="300" y="150" font-size="16" font-weight="800" fill="var(--good)">c, d on opposite sides of ab — and a, b on opposite sides of cd → they cross</text>
+      </svg>
+    </div>
+
+    <h3>2.2 — When a sign is zero, something is collinear</h3>
+    <p>If <span class="inlineCode">orient(a, b, c) = 0</span>, then <span class="inlineCode">c</span> is exactly on the line through <span class="inlineCode">a, b</span> — no left, no right. The clean "opposite signs" test does not apply, and we fall into the collinear / touching world, which we handle with <span class="inlineCode">pointOnSegment</span>. Every boundary case in this class is announced by one of the four orientations being zero.</p>
+
+    <h3>2.3 — A cheap pre-filter: bounding boxes</h3>
+    <p>Before any orientation work, ask a trivial question: do the two segments' axis-aligned bounding boxes even overlap? If the boxes are disjoint, the segments cannot touch, and we skip the rest. This is most valuable for the <i>collinear</i> case, where orientation alone cannot separate "overlapping" from "far apart on the same line".</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — The five shapes of "intersection"</h3>
+    <p>"Do they intersect?" hides five visually distinct situations. A correct test must give the right yes/no for every one of them.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Five cases — proper cross, endpoint touch, T-junction, collinear overlap, collinear disjoint</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <!-- proper cross -->
+        <g transform="translate(0,0)">
+          <line x1="30" y1="40" x2="150" y2="140" stroke="var(--accent)" stroke-width="4"/>
+          <line x1="30" y1="140" x2="150" y2="40" stroke="var(--bad)" stroke-width="4"/>
+          <text x="20" y="170" font-size="15" font-weight="800" fill="var(--good)">proper cross ✓</text>
+        </g>
+        <!-- endpoint touch -->
+        <g transform="translate(200,0)">
+          <line x1="20" y1="140" x2="120" y2="60" stroke="var(--accent)" stroke-width="4"/>
+          <line x1="120" y1="60" x2="180" y2="140" stroke="var(--bad)" stroke-width="4"/>
+          <circle cx="120" cy="60" r="6" fill="var(--good)"/>
+          <text x="20" y="170" font-size="15" font-weight="800" fill="var(--good)">endpoint touch ✓</text>
+        </g>
+        <!-- T junction -->
+        <g transform="translate(430,0)">
+          <line x1="10" y1="120" x2="170" y2="120" stroke="var(--accent)" stroke-width="4"/>
+          <line x1="90" y1="120" x2="90" y2="30" stroke="var(--bad)" stroke-width="4"/>
+          <circle cx="90" cy="120" r="6" fill="var(--good)"/>
+          <text x="20" y="170" font-size="15" font-weight="800" fill="var(--good)">T-junction ✓</text>
+        </g>
+        <!-- collinear overlap -->
+        <g transform="translate(0,210)">
+          <line x1="30" y1="60" x2="180" y2="60" stroke="var(--accent)" stroke-width="8" opacity="0.5"/>
+          <line x1="110" y1="60" x2="260" y2="60" stroke="var(--bad)" stroke-width="4"/>
+          <text x="40" y="110" font-size="15" font-weight="800" fill="var(--good)">collinear overlap ✓</text>
+        </g>
+        <!-- collinear disjoint -->
+        <g transform="translate(360,210)">
+          <line x1="20" y1="60" x2="140" y2="60" stroke="var(--accent)" stroke-width="4"/>
+          <line x1="200" y1="60" x2="320" y2="60" stroke="var(--bad)" stroke-width="4"/>
+          <text x="60" y="110" font-size="15" font-weight="800" fill="var(--bad)">collinear disjoint ✗</text>
+        </g>
+      </svg>
+    </div>
+
+    <h3>3.2 — The bounding box of a segment</h3>
+    <p>A segment's bounding box is the smallest axis-aligned rectangle containing it: from <span class="inlineCode">min(x)</span> to <span class="inlineCode">max(x)</span> horizontally and <span class="inlineCode">min(y)</span> to <span class="inlineCode">max(y)</span> vertically. Two boxes overlap exactly when their x-intervals overlap <b>and</b> their y-intervals overlap.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Bounding boxes overlap iff both coordinate intervals overlap</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet">
+        <rect x="120" y="80" width="320" height="180" fill="rgba(37,99,235,.08)" stroke="var(--accent)" stroke-width="3"/>
+        <line x1="150" y1="240" x2="410" y2="100" stroke="var(--accent)" stroke-width="5"/>
+        <text x="150" y="290" font-size="16" font-weight="800" fill="var(--accent)">box of [a, b]</text>
+        <rect x="340" y="150" width="300" height="150" fill="rgba(185,28,28,.08)" stroke="var(--bad)" stroke-width="3"/>
+        <line x1="370" y1="280" x2="610" y2="180" stroke="var(--bad)" stroke-width="5"/>
+        <text x="470" y="320" font-size="16" font-weight="800" fill="var(--bad)">box of [c, d]</text>
+        <rect x="340" y="150" width="100" height="110" fill="rgba(15,118,110,.18)" stroke="var(--good)" stroke-width="2" stroke-dasharray="5 5"/>
+        <text x="520" y="120" font-size="16" font-weight="800" fill="var(--good)">boxes overlap → segments might meet (check orientations)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — The four orientations</h3>
+    <p>Given segments <span class="inlineCode">[a, b]</span> and <span class="inlineCode">[c, d]</span>, compute four side tests. The first pair asks how <span class="inlineCode">c</span> and <span class="inlineCode">d</span> sit relative to line <span class="inlineCode">ab</span>; the second pair asks how <span class="inlineCode">a</span> and <span class="inlineCode">b</span> sit relative to line <span class="inlineCode">cd</span>:</p>
+<pre><code>o1 = orient(a, b, c)
+o2 = orient(a, b, d)
+o3 = orient(c, d, a)
+o4 = orient(c, d, b)</code></pre>
+    <table>
+      <thead><tr><th>Condition</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">o1 * o2 &lt; 0</span> and <span class="inlineCode">o3 * o4 &lt; 0</span></td><td>Proper interior crossing — each segment has its endpoints strictly on opposite sides of the other segment's supporting line. (This automatically rules out any zero orientation.)</td></tr>
+        <tr><td>some <span class="inlineCode">oi = 0</span></td><td>A point is collinear with the other segment; resolve with <span class="inlineCode">pointOnSegment</span>.</td></tr>
+        <tr><td>all four signs consistent, none zero</td><td>No intersection.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 — The general (proper) case</h3>
+    <p>The strict proper-crossing test is <span class="inlineCode">o1 * o2 &lt; 0</span> and <span class="inlineCode">o3 * o4 &lt; 0</span>. This automatically implies none of the four orientations is zero, since a zero would make one product <span class="inlineCode">0</span>, which is not strictly negative. In that situation the crossing is a single interior point — a clean "X". The orientation signs alone encode everything; the bounding box only ever serves as a cheap pre-filter (§4.4).</p>
+
+    <div class="callout warn">
+      <b>Strict vs inclusive.</b> The strict/proper crossing branch must use <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span>. The looser condition <span class="inlineCode">o1 != o2 &amp;&amp; o3 != o4</span> also fires when one orientation is zero (because <span class="inlineCode">0 != 1</span>), so it wrongly counts endpoint touches as proper crossings. Endpoint touches must instead be left to the guarded <span class="inlineCode">pointOnSegment</span> cases.
+    </div>
+
+    <h3>4.3 — The collinear / touching cases</h3>
+    <p>When at least one orientation is zero, the proper-crossing rule no longer applies. We test, for each endpoint that is collinear with the other segment, whether it actually lies <i>on</i> that segment using <span class="inlineCode">pointOnSegment</span> (Class 03 — collinear plus "between"). If any such endpoint lies on the other segment, they intersect. This single mechanism covers endpoint touches, T-junctions, and collinear overlap, and correctly rejects collinear-but-disjoint pairs (no endpoint of either lies on the other).</p>
+
+    <h3>4.4 — Bounding box as a fast reject</h3>
+    <p>Two segments can only meet if their bounding boxes overlap. Box overlap reduces to two 1-D interval-overlap tests:</p>
+<pre><code>// intervals [lo1, hi1] and [lo2, hi2] overlap iff
+max(lo1, lo2) &lt;= min(hi1, hi2)</code></pre>
+    <p>This is a <i>necessary</i> but not <i>sufficient</i> condition: overlapping boxes do not guarantee the segments meet (think of two diagonals of a square's opposite corners that miss). It is a cheap pre-filter, and it is the natural disambiguator for collinear segments, where the orientation signs are all zero and only the box (interval) tells overlap from disjointness.</p>
+
+    <h3>4.5 — Segment test vs infinite-line intersection</h3>
+    <p>These are two different problems and it pays to keep them apart:</p>
+    <table>
+      <thead><tr><th>Question</th><th>Tool</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>Do these two <i>segments</i> meet?</td><td><span class="inlineCode">segmentsIntersect</span></td><td>boolean (with all boundary cases handled)</td></tr>
+        <tr><td>Where do these two <i>infinite lines</i> cross?</td><td><span class="inlineCode">lineLineIntersection</span> (bool API)</td><td><span class="inlineCode">true</span> + a point, or <span class="inlineCode">false</span> on parallel / coincident lines</td></tr>
+        <tr><td>How are two infinite lines related?</td><td><span class="inlineCode">lineRelation</span></td><td>crossing / parallel / coincident</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Proper crossing = double straddle.</b> Each segment must have its two endpoints on opposite sides of the other's line. Two sign-change tests, no more.</li>
+      <li><b>O2 — A zero orientation is a flag, not an answer.</b> It says "collinear here"; the actual yes/no then comes from <span class="inlineCode">pointOnSegment</span>.</li>
+      <li><b>O3 — <span class="inlineCode">pointOnSegment</span> unifies every degenerate case.</b> Endpoint touch, T-junction, and collinear overlap are all "an endpoint of one segment lies on the other". One predicate handles all three.</li>
+      <li><b>O4 — Collinear-disjoint is the trap.</b> All four orientations are zero, yet the segments do not meet. The "between" check inside <span class="inlineCode">pointOnSegment</span> (or, equivalently, the bounding-box interval test) is what rejects it.</li>
+      <li><b>O5 — Bounding box is necessary, never sufficient.</b> Disjoint boxes ⇒ no intersection. Overlapping boxes ⇒ maybe; still need orientations.</li>
+      <li><b>O6 — Line intersection needs non-parallel lines.</b> The safe <span class="inlineCode">bool lineLineIntersection(...)</span> returns <span class="inlineCode">false</span> when the denominator <span class="inlineCode">cross(r, s)</span> is zero, so a copy-pasted snippet never divides by zero; the legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span> assumes the caller has already classified with <span class="inlineCode">lineRelation</span>.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — The intersection test, step by step</h3>
+    <ol>
+      <li><b>Bounding-box reject:</b> if <span class="inlineCode">bboxOverlap(a, b, c, d)</span> is false, return false immediately — disjoint boxes cannot intersect.</li>
+      <li>Compute the four orientations <span class="inlineCode">o1, o2, o3, o4</span>.</li>
+      <li><b>Strict proper case:</b> if <span class="inlineCode">o1 * o2 &lt; 0</span> and <span class="inlineCode">o3 * o4 &lt; 0</span>, return true.</li>
+      <li><b>Collinear / touching cases:</b> for each orientation that is zero, test whether the corresponding endpoint lies on the other segment with <span class="inlineCode">pointOnSegment</span>; if any does, return true.</li>
+      <li>Otherwise return false.</li>
+    </ol>
+    <p>The four <span class="inlineCode">pointOnSegment</span> checks are guarded by their matching zero orientation, so they only run when the point is actually collinear — keeping the common (proper) case fast.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Decision flow of segmentsIntersect</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <rect x="320" y="20" width="260" height="56" rx="12" fill="rgba(37,99,235,.10)" stroke="var(--accent)" stroke-width="3"/>
+        <text x="450" y="55" font-size="18" font-weight="900" fill="var(--text)" text-anchor="middle">compute o1,o2,o3,o4</text>
+        <line x1="450" y1="76" x2="450" y2="120" stroke="var(--muted)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <rect x="300" y="120" width="300" height="56" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="3"/>
+        <text x="450" y="155" font-size="17" font-weight="900" fill="var(--text)" text-anchor="middle">o1·o2&lt;0 and o3·o4&lt;0 ?</text>
+        <line x1="600" y1="148" x2="760" y2="148" stroke="var(--good)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="690" y="138" font-size="15" font-weight="800" fill="var(--good)">yes</text>
+        <rect x="760" y="120" width="120" height="56" rx="12" fill="rgba(15,118,110,.16)" stroke="var(--good)" stroke-width="3"/>
+        <text x="820" y="155" font-size="18" font-weight="900" fill="var(--good)" text-anchor="middle">TRUE</text>
+        <line x1="450" y1="176" x2="450" y2="220" stroke="var(--muted)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="470" y="205" font-size="15" font-weight="800" fill="var(--muted)">no</text>
+        <rect x="270" y="220" width="360" height="56" rx="12" fill="rgba(180,83,9,.10)" stroke="var(--warn)" stroke-width="3"/>
+        <text x="450" y="255" font-size="16" font-weight="900" fill="var(--text)" text-anchor="middle">any oi=0 with endpoint on other seg?</text>
+        <line x1="630" y1="248" x2="760" y2="248" stroke="var(--good)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="690" y="238" font-size="15" font-weight="800" fill="var(--good)">yes</text>
+        <rect x="760" y="220" width="120" height="56" rx="12" fill="rgba(15,118,110,.16)" stroke="var(--good)" stroke-width="3"/>
+        <text x="820" y="255" font-size="18" font-weight="900" fill="var(--good)" text-anchor="middle">TRUE</text>
+        <line x1="450" y1="276" x2="450" y2="320" stroke="var(--muted)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <text x="470" y="305" font-size="15" font-weight="800" fill="var(--muted)">no</text>
+        <rect x="380" y="320" width="140" height="56" rx="12" fill="rgba(185,28,28,.12)" stroke="var(--bad)" stroke-width="3"/>
+        <text x="450" y="355" font-size="18" font-weight="900" fill="var(--bad)" text-anchor="middle">FALSE</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — The intersection point of two infinite lines</h3>
+    <p>Write line 1 as <span class="inlineCode">a + t·r</span> with <span class="inlineCode">r = b − a</span>, and line 2 as <span class="inlineCode">c + u·s</span> with <span class="inlineCode">s = d − c</span>. Setting them equal and solving with cross products gives</p>
+<pre><code>t = cross(c - a, s) / cross(r, s)
+intersection = a + r * t</code></pre>
+    <p>The denominator <span class="inlineCode">cross(r, s)</span> is zero exactly when the lines are parallel or coincident. The safe <span class="inlineCode">bool lineLineIntersection(a, b, c, d, ret)</span> checks this and returns <span class="inlineCode">false</span> in that case (no unique intersection); on success it returns <span class="inlineCode">true</span> and writes the crossing point into <span class="inlineCode">ret</span>. If you also need to tell parallel from coincident, classify with <span class="inlineCode">lineRelation</span>. (Symmetrically, <span class="inlineCode">u = cross(c − a, r) / cross(r, s)</span> would locate the same point on line 2 — the legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span> assumes you have already classified and divides without the guard.)</p>
+
+    <h3>6.3 — Classifying two infinite lines</h3>
+    <p><span class="inlineCode">lineRelation</span> looks at two cross products. If <span class="inlineCode">cross(r, s) ≠ 0</span> the directions differ and the lines cross at one point. If they are parallel (<span class="inlineCode">cross(r, s) = 0</span>), check whether <span class="inlineCode">c</span> lies on line 1 via <span class="inlineCode">cross(r, c − a)</span>: zero means the lines coincide, non-zero means they are parallel and distinct.</p>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Symmetry.</b> <span class="inlineCode">segmentsIntersect(a, b, c, d)</span> equals <span class="inlineCode">segmentsIntersect(c, d, a, b)</span>, and is unaffected by swapping a segment's own endpoints. The four-orientation set is the same up to relabelling.</li>
+      <li><b>I2 — Boundary inclusion.</b> The test treats touching as intersecting: shared endpoints, T-junctions, and collinear overlaps all return true. If a problem wants <i>strict</i> (interior-only) crossings, that is the <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span> branch alone.</li>
+      <li><b>I3 — Containment with bounding box.</b> If <span class="inlineCode">bboxOverlap</span> is false, <span class="inlineCode">segmentsIntersect</span> is necessarily false. The orientation logic never contradicts a disjoint-box verdict.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Proper crossings ignore the box.</b> When all four orientations are non-zero, the sign tests alone decide the answer; the bounding box is redundant there.</li>
+      <li><b>I5 — Collinear resolution is exhaustive.</b> When orientations are zero, the four <span class="inlineCode">pointOnSegment</span> checks cover every way two collinear segments can touch: any shared point is one segment's endpoint lying on the other.</li>
+      <li><b>I6 — Line intersection lands on both lines.</b> The returned point satisfies <span class="inlineCode">pointOnLine(a, b, ·)</span> and <span class="inlineCode">pointOnLine(c, d, ·)</span> up to floating drift.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Every routine is straight-line code: a fixed number of orientations, dot/cross products, and at most four membership checks. No loops, no recursion. Each returns in <span class="inlineCode">O(1)</span>.</p>
+    <div class="callout warn">
+      <b>Failure mode — applicability.</b> The safe <span class="inlineCode">bool lineLineIntersection(...)</span> reports <span class="inlineCode">false</span> on parallel or coincident lines, so a careless caller never divides by zero. Distinguish parallel from coincident with <span class="inlineCode">lineRelation</span> when the surrounding algorithm needs to know which case fired. The legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span> assumes the lines are non-parallel and divides directly — keep using it only inside hot loops that have already classified. <span class="inlineCode">segmentsIntersect</span> has no such restriction — it is total over all inputs, including degenerate (zero-length) segments, which it treats as their single point.</p>
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Why mutual straddling is exactly a proper crossing</h3>
+    <p>Suppose all four orientations are non-zero. Parametrize segment <span class="inlineCode">[c, d]</span> as <span class="inlineCode">c + u(d − c)</span> for <span class="inlineCode">u ∈ [0, 1]</span>. The signed distance of this moving point from line <span class="inlineCode">ab</span> is a linear function of <span class="inlineCode">u</span>. If <span class="inlineCode">orient(a, b, c)</span> and <span class="inlineCode">orient(a, b, d)</span> have strictly opposite signs (so <span class="inlineCode">o1 * o2 &lt; 0</span>), that linear function changes sign on <span class="inlineCode">[0, 1]</span>, so by the intermediate value theorem it is zero at some interior <span class="inlineCode">u*</span> — i.e. the segment <span class="inlineCode">[c, d]</span> meets the line <span class="inlineCode">ab</span> at one interior point. Symmetrically, <span class="inlineCode">o3 * o4 &lt; 0</span> means segment <span class="inlineCode">[a, b]</span> meets line <span class="inlineCode">cd</span> at one interior point. Two segments that each cross the other's supporting line at an interior point must cross each other at that common point. Conversely, if either product is non-negative, that segment either lies entirely on one side of the other's line or has an endpoint exactly on it, so the interiors cannot cross. Hence a strict (non-zero sign-change) interior crossing holds <b>iff</b> <span class="inlineCode">o1 * o2 &lt; 0</span> and <span class="inlineCode">o3 * o4 &lt; 0</span>. Any case where an orientation is zero is deliberately excluded here and handled by the collinear / touching branch instead.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Signed distance to line ab is linear in u, so opposite signs force a zero crossing</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 320" preserveAspectRatio="xMidYMid meet">
+        <line x1="80" y1="160" x2="840" y2="160" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="845" y="166" font-size="16" font-weight="800" fill="var(--muted)">u</text>
+        <line x1="120" y1="40" x2="120" y2="300" stroke="var(--muted)" stroke-width="2"/>
+        <text x="40" y="50" font-size="14" font-weight="800" fill="var(--muted)">orient(a,b,·)</text>
+        <line x1="200" y1="70" x2="700" y2="270" stroke="var(--accent2)" stroke-width="5"/>
+        <circle cx="200" cy="70" r="8" fill="var(--good)"/><text x="180" y="55" font-size="15" font-weight="900" fill="var(--good)">+ at c (u=0)</text>
+        <circle cx="700" cy="270" r="8" fill="var(--bad)"/><text x="660" y="295" font-size="15" font-weight="900" fill="var(--bad)">− at d (u=1)</text>
+        <circle cx="450" cy="170" r="9" fill="var(--warn)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="465" y="150" font-size="15" font-weight="900" fill="var(--warn)">sign change → crosses line ab</text>
+      </svg>
+    </div>
+
+    <h3>8.2 — Why <span class="inlineCode">pointOnSegment</span> resolves every collinear case</h3>
+    <p>Suppose some orientation is zero, say <span class="inlineCode">orient(a, b, c) = 0</span>, so <span class="inlineCode">c</span> lies on line <span class="inlineCode">ab</span>. Two collinear segments overlap iff they share at least one point; on a line, a shared point set is a sub-interval, and a non-empty sub-interval must contain an endpoint of one of the two segments. Therefore overlap occurs iff some endpoint of one segment lies on the other — which is exactly what the four <span class="inlineCode">pointOnSegment</span> checks test. If none of the four endpoints lies on the opposite segment, the (collinear) segments are disjoint. This also dispatches endpoint touches and T-junctions, where the shared point is itself an endpoint.</p>
+
+    <h3>8.3 — Why collinear-disjoint correctly returns false</h3>
+    <p>For two collinear but separated segments, all four orientations are zero, so the proper-crossing branch is skipped. Each of the four <span class="inlineCode">pointOnSegment</span> checks then fails its "between" sub-test (Class 03, §8.2): no endpoint of either segment sits inside the other's <span class="inlineCode">[min, max]</span> extent. Every branch returns false, so the function returns false — the correct answer.</p>
+
+    <h3>8.4 — The line-intersection formula</h3>
+    <p>Solve <span class="inlineCode">a + t·r = c + u·s</span> for <span class="inlineCode">t</span>. Take the cross product of both sides with <span class="inlineCode">s</span>. Since <span class="inlineCode">cross(s, s) = 0</span>, the <span class="inlineCode">u·s</span> term vanishes:</p>
+<pre><code>cross(a + t*r - c, s) = 0
+cross(a - c, s) + t * cross(r, s) = 0
+t = cross(c - a, s) / cross(r, s)</code></pre>
+    <p>The denominator <span class="inlineCode">cross(r, s)</span> is the signed area of the parallelogram spanned by the two directions; it is zero precisely when <span class="inlineCode">r</span> and <span class="inlineCode">s</span> are parallel. Under the non-parallel precondition the division is safe and yields the unique crossing <span class="inlineCode">a + t·r</span>.</p>
+
+    <h3>8.5 — Why the bounding box is necessary but not sufficient</h3>
+    <p>If two segments share a point <span class="inlineCode">q</span>, then <span class="inlineCode">q</span> lies in both segments, hence in both bounding boxes, so the boxes overlap — proving necessity (disjoint boxes ⇒ no shared point). It is not sufficient: two opposite, non-touching diagonals can have overlapping boxes while missing each other, so box overlap alone cannot confirm intersection. That is why the box is only a pre-filter and the orientation logic remains the deciding test.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">overlap1D</span></td><td>O(1)</td><td>Two swaps, one <span class="inlineCode">cmp</span>.</td></tr>
+        <tr><td><span class="inlineCode">bboxOverlap</span></td><td>O(1)</td><td>Two <span class="inlineCode">overlap1D</span> calls.</td></tr>
+        <tr><td><span class="inlineCode">segmentsIntersect</span></td><td>O(1)</td><td>Four <span class="inlineCode">orient</span> + up to four <span class="inlineCode">pointOnSegment</span>.</td></tr>
+        <tr><td><span class="inlineCode">lineLineIntersection</span> (bool API)</td><td>O(1)</td><td>One cross-product compare for the parallel guard, then three cross products and one division on the unique-intersection path.</td></tr>
+        <tr><td><span class="inlineCode">lineLineIntersectionPreconditioned</span></td><td>O(1)</td><td>Three cross products, one division — no parallel guard (caller must classify).</td></tr>
+        <tr><td><span class="inlineCode">lineRelation</span></td><td>O(1)</td><td>Two cross products + <span class="inlineCode">cmp</span>.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">All routines are constant-time. Testing every pair among <span class="inlineCode">n</span> segments by brute force is <span class="inlineCode">O(n²)</span>; a sweep-line (beyond this class) reduces reporting all <span class="inlineCode">k</span> intersections to <span class="inlineCode">O((n + k) log n)</span>, but each elementary test is still one <span class="inlineCode">segmentsIntersect</span> call.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Orientation-first.</b> Decide the common (proper) case with four <span class="inlineCode">orient</span> signs before touching any special-case machinery. The fast path stays fast.</li>
+      <li><b>Reuse, do not re-derive.</b> <span class="inlineCode">orient</span> comes from Class 02 and <span class="inlineCode">pointOnSegment</span> from Class 03. Class 04 is mostly the <i>composition</i> of those two predicates.</li>
+      <li><b>Boolean test and point computation are separate functions.</b> "Do they meet?" and "where do the lines cross?" have different preconditions and different failure modes; keep them apart so neither contaminates the other.</li>
+      <li><b>Total where possible.</b> <span class="inlineCode">segmentsIntersect</span> is defined for every input, including degenerate segments. The safe <span class="inlineCode">bool lineLineIntersection(...)</span> is total too; only the legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span> carries a non-parallel precondition, and it is documented loudly.</li>
+      <li><b>Const-reference inputs, documented preconditions, typed <span class="inlineCode">rot</span>.</b> Same family conventions as Classes 01–03; no <span class="inlineCode">rotate</span> macro.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Standalone, compiles with <span class="inlineCode">g++ -std=c++17</span>. The first block repeats just enough of the Class 01–03 substrate for the file to build on its own; the Class 04 additions follow the divider.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }
+
+// ---- Class 01-03 substrate ----------------------------------------
+template&lt;class U&gt; int cmpInt(const U&amp; a, const U&amp; b = U(0)) { return (a &gt; b) - (a &lt; b); }
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+// orient: +1 left/CCW, -1 right/CW, 0 collinear   (Class 02)
+int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    return cmp(cross(b - a, p - a));
+}
+// pointOnSegment: collinear AND between            (Class 03)
+bool pointOnSegment(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    if (cmp(cross(b - a, p - a)) != 0) return false;
+    return cmp(dot(p - a, p - b)) &lt;= 0;
+}
+
+// ===================================================================
+// CLASS 04 — segment intersection
+// ===================================================================
+
+// 1-D overlap: do the intervals [lo1,hi1] and [lo2,hi2] overlap?
+bool overlap1D(T lo1, T hi1, T lo2, T hi2) {
+    if (lo1 &gt; hi1) swap(lo1, hi1);
+    if (lo2 &gt; hi2) swap(lo2, hi2);
+    return cmp(max(lo1, lo2), min(hi1, hi2)) &lt;= 0;
+}
+
+// Bounding-box overlap for two segments. Necessary, not sufficient.
+bool bboxOverlap(const Point&amp; a, const Point&amp; b,
+                 const Point&amp; c, const Point&amp; d) {
+    return overlap1D(a.X, b.X, c.X, d.X)
+        &amp;&amp; overlap1D(a.Y, b.Y, c.Y, d.Y);
+}
+
+// Do segments [a,b] and [c,d] intersect (touching or crossing counts)?
+// Handles proper crossings, endpoint touches, T-junctions, collinear overlap.
+bool segmentsIntersect(const Point&amp; a, const Point&amp; b,
+                       const Point&amp; c, const Point&amp; d) {
+    // fast reject: disjoint bounding boxes cannot intersect
+    if (!bboxOverlap(a, b, c, d)) return false;
+
+    int o1 = orient(a, b, c);
+    int o2 = orient(a, b, d);
+    int o3 = orient(c, d, a);
+    int o4 = orient(c, d, b);
+
+    // strict proper crossing: each segment's endpoints are on strictly
+    // opposite (non-zero) sides of the other segment's line
+    if (o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0) return true;
+
+    // collinear / touching: an endpoint lies on the other segment
+    if (o1 == 0 &amp;&amp; pointOnSegment(a, b, c)) return true;
+    if (o2 == 0 &amp;&amp; pointOnSegment(a, b, d)) return true;
+    if (o3 == 0 &amp;&amp; pointOnSegment(c, d, a)) return true;
+    if (o4 == 0 &amp;&amp; pointOnSegment(c, d, b)) return true;
+
+    return false;
+}
+
+// Intersection point of two INFINITE lines (a-&gt;b) and (c-&gt;d).
+//
+// SAFE API (preferred): returns false on parallel/coincident lines instead of
+// dividing by zero. The caller still has to decide what "no unique intersection"
+// means for the surrounding algorithm — distinguish parallel from coincident
+// with `lineRelation` below if it matters.
+bool lineLineIntersection(const Point&amp; a, const Point&amp; b,
+                          const Point&amp; c, const Point&amp; d,
+                          Point&amp; ret) {
+    Point r = b - a;            // direction of line 1
+    Point s = d - c;            // direction of line 2
+    T denom = cross(r, s);      // 0 -&gt; parallel or coincident
+    if (cmp(denom) == 0) return false;
+    T t = cross(c - a, s) / denom;
+    ret = a + r * t;
+    return true;
+}
+
+// Preconditioned variant: assumes cross(b-a, d-c) != 0 and divides directly.
+// Kept for hot-loop code paths that have already classified with lineRelation.
+// In new code prefer the safe bool API above.
+Point lineLineIntersectionPreconditioned(const Point&amp; a, const Point&amp; b,
+                                         const Point&amp; c, const Point&amp; d) {
+    Point r = b - a;
+    Point s = d - c;
+    T t = cross(c - a, s) / cross(r, s);    // PRECONDITION: cross(r, s) != 0
+    return a + r * t;
+}
+
+// Classify two INFINITE lines (a-&gt;b) and (c-&gt;d):
+//   0 = cross at one point, 1 = parallel &amp; distinct, 2 = coincident.
+int lineRelation(const Point&amp; a, const Point&amp; b,
+                 const Point&amp; c, const Point&amp; d) {
+    Point r = b - a, s = d - c;
+    if (cmp(cross(r, s)) != 0) return 0;        // directions differ -&gt; one crossing
+    if (cmp(cross(r, c - a)) == 0) return 2;    // c on line 1 -&gt; same line
+    return 1;                                    // parallel, distinct
+}
+</code></pre>
+    <div class="callout">
+      <b>Two macros that look identical to fields but are not.</b> <span class="inlineCode">#define X real()</span> means <span class="inlineCode">v.X</span> expands to <span class="inlineCode">v.real()</span>; <span class="inlineCode">#define Y imag()</span> likewise. <span class="inlineCode">rot</span> is a typed helper function, never a macro — and never named <span class="inlineCode">rotate</span> (which collides with <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>overlap1D · bboxOverlap <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">bool overlap1D(T lo1, T hi1, T lo2, T hi2)</div><div class="lineExpl">Tests whether two 1-D intervals overlap. Endpoints are passed in either order.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (lo1 &gt; hi1) swap(lo1, hi1);</div><div class="lineExpl">Normalize so <span class="inlineCode">lo ≤ hi</span>; segment endpoints are not sorted by coordinate in general.</div>
+        <div class="lineNo">3</div><div class="lineCode">return cmp(max(lo1, lo2), min(hi1, hi2)) &lt;= 0;</div><div class="lineExpl">Intervals overlap iff the larger low end does not exceed the smaller high end. <span class="inlineCode">cmp</span> keeps the EPS policy.</div>
+        <div class="lineNo">4</div><div class="lineCode">bool bboxOverlap(a, b, c, d)</div><div class="lineExpl">Box overlap = x-intervals overlap AND y-intervals overlap.</div>
+        <div class="lineNo">5</div><div class="lineCode">return overlap1D(a.X,b.X,c.X,d.X) &amp;&amp; overlap1D(a.Y,b.Y,c.Y,d.Y);</div><div class="lineExpl">Two independent interval tests, one per axis.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>segmentsIntersect <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (!bboxOverlap(a, b, c, d)) return false;</div><div class="lineExpl">Cheap pre-filter: if the two axis-aligned bounding boxes are disjoint, the segments cannot meet, so reject before any orientation work (§4.4, §8.5).</div>
+        <div class="lineNo">2</div><div class="lineCode">int o1 = orient(a, b, c); … o4 = orient(c, d, b);</div><div class="lineExpl">The four side tests: <span class="inlineCode">c, d</span> vs line <span class="inlineCode">ab</span>, then <span class="inlineCode">a, b</span> vs line <span class="inlineCode">cd</span>.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0) return true;</div><div class="lineExpl">Strict proper crossing: each segment's endpoints are on opposite <i>non-zero</i> sides of the other segment's line (§8.1). A zero orientation makes the product <span class="inlineCode">0</span>, which is not <span class="inlineCode">&lt; 0</span>, so endpoint touches never enter here — they fall through to the guarded membership checks below. This is the fast common path.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (o1 == 0 &amp;&amp; pointOnSegment(a, b, c)) return true;</div><div class="lineExpl"><span class="inlineCode">c</span> is collinear with <span class="inlineCode">ab</span>; if it actually lies on the segment, they touch. The <span class="inlineCode">o1 == 0</span> guard avoids a needless membership test.</div>
+        <div class="lineNo">5</div><div class="lineCode">if (o2 == 0 &amp;&amp; pointOnSegment(a, b, d)) return true;</div><div class="lineExpl">Same for <span class="inlineCode">d</span> on segment <span class="inlineCode">ab</span>.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (o3 == 0 &amp;&amp; pointOnSegment(c, d, a)) return true;</div><div class="lineExpl"><span class="inlineCode">a</span> on segment <span class="inlineCode">cd</span>.</div>
+        <div class="lineNo">7</div><div class="lineCode">if (o4 == 0 &amp;&amp; pointOnSegment(c, d, b)) return true;</div><div class="lineExpl"><span class="inlineCode">b</span> on segment <span class="inlineCode">cd</span>. Together these four cover every touch / overlap.</div>
+        <div class="lineNo">8</div><div class="lineCode">return false;</div><div class="lineExpl">No proper crossing and no collinear contact: the segments are disjoint.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>lineLineIntersection · lineRelation <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">Point r = b - a; Point s = d - c;</div><div class="lineExpl">Direction vectors of the two lines.</div>
+        <div class="lineNo">2</div><div class="lineCode">T denom = cross(r, s);</div><div class="lineExpl">Non-zero exactly when the lines are not parallel — the precondition. The caller guarantees it.</div>
+        <div class="lineNo">3</div><div class="lineCode">T t = cross(c - a, s) / denom;</div><div class="lineExpl">The parameter along line 1 of the crossing (§8.4).</div>
+        <div class="lineNo">4</div><div class="lineCode">return a + r * t;</div><div class="lineExpl">The crossing point itself.</div>
+        <div class="lineNo">5</div><div class="lineCode">if (cmp(cross(r, s)) != 0) return 0;</div><div class="lineExpl"><span class="inlineCode">lineRelation</span>: non-parallel directions ⇒ a single crossing.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (cmp(cross(r, c - a)) == 0) return 2;</div><div class="lineExpl">Parallel and <span class="inlineCode">c</span> lies on line 1 ⇒ coincident (same line).</div>
+        <div class="lineNo">7</div><div class="lineCode">return 1;</div><div class="lineExpl">Parallel but distinct: never meet.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Proper interior crossing</td><td>All four orientations non-zero, two strict sign changes.</td><td><span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span> returns true immediately.</td></tr>
+        <tr><td>Shared endpoint</td><td>One endpoint equals one endpoint; an orientation is zero.</td><td>The matching <span class="inlineCode">pointOnSegment</span> finds the endpoint on the other segment → true.</td></tr>
+        <tr><td>T-junction (endpoint on interior)</td><td>One orientation is zero; the endpoint lies strictly inside the other segment.</td><td><span class="inlineCode">pointOnSegment</span> returns true (between-dot &lt; 0).</td></tr>
+        <tr><td>Collinear overlap</td><td>All four orientations zero; the segments share a sub-interval.</td><td>At least one endpoint lies on the other segment → true.</td></tr>
+        <tr><td>Collinear disjoint</td><td>All four orientations zero; the segments are separated on the line.</td><td>Every <span class="inlineCode">pointOnSegment</span> "between" test fails → false.</td></tr>
+        <tr><td>Parallel, distinct, non-collinear</td><td>No sign changes; no zero orientations.</td><td>Falls through to <span class="inlineCode">return false</span>.</td></tr>
+        <tr><td>Degenerate segment (<span class="inlineCode">a == b</span>)</td><td>"Segment" is a single point.</td><td>Treated as the point: <span class="inlineCode">pointOnSegment</span> is safe at <span class="inlineCode">a == b</span> (Class 03), so the test still works.</td></tr>
+        <tr><td><span class="inlineCode">lineLineIntersection</span> on parallel lines</td><td>Safe bool API returns <span class="inlineCode">false</span>; the preconditioned variant divides by zero.</td><td>Prefer the bool API; if you must use the preconditioned variant, classify with <span class="inlineCode">lineRelation</span> first.</td></tr>
+        <tr><td>Large integer coordinates</td><td><span class="inlineCode">orient</span>'s cross can overflow <span class="inlineCode">long long</span>.</td><td>Use the integer <span class="inlineCode">orient</span> with an <span class="inlineCode">__int128</span> cross (§16), as in Class 02.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Handling only the proper-crossing case.</b> Code that returns <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span> and stops will miss every endpoint touch, T-junction, and collinear overlap. Add the four <span class="inlineCode">pointOnSegment</span> guards. (And do not use the looser <span class="inlineCode">o1 != o2 &amp;&amp; o3 != o4</span> as the "strict" test — it fires on zero orientations too.)</li>
+      <li><b>P2 — Forgetting the collinear-disjoint trap.</b> All four orientations zero does <i>not</i> mean "intersect". Without the "between" check you would wrongly return true for two far-apart collinear segments.</li>
+      <li><b>P3 — Calling the preconditioned line intersection without checking parallelism.</b> The denominator <span class="inlineCode">cross(r, s)</span> is zero for parallel lines, so the division is undefined. Prefer the safe <span class="inlineCode">bool lineLineIntersection(...)</span>; if you need the legacy <span class="inlineCode">lineLineIntersectionPreconditioned</span>, classify with <span class="inlineCode">lineRelation</span> first.</li>
+      <li><b>P4 — Confusing the segment test with the line point.</b> "Do segments meet?" is a boolean with boundary cases; "where do the lines cross?" is a formula with a parallelism precondition. They are different functions — do not fuse them.</li>
+      <li><b>P5 — Using the bounding box as the decision.</b> Overlapping boxes do not imply intersection (it is only necessary). The orientations decide; the box only rejects early.</li>
+      <li><b>P6 — Raw <span class="inlineCode">==</span> on orientation results from floats.</b> Compare the <span class="inlineCode">cmp</span>-derived <span class="inlineCode">−1/0/+1</span> values, which already absorb EPS; never compare raw cross products with <span class="inlineCode">==</span>.</li>
+      <li><b>P7 — Integer overflow in <span class="inlineCode">orient</span>.</b> With coordinates near <span class="inlineCode">10⁹</span>, the cross product overflows <span class="inlineCode">long long</span>. Promote to <span class="inlineCode">__int128</span> (§16).</li>
+      <li><b>P8 — Assuming a unique intersection point on collinear overlap.</b> Overlapping collinear segments meet in a whole sub-segment, not a single point. The safe <span class="inlineCode">lineLineIntersection</span> returns <span class="inlineCode">false</span> there (the lines are coincident); compute the overlap interval explicitly.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>Do two segments meet (touching counts)?</td><td><span class="inlineCode">segmentsIntersect(a, b, c, d)</span></td></tr>
+        <tr><td>Do two segments cross strictly in their interiors?</td><td>The <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span> branch alone</td></tr>
+        <tr><td>Cheap reject before heavy work.</td><td><span class="inlineCode">bboxOverlap</span></td></tr>
+        <tr><td>Where do two non-parallel lines cross?</td><td><span class="inlineCode">bool lineLineIntersection(a, b, c, d, &amp;ret)</span> (returns <span class="inlineCode">false</span> if parallel/coincident)</td></tr>
+        <tr><td>Are two lines crossing / parallel / coincident?</td><td><span class="inlineCode">lineRelation(a, b, c, d)</span></td></tr>
+        <tr><td>Does an endpoint lie on the other segment?</td><td><span class="inlineCode">pointOnSegment</span> (Class 03)</td></tr>
+        <tr><td>Integer coordinates, exact answer.</td><td>Integer <span class="inlineCode">orient</span> with <span class="inlineCode">__int128</span> (§16)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Proper cross = two sign changes.</span>
+      <span class="chip good">Zero orientation → pointOnSegment.</span>
+      <span class="chip good">Collinear disjoint = no endpoint on the other.</span>
+      <span class="chip warn">Box overlap is necessary, not sufficient.</span>
+      <span class="chip warn">Check parallel before line-line point.</span>
+      <span class="chip bad">Never fuse the boolean test with the point formula.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"My test says two collinear segments far apart intersect."</b> You implemented only the orientation signs and treated "all zero" as a hit. Collinear segments need the "between" check — add the four <span class="inlineCode">pointOnSegment</span> guards, which reject the disjoint case.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Exact integer segment intersection</h3>
+    <p>For lattice inputs, replace the floating <span class="inlineCode">orient</span> and the "between" dot with exact integer versions using <span class="inlineCode">__int128</span> intermediates. <b>What changes:</b> no EPS, fully exact verdicts. <b>Why:</b> intersection counting and polygon construction on lattices must be exact. <b>When to use:</b> any integer-coordinate problem.</p>
+<pre><code>// Exact integer orientation: +1 / -1 / 0   (Class 02 variant)
+int orientInt(long long ax, long long ay,
+              long long bx, long long by,
+              long long px, long long py) {
+    __int128 c = (__int128)(bx - ax) * (py - ay)
+               - (__int128)(by - ay) * (px - ax);
+    return (c &gt; 0) - (c &lt; 0);
+}
+// "between" on a collinear point, exact:
+//   dot(p - a, p - b) &lt;= 0
+bool betweenInt(long long ax, long long ay,
+                long long bx, long long by,
+                long long px, long long py) {
+    __int128 d = (__int128)(px - ax) * (px - bx)
+               + (__int128)(py - ay) * (py - by);
+    return d &lt;= 0;
+}</code></pre>
+    <div class="callout warn"><b>Overflow watch.</b> With <span class="inlineCode">|coord| ≤ 10⁹</span>, both the cross and the dot reach about <span class="inlineCode">10¹⁸</span>; the subtraction can exceed <span class="inlineCode">long long</span>. The <span class="inlineCode">__int128</span> intermediates above are why the integer version is exact.</div>
+
+    <h3>16.2 — Returning the intersection geometry, not just a boolean</h3>
+    <p>Sometimes a problem wants the actual shared geometry: a single point for a proper crossing, or a sub-segment for collinear overlap. Compute the boolean first; if true, call the safe <span class="inlineCode">bool lineLineIntersection</span> — it returns <span class="inlineCode">true</span> with the unique point when the lines cross, and <span class="inlineCode">false</span> when they are collinear (the shared geometry is then the overlap interval, found by intersecting the two collinear extents).</p>
+
+    <h3>16.3 — Segment–ray and segment–line tests</h3>
+    <p>The same orientation framework adapts to a segment against a ray or an infinite line by relaxing the "between" constraint on the unbounded object: a ray keeps the <span class="inlineCode">t ≥ 0</span> half (Class 03's <span class="inlineCode">pointOnRay</span>), and an infinite line drops the bound entirely (<span class="inlineCode">pointOnLine</span>). The straddle logic is unchanged; only the membership predicate on the unbounded side changes.</p>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>Training drill — do two segments intersect? <span class="rightHint">the canonical four-orientation pattern, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> This is a training drill for the segment-intersection predicate, not a full contest problem. It isolates the four-orientation test plus collinear handling before later classes use it inside polygon clipping and sweep-line routines.</p>
+      <p><b>Story.</b> Given two segments <span class="inlineCode">[a, b]</span> and <span class="inlineCode">[c, d]</span> per query, print whether they intersect (touching counts as intersecting).</p>
+      <p><b>Abstraction.</b> This is exactly <span class="inlineCode">segmentsIntersect(a, b, c, d)</span>: four orientations decide the proper case, and four guarded <span class="inlineCode">pointOnSegment</span> checks decide the collinear / touching cases.</p>
+      <p><b>Why this geometry model fits.</b> "Cross" is mutual straddling (§8.1); "touch / overlap" is an endpoint of one lying on the other (§8.2). The two mechanisms together are complete and division-free.</p>
+      <p><b>Algorithm.</b> Read both segments; reject early if the bounding boxes are disjoint; evaluate the four orientations exactly with <span class="inlineCode">__int128</span>; apply the strict proper-crossing rule <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span>, then the four collinear guards.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+// exact integer orientation: +1 left, -1 right, 0 collinear
+int orientInt(long long ax, long long ay,
+              long long bx, long long by,
+              long long px, long long py) {
+    __int128 c = (__int128)(bx - ax) * (py - ay)
+               - (__int128)(by - ay) * (px - ax);
+    return (c &gt; 0) - (c &lt; 0);
+}
+
+// is collinear point p on the closed segment [a, b]?
+bool onSeg(long long ax, long long ay,
+           long long bx, long long by,
+           long long px, long long py) {
+    // assumes collinearity already checked by the caller
+    __int128 d = (__int128)(px - ax) * (px - bx)
+               + (__int128)(py - ay) * (py - by);
+    return d &lt;= 0;   // "between": dot(p - a, p - b) &lt;= 0
+}
+
+// 1-D interval overlap (necessary box pre-filter)
+bool overlap1D(long long lo1, long long hi1, long long lo2, long long hi2) {
+    if (lo1 &gt; hi1) swap(lo1, hi1);
+    if (lo2 &gt; hi2) swap(lo2, hi2);
+    return max(lo1, lo2) &lt;= min(hi1, hi2);
+}
+
+bool segmentsIntersect(long long ax, long long ay, long long bx, long long by,
+                       long long cx, long long cy, long long dx, long long dy) {
+    // fast reject: disjoint bounding boxes cannot intersect
+    if (!overlap1D(ax, bx, cx, dx) || !overlap1D(ay, by, cy, dy)) return false;
+
+    int o1 = orientInt(ax, ay, bx, by, cx, cy);
+    int o2 = orientInt(ax, ay, bx, by, dx, dy);
+    int o3 = orientInt(cx, cy, dx, dy, ax, ay);
+    int o4 = orientInt(cx, cy, dx, dy, bx, by);
+
+    if (o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0) return true;          // strict proper crossing
+
+    if (o1 == 0 &amp;&amp; onSeg(ax, ay, bx, by, cx, cy)) return true;
+    if (o2 == 0 &amp;&amp; onSeg(ax, ay, bx, by, dx, dy)) return true;
+    if (o3 == 0 &amp;&amp; onSeg(cx, cy, dx, dy, ax, ay)) return true;
+    if (o4 == 0 &amp;&amp; onSeg(cx, cy, dx, dy, bx, by)) return true;
+
+    return false;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long long ax, ay, bx, by, cx, cy, dx, dy;
+    while (cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; bx &gt;&gt; by &gt;&gt; cx &gt;&gt; cy &gt;&gt; dx &gt;&gt; dy) {
+        cout &lt;&lt; (segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy)
+                 ? "YES" : "NO") &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query.</p>
+      <p><b>Pitfalls.</b> Use <span class="inlineCode">__int128</span> for the cross and the dot so coordinates near <span class="inlineCode">10⁹</span> do not overflow. Do not forget the four collinear guards — without them, endpoint touches and collinear overlaps are missed and collinear-disjoint pairs are mis-handled.</p>
+      <p><b>Problem URL:</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — intersection point of two crossing lines <span class="rightHint">non-parallel line-line point, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A pattern drill for the line-line intersection formula, not a standalone contest problem. It shows the cross-product solve and the mandatory parallelism guard that recur in polygon clipping (Class 09) and circle-line work (Class 06).</p>
+      <p><b>Story.</b> Given two lines, each by two points, report their unique intersection point, or report that they are parallel or coincident.</p>
+      <p><b>Abstraction.</b> Classify with <span class="inlineCode">lineRelation</span>; if crossing, compute the point with the safe <span class="inlineCode">bool lineLineIntersection(a, b, c, d, ret)</span> — a single call that returns <span class="inlineCode">false</span> on parallel/coincident input instead of dividing by zero.</p>
+      <p><b>Why this geometry model fits.</b> Solving <span class="inlineCode">a + t·r = c + u·s</span> by crossing with <span class="inlineCode">s</span> isolates <span class="inlineCode">t</span> (§8.4); the denominator <span class="inlineCode">cross(r, s)</span> is the parallelism detector, so classification and computation share one quantity.</p>
+      <p><b>Algorithm.</b> Compute <span class="inlineCode">cross(r, s)</span>; if zero, decide coincident vs parallel; otherwise solve for <span class="inlineCode">t</span> and emit the point.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+
+int lineRelation(const Point&amp; a, const Point&amp; b, const Point&amp; c, const Point&amp; d) {
+    Point r = b - a, s = d - c;
+    if (cmp(cross(r, s)) != 0) return 0;        // one crossing
+    if (cmp(cross(r, c - a)) == 0) return 2;    // coincident
+    return 1;                                    // parallel, distinct
+}
+// SAFE bool-return API: false on parallel/coincident lines.
+bool lineLineIntersection(const Point&amp; a, const Point&amp; b,
+                          const Point&amp; c, const Point&amp; d, Point&amp; ret) {
+    Point r = b - a, s = d - c;
+    T denom = cross(r, s);
+    if (cmp(denom) == 0) return false;          // parallel or coincident -&gt; no unique point
+    ret = a + r * (cross(c - a, s) / denom);
+    return true;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long double ax, ay, bx, by, cx, cy, dx, dy;
+    while (cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; bx &gt;&gt; by &gt;&gt; cx &gt;&gt; cy &gt;&gt; dx &gt;&gt; dy) {
+        Point a(ax, ay), b(bx, by), c(cx, cy), d(dx, dy);
+        int rel = lineRelation(a, b, c, d);
+        if (rel == 1) { cout &lt;&lt; "PARALLEL\n"; }
+        else if (rel == 2) { cout &lt;&lt; "COINCIDENT\n"; }
+        else {
+            Point p;
+            // After lineRelation said 0 (one crossing) the safe call cannot fail,
+            // but we still go through the bool API so copy-pasted snippets stay safe.
+            if (lineLineIntersection(a, b, c, d, p))
+                cout &lt;&lt; fixed &lt;&lt; setprecision(6) &lt;&lt; p.X &lt;&lt; ' ' &lt;&lt; p.Y &lt;&lt; '\n';
+            else
+                cout &lt;&lt; "PARALLEL\n";       // defensive: should not be reached here
+        }
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query.</p>
+      <p><b>Pitfalls.</b> The safe bool <span class="inlineCode">lineLineIntersection</span> returns <span class="inlineCode">false</span> on parallel/coincident lines, so a copy-pasted snippet never divides by zero; even so, classify with <span class="inlineCode">lineRelation</span> when the surrounding algorithm needs to distinguish parallel from coincident. As a worked check: lines through <span class="inlineCode">(0,0)–(4,4)</span> and <span class="inlineCode">(0,4)–(4,0)</span> cross at <span class="inlineCode">(2, 2)</span>.</p>
+      <p><b>Problem URL:</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Proper cross</b> = each segment straddles the other's line.</li>
+          <li><b>Four orientations</b> <span class="inlineCode">o1..o4</span> decide that case.</li>
+          <li><b>Zero orientation</b> = collinear flag → <span class="inlineCode">pointOnSegment</span>.</li>
+          <li><b>Collinear-disjoint</b> = no endpoint on the other.</li>
+          <li><b>Bounding box</b> = cheap necessary pre-filter.</li>
+          <li><b>Line point</b> = <span class="inlineCode">cross</span>-product solve, needs non-parallel.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Handle proper, touching, and collinear — not just proper.</li>
+          <li>Collinear all-zero needs the "between" check.</li>
+          <li>Box overlap is necessary, never sufficient.</li>
+          <li>Classify parallelism before the line-line point.</li>
+          <li>Keep the boolean test and the point formula separate.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 04 composes the orientation side test (Class 02) and the point-on-segment predicate (Class 03) into a complete intersection toolkit. <span class="inlineCode">segmentsIntersect</span> is the workhorse of polygon clipping and sweep-line algorithms; the safe <span class="inlineCode">bool lineLineIntersection</span> (with the preconditioned variant <span class="inlineCode">lineLineIntersectionPreconditioned</span> for hot loops) is reused for circle-line work (Class 06) and halfplane / polygon cutting (Class 09).</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 05 builds triangle construction — locating a third point from given constraints — which becomes the geometric spine for the circle constructions (circumcircle, tangents) developed in Class 06.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using the intersection toolkit in a contest solution, verify each item below. The Class 01 numeric checklist, the Class 02 orientation checklist, and the Class 03 segment-predicate checklist all apply underneath.</p>
+
+    <h4>Segment intersection</h4>
+    <ul class="checklist">
+      <li>The bounding boxes are checked first; disjoint boxes reject immediately.</li>
+      <li>All four orientations <span class="inlineCode">o1..o4</span> are computed before any decision.</li>
+      <li>The strict proper-crossing branch <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span> is checked first.</li>
+      <li>Each collinear branch is guarded by its matching <span class="inlineCode">oi == 0</span> and uses <span class="inlineCode">pointOnSegment</span>.</li>
+      <li>Collinear-disjoint correctly returns false (the "between" test rejects it).</li>
+      <li>If only strict interior crossings are wanted, use only the strict branch <span class="inlineCode">o1 * o2 &lt; 0 &amp;&amp; o3 * o4 &lt; 0</span>.</li>
+    </ul>
+
+    <h4>Line intersection &amp; classification</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">lineLineIntersection</span> (safe bool API) reports <span class="inlineCode">false</span> on parallel/coincident lines; the legacy preconditioned variant is only called after confirming the lines are not parallel.</li>
+      <li><span class="inlineCode">lineRelation</span> distinguishes crossing / parallel / coincident before any point is computed.</li>
+      <li>The bounding box is used only as a necessary pre-filter, never as the final verdict.</li>
+      <li>Integer inputs use the <span class="inlineCode">__int128</span> exact <span class="inlineCode">orient</span> to avoid overflow.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li>X-shape <span class="inlineCode">[(0,0),(4,4)]</span> vs <span class="inlineCode">[(0,4),(4,0)]</span> → intersect (proper).</li>
+      <li>Shared endpoint <span class="inlineCode">[(0,0),(4,0)]</span> vs <span class="inlineCode">[(4,0),(4,4)]</span> → intersect.</li>
+      <li>T-junction <span class="inlineCode">[(0,0),(4,0)]</span> vs <span class="inlineCode">[(2,0),(2,4)]</span> → intersect.</li>
+      <li>Collinear overlap <span class="inlineCode">[(0,0),(4,0)]</span> vs <span class="inlineCode">[(2,0),(6,0)]</span> → intersect.</li>
+      <li>Collinear disjoint <span class="inlineCode">[(0,0),(2,0)]</span> vs <span class="inlineCode">[(4,0),(6,0)]</span> → no intersection.</li>
+      <li>Lines <span class="inlineCode">(0,0)–(4,4)</span> and <span class="inlineCode">(0,4)–(4,0)</span> cross at <span class="inlineCode">(2, 2)</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 04</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Segment intersection · The straddle test the polygon and sweep classes build on.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

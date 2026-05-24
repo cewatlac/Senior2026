@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 06 · Circle Intersection &amp; Tangents</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);color:var(--accent2);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">◎</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 06 · Circles &amp; Tangents</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Where do circles meet?</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Two circles, one triangle</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>The five configurations</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>d vs r₁±r₂</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Reuse the third vertex</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>classify · intersect · tangent</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>0/1/2/∞ contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>chord · tangent length</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(1) per query</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Classify, then construct</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 toolkit</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every routine explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Coincident · nested · tangent</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>0≠∞ · EPS · radius</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Tangent lines · radical axis</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>Intersect · tangent length</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">◎</div>
+    <div class="sf-text">Coach Academy · Geometry Class 06<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">◎</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 06 — Circle Intersection &amp; Tangents</h1>
+        <div class="subtitle">Where do two circles meet — never, once, twice, or everywhere? We classify the five configurations by the distance between centers, recover the intersection points by reusing the Class 05 third-vertex engine, intersect a circle with a line, and construct tangent points and tangent lengths from an external point.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>A circle is a center and a radius. Two circles, or a circle and a line, raise the natural intersection questions — and circles add a wrinkle that lines never have: two identical positive-radius circles meet at <i>infinitely many</i> points, while two identical zero-radius circles are the same single point and therefore share exactly one point. So the answer count is not just 0, 1, or 2.</p>
+    <div class="chips">
+      <span class="chip">Where do circles <b>(A, r₁)</b> and <b>(B, r₂)</b> intersect — 0, 1, 2, or ∞ points?</span>
+      <span class="chip">Where does a line cross a circle?</span>
+      <span class="chip">From an external point, how long is the tangent, and where does it touch?</span>
+      <span class="chip">How do I tell apart "no solution" from "infinitely many"?</span>
+    </div>
+    <p style="margin-top:16px;">The unifying idea: a point on both circles is at distance <span class="inlineCode">r₁</span> from <span class="inlineCode">A</span> and <span class="inlineCode">r₂</span> from <span class="inlineCode">B</span> — exactly the third vertex of a triangle with base <span class="inlineCode">A–B</span> and side lengths <span class="inlineCode">r₁, r₂</span>. So circle-circle intersection <i>is</i> the Class 05 construction, with the circle centers playing the role of the base endpoints and the radii playing the role of the two distances.</p>
+    <div class="callout warn">
+      <b>The one extra outcome.</b> Triangle construction returned 0, 1, or 2 points. Circles add a fifth case: when the two circles are <i>identical with the same positive radius</i> (same center and radius), every point of the circle is a solution. A finite-point API cannot list infinitely many, so it must report this honestly — never as a plain "none." (Two identical <i>zero-radius</i> circles are the special exception: they are the same single point, so they share exactly one point, not infinitely many.)
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — A point on both circles is a triangle's third vertex</h3>
+    <p>Suppose <span class="inlineCode">X</span> lies on circle <span class="inlineCode">(A, r₁)</span> and circle <span class="inlineCode">(B, r₂)</span>. Then <span class="inlineCode">|X − A| = r₁</span> and <span class="inlineCode">|X − B| = r₂</span>. Those are precisely the two distance constraints of Class 05's <span class="inlineCode">triangleThirdPoint</span>, with base <span class="inlineCode">A–B</span>. The triangle's base length is the center distance <span class="inlineCode">d = |A − B|</span>, and its two side lengths are the radii.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · An intersection point is the third vertex of triangle A–B–X</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <line x1="120" y1="300" x2="780" y2="300" stroke="var(--accent)" stroke-width="4" stroke-dasharray="2 0"/>
+        <circle cx="300" cy="300" r="11" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/><text x="278" y="334" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="600" cy="300" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/><text x="592" y="334" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <circle cx="300" cy="300" r="170" fill="none" stroke="var(--good)" stroke-width="2.5" stroke-dasharray="6 7"/>
+        <circle cx="600" cy="300" r="150" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 7"/>
+        <circle cx="460.667" cy="244.447" r="10" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/><text x="474" y="238" font-size="20" font-weight="950" fill="var(--accent2)">X</text>
+        <line x1="300" y1="300" x2="460.667" y2="244.447" stroke="var(--good)" stroke-width="3"/><text x="360" y="258" font-size="18" font-weight="900" fill="var(--good)">r₁</text>
+        <line x1="600" y1="300" x2="460.667" y2="244.447" stroke="var(--bad)" stroke-width="3"/><text x="545" y="258" font-size="18" font-weight="900" fill="var(--bad)">r₂</text>
+        <text x="408" y="320" font-size="18" font-weight="900" fill="var(--accent)">d = |A − B|</text>
+      </svg>
+    </div>
+
+    <h3>2.2 — Sliding one circle past the other</h3>
+    <p>Hold circle <span class="inlineCode">A</span> fixed and slide circle <span class="inlineCode">B</span> in from far away. At first they are too far apart and never touch (disjoint). As <span class="inlineCode">d</span> shrinks to exactly <span class="inlineCode">r₁ + r₂</span> they kiss at one point (externally tangent). Closer still, they overlap and cross at two points. Keep going and they kiss again from the inside at <span class="inlineCode">d = |r₁ − r₂|</span> (internally tangent), and once <span class="inlineCode">d</span> falls below that, the smaller sits entirely inside the larger with no contact (nested). The whole story is told by comparing <span class="inlineCode">d</span> against <span class="inlineCode">r₁ + r₂</span> and <span class="inlineCode">|r₁ − r₂|</span>.</p>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+
+    <h3>3.1 — The five configurations</h3>
+    <p>Every pair of distinct-center circles is exactly one of these. The sixth row covers the special same-center cases.</p>
+
+    <div class="grid2">
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Two intersection points (d &lt; r₁+r₂, d &gt; |r₁−r₂|)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="190" cy="150" r="110" fill="none" stroke="var(--good)" stroke-width="3"/>
+          <circle cx="300" cy="150" r="95" fill="none" stroke="var(--bad)" stroke-width="3"/>
+          <circle cx="190" cy="150" r="5" fill="var(--good)"/><circle cx="300" cy="150" r="5" fill="var(--bad)"/>
+          <circle cx="251.7" cy="235.7" r="8" fill="var(--accent2)"/><circle cx="251.7" cy="64.3" r="8" fill="var(--accent2)"/>
+          <text x="120" y="285" font-size="16" font-weight="900" fill="var(--accent2)">two crossings</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Externally tangent (d = r₁ + r₂)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="150" cy="150" r="90" fill="none" stroke="var(--good)" stroke-width="3"/>
+          <circle cx="330" cy="150" r="90" fill="none" stroke="var(--bad)" stroke-width="3"/>
+          <circle cx="150" cy="150" r="5" fill="var(--good)"/><circle cx="330" cy="150" r="5" fill="var(--bad)"/>
+          <circle cx="240" cy="150" r="9" fill="var(--warn)"/>
+          <text x="150" y="285" font-size="16" font-weight="900" fill="var(--warn)">one touch (outside)</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Internally tangent (d = |r₁ − r₂|)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="220" cy="150" r="120" fill="none" stroke="var(--good)" stroke-width="3"/>
+          <circle cx="280" cy="150" r="60" fill="none" stroke="var(--bad)" stroke-width="3"/>
+          <circle cx="220" cy="150" r="5" fill="var(--good)"/><circle cx="280" cy="150" r="5" fill="var(--bad)"/>
+          <circle cx="340" cy="150" r="9" fill="var(--warn)"/>
+          <text x="150" y="285" font-size="16" font-weight="900" fill="var(--warn)">one touch (inside)</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Disjoint (d &gt; r₁ + r₂)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="120" cy="150" r="70" fill="none" stroke="var(--good)" stroke-width="3"/>
+          <circle cx="360" cy="150" r="70" fill="none" stroke="var(--bad)" stroke-width="3"/>
+          <circle cx="120" cy="150" r="5" fill="var(--good)"/><circle cx="360" cy="150" r="5" fill="var(--bad)"/>
+          <text x="170" y="285" font-size="16" font-weight="900" fill="var(--bad)">no contact (apart)</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">One inside the other (d &lt; |r₁ − r₂|)</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="240" cy="150" r="125" fill="none" stroke="var(--good)" stroke-width="3"/>
+          <circle cx="270" cy="150" r="50" fill="none" stroke="var(--bad)" stroke-width="3"/>
+          <circle cx="240" cy="150" r="5" fill="var(--good)"/><circle cx="270" cy="150" r="5" fill="var(--bad)"/>
+          <text x="150" y="285" font-size="16" font-weight="900" fill="var(--bad)">nested, no contact</text>
+        </svg>
+      </div>
+      <div class="diagramWrap">
+        <div class="diagramHeader"><div class="diagramTitle">Coincident (same center &amp; same positive radius) — infinitely many</div></div>
+        <svg class="graphsvg" viewBox="0 0 480 300" preserveAspectRatio="xMidYMid meet" style="height:260px;">
+          <circle cx="240" cy="150" r="100" fill="none" stroke="var(--good)" stroke-width="6" opacity="0.6"/>
+          <circle cx="240" cy="150" r="100" fill="none" stroke="var(--bad)" stroke-width="3" stroke-dasharray="8 8"/>
+          <circle cx="240" cy="150" r="5" fill="var(--accent)"/>
+          <text x="120" y="285" font-size="16" font-weight="900" fill="var(--accent2)">every point is shared (∞)</text>
+        </svg>
+      </div>
+    </div>
+    <div class="callout">
+      <b>Two same-center cases, two different verdicts.</b> If two circles share a center but have <i>different</i> radii, they never meet (a special nested case). If they share a center <i>and</i> the same positive radius, they are the same circle and meet everywhere (infinitely many). The lone exception is when both radii are zero: the two "circles" are the same single point, so they share exactly one point. All of these have <span class="inlineCode">d = 0</span>, so the radius comparison is what separates them.
+    </div>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — Classification by center distance</h3>
+    <p>Let <span class="inlineCode">d = |A − B|</span> be the distance between centers and <span class="inlineCode">r₁, r₂</span> the radii. With distinct centers (<span class="inlineCode">d &gt; 0</span>):</p>
+    <table>
+      <thead><tr><th>Condition</th><th>Configuration</th><th>Intersections</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">d &gt; r₁ + r₂</span></td><td>Disjoint (apart)</td><td>0</td></tr>
+        <tr><td><span class="inlineCode">d = r₁ + r₂</span></td><td>Externally tangent</td><td>1</td></tr>
+        <tr><td><span class="inlineCode">|r₁ − r₂| &lt; d &lt; r₁ + r₂</span></td><td>Proper crossing</td><td>2</td></tr>
+        <tr><td><span class="inlineCode">d = |r₁ − r₂|</span></td><td>Internally tangent</td><td>1</td></tr>
+        <tr><td><span class="inlineCode">d &lt; |r₁ − r₂|</span></td><td>One inside the other</td><td>0</td></tr>
+      </tbody>
+    </table>
+    <p>And the two same-center cases (<span class="inlineCode">d = 0</span>): equal positive radii ⇒ coincident, infinitely many; both radii zero ⇒ one shared point; different radii ⇒ concentric, zero. (A negative radius is rejected as invalid before any of this.)</p>
+
+    <h3>4.2 — Foot offset and half-chord (reusing Class 05)</h3>
+    <p>Put the foot of the intersection chord on the center line. With base length <span class="inlineCode">d</span> and side lengths <span class="inlineCode">r₁</span> (from <span class="inlineCode">A</span>) and <span class="inlineCode">r₂</span> (from <span class="inlineCode">B</span>), the Class 05 formulas give the foot offset from <span class="inlineCode">A</span> and the half-chord height:</p>
+<pre><code>x = (r₁² − r₂² + d²) / (2d)        // distance from A to the chord's foot
+h = sqrt(r₁² − x²)                  // half-chord; the two points are foot ± h·n</code></pre>
+    <p>where <span class="inlineCode">n</span> is the unit normal to the center line. The radicand <span class="inlineCode">r₁² − x² ≥ 0</span> is exactly the "feasible" condition — and it matches the distance classification above.</p>
+
+    <h3>4.3 — Tangent length from an external point</h3>
+    <p>For a point <span class="inlineCode">P</span> outside a circle of center <span class="inlineCode">O</span> and radius <span class="inlineCode">r</span>, the tangent segment from <span class="inlineCode">P</span> to its touch point is the leg of a right triangle whose hypotenuse is <span class="inlineCode">|P − O|</span> and whose other leg is <span class="inlineCode">r</span> (the radius is perpendicular to the tangent at the touch point). Hence</p>
+<pre><code>tangentLength = sqrt(|P − O|² − r²)</code></pre>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1 — Intersection is the third-vertex construction.</b> A shared point is at distance <span class="inlineCode">r₁</span> from <span class="inlineCode">A</span> and <span class="inlineCode">r₂</span> from <span class="inlineCode">B</span>, so <span class="inlineCode">circleCircleIntersect</span> is a thin wrapper over <span class="inlineCode">triangleThirdPoint</span>.</li>
+      <li><b>O2 — Classify before constructing.</b> The distance test (§4.1) names the configuration up front, so the construction step never has to guess.</li>
+      <li><b>O3 — Zero and infinity are different answers sharing one code.</b> Disjoint and coincident both yield "no finite point list," but they mean opposite things; the API must say which.</li>
+      <li><b>O4 — Tangency is the boundary.</b> The single-point cases sit exactly where the half-chord height collapses to zero, i.e. <span class="inlineCode">d = r₁ + r₂</span> or <span class="inlineCode">d = |r₁ − r₂|</span>.</li>
+      <li><b>O5 — Circle-line is the same chord idea.</b> Drop the center onto the line, get the distance from center to line, then the half-chord is <span class="inlineCode">sqrt(r² − dist²)</span> — no triangle needed.</li>
+      <li><b>O6 — Tangent points are a circle-circle intersection in disguise.</b> The two touch points lie on the original circle <i>and</i> on the circle centered at <span class="inlineCode">P</span> with radius equal to the tangent length.</li>
+      <li><b>O7 — EPS decides the boundary.</b> Whether a near-tangent counts as one point or two (or zero) is a <span class="inlineCode">cmp</span> decision; the same tolerance must drive classification and construction.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — Classifying two circles</h3>
+    <ol style="padding-left:24px;">
+      <li>Compute <span class="inlineCode">d = |A − B|</span>.</li>
+      <li>If <span class="inlineCode">d = 0</span>: equal positive radii ⇒ coincident (infinitely many); both radii zero ⇒ one shared point; else concentric (none).</li>
+      <li>Otherwise compare <span class="inlineCode">d</span> with <span class="inlineCode">r₁ + r₂</span> and with <span class="inlineCode">|r₁ − r₂|</span>: beyond the sum or below the difference ⇒ none; equal to either ⇒ tangent (one); strictly between ⇒ two.</li>
+    </ol>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Classification decision flow on the center distance d</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 420" preserveAspectRatio="xMidYMid meet">
+        <rect x="360" y="20" width="180" height="56" rx="12" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="450" y="54" font-size="18" font-weight="900" fill="var(--text)" text-anchor="middle">d = |A − B|</text>
+        <line x1="450" y1="76" x2="450" y2="110" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="350" y="110" width="200" height="56" rx="12" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="450" y="144" font-size="17" font-weight="900" fill="var(--text)" text-anchor="middle">d = 0 ?</text>
+        <!-- d=0 branch -->
+        <line x1="350" y1="138" x2="180" y2="138" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="180" y1="138" x2="180" y2="170" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="70" y="170" width="220" height="80" rx="12" fill="rgba(15,118,110,.10)" stroke="var(--good)" stroke-width="2.5"/>
+        <text x="180" y="194" font-size="14" font-weight="900" fill="var(--good)" text-anchor="middle">r₁ = r₂ &gt; 0 ⇒ coincident (∞)</text>
+        <text x="180" y="218" font-size="14" font-weight="900" fill="var(--warn)" text-anchor="middle">r₁ = r₂ = 0 ⇒ one point</text>
+        <text x="180" y="242" font-size="14" font-weight="900" fill="var(--bad)" text-anchor="middle">else concentric (0)</text>
+        <!-- d>0 branch -->
+        <line x1="550" y1="138" x2="720" y2="138" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="720" y1="138" x2="720" y2="170" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="600" y="170" width="240" height="56" rx="12" fill="var(--panel2)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="720" y="204" font-size="15" font-weight="900" fill="var(--text)" text-anchor="middle">compare d, r₁+r₂, |r₁−r₂|</text>
+        <line x1="720" y1="226" x2="720" y2="262" stroke="currentColor" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <rect x="560" y="262" width="320" height="130" rx="12" fill="rgba(37,99,235,.06)" stroke="var(--accent2)" stroke-width="2.5"/>
+        <text x="720" y="290" font-size="14" font-weight="900" fill="var(--bad)" text-anchor="middle">d &gt; r₁+r₂ or d &lt; |r₁−r₂| ⇒ 0</text>
+        <text x="720" y="318" font-size="14" font-weight="900" fill="var(--warn)" text-anchor="middle">d = r₁+r₂ or d = |r₁−r₂| ⇒ 1</text>
+        <text x="720" y="346" font-size="14" font-weight="900" fill="var(--good)" text-anchor="middle">|r₁−r₂| &lt; d &lt; r₁+r₂ ⇒ 2</text>
+        <text x="720" y="374" font-size="13" font-weight="800" fill="var(--muted)" text-anchor="middle">(tangent = chord height collapses to 0)</text>
+      </svg>
+    </div>
+
+    <h3>6.2 — Recovering the intersection points</h3>
+    <p>Once classified as tangent or crossing, call <span class="inlineCode">triangleThirdPoint(A, B, r₁, r₂, +1, found)</span> for one point and, if <span class="inlineCode">found = 2</span>, again with <span class="inlineCode">−1</span> for its mirror across the center line. Coincident positive-radius circles are intercepted before this step and reported as "infinitely many"; identical zero-radius point-circles are intercepted as a single shared point.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Center–center base with foot and perpendicular half-chord</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+        <line x1="150" y1="220" x2="760" y2="220" stroke="var(--accent)" stroke-width="4" marker-end="url(#arrow1)"/>
+        <text x="770" y="226" font-size="17" font-weight="900" fill="var(--accent)">n̂ along A→B</text>
+        <circle cx="150" cy="220" r="11" fill="var(--good)"/><text x="128" y="254" font-size="20" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="700" cy="220" r="11" fill="var(--bad)"/><text x="692" y="254" font-size="20" font-weight="950" fill="var(--bad)">B</text>
+        <line x1="150" y1="220" x2="430" y2="220" stroke="var(--accent2)" stroke-width="9" opacity="0.30"/>
+        <text x="250" y="208" font-size="17" font-weight="900" fill="var(--accent2)">x = (r₁²−r₂²+d²)/(2d)</text>
+        <circle cx="430" cy="220" r="8" fill="var(--warn)"/><text x="416" y="254" font-size="17" font-weight="900" fill="var(--warn)">F</text>
+        <line x1="430" y1="220" x2="430" y2="100" stroke="var(--warn)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <line x1="430" y1="220" x2="430" y2="340" stroke="var(--warn)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <rect x="430" y="198" width="22" height="22" fill="none" stroke="var(--warn)" stroke-width="2.5"/>
+        <text x="442" y="150" font-size="17" font-weight="900" fill="var(--warn)">h = √(r₁²−x²)</text>
+        <circle cx="430" cy="100" r="10" fill="var(--accent2)"/><text x="444" y="94" font-size="18" font-weight="950" fill="var(--accent2)">X₁ = F + h·n̂⊥</text>
+        <circle cx="430" cy="340" r="10" fill="var(--accent2)"/><text x="444" y="356" font-size="18" font-weight="950" fill="var(--accent2)">X₂ = F − h·n̂⊥</text>
+      </svg>
+    </div>
+
+    <h3>6.3 — Circle versus line</h3>
+    <p>Parameterize the line through <span class="inlineCode">P</span> and <span class="inlineCode">Q</span> as <span class="inlineCode">X(t) = P + d·t</span> with <span class="inlineCode">d = Q − P</span>. Project the center <span class="inlineCode">O</span> onto the line: the foot parameter is <span class="inlineCode">t₀ = dot(O − P, d) / dot(d, d)</span>, giving the foot <span class="inlineCode">F = P + d·t₀</span>. Let <span class="inlineCode">D</span> be the distance from <span class="inlineCode">O</span> to <span class="inlineCode">F</span>. If <span class="inlineCode">D &gt; r</span> the line misses; if <span class="inlineCode">D = r</span> it is tangent and the only parameter is <span class="inlineCode">t₁ = t₂ = t₀</span>; otherwise the half-chord length is <span class="inlineCode">h = √(r² − D²)</span>.</p>
+    <p>Because moving by <span class="inlineCode">Δt</span> along the parameter moves <span class="inlineCode">|d|·Δt</span> in real distance, the parameter offset that covers the half-chord is <span class="inlineCode">delta = h / |d|</span>. Therefore <span class="inlineCode">t₁ = t₀ + delta</span> and <span class="inlineCode">t₂ = t₀ − delta</span>, with points <span class="inlineCode">I₁ = P + d·t₁</span> and <span class="inlineCode">I₂ = P + d·t₂</span>. The routine returns intersections on the <i>infinite</i> line; the caller uses <span class="inlineCode">t₁/t₂</span> to filter for the segment or ray variants.</p>
+
+    <h4>How to interpret <span class="inlineCode">t</span> for segment and ray versions</h4>
+    <table>
+      <thead><tr><th>Condition on <span class="inlineCode">t</span></th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>all real <span class="inlineCode">t</span></td><td>point lies on the infinite line</td></tr>
+        <tr><td><span class="inlineCode">0 ≤ t ≤ 1</span></td><td>point lies on segment <span class="inlineCode">[P, Q]</span></td></tr>
+        <tr><td><span class="inlineCode">t = 0</span></td><td>point is exactly <span class="inlineCode">P</span></td></tr>
+        <tr><td><span class="inlineCode">t = 1</span></td><td>point is exactly <span class="inlineCode">Q</span></td></tr>
+        <tr><td><span class="inlineCode">t &lt; 0</span></td><td>point is behind <span class="inlineCode">P</span>, on the opposite extension</td></tr>
+        <tr><td><span class="inlineCode">t &gt; 1</span></td><td>point is beyond <span class="inlineCode">Q</span> in the <span class="inlineCode">P → Q</span> direction</td></tr>
+        <tr><td><span class="inlineCode">t ≥ 0</span></td><td>point lies on the ray starting at <span class="inlineCode">P</span> and going through <span class="inlineCode">Q</span></td></tr>
+        <tr><td><span class="inlineCode">t ≤ 1</span></td><td>point lies on the ray starting at <span class="inlineCode">Q</span> and going through <span class="inlineCode">P</span>, using the same <span class="inlineCode">P → Q</span> parameter</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.4 — Tangents from an external point</h3>
+    <p>If <span class="inlineCode">P</span> is strictly inside, there is no tangent. If on the circle, the tangent touches at <span class="inlineCode">P</span>. If outside, the tangent length is <span class="inlineCode">L = sqrt(|P − O|² − r²)</span>, and the two touch points are where the original circle meets the circle centered at <span class="inlineCode">P</span> of radius <span class="inlineCode">L</span> — a circle-circle intersection.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Tangents from external point P: right triangle O–T–P</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet">
+        <circle cx="300" cy="200" r="120" fill="none" stroke="var(--good)" stroke-width="3"/>
+        <circle cx="300" cy="200" r="9" fill="var(--good)"/><text x="278" y="200" font-size="20" font-weight="950" fill="var(--good)">O</text>
+        <circle cx="720" cy="200" r="11" fill="var(--bad)"/><text x="732" y="200" font-size="20" font-weight="950" fill="var(--bad)">P</text>
+        <!-- tangent touch points on circle: O=(300,200) r=120, P=(720,200), L=sqrt(420^2-120^2) -->
+        <circle cx="334.3" cy="315.1" r="9" fill="var(--accent2)"/><text x="300" y="350" font-size="18" font-weight="950" fill="var(--accent2)">T₂</text>
+        <circle cx="334.3" cy="84.9" r="9" fill="var(--accent2)"/><text x="300" y="74" font-size="18" font-weight="950" fill="var(--accent2)">T₁</text>
+        <line x1="300" y1="200" x2="334.3" y2="84.9" stroke="var(--good)" stroke-width="3"/><text x="296" y="140" font-size="17" font-weight="900" fill="var(--good)">r</text>
+        <line x1="720" y1="200" x2="334.3" y2="84.9" stroke="var(--bad)" stroke-width="3"/><text x="540" y="120" font-size="17" font-weight="900" fill="var(--bad)">L (tangent)</text>
+        <line x1="300" y1="200" x2="720" y2="200" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="6 6"/><text x="470" y="222" font-size="16" font-weight="900" fill="var(--accent)">|P − O|</text>
+        <rect x="320.5" y="74.5" width="20" height="20" fill="none" stroke="var(--accent2)" stroke-width="2.5" transform="rotate(18 330 90)"/>
+        <text x="430" y="300" font-size="15" font-weight="800" fill="var(--muted)">radius ⟂ tangent ⇒ L² = |P−O|² − r²</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Classification is total and exclusive.</b> <span class="inlineCode">classifyCircles</span> returns exactly one of <span class="inlineCode">{−3, −2, −1, 0, 1, 2}</span>: invalid radius, coincident non-zero circle (infinitely many), concentric-none, disjoint/nested-none, tangent or identical zero-radius point-circles, crossing.</li>
+      <li><b>I2 — The intersection wrapper never invents points.</b> <span class="inlineCode">circleCircleIntersect</span> returns <span class="inlineCode">1</span> only when there is exactly one finite shared point: either a tangent point or identical zero-radius point-circles; it returns <span class="inlineCode">2</span> only when genuinely crossing. Any returned point lies on both circles up to tolerance.</li>
+      <li><b>I3 — Zero is overloaded but documented.</b> A return of <span class="inlineCode">0</span> means "no finite unique output": none, an invalid radius, <i>or</i> the coincident-∞ case. The distinct semantics live in <span class="inlineCode">classifyCircles</span> (the <span class="inlineCode">−3</span> invalid and <span class="inlineCode">−2</span> coincident codes) so callers who need the difference can ask. The identical zero-radius point-circle case is the exception that returns <span class="inlineCode">1</span> with the shared point, never <span class="inlineCode">0</span>.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I4 — Tangent points sit on both circles.</b> For <span class="inlineCode">tangentPointsFromExternal</span>, each returned <span class="inlineCode">T</span> satisfies <span class="inlineCode">|T − O| = r</span> and <span class="inlineCode">(T − O) ⟂ (T − P)</span> up to tolerance.</li>
+      <li><b>I5 — Classification agrees with construction.</b> <span class="inlineCode">circleCircleIntersect</span> returns <span class="inlineCode">1</span>/<span class="inlineCode">2</span> exactly when <span class="inlineCode">classifyCircles</span> returns <span class="inlineCode">1</span>/<span class="inlineCode">2</span>, and <span class="inlineCode">0</span> for every other class.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Every routine is straight-line arithmetic with no loops or recursion. <span class="inlineCode">circleCircleIntersect</span> may delegate to <span class="inlineCode">triangleThirdPoint</span> twice to obtain the two mirror intersections; all other construction routines use at most one such construction step, so each routine still runs in <span class="inlineCode">O(1)</span>.</p>
+    <div class="callout warn">
+      <b>Failure mode — preconditions.</b> Radii must be non-negative; <span class="inlineCode">classifyCircles</span> reports <span class="inlineCode">−3</span> for a negative radius, while finite-output wrappers return <span class="inlineCode">0</span> and the training drill prints <span class="inlineCode">INVALID</span>. The circle-line routine needs a genuine line (<span class="inlineCode">P ≠ Q</span>). The external-tangent routine assumes <span class="inlineCode">P</span> is not strictly inside; it reports <span class="inlineCode">0</span> if it is.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Why the distance test classifies correctly</h3>
+    <p>Fix circle <span class="inlineCode">A</span> and consider the closest and farthest points of circle <span class="inlineCode">B</span> from <span class="inlineCode">A</span>'s center, which lie at distances <span class="inlineCode">d − r₂</span> and <span class="inlineCode">d + r₂</span>. Circle <span class="inlineCode">A</span> (radius <span class="inlineCode">r₁</span>) meets circle <span class="inlineCode">B</span> iff <span class="inlineCode">r₁</span> falls within that closed range, i.e. <span class="inlineCode">|d − r₂| ≤ r₁ ≤ d + r₂</span>. Rearranging the right inequality gives <span class="inlineCode">d ≤ r₁ + r₂</span>; the left gives <span class="inlineCode">d ≥ |r₁ − r₂|</span>. Equality on either side is a single tangency; strict on both is a two-point crossing; violation of either is emptiness. This is exactly the table of §4.1.</p>
+
+    <h3>8.2 — The chord foot and half-chord</h3>
+    <p>This is the Class 05 derivation with base length <span class="inlineCode">d</span> and side lengths <span class="inlineCode">r₁, r₂</span>. The two right triangles sharing the half-chord height give <span class="inlineCode">r₁² = x² + h²</span> and <span class="inlineCode">r₂² = (d − x)² + h²</span>; subtracting eliminates <span class="inlineCode">h²</span> and yields <span class="inlineCode">x = (r₁² − r₂² + d²)/(2d)</span>, then <span class="inlineCode">h = √(r₁² − x²)</span>. The radicand is non-negative exactly on the meeting range of §8.1, so feasibility of the construction and the distance classification coincide.</p>
+
+    <h3>8.3 — Circle-line half-chord</h3>
+    <p>Let <span class="inlineCode">F</span> be the foot of the perpendicular from the center <span class="inlineCode">O</span> to the line, and <span class="inlineCode">D = |O − F|</span>. Any point on the line at signed offset <span class="inlineCode">s</span> from <span class="inlineCode">F</span> (along the unit direction) is at distance <span class="inlineCode">√(D² + s²)</span> from <span class="inlineCode">O</span>. Setting this equal to <span class="inlineCode">r</span> gives <span class="inlineCode">s² = r² − D²</span>: no solution when <span class="inlineCode">D &gt; r</span>, the single point <span class="inlineCode">F</span> when <span class="inlineCode">D = r</span>, and the symmetric pair <span class="inlineCode">F ± √(r² − D²)·û</span> otherwise.</p>
+    <p>To recover the line <i>parameters</i>, write the line as <span class="inlineCode">X(t) = P + d·t</span> with <span class="inlineCode">d = Q − P</span>. The projection foot has parameter <span class="inlineCode">t₀ = dot(O − P, d) / dot(d, d)</span>, so <span class="inlineCode">F = P + d·t₀</span>. An intersection offset by parameter <span class="inlineCode">delta</span> from the foot is <span class="inlineCode">X = P + d·(t₀ ± delta)</span>, and its real distance from the foot is <span class="inlineCode">|d|·|delta|</span>. The right triangle with legs <span class="inlineCode">|d|·delta</span> and <span class="inlineCode">D</span> and hypotenuse <span class="inlineCode">r</span> gives</p>
+<pre><code>(|d| * delta)^2 + D^2 = r^2
+⇒  delta = sqrt(r^2 - D^2) / |d|</code></pre>
+    <p>Therefore <span class="inlineCode">t₁ = t₀ + delta</span> and <span class="inlineCode">t₂ = t₀ − delta</span>, and the returned points are <span class="inlineCode">I₁ = P + d·t₁</span> and <span class="inlineCode">I₂ = P + d·t₂</span>. At tangency <span class="inlineCode">delta = 0</span>, so <span class="inlineCode">t₁ = t₂ = t₀</span> and both points collapse to the foot.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Circle–line chord: foot F, center distance D, half-chord √(r²−D²)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 380" preserveAspectRatio="xMidYMid meet">
+        <circle cx="430" cy="200" r="140" fill="none" stroke="var(--good)" stroke-width="3"/>
+        <circle cx="430" cy="200" r="9" fill="var(--good)"/><text x="408" y="200" font-size="20" font-weight="950" fill="var(--good)">O</text>
+        <line x1="120" y1="120" x2="760" y2="120" stroke="var(--accent)" stroke-width="4"/>
+        <text x="150" y="108" font-size="16" font-weight="900" fill="var(--accent)">line</text>
+        <line x1="430" y1="200" x2="430" y2="120" stroke="var(--warn)" stroke-width="4"/>
+        <rect x="430" y="120" width="22" height="22" fill="none" stroke="var(--warn)" stroke-width="2.5"/>
+        <circle cx="430" cy="120" r="8" fill="var(--warn)"/><text x="442" y="160" font-size="16" font-weight="900" fill="var(--warn)">F · D = |O−F|</text>
+        <circle cx="314.7" cy="120" r="9" fill="var(--accent2)"/><circle cx="545.3" cy="120" r="9" fill="var(--accent2)"/>
+        <text x="250" y="95" font-size="16" font-weight="900" fill="var(--accent2)">F − √(r²−D²)·û</text>
+        <text x="500" y="95" font-size="16" font-weight="900" fill="var(--accent2)">F + √(r²−D²)·û</text>
+        <line x1="430" y1="120" x2="545.3" y2="120" stroke="var(--accent2)" stroke-width="7" opacity="0.3"/>
+      </svg>
+    </div>
+
+    <h3>8.4 — Tangent length and the right angle</h3>
+    <p>At a tangent touch point <span class="inlineCode">T</span>, the radius <span class="inlineCode">OT</span> is perpendicular to the tangent line <span class="inlineCode">PT</span> (a radius meets its tangent at a right angle). Triangle <span class="inlineCode">O–T–P</span> therefore has a right angle at <span class="inlineCode">T</span>, with hypotenuse <span class="inlineCode">|O − P|</span> and legs <span class="inlineCode">r</span> and <span class="inlineCode">L</span>. Pythagoras gives <span class="inlineCode">L² = |O − P|² − r²</span>, the tangent length. The touch points themselves are at distance <span class="inlineCode">r</span> from <span class="inlineCode">O</span> and <span class="inlineCode">L</span> from <span class="inlineCode">P</span> — a circle-circle intersection of <span class="inlineCode">(O, r)</span> with <span class="inlineCode">(P, L)</span>, which is why the tangent-point routine reuses the intersection engine.</p>
+
+    <h3>8.5 — Distinguishing zero from infinity</h3>
+    <p>When <span class="inlineCode">d = 0</span>, the construction's base collapses and the chord direction is undefined. If the radii differ, no point can be at two different distances from the same center, so the solution set is empty. If the radii are equal and <i>positive</i>, <i>every</i> point of the common circle satisfies both constraints, so the solution set is the whole circle. A finite-point routine cannot enumerate the latter, so it returns the same numeric <span class="inlineCode">0</span> as the empty case — but the classifier exposes <span class="inlineCode">−2</span> versus <span class="inlineCode">−1</span> so the two are never genuinely conflated. The one remaining sub-case is equal radii that are both <i>zero</i>: then each "circle" is a single point, and the two coincide at exactly one shared point, so the classifier returns <span class="inlineCode">1</span> and the intersection routine yields that point — not infinitely many, and not none.</p>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">classifyCircles</span></td><td>O(1)</td><td>One <span class="inlineCode">dist</span> and a few <span class="inlineCode">cmp</span>s.</td></tr>
+        <tr><td><span class="inlineCode">circleCircleIntersect</span> (count + output params)</td><td>O(1)</td><td>Classify + at most two <span class="inlineCode">triangleThirdPoint</span> calls.</td></tr>
+        <tr><td><b><span class="inlineCode">circleCircleIntersection</span> (recommended, vector)</b></td><td>O(1)</td><td>Thin wrapper: returns <span class="inlineCode">vector&lt;Point&gt;</span> of size 0, 1, or 2.</td></tr>
+        <tr><td><b><span class="inlineCode">tangentsFromPointToCircle</span> (recommended, vector)</b></td><td>O(1)</td><td>Returns <span class="inlineCode">vector&lt;Point&gt;</span> of touch points; size matches inside / on / outside.</td></tr>
+        <tr><td><b><span class="inlineCode">circleCircleTangents</span> (recommended, vector)</b></td><td>O(1)</td><td>Returns <span class="inlineCode">vector&lt;pair&lt;Point,Point&gt;&gt;</span> of common-tangent endpoint pairs (external first, then internal).</td></tr>
+        <tr><td><span class="inlineCode">circleLineIntersect</span></td><td>O(1)</td><td>One projection, one <span class="inlineCode">safeSqrt</span>.</td></tr>
+        <tr><td><span class="inlineCode">tangentLength</span></td><td>O(1)</td><td>One dot product, one <span class="inlineCode">safeSqrt</span>.</td></tr>
+        <tr><td><span class="inlineCode">tangentPointsFromExternal</span></td><td>O(1)</td><td>One tangent length + one circle-circle intersection.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">All constant-time. Across <span class="inlineCode">n</span> circles, an all-pairs scan is <span class="inlineCode">O(n²)</span> from the loop, with each pair handled in <span class="inlineCode">O(1)</span> here.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Classify, then construct.</b> Decide the configuration from distances first; only then build points. The classifier is the single source of truth for "how many."</li>
+      <li><b>Reuse the third-vertex engine.</b> Do not re-derive circle intersection — feed centers as the base and radii as the side lengths into <span class="inlineCode">triangleThirdPoint</span>.</li>
+      <li><b>Never conflate 0 with ∞.</b> If one numeric code must cover both, document the difference and expose the real classification (the <span class="inlineCode">−2</span> coincident code) for callers who care.</li>
+      <li><b>Non-negative radii, stated and checked.</b> A negative radius is meaningless; the classifier rejects it with <span class="inlineCode">−3</span>; finite-output wrappers map invalid input to <span class="inlineCode">0</span>.</li>
+      <li><b>One tolerance everywhere.</b> The same <span class="inlineCode">cmp</span>/EPS drives both classification and construction, so the boundary verdict is consistent.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>Standalone, compiles with <span class="inlineCode">g++ -std=c++17</span>. The first block repeats just enough of the Class 01–05 substrate (including the hardened <span class="inlineCode">triangleThirdPoint</span>) for the file to build on its own; the Class 06 additions follow the divider.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+Point rot(const Point&amp; v, T t) { return v * polar((T)1, t); }
+
+// ---- Class 01-05 substrate ----------------------------------------
+template&lt;class U&gt; int cmpInt(const U&amp; a, const U&amp; b = U(0)) { return (a &gt; b) - (a &lt; b); }
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }   // left normal
+int orient(const Point&amp; a, const Point&amp; b, const Point&amp; p) {
+    return cmp(cross(b - a, p - a));
+}
+
+// Class 05 third-vertex engine (hardened).
+//   found: 0 no unique point, 1 single point, 2 two mirror points.
+Point triangleThirdPoint(const Point&amp; A, const Point&amp; B,
+                         T b, T a, int side, int&amp; found) {
+    if (cmp(a) &lt; 0 || cmp(b) &lt; 0) { found = 0; return A; }   // negative length
+    if (side != +1 &amp;&amp; side != -1) { found = 0; return A; }    // invalid side flag
+    T c = dist(A, B);
+    if (cmp(c) == 0) {                                        // coincident base
+        if (cmp(a) == 0 &amp;&amp; cmp(b) == 0) { found = 1; return A; }
+        found = 0; return A;
+    }
+    T x  = (b*b - a*a + c*c) / (2*c);
+    T h2 = b*b - x*x;
+    if (cmp(h2) &lt; 0) { found = 0; return A; }
+    T h = safeSqrt(h2);
+    Point dir  = (B - A) / c;
+    Point foot = A + dir * x;
+    if (cmp(h) == 0) { found = 1; return foot; }
+    found = 2;
+    return foot + perpCCW(dir) * (h * (T)side);
+}
+
+// ===================================================================
+// CLASS 06 — circle intersection &amp; tangents
+// ===================================================================
+
+struct Circle { Point c; T r; };
+
+// Classify two circles by center distance d and radii.
+//   -3 -&gt; invalid radius
+//   -2 -&gt; coincident non-zero-radius circles: infinitely many shared points
+//   -1 -&gt; concentric, different radii: no intersection
+//    0 -&gt; disjoint (apart) or strictly nested: no intersection
+//    1 -&gt; tangent or identical zero-radius point-circles: one point
+//    2 -&gt; proper crossing: two points
+int classifyCircles(const Circle&amp; A, const Circle&amp; B) {
+    if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return -3;   // invalid radius
+
+    T d = dist(A.c, B.c);
+    if (cmp(d) == 0) {                         // same center
+        if (cmp(A.r, B.r) == 0) {
+            if (cmp(A.r) == 0) return 1;       // same zero-radius point-circle -&gt; one point
+            return -2;                         // identical real circle -&gt; infinite
+        }
+        return -1;                             // concentric, different radii
+    }
+    int outer = cmp(d, A.r + B.r);                          // d vs (r1 + r2)
+    int inner = cmp(d, (T)fabsl((long double)(A.r - B.r))); // d vs |r1 - r2|
+    if (outer &gt; 0) return 0;                   // too far apart
+    if (inner &lt; 0) return 0;                   // one strictly inside the other
+    if (outer == 0 || inner == 0) return 1;    // tangent (external or internal)
+    return 2;                                  // two crossings
+}
+
+// Circle-circle intersection points.
+// returns:
+//   0 -&gt; no finite unique output from this wrapper: none (disjoint / nested /
+//        concentric), invalid radius, OR coincident non-zero circles with
+//        infinitely many intersections (classifyCircles == -2). Use
+//        classifyCircles to tell these apart.
+//   1 -&gt; tangent, OR identical zero-radius point-circles: a single point in P1.
+//   2 -&gt; two intersection points P1, P2.
+// Preconditions: radii are non-negative.
+int circleCircleIntersect(const Circle&amp; A, const Circle&amp; B, Point&amp; P1, Point&amp; P2) {
+    if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return 0;   // invalid radius
+    int cls = classifyCircles(A, B);
+    if (cls == -3) return 0;   // invalid radius
+    if (cls == 1 &amp;&amp; samePoint(A.c, B.c) &amp;&amp; cmp(A.r) == 0 &amp;&amp; cmp(B.r) == 0) {
+        P1 = A.c;              // identical zero-radius point-circles: one shared point
+        return 1;
+    }
+    if (cls == -2) return 0;   // infinitely many: no finite unique output
+    if (cls &lt;= 0)  return 0;   // -1 concentric or 0 disjoint/nested: none
+    // A shared point is at distance A.r from A.c and B.r from B.c: the third
+    // vertex of triangle (A.c, B.c) with side lengths (A.r, B.r). Reuse Class 05.
+    int found;
+    P1 = triangleThirdPoint(A.c, B.c, A.r, B.r, +1, found);
+    if (found == 1) return 1;                  // tangent: single point
+    if (found == 2) {
+        P2 = triangleThirdPoint(A.c, B.c, A.r, B.r, -1, found);
+        return 2;
+    }
+    return 0;                                   // defensive (classify already screened)
+}
+
+// Circle-line intersection with parameter exposure.
+// The infinite line is parameterized as X(t) = P + (Q - P) * t.
+// returns:
+//   0 -&gt; no intersection or invalid input; t1/t2 unused
+//   1 -&gt; tangent: single point I1 with t1 = t2
+//   2 -&gt; two points I1/I2 with parameters t1/t2
+// Parameter meaning:
+//   t = 0 at P, t = 1 at Q
+//   0 &lt;= t &lt;= 1 -&gt; on segment [P,Q]
+//   t &gt;= 0      -&gt; on ray P -&gt; Q
+//   t &lt; 0       -&gt; on the opposite extension behind P
+//   t &gt; 1       -&gt; beyond Q in the P -&gt; Q direction
+// Preconditions: r &gt;= 0, P != Q.
+int circleLineIntersect(const Circle&amp; C, const Point&amp; P, const Point&amp; Q,
+                        Point&amp; I1, Point&amp; I2, T&amp; t1, T&amp; t2) {
+    t1 = t2 = 0;                                  // unused when return value is 0
+    if (cmp(C.r) &lt; 0) return 0;
+    Point d = Q - P;
+    T dd = dot(d, d);
+    if (cmp(dd) == 0) return 0;                   // P == Q is not a line
+
+    T t0 = dot(C.c - P, d) / dd;                  // foot parameter on P + d*t
+    Point foot = P + d * t0;
+
+    T D2 = dot(C.c - foot, C.c - foot);           // squared center-to-line distance
+    T h2 = C.r * C.r - D2;                         // squared half-chord
+    if (cmp(h2) &lt; 0) return 0;                     // line misses the circle
+
+    if (cmp(h2) == 0) {
+        t1 = t2 = t0;
+        I1 = foot;
+        return 1;
+    }
+
+    T h = safeSqrt(h2);
+    T delta = h / len(d);                          // |d| * delta = h
+
+    t1 = t0 + delta;
+    t2 = t0 - delta;
+
+    I1 = P + d * t1;
+    I2 = P + d * t2;
+    return 2;
+}
+
+// Tangent length from external point P to circle C: sqrt(|P - O|^2 - r^2).
+// Precondition: P outside or on C (else the radicand is negative), r &gt;= 0.
+T tangentLength(const Circle&amp; C, const Point&amp; P) {
+    T d2 = dot(P - C.c, P - C.c);
+    return safeSqrt(d2 - C.r * C.r);
+}
+
+// Tangent touch points on circle C from external point P.
+// returns: 0 P strictly inside (no tangent), 1 P on the circle (touch at P),
+//          2 two touch points T1, T2. Precondition: r &gt;= 0.
+int tangentPointsFromExternal(const Circle&amp; C, const Point&amp; P, Point&amp; T1, Point&amp; T2) {
+    if (cmp(C.r) &lt; 0) return 0;
+    T d = dist(P, C.c);
+    int s = cmp(d, C.r);
+    if (s &lt; 0) return 0;                          // P strictly inside: no tangent
+    if (s == 0) { T1 = P; return 1; }            // P on the circle: tangent at P
+    // Touch points are on C (distance r from O) and at distance L from P:
+    // a circle-circle intersection of (O, r) with (P, L).
+    T L = tangentLength(C, P);
+    Circle around{P, L};
+    return circleCircleIntersect(C, around, T1, T2);
+}
+
+// ===================================================================
+// Recommended vector-return APIs (preferred for new CP code).
+// They are thin wrappers over the count/output-parameter functions
+// above and never throw; an empty vector means "no finite answer".
+// ===================================================================
+
+// Returns 0, 1, or 2 intersection points of two circles. The +1 side
+// (CCW from A.c -> B.c) is listed first when two are returned.
+vector&lt;Point&gt; circleCircleIntersection(const Circle&amp; A, const Circle&amp; B) {
+    Point P1, P2;
+    int k = circleCircleIntersect(A, B, P1, P2);
+    if (k == 0) return {};
+    if (k == 1) return { P1 };
+    return { P1, P2 };
+}
+
+// Returns the touch points of the tangents from an external point P to
+// circle C. Size 0 if P is strictly inside C, size 1 if P is on C,
+// size 2 if P is strictly outside.
+vector&lt;Point&gt; tangentsFromPointToCircle(const Circle&amp; C, const Point&amp; P) {
+    Point T1, T2;
+    int k = tangentPointsFromExternal(C, P, T1, T2);
+    if (k == 0) return {};
+    if (k == 1) return { T1 };
+    return { T1, T2 };
+}
+
+// Common tangent lines between two circles, returned as endpoint pairs
+// (touch on A, touch on B). Sign s = +1 builds the external tangents
+// (touches on the same side), s = -1 the internal tangents (opposite
+// sides). The shared engine is the same triangle3rd construction used
+// for circle-circle intersection: we look for a unit normal n with
+// |n| = 1 and dot(d, n) = R = A.r - s * B.r, where d = B.c - A.c.
+vector&lt;pair&lt;Point,Point&gt;&gt; circleCircleTangents(const Circle&amp; A, const Circle&amp; B) {
+    vector&lt;pair&lt;Point,Point&gt;&gt; ans;
+    if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return ans;
+    Point d = B.c - A.c;
+    T d2 = dot(d, d);
+    if (cmp(d2) == 0) return ans;                 // concentric: skip (degenerate set)
+
+    for (int s : {1, -1}) {
+        T R  = A.r - s * B.r;
+        T rr = d2 + 1 - 2 * R;                    // |n - d|^2 when |n| = 1 and dot(d,n) = R
+        if (cmp(rr) &lt; 0) continue;
+        // Reuse the third-vertex engine: feed origin and d as the base,
+        // |n| = 1 and |n - d| = sqrt(rr) as the two side lengths.
+        T h = safeSqrt(rr);
+        int found;
+        Point n1 = triangleThirdPoint(Point(0,0), d, (T)1, h, +1, found);
+        if (found &gt;= 1) {
+            Point P = A.c + n1 * A.r;
+            Point Q = B.c + n1 * (s * B.r);
+            ans.push_back({P, Q});
+        }
+        if (found == 2) {
+            Point n2 = triangleThirdPoint(Point(0,0), d, (T)1, h, -1, found);
+            Point P = A.c + n2 * A.r;
+            Point Q = B.c + n2 * (s * B.r);
+            ans.push_back({P, Q});
+        }
+    }
+    return ans;
+}
+</code></pre>
+    <div class="callout">
+      <b>Two macros that look identical to fields but are not.</b> <span class="inlineCode">#define X real()</span> makes <span class="inlineCode">v.X</span> expand to <span class="inlineCode">v.real()</span>; <span class="inlineCode">#define Y imag()</span> likewise. <span class="inlineCode">rot</span> is a typed helper function, never a macro — and never named <span class="inlineCode">rotate</span> (which collides with <span class="inlineCode">std::rotate</span>).
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>classifyCircles <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return -3;</div><div class="lineExpl">Reject invalid negative radii before any geometric classification — a negative radius is not a circle. The classifier returns <span class="inlineCode">−3</span>; <span class="inlineCode">circleCircleIntersect</span> maps that to <span class="inlineCode">0</span>, and the training drill prints <span class="inlineCode">INVALID</span>.</div>
+        <div class="lineNo">2</div><div class="lineCode">T d = dist(A.c, B.c);</div><div class="lineExpl">The distance between centers — the single quantity that drives classification once the radii are validated.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (cmp(d) == 0) { … }</div><div class="lineExpl">Same center. Equal <i>positive</i> radii ⇒ coincident (<span class="inlineCode">−2</span>, infinite); both radii zero ⇒ one shared point (<span class="inlineCode">1</span>); different radii ⇒ concentric (<span class="inlineCode">−1</span>, none).</div>
+        <div class="lineNo">4</div><div class="lineCode">int outer = cmp(d, A.r + B.r);</div><div class="lineExpl">Compares <span class="inlineCode">d</span> to the sum of radii. <span class="inlineCode">&gt; 0</span> means the circles are too far apart.</div>
+        <div class="lineNo">5</div><div class="lineCode">int inner = cmp(d, |A.r − B.r|);</div><div class="lineExpl">Compares <span class="inlineCode">d</span> to the radius difference. <span class="inlineCode">&lt; 0</span> means one is strictly inside the other.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (outer &gt; 0) return 0;</div><div class="lineExpl">Beyond the sum: disjoint, no intersection.</div>
+        <div class="lineNo">7</div><div class="lineCode">if (inner &lt; 0) return 0;</div><div class="lineExpl">Below the difference: nested, no intersection.</div>
+        <div class="lineNo">8</div><div class="lineCode">if (outer == 0 || inner == 0) return 1;</div><div class="lineExpl">Exactly on a boundary: tangent (external if at the sum, internal if at the difference) — one point.</div>
+        <div class="lineNo">9</div><div class="lineCode">return 2;</div><div class="lineExpl">Strictly between the difference and the sum: two crossing points.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>circleCircleIntersect <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return 0;</div><div class="lineExpl">Reject negative radii up front — meaningless input maps to "no finite output."</div>
+        <div class="lineNo">2</div><div class="lineCode">int cls = classifyCircles(A, B);</div><div class="lineExpl">Decide the configuration before constructing anything.</div>
+        <div class="lineNo">3</div><div class="lineCode">if (cls == -3) return 0;</div><div class="lineExpl">Invalid radius surfaced by the classifier — map it to <span class="inlineCode">0</span> ("no finite output") for the wrapper's caller.</div>
+        <div class="lineNo">4</div><div class="lineCode">if (cls == 1 &amp;&amp; samePoint(A.c, B.c) &amp;&amp; cmp(A.r) == 0 &amp;&amp; cmp(B.r) == 0) { P1 = A.c; return 1; }</div><div class="lineExpl">Identical zero-radius point-circles share exactly one point. Return <span class="inlineCode">P1 = A.c</span> (the common center) directly — this must <i>not</i> be treated as infinite, and must not fall through to <span class="inlineCode">triangleThirdPoint</span> with a collapsed base.</div>
+        <div class="lineNo">5</div><div class="lineCode">if (cls == -2) return 0;</div><div class="lineExpl">Coincident positive-radius circles: infinitely many shared points. Returning <span class="inlineCode">0</span> means "no finite unique output," <i>not</i> "empty" — the caller can read <span class="inlineCode">−2</span> from the classifier.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (cls &lt;= 0) return 0;</div><div class="lineExpl">Concentric (<span class="inlineCode">−1</span>) or disjoint/nested (<span class="inlineCode">0</span>): genuinely empty.</div>
+        <div class="lineNo">7</div><div class="lineCode">P1 = triangleThirdPoint(A.c, B.c, A.r, B.r, +1, found);</div><div class="lineExpl">Reuse the Class 05 engine: centers as the base, radii as the two side lengths.</div>
+        <div class="lineNo">8</div><div class="lineCode">if (found == 1) return 1;</div><div class="lineExpl">Tangent: a single touch point.</div>
+        <div class="lineNo">9</div><div class="lineCode">if (found == 2) { P2 = …(-1…); return 2; }</div><div class="lineExpl">Crossing: the mirror across the center line is the second point.</div>
+        <div class="lineNo">10</div><div class="lineCode">return 0;</div><div class="lineExpl">Defensive — classification already guarantees this line is unreachable for valid input.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>circleLineIntersect · tangentLength · tangentPointsFromExternal <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">T dd = dot(d, d);</div><div class="lineExpl">Squared line direction length; if zero, <span class="inlineCode">P == Q</span> is not a line and the routine returns <span class="inlineCode">0</span>.</div>
+        <div class="lineNo">2</div><div class="lineCode">T t0 = dot(C.c - P, d) / dd;</div><div class="lineExpl">Projection parameter of the center onto <span class="inlineCode">X(t) = P + d·t</span> (Class 03 projection).</div>
+        <div class="lineNo">3</div><div class="lineCode">Point foot = P + d * t0;</div><div class="lineExpl">The closest point on the infinite line to the center.</div>
+        <div class="lineNo">4</div><div class="lineCode">T D2 = dot(C.c - foot, C.c - foot);</div><div class="lineExpl">Squared center-to-line distance; compared against <span class="inlineCode">r²</span>.</div>
+        <div class="lineNo">5</div><div class="lineCode">T h2 = C.r*C.r - D2;</div><div class="lineExpl">Squared half-chord. Negative ⇒ miss; zero ⇒ tangent (<span class="inlineCode">t₁ = t₂ = t₀</span>); positive ⇒ two points.</div>
+        <div class="lineNo">6</div><div class="lineCode">T delta = h / len(d);</div><div class="lineExpl">Parameter shift: real distance <span class="inlineCode">h</span> corresponds to parameter distance <span class="inlineCode">h / |d|</span>.</div>
+        <div class="lineNo">7</div><div class="lineCode">t1 = t0 + delta; t2 = t0 - delta;</div><div class="lineExpl">The two returned parameters, symmetric about the foot parameter <span class="inlineCode">t₀</span>.</div>
+        <div class="lineNo">8</div><div class="lineCode">I1 = P + d*t1; I2 = P + d*t2;</div><div class="lineExpl">Points reconstructed from the parameters, so <span class="inlineCode">I = P + (Q − P)·t</span> holds exactly.</div>
+        <div class="lineNo">9</div><div class="lineCode">return safeSqrt(d2 - C.r*C.r);</div><div class="lineExpl">Tangent length: the right-triangle leg <span class="inlineCode">√(|P−O|² − r²)</span> (§8.4).</div>
+        <div class="lineNo">10</div><div class="lineCode">if (s &lt; 0) return 0;</div><div class="lineExpl">External-tangent routine: <span class="inlineCode">P</span> strictly inside has no tangent.</div>
+        <div class="lineNo">11</div><div class="lineCode">return circleCircleIntersect(C, {P, L}, T1, T2);</div><div class="lineExpl">Touch points = intersection of <span class="inlineCode">C</span> with the circle of radius <span class="inlineCode">L</span> around <span class="inlineCode">P</span>.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td>Two proper crossings</td><td><span class="inlineCode">|r₁−r₂| &lt; d &lt; r₁+r₂</span>.</td><td>Classify <span class="inlineCode">2</span>; intersect returns <span class="inlineCode">2</span> mirror points.</td></tr>
+        <tr><td>Externally tangent</td><td><span class="inlineCode">d = r₁ + r₂</span>; chord height collapses.</td><td>Classify <span class="inlineCode">1</span>; intersect returns <span class="inlineCode">1</span> point on the segment between centers.</td></tr>
+        <tr><td>Internally tangent</td><td><span class="inlineCode">d = |r₁ − r₂|</span>; one circle touches from inside.</td><td>Classify <span class="inlineCode">1</span>; intersect returns <span class="inlineCode">1</span> point.</td></tr>
+        <tr><td>Disjoint (apart)</td><td><span class="inlineCode">d &gt; r₁ + r₂</span>.</td><td>Classify <span class="inlineCode">0</span>; intersect returns <span class="inlineCode">0</span> (genuinely empty).</td></tr>
+        <tr><td>One inside the other</td><td><span class="inlineCode">d &lt; |r₁ − r₂|</span>, no touch.</td><td>Classify <span class="inlineCode">0</span>; intersect returns <span class="inlineCode">0</span> (genuinely empty).</td></tr>
+        <tr><td>Concentric, different radii</td><td><span class="inlineCode">d = 0</span>, <span class="inlineCode">r₁ ≠ r₂</span>.</td><td>Classify <span class="inlineCode">−1</span>; intersect returns <span class="inlineCode">0</span> (empty).</td></tr>
+        <tr><td>Coincident (identical circles)</td><td><span class="inlineCode">d = 0</span>, <span class="inlineCode">r₁ = r₂ &gt; 0</span>: infinitely many shared points.</td><td>Classify <span class="inlineCode">−2</span>; intersect returns <span class="inlineCode">0</span> meaning "no finite unique output" — <i>not</i> empty. Read the classifier for the difference.</td></tr>
+        <tr><td>Zero-radius circle (a point)</td><td>Radius <span class="inlineCode">0</span> degenerates the circle to its center.</td><td>Handled explicitly: two identical zero-radius circles share exactly one point; a zero-radius circle meets a real circle exactly when its center lies on that circle.</td></tr>
+        <tr><td>Negative radius</td><td>Invalid input.</td><td>Intersect / tangent routines return <span class="inlineCode">0</span> immediately.</td></tr>
+        <tr><td>Line tangent to circle</td><td>Center-to-line distance equals <span class="inlineCode">r</span>.</td><td><span class="inlineCode">circleLineIntersect</span> returns <span class="inlineCode">1</span> at the foot.</td></tr>
+        <tr><td>External point on the circle</td><td><span class="inlineCode">|P − O| = r</span>.</td><td><span class="inlineCode">tangentPointsFromExternal</span> returns <span class="inlineCode">1</span>: the tangent touches at <span class="inlineCode">P</span> itself.</td></tr>
+        <tr><td>External point inside the circle</td><td><span class="inlineCode">|P − O| &lt; r</span>.</td><td>Returns <span class="inlineCode">0</span>: no tangent exists.</td></tr>
+        <tr><td>Circle-line intersection point outside the segment</td><td>The infinite line may intersect the circle, but the parameter <span class="inlineCode">t</span> lies outside <span class="inlineCode">[0, 1]</span>.</td><td><span class="inlineCode">circleLineIntersect</span> still returns the infinite-line point and exposes <span class="inlineCode">t</span>; the caller filters by <span class="inlineCode">0 ≤ t ≤ 1</span> for segment intersection, <span class="inlineCode">t ≥ 0</span> for ray <span class="inlineCode">P → Q</span>, or <span class="inlineCode">t ≤ 1</span> for ray <span class="inlineCode">Q → P</span>.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Reporting coincident positive-radius circles as "no intersection."</b> The biggest trap: <span class="inlineCode">d = 0</span> with equal positive radii means <i>infinitely many</i> points, not zero; equal zero radii means exactly one shared point. Intercept these before the finite construction and label them honestly — the same numeric <span class="inlineCode">0</span> as "empty" needs a different documented meaning.</li>
+      <li><b>P2 — Forgetting the internal-tangent and nested cases.</b> Checking only <span class="inlineCode">d &gt; r₁ + r₂</span> misses the small-circle-inside-large-circle family. Always test <span class="inlineCode">|r₁ − r₂|</span> too.</li>
+      <li><b>P3 — Using raw <span class="inlineCode">&lt;</span>/<span class="inlineCode">==</span> on distances.</b> The tangent boundary is exact only with <span class="inlineCode">cmp</span>/EPS; a raw comparison flickers between one and two points on near-tangent inputs.</li>
+      <li><b>P4 — <span class="inlineCode">sqrt</span> of a negative half-chord.</b> When the circles miss or the line misses, the radicand is negative. Test its sign first; <span class="inlineCode">safeSqrt</span> guards rounding noise but the miss must be detected before constructing.</li>
+      <li><b>P5 — Negative or zero radius mishandled.</b> Reject negatives; treat a zero radius as a point and let the distance test classify it, rather than special-casing it incorrectly.</li>
+      <li><b>P6 — Computing tangent length when <span class="inlineCode">P</span> is inside.</b> Then <span class="inlineCode">|P − O|² − r² &lt; 0</span> and no real tangent exists. Check <span class="inlineCode">P</span> is outside (or on) the circle first.</li>
+      <li><b>P7 — Treating a degenerate "line" <span class="inlineCode">P = Q</span> as a line.</b> The direction is zero and the projection divides by zero. Require <span class="inlineCode">P ≠ Q</span>.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>How many times do two circles meet?</td><td><span class="inlineCode">classifyCircles</span> → <span class="inlineCode">−3/−2/−1/0/1/2</span></td></tr>
+        <tr><td>Where do two circles meet?</td><td><b><span class="inlineCode">vector&lt;Point&gt; circleCircleIntersection(A, B)</span></b> — recommended. Size 0 / 1 / 2 mirrors the geometric outcome; <span class="inlineCode">classifyCircles</span> distinguishes "no finite output" from "actually disjoint" when the coincident case matters.<br>Legacy: <span class="inlineCode">circleCircleIntersect</span> (count + output params) for hot loops that pre-allocate.</td></tr>
+        <tr><td>Same center — meet or not?</td><td>Equal positive radii ⇒ coincident (∞); both zero ⇒ one shared point; else concentric (none)</td></tr>
+        <tr><td>Where does a line cross a circle?</td><td><span class="inlineCode">circleLineIntersect</span> gives infinite-line points and <span class="inlineCode">t₁/t₂</span></td></tr>
+        <tr><td>Where does a segment <span class="inlineCode">[P,Q]</span> cross a circle?</td><td>Call <span class="inlineCode">circleLineIntersect</span>, then keep returned points with <span class="inlineCode">0 ≤ t ≤ 1</span></td></tr>
+        <tr><td>Where does a ray <span class="inlineCode">P → Q</span> cross a circle?</td><td>Call <span class="inlineCode">circleLineIntersect</span>, then keep returned points with <span class="inlineCode">t ≥ 0</span></td></tr>
+        <tr><td>Where does the opposite ray / extension behind <span class="inlineCode">P</span> cross?</td><td>Use returned points with <span class="inlineCode">t &lt; 0</span> (strictly behind <span class="inlineCode">P</span>; <span class="inlineCode">t = 0</span> is exactly <span class="inlineCode">P</span> itself, and the segment uses <span class="inlineCode">0 ≤ t ≤ 1</span>, beyond <span class="inlineCode">Q</span> uses <span class="inlineCode">t &gt; 1</span>).</td></tr>
+        <tr><td>How long is the tangent from a point?</td><td><span class="inlineCode">tangentLength</span> = <span class="inlineCode">√(|P−O|² − r²)</span></td></tr>
+        <tr><td>Where does the tangent touch?</td><td><b><span class="inlineCode">vector&lt;Point&gt; tangentsFromPointToCircle(C, P)</span></b> — recommended. Size matches inside (0) / on (1) / outside (2).<br>Legacy: <span class="inlineCode">tangentPointsFromExternal</span> (count + output params).</td></tr>
+        <tr><td>Common tangents between two circles?</td><td><b><span class="inlineCode">vector&lt;pair&lt;Point,Point&gt;&gt; circleCircleTangents(A, B)</span></b> — recommended. Returns external-tangent endpoint pairs first, then internal.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Two circles meet ⟺ |r₁−r₂| ≤ d ≤ r₁+r₂.</span>
+      <span class="chip good">Tangent ⟺ d = r₁+r₂ (out) or d = |r₁−r₂| (in).</span>
+      <span class="chip good">Foot: x = (r₁²−r₂²+d²)/(2d); chord half = √(r₁²−x²).</span>
+      <span class="chip warn">d = 0: equal positive r ⇒ ∞; both r = 0 ⇒ one point; unequal r ⇒ none.</span>
+      <span class="chip good">Tangent length = √(|P−O|²−r²).</span>
+      <span class="chip bad">Never call 0 and ∞ the same answer.</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"My intersection routine says two identical circles don't meet."</b> Two identical circles with the same <i>positive</i> radius meet everywhere — the routine just cannot list infinitely many finite points, so it returns <span class="inlineCode">0</span> as "no finite unique output." Call <span class="inlineCode">classifyCircles</span> and check for the <span class="inlineCode">−2</span> coincident code to detect this case explicitly. (Two identical <i>zero-radius</i> circles are the exception: they coincide at one point, classified as <span class="inlineCode">1</span>.)
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — The tangent line directions (external tangent angle)</h3>
+    <p>Once the two touch points are known from <span class="inlineCode">tangentPointsFromExternal</span>, the tangent <i>lines</i> are simply the lines through <span class="inlineCode">P</span> and each touch point. <b>What changes:</b> you emit lines, not points. <b>Why:</b> many problems want the tangent direction or the angle subtended. <b>When to use:</b> visibility, wrapping, and "cone from a point" problems.</p>
+<pre><code>// Tangent lines from external P to circle C, as (P, touchPoint) pairs.
+// Returns the number of distinct tangents through the touch points (0, 1, or 2).
+int tangentLinesFromExternal(const Circle&amp; C, const Point&amp; P,
+                             Point&amp; touch1, Point&amp; touch2) {
+    return tangentPointsFromExternal(C, P, touch1, touch2);
+    // each line is simply the line through P and the corresponding touch point
+}</code></pre>
+
+    <h3>16.2 — Internal vs external tangents between two circles</h3>
+    <p>Two separate circles share up to four common tangent lines: two <b>external</b> (both circles on the same side) and two <b>internal</b> (circles on opposite sides, crossing between them). The count drops as the circles approach: four when disjoint, three at external tangency, two when crossing, one at internal tangency, none when nested. The construction reduces to tangents from a point after shrinking one circle and growing the other by the same radius (a standard reduction), which lands back on <span class="inlineCode">tangentPointsFromExternal</span>.</p>
+    <table>
+      <thead><tr><th>Configuration</th><th>External tangents</th><th>Internal tangents</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>Disjoint</td><td>2</td><td>2</td><td>4</td></tr>
+        <tr><td>Externally tangent</td><td>2</td><td>1</td><td>3</td></tr>
+        <tr><td>Crossing (two points)</td><td>2</td><td>0</td><td>2</td></tr>
+        <tr><td>Internally tangent</td><td>1</td><td>0</td><td>1</td></tr>
+        <tr><td>One inside the other</td><td>0</td><td>0</td><td>0</td></tr>
+      </tbody>
+    </table>
+
+    <h3>16.3 — Radical axis (when you only need the chord line)</h3>
+    <p>For two non-concentric circles, the set of points with equal tangent length to both is a line — the <b>radical axis</b> — perpendicular to the center line. When the circles cross, it is exactly the line through the two intersection points. <b>When to use:</b> problems that need the common chord's <i>line</i> without the points, or power-of-a-point arguments.</p>
+<pre><code>// Signed offset (from A.c, along the unit A->B direction) of the radical axis.
+// Precondition: distinct centers (d &gt; 0).
+T radicalAxisOffset(const Circle&amp; A, const Circle&amp; B) {
+    T d = dist(A.c, B.c);
+    return (A.r*A.r - B.r*B.r + d*d) / (2*d);   // same x as the chord foot
+}</code></pre>
+
+    <h3>16.4 — Recommended vector-return APIs (clean copy-paste form)</h3>
+    <p>For new contest code, prefer the vector-return wrappers defined alongside the master implementation. They never throw, they never use sentinel pointers, and every possible outcome (0 / 1 / 2 results) flows out of the same call as a <span class="inlineCode">vector</span> size. The classic count + output-parameter forms (<span class="inlineCode">circleCircleIntersect</span>, <span class="inlineCode">tangentPointsFromExternal</span>) remain available as defensive variants for callers who already track a <span class="inlineCode">found</span> integer or write to pre-allocated buffers.</p>
+<pre><code>// 0, 1, or 2 intersection points (CCW side first when two).
+vector&lt;Point&gt; circleCircleIntersection(const Circle&amp; A, const Circle&amp; B);
+
+// 0, 1, or 2 touch points of tangents from an external point P to circle C.
+vector&lt;Point&gt; tangentsFromPointToCircle(const Circle&amp; C, const Point&amp; P);
+
+// Common tangents between two circles as endpoint pairs (touch on A, touch on B).
+// External tangents come first, then internal; total 0..4 depending on configuration.
+vector&lt;pair&lt;Point,Point&gt;&gt; circleCircleTangents(const Circle&amp; A, const Circle&amp; B);</code></pre>
+    <p><b>When to use which.</b> Reach for the vector-return form by default; reach for the count + output-parameter form when you genuinely care about avoiding any heap allocation in a hot inner loop (e.g. sweeping millions of pairs).</p>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications &amp; Training Drills</h2>
+
+    <details open><summary>Training drill — intersect two circles, reporting 0 / 1 / 2 / ∞ <span class="rightHint">the canonical classification pattern, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> This is a training drill for circle-circle intersection, not a full contest problem. It isolates the classify-then-construct pattern and, crucially, the honest reporting of the coincident (infinite) case.</p>
+      <p><b>Story.</b> Given two circles by center and radius, report how they meet: their two intersection points, their single tangent point, that they do not meet, or that they are the same positive-radius circle (infinitely many points).</p>
+      <p><b>Abstraction.</b> Call <span class="inlineCode">classifyCircles</span> for the verdict; for the tangent and crossing cases, recover the points with <span class="inlineCode">circleCircleIntersect</span>.</p>
+      <p><b>Why this geometry model fits.</b> A shared point is the third vertex of a triangle on the centers with the radii as side lengths (§8.2), so the construction is exact and the distance test (§8.1) names the configuration.</p>
+      <p><b>Algorithm.</b> Read both circles; classify; print <span class="inlineCode">INFINITE</span> for coincident positive-radius circles, <span class="inlineCode">NONE</span> for empty, the single point for tangent, or both points for a crossing.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+Point perpCCW(const Point&amp; v) { return Point(-v.Y, v.X); }
+
+struct Circle { Point c; T r; };
+
+// -3 invalid radius, -2 coincident(inf), -1 concentric(none), 0 disjoint/nested(none),
+//  1 tangent or identical zero-radius point-circles, 2 crossing
+int classifyCircles(const Circle&amp; A, const Circle&amp; B) {
+    if (cmp(A.r) &lt; 0 || cmp(B.r) &lt; 0) return -3;
+
+    T d = dist(A.c, B.c);
+    if (cmp(d) == 0) {
+        if (cmp(A.r, B.r) == 0) {
+            if (cmp(A.r) == 0) return 1;          // same zero-radius point-circle
+            return -2;                            // same positive-radius circle
+        }
+        return -1;
+    }
+    int outer = cmp(d, A.r + B.r);
+    int inner = cmp(d, (T)fabsl((long double)(A.r - B.r)));
+    if (outer &gt; 0 || inner &lt; 0) return 0;
+    if (outer == 0 || inner == 0) return 1;
+    return 2;
+}
+
+// returns the intersection points for the tangent/crossing classes.
+// found: 1 single point P1, 2 points P1 &amp; P2. (Caller handles 0 / infinite.)
+int twoCirclePoints(const Circle&amp; A, const Circle&amp; B, Point&amp; P1, Point&amp; P2) {
+    T d = dist(A.c, B.c);
+    if (cmp(d) == 0 &amp;&amp; cmp(A.r) == 0 &amp;&amp; cmp(B.r) == 0) {  // identical zero-radius point-circles
+        P1 = A.c;
+        return 1;
+    }
+    T x  = (A.r*A.r - B.r*B.r + d*d) / (2*d);
+    T h2 = A.r*A.r - x*x;
+    Point dir  = (B.c - A.c) / d;
+    Point foot = A.c + dir * x;
+    if (cmp(h2) == 0) { P1 = foot; return 1; }
+    T h = safeSqrt(h2);
+    Point nrm = perpCCW(dir);
+    P1 = foot + nrm * h;
+    P2 = foot - nrm * h;
+    return 2;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long double ax, ay, ar, bx, by, br;
+    while (cin &gt;&gt; ax &gt;&gt; ay &gt;&gt; ar &gt;&gt; bx &gt;&gt; by &gt;&gt; br) {
+        Circle A{Point(ax, ay), ar}, B{Point(bx, by), br};
+        if (cmp(ar) &lt; 0 || cmp(br) &lt; 0) { cout &lt;&lt; "INVALID\n"; continue; }
+        int cls = classifyCircles(A, B);
+        if (cls == -3) { cout &lt;&lt; "INVALID\n";  continue; }
+        if (cls == -2) { cout &lt;&lt; "INFINITE\n"; continue; }
+        if (cls &lt;= 0)  { cout &lt;&lt; "NONE\n";     continue; }
+        Point P1, P2;
+        int k = twoCirclePoints(A, B, P1, P2);
+        cout &lt;&lt; fixed &lt;&lt; setprecision(6);
+        if (k == 1) cout &lt;&lt; "TANGENT " &lt;&lt; P1.X &lt;&lt; ' ' &lt;&lt; P1.Y &lt;&lt; '\n';
+        else        cout &lt;&lt; "TWO " &lt;&lt; P1.X &lt;&lt; ' ' &lt;&lt; P1.Y &lt;&lt; ' '
+                         &lt;&lt; P2.X &lt;&lt; ' ' &lt;&lt; P2.Y &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query.</p>
+      <p><b>Output meaning.</b> <span class="inlineCode">INFINITE</span> is the coincident case — same center and same <i>positive</i> radius — distinct from <span class="inlineCode">NONE</span>, which is genuinely empty (disjoint, nested, or concentric). <span class="inlineCode">TANGENT</span> also covers the identical zero-radius point-circle case (both radii zero, same center), which has exactly one shared point. <span class="inlineCode">INVALID</span> flags a negative radius. Never collapse these into one label.</p>
+      <p><b>Pitfalls.</b> Compare distances with <span class="inlineCode">cmp</span>, not raw operators, so tangency lands exactly. Guard the coincident case before dividing by <span class="inlineCode">d</span>.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+
+    <details><summary>Training drill — tangent length from a point to a circle <span class="rightHint">right-triangle pattern, not a contest problem</span></summary>
+    <div class="detailsBody">
+      <p><b>Scope.</b> A pattern drill for the tangent-length right triangle, not a standalone contest problem. It shows the <span class="inlineCode">√(|P−O|² − r²)</span> computation and its precondition.</p>
+      <p><b>Story.</b> Given a circle and an external point, output the length of the tangent segment from the point to the circle, or report that no tangent exists when the point is inside.</p>
+      <p><b>Abstraction.</b> This is <span class="inlineCode">tangentLength</span>, guarded by a check that the point is outside or on the circle.</p>
+      <p><b>Why this geometry model fits.</b> The radius meets the tangent at a right angle (§8.4), so the tangent length is a Pythagorean leg of triangle <span class="inlineCode">O–T–P</span>.</p>
+      <p><b>Algorithm.</b> Compare <span class="inlineCode">|P − O|</span> with <span class="inlineCode">r</span>; if outside or on, print <span class="inlineCode">√(|P−O|² − r²)</span>; otherwise report no tangent.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+
+template&lt;class U&gt; int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+template&lt;class U&gt; int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return (a &gt; b) - (a &lt; b);
+}
+T safeSqrt(T x) { if (cmp(x) == 0) return 0; return (T)sqrtl((long double)x); }
+T dot (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T len (const Point&amp; a) { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b) { return len(a - b); }
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long double ox, oy, r, px, py;
+    while (cin &gt;&gt; ox &gt;&gt; oy &gt;&gt; r &gt;&gt; px &gt;&gt; py) {
+        Point O(ox, oy), P(px, py);
+        if (cmp(r) &lt; 0) { cout &lt;&lt; "INVALID\n"; continue; }
+        int s = cmp(dist(P, O), r);
+        if (s &lt; 0) { cout &lt;&lt; "INSIDE_NO_TANGENT\n"; continue; }
+        T d2 = dot(P - O, P - O);
+        cout &lt;&lt; fixed &lt;&lt; setprecision(6)
+             &lt;&lt; safeSqrt(d2 - r * r) &lt;&lt; '\n';   // 0 exactly when P is on the circle
+    }
+    return 0;
+}</code></pre>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per query.</p>
+      <p><b>Pitfalls.</b> The radicand <span class="inlineCode">|P−O|² − r²</span> is negative when <span class="inlineCode">P</span> is strictly inside — screen that first. A point exactly on the circle gives length <span class="inlineCode">0</span>, which is correct.</p>
+      <p><b>Problem URL.</b> not an OJ problem; training drill only.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>An intersection point</b> is a triangle's third vertex on the centers.</li>
+          <li><b>Classify by distance</b>: compare <span class="inlineCode">d</span> with <span class="inlineCode">r₁+r₂</span> and <span class="inlineCode">|r₁−r₂|</span>.</li>
+          <li><b>Foot</b>: <span class="inlineCode">x = (r₁²−r₂²+d²)/(2d)</span>; <b>half-chord</b> <span class="inlineCode">√(r₁²−x²)</span>.</li>
+          <li><b>Circle-line</b>: half-chord <span class="inlineCode">√(r²−D²)</span> off the foot.</li>
+          <li><b>Tangent length</b>: <span class="inlineCode">√(|P−O|²−r²)</span>.</li>
+          <li><b>Tangent points</b>: circle-circle intersection with radius <span class="inlineCode">L</span>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>0, 1, 2, <b>or ∞</b> — circles add the infinite case.</li>
+          <li>Coincident (same positive radius) ≠ disjoint; document the shared <span class="inlineCode">0</span> code. Both zero-radius ⇒ one point.</li>
+          <li>Classify before you construct.</li>
+          <li>Test <span class="inlineCode">|r₁−r₂|</span>, not just <span class="inlineCode">r₁+r₂</span>.</li>
+          <li>Non-negative radii; <span class="inlineCode">cmp</span> at every boundary.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 06 turns the Class 05 third-vertex engine into a full circle toolkit: classify two circles, recover their meeting points, cut a circle with a line, and reach tangents from an external point — always distinguishing "no points" from "infinitely many." These primitives feed the circle-cover and smallest-enclosing-circle work of Class 07.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 07 builds on circle construction toward the smallest enclosing circle (Welzl), maximum circle cover, and the ellipse utilities — where deciding whether points fit inside a circle leans directly on the distance and intersection tests established here.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using these circle and tangent routines in a contest solution, verify each item below. The Class 01 numeric checklist and the Class 05 construction checklist still apply underneath.</p>
+
+    <h4>Classification &amp; reporting</h4>
+    <ul class="checklist">
+      <li>Center distance compared against both <span class="inlineCode">r₁ + r₂</span> and <span class="inlineCode">|r₁ − r₂|</span> via <span class="inlineCode">cmp</span>.</li>
+      <li>The <span class="inlineCode">d = 0</span> case splits on radius: equal positive radii ⇒ coincident (∞); both zero ⇒ one shared point; different radii ⇒ concentric (none).</li>
+      <li>The coincident-∞ case is reported distinctly from the empty case — the recommended <span class="inlineCode">circleCircleIntersection</span> returns an empty <span class="inlineCode">vector&lt;Point&gt;</span>, and the legacy <span class="inlineCode">circleCircleIntersect</span> returns numeric <span class="inlineCode">0</span>; <span class="inlineCode">classifyCircles</span> exposes <span class="inlineCode">−2</span> when you need to distinguish "coincident" from "disjoint."</li>
+      <li>Identical zero-radius circles are treated as one shared point, not as coincident circles with infinitely many points.</li>
+      <li>Radii are non-negative; a negative radius reports <span class="inlineCode">−3</span> from the classifier and an empty <span class="inlineCode">vector</span> (or numeric <span class="inlineCode">0</span> in the legacy form) from the intersection wrapper.</li>
+    </ul>
+
+    <h4>Construction &amp; tangents</h4>
+    <ul class="checklist">
+      <li>Prefer the vector-return API for new code: <span class="inlineCode">circleCircleIntersection</span>, <span class="inlineCode">tangentsFromPointToCircle</span>, <span class="inlineCode">circleCircleTangents</span>. The output-parameter variants stay available as defensive / low-level helpers.</li>
+      <li>Intersection points come from <span class="inlineCode">triangleThirdPoint</span> with centers as the base and radii as the side lengths.</li>
+      <li>The circle-line half-chord <span class="inlineCode">r² − D²</span> has its sign checked before <span class="inlineCode">safeSqrt</span>, and the line is genuine (<span class="inlineCode">P ≠ Q</span>).</li>
+      <li>Tangent length is taken only when <span class="inlineCode">P</span> is outside or on the circle; tangent points reuse the circle-circle engine.</li>
+      <li><span class="inlineCode">circleLineIntersect</span> returns <span class="inlineCode">t₁/t₂</span> for <span class="inlineCode">X(t) = P + (Q−P)·t</span>; segment filtering uses <span class="inlineCode">0 ≤ t ≤ 1</span>, ray <span class="inlineCode">P → Q</span> uses <span class="inlineCode">t ≥ 0</span>.</li>
+      <li>The opposite extension behind <span class="inlineCode">P</span> uses <span class="inlineCode">t &lt; 0</span>; beyond <span class="inlineCode">Q</span> uses <span class="inlineCode">t &gt; 1</span>. The tangent-line case sets <span class="inlineCode">t₁ = t₂</span>.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">classifyCircles((0,0),5 ; (6,0),5) = 2</span> (crossing); points <span class="inlineCode">(3, ±4)</span>.</li>
+      <li><span class="inlineCode">classifyCircles((0,0),3 ; (8,0),5) = 1</span> (external tangent); point <span class="inlineCode">(3, 0)</span>.</li>
+      <li><span class="inlineCode">classifyCircles((0,0),5 ; (2,0),3) = 1</span> (internal tangent).</li>
+      <li><span class="inlineCode">classifyCircles((0,0),4 ; (0,0),4) = −2</span> (coincident, ∞); <span class="inlineCode">circleCircleIntersection</span> returns an empty <span class="inlineCode">vector</span> (the legacy <span class="inlineCode">circleCircleIntersect</span> returns <span class="inlineCode">0</span>).</li>
+      <li><span class="inlineCode">classifyCircles((0,0),0 ; (0,0),0) = 1</span> (identical zero-radius point-circles); <span class="inlineCode">circleCircleIntersection</span> returns a <span class="inlineCode">vector</span> of size 1 containing <span class="inlineCode">(0,0)</span>.</li>
+      <li><span class="inlineCode">classifyCircles((0,0),4 ; (0,0),7) = −1</span> (concentric, none).</li>
+      <li><span class="inlineCode">classifyCircles</span> returns <span class="inlineCode">−3</span> for any negative radius; the training drill prints <span class="inlineCode">INVALID</span>.</li>
+      <li>Line <span class="inlineCode">y = 3</span> vs circle <span class="inlineCode">r = 5</span> at origin with <span class="inlineCode">P = (−10,3)</span>, <span class="inlineCode">Q = (10,3)</span>: intersections <span class="inlineCode">(−4,3)</span> and <span class="inlineCode">(4,3)</span>; <span class="inlineCode">t</span> values <span class="inlineCode">0.3</span> and <span class="inlineCode">0.7</span>, both on segment.</li>
+      <li>Same circle and line with <span class="inlineCode">P = (5,3)</span>, <span class="inlineCode">Q = (10,3)</span>: infinite-line intersections <span class="inlineCode">(−4,3)</span> and <span class="inlineCode">(4,3)</span>; <span class="inlineCode">t</span> values <span class="inlineCode">−1.8</span> and <span class="inlineCode">−0.2</span>, so neither lies on ray <span class="inlineCode">P → Q</span> — both sit on the opposite extension behind <span class="inlineCode">P</span>.</li>
+      <li>Tangent line <span class="inlineCode">y = 5</span> vs circle <span class="inlineCode">r = 5</span> at origin: one point <span class="inlineCode">(0,5)</span> with <span class="inlineCode">t₁ = t₂</span>.</li>
+      <li><span class="inlineCode">tangentLength((0,0),3 ; P=(5,0)) = 4</span>; touch points <span class="inlineCode">(1.8, ±2.4)</span>.</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 06</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Circle intersection &amp; tangents · The third-vertex engine, lifted into circles.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

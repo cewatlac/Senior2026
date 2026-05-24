@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Mo's Other Variants · Projector Mode</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-add: rgba(15,118,110,.30);
+    --hl-rem: rgba(185,28,28,.30);
+    --hl-snap: rgba(180,83,9,.34);
+    --hl-r1: rgba(37,99,235,.30);
+    --hl-r2: rgba(167,139,250,.32);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --hl-add: rgba(52,211,153,.30);
+    --hl-rem: rgba(251,113,133,.32);
+    --hl-snap: rgba(251,191,36,.32);
+    --hl-r1: rgba(79,140,255,.30);
+    --hl-r2: rgba(167,139,250,.34);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);font-size:21px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:17px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:18px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:21px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  .diagramTools{display:flex;gap:10px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:14px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:700;overflow-x:auto;line-height:1.6;white-space:pre-wrap;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:21px;}
+  th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:17px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  /* Tracer */
+  svg.graphSvg{width:100%;height:380px;border-radius:16px;background:rgba(0,0,0,0);}
+  .edgeRow{display:flex;flex-wrap:wrap;gap:6px;padding:14px 0 28px;}
+  .edgeCell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:74px;height:80px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:950;font-size:18px;position:relative;transition:all .25s ease;padding:6px;}
+  .edgeCell .idx{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-weight:800;}
+  .edgeCell.inRange{box-shadow:inset 0 0 0 3px var(--accent2);}
+  .edgeCell.added{background:var(--hl-add);}
+  .edgeCell.snapped{background:var(--hl-snap);outline:3px solid var(--warn);outline-offset:2px;}
+  .arrRow{display:flex;flex-wrap:wrap;gap:6px;padding:14px 0 28px;}
+  .arrCell{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;height:74px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:950;font-size:22px;position:relative;transition:all .25s ease;}
+  .arrCell .idx{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-weight:800;}
+  .arrCell.r1{box-shadow:inset 0 0 0 3px var(--accent2);background:var(--hl-r1);}
+  .arrCell.r2{box-shadow:inset 0 0 0 3px #a78bfa;background:var(--hl-r2);}
+  .arrCell.both{background:linear-gradient(135deg,var(--hl-r1),var(--hl-r2));box-shadow:inset 0 0 0 3px var(--warn);}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .queryRow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .queryChip{padding:8px 14px;border-radius:12px;border:3px solid var(--border);background:var(--panel);font-weight:900;font-size:16px;font-family:ui-monospace,monospace;}
+  .queryChip.curQ{border-color:var(--warn);background:var(--hl-snap);}
+  .queryChip.doneQ{border-color:var(--good);background:rgba(15,118,110,.10);color:var(--good);opacity:.7;}
+  .historyStack{display:flex;flex-direction:column;gap:4px;max-height:300px;overflow:auto;padding:8px;background:var(--panel2);border:3px solid var(--border);border-radius:12px;}
+  .histItem{padding:6px 10px;border-radius:8px;background:var(--panel);border:2px solid var(--border);font-family:ui-monospace,monospace;font-weight:800;font-size:15px;}
+  .histItem.snap{background:var(--hl-snap);border-color:var(--warn);}
+  .histItem.permanent{background:rgba(15,118,110,.12);border-color:var(--good);}
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+<div class="brand">
+  <div class="logoBox" style="font-size:32px;background:#0B2D72;">🧬</div>
+  <div class="brandTitle">
+    <div class="t1">Mo's Other Variants</div>
+    <div class="t2">Rollback · 4D · Online · Adjacent Sqrt</div>
+    <div class="by-line">Coach Academy</div>
+  </div>
+</div>
+<nav class="nav">
+  <div class="groupTitle">Map of the File</div>
+  <a href="#overview" id="nav-overview">🗺 Overview<small>What this file covers</small></a>
+  <div class="groupTitle">Variant 1 — Rollback Mo</div>
+  <a href="#rb-intro" id="nav-rb-intro">🧩 Why Rollback Mo<small>Add-only structures (DSU)</small></a>
+  <a href="#rb-algo" id="nav-rb-algo">⚙️ Algorithm<small>Small + large dichotomy</small></a>
+  <a href="#tracer-rollback">🎮 Rollback Tracer<small>DSU snapshot/rollback</small></a>
+  <a href="#rb-master" id="nav-rb-master">📄 Master Template<small>CodeChef GERALD07</small></a>
+  <a href="#rb-pitfalls" id="nav-rb-pitfalls">⚠️ Rollback Pitfalls</a>
+  <div class="groupTitle">Variant 2 — 4D Mo</div>
+  <a href="#fd-intro" id="nav-fd-intro">🧩 Two Intervals at Once<small>State = two pointer pairs</small></a>
+  <a href="#tracer-4d">🎮 4D Mo Tracer<small>Two ranges moving</small></a>
+  <a href="#fd-master" id="nav-fd-master">📄 Movement Skeleton<small>Generic 4D engine</small></a>
+  <a href="#fd-pitfalls" id="nav-fd-pitfalls">⚠️ 4D Pitfalls</a>
+  <div class="groupTitle">Variant 3 — Online Block-Precomputed</div>
+  <a href="#ol-intro" id="nav-ol-intro">🧩 When Reordering Is Banned<small>Full-block precompute</small></a>
+  <a href="#ol-algo" id="nav-ol-algo">⚙️ Algorithm<small>Block table + boundary</small></a>
+  <div class="groupTitle">Adjacent Sqrt Techniques</div>
+  <a href="#adj-racetime" id="nav-adj-racetime">📐 SPOJ RACETIME<small>Sorted blocks</small></a>
+  <a href="#adj-swaps" id="nav-adj-swaps">📐 SPOJ SWAPS<small>Block + Fenwick</small></a>
+  <a href="#adj-chsqarr" id="nav-adj-chsqarr">📐 CodeChef CHSQARR<small>2D sliding window</small></a>
+  <div class="groupTitle">Decision &amp; Summary</div>
+  <a href="#decision" id="nav-decision">🧭 Decision Guide</a>
+  <a href="#summary" id="nav-summary">📝 Final Summary</a>
+</nav>
+<div class="sidebar-footer">
+  <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">🎓</div>
+  <div class="sf-text">Coach Academy<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+    <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+    <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+  </div>
+</div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:36px;line-height:1;">🧬</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Mo Family · 4 / 4</div>
+        <h1>Mo's Other Variants</h1>
+        <div class="subtitle">Rollback Mo · 4D Mo · Online Block-Precomputed · Adjacent Sqrt Techniques</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section class="card" id="overview">
+    <h2>🗺 Overview — What This File Covers</h2>
+    <p>The three earlier files in this series build the master template and then specialize it: classic array Mo, Mo on trees, and Mo with updates. This file collects the remaining variants of the same family, plus a short tour of adjacent sqrt-decomposition techniques that competitive programmers tend to confuse with Mo.</p>
+    <p>The first variant is <b>Rollback Mo with DSU</b>, the right tool when the data structure can <em>add</em> but cannot <em>delete</em>. The second is <b>4D Mo</b>, used when a single query controls two ranges instead of one. The third is the <b>online block-precomputed variant</b>, which gives up offline reordering in exchange for online query handling. After the three variants we add a brief tour of three adjacent sqrt techniques — sorted blocks, block-Fenwick hybrids, and 2-D sliding windows — that look like Mo but are not Mo. Knowing where the family ends is as important as knowing what is inside it.</p>
+    <p>Every variant in this file inherits the comparator pattern, the block-sorted query stream, the pointer-movement engine, and the answer-maintenance philosophy from the master template. The only thing that changes is how the maintained state reacts to additions and removals, and how the comparator extends from one dimension to several.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- VARIANT 1 — ROLLBACK MO WITH DSU -->
+  <!-- ============================================================ -->
+
+  <section class="card" id="rb-intro">
+    <h2>🧩 Variant 1 — Why Rollback Mo</h2>
+    <p>The classic Mo engine requires <code class="inlineCode">add</code> and <code class="inlineCode">remove</code> to be exact inverses. Plenty of useful data structures break that requirement. The most important example is the disjoint-set union with union-by-size or union-by-rank. Adding an edge is an <code class="inlineCode">O(α)</code> union; removing an arbitrary old edge is hard in the general case because path compression has rewired many ancestors and several unions later may have re-rooted entire trees.</p>
+    <p>Rollback Mo sidesteps the problem rather than solving it. Instead of designing a true delete, we arrange the work so that every "delete" is actually a rollback to a previous snapshot. Pointer movement is reorganized so the right pointer is only ever <em>added to</em> (and never deleted from) within a left-block, and the left pointer's contributions are kept in a separate, fully-rolled-back layer.</p>
+    <p>The canonical illustration in this section is <b>CodeChef GERALD07</b>. The input gives an ordered list of edges; each query asks how many connected components remain after adding all edges with indices in <code class="inlineCode">[l, r]</code>. Adding an edge to DSU is one union; removing one is what the rollback machinery is for.</p>
+  </section>
+
+  <section class="card" id="rb-algo">
+    <h2>⚙️ Rollback Mo — Algorithm</h2>
+
+    <h3>Small versus large dichotomy</h3>
+    <p>Queries are partitioned by length. If <code class="inlineCode">r − l + 1 ≤ B</code> (where <code class="inlineCode">B = √m</code>), the range is "small" — at most <code class="inlineCode">B</code> edges. Such queries are answered directly by snapshotting the DSU, adding all edges <code class="inlineCode">l..r</code>, reading the component count, and rolling back. Each small query costs <code class="inlineCode">O(B · α)</code>, which is acceptable.</p>
+
+    <h3>Large queries, grouped by left-block</h3>
+    <p>Larger queries are sorted by <code class="inlineCode">block_l</code>, then by <code class="inlineCode">r</code> ascending. For each new left-block we reinitialize the DSU and place the right pointer at <code class="inlineCode">blockRight</code> — the last index of the left-block. Inside the block we move the right pointer forward monotonically. This makes right-pointer movement <em>permanent</em>: an edge added on the way right is never removed within this block.</p>
+    <p>The left part of the interval is handled separately. For each query <code class="inlineCode">[l, r]</code> in the current block, after the right pointer has advanced to <code class="inlineCode">r</code>, we take a snapshot of the DSU, then add the edges from <code class="inlineCode">l</code> up to <code class="inlineCode">blockRight</code> (one block's worth at most), read the component count, and roll back to the snapshot. The right-pointer state survives across queries; the left-pointer state is rebuilt from scratch every time. That asymmetry is the whole point.</p>
+
+    <h3>Rollback DSU mechanics</h3>
+    <p>The DSU needs three primitives: a regular <code class="inlineCode">unite(a, b)</code> that records enough information to be reversible, a <code class="inlineCode">snapshot()</code> returning the current history-length, and a <code class="inlineCode">rollback(snap)</code> that pops history entries until the length is back to <code class="inlineCode">snap</code>, undoing each recorded change. Because we cannot use path compression (it would rewire many pointers that the history struct does not track), <code class="inlineCode">find</code> is the iterative <code class="inlineCode">while (parent[x] != x) x = parent[x]</code>; with union-by-size, the worst-case <code class="inlineCode">find</code> cost is <code class="inlineCode">O(log n)</code>.</p>
+    <p>Every call to <code class="inlineCode">unite</code> pushes <em>one</em> history entry, even if the two endpoints are already in the same component. That dummy entry stores the unchanged <code class="inlineCode">components</code> value so the rollback bookkeeping stays consistent. Forgetting the no-op push is a classic bug that makes a non-trivial fraction of submissions wrong on edge cases.</p>
+  </section>
+
+  <!-- ROLLBACK TRACER -->
+  <section class="card" id="tracer-rollback">
+    <h2>🎮 Rollback Mo Tracer</h2>
+    <p>The tracer below runs a tiny GERALD07 instance: 5 vertices, 8 edges, 4 queries. Watch the DSU's history stack grow as edges are added (green = permanent right-pointer contribution; orange = temporary left-pointer contribution after a snapshot). When the answer for a query is read, the orange portion of the stack is rolled back, but the green portion survives.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">Rollback DSU · GERALD07 small example</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="rbResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="rbStepBtn">▶ Next</button>
+          <button class="miniBtn" id="rbAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="note" style="margin-bottom:6px;">Graph (5 vertices). Edges are colored by addition origin: permanent (right-pointer) in green, temporary (left-pointer) in orange.</div>
+          <svg class="graphSvg" id="rbGraphSvg" viewBox="0 0 580 380"></svg>
+        </div>
+        <div>
+          <div class="note" style="margin-bottom:6px;">Edge list — current interval boundaries highlighted.</div>
+          <div class="edgeRow" id="rbEdgeRow"></div>
+          <div class="statusPanel">
+            <div style="font-weight:950;font-size:20px;margin-bottom:6px;">DSU history stack</div>
+            <div class="historyStack" id="rbHistory"></div>
+          </div>
+        </div>
+      </div>
+      <div class="queryRow" id="rbQueries" style="margin-top:10px;"></div>
+      <div class="grid2" style="margin-top:14px;">
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">DSU state</div>
+          <div class="dsBox" id="rbState"></div>
+        </div>
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Description</div>
+          <div class="dsBox" id="rbDesc"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLLBACK MASTER TEMPLATE -->
+  <section class="card" id="rb-master">
+    <h2>📄 Master Template — CodeChef GERALD07</h2>
+    <p>This is the accepted CodeChef-GERALD07 template from the source corpus, preserved with its original logic and variable names. The two important contracts are documented at the top of <code class="inlineCode">RollbackDSU</code>: every <code class="inlineCode">unite</code> pushes exactly one history entry, and <code class="inlineCode">rollback(snap)</code> brings <code class="inlineCode">history.size()</code> back to <code class="inlineCode">snap</code>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct RollbackDSU {
+    struct Change {
+        int childRoot;
+        int parentRoot;
+        int sizeParentBefore;
+        int componentsBefore;
+    };
+
+    vector&lt;int&gt; parent, sz;
+    vector&lt;Change&gt; history;
+    int components = 0;
+
+    RollbackDSU(int n = 0) { init(n); }
+
+    void init(int n) {
+        parent.resize(n + 1);
+        sz.assign(n + 1, 1);
+        history.clear();
+        components = n;
+        for (int i = 1; i &lt;= n; i++) parent[i] = i;
+    }
+
+    int find(int x) {
+        while (parent[x] != x) x = parent[x];
+        return x;
+    }
+
+    int snapshot() const {
+        return (int)history.size();
+    }
+
+    void rollback(int snap) {
+        while ((int)history.size() &gt; snap) {
+            Change ch = history.back();
+            history.pop_back();
+
+            if (ch.childRoot == -1) {
+                components = ch.componentsBefore;
+                continue;
+            }
+
+            parent[ch.childRoot] = ch.childRoot;
+            sz[ch.parentRoot] = ch.sizeParentBefore;
+            components = ch.componentsBefore;
+        }
+    }
+
+    void unite(int a, int b) {
+        int ra = find(a);
+        int rb = find(b);
+
+        if (ra == rb) {
+            history.push_back({-1, -1, -1, components});
+            return;
+        }
+
+        if (sz[ra] &gt; sz[rb]) swap(ra, rb);
+
+        history.push_back({ra, rb, sz[rb], components});
+        parent[ra] = rb;
+        sz[rb] += sz[ra];
+        components--;
+    }
+};
+
+struct Edge {
+    int u, v;
+};
+
+struct Query {
+    int l, r, id;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+
+    while (T--) {
+        int n, m, q;
+        cin &gt;&gt; n &gt;&gt; m &gt;&gt; q;
+
+        vector&lt;Edge&gt; edges(m + 1);
+        for (int i = 1; i &lt;= m; i++) {
+            cin &gt;&gt; edges[i].u &gt;&gt; edges[i].v;
+        }
+
+        int B = max(1, (int)sqrt(m));
+
+        vector&lt;int&gt; answer(q);
+        vector&lt;Query&gt; bigQueries;
+        bigQueries.reserve(q);
+
+        RollbackDSU dsu(n);
+
+        for (int id = 0; id &lt; q; id++) {
+            int l, r;
+            cin &gt;&gt; l &gt;&gt; r;
+
+            if (r - l + 1 &lt;= B) {
+                int snap = dsu.snapshot();
+                for (int e = l; e &lt;= r; e++) {
+                    dsu.unite(edges[e].u, edges[e].v);
+                }
+                answer[id] = dsu.components;
+                dsu.rollback(snap);
+            } else {
+                bigQueries.push_back({l, r, id});
+            }
+        }
+
+        sort(bigQueries.begin(), bigQueries.end(), [&amp;](const Query&amp; a, const Query&amp; b) {
+            int ba = a.l / B;
+            int bb = b.l / B;
+            if (ba != bb) return ba &lt; bb;
+            return a.r &lt; b.r;
+        });
+
+        int lastBlock = -1;
+        int rightPtr = 0;
+        int blockRight = 0;
+
+        for (const Query&amp; qu : bigQueries) {
+            int block = qu.l / B;
+
+            if (block != lastBlock) {
+                dsu.init(n);
+                blockRight = min(m, (block + 1) * B - 1);
+                rightPtr = blockRight;
+                lastBlock = block;
+            }
+
+            while (rightPtr &lt; qu.r) {
+                rightPtr++;
+                dsu.unite(edges[rightPtr].u, edges[rightPtr].v);
+            }
+
+            int snap = dsu.snapshot();
+            for (int e = qu.l; e &lt;= blockRight; e++) {
+                dsu.unite(edges[e].u, edges[e].v);
+            }
+
+            answer[qu.id] = dsu.components;
+            dsu.rollback(snap);
+        }
+
+        for (int x : answer) cout &lt;&lt; x &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+  </section>
+
+  <section class="card" id="rb-pitfalls">
+    <h2>⚠️ Rollback Mo — Pitfalls</h2>
+    <p><b>No path compression.</b> Path compression rewires arbitrary ancestor pointers and the rollback stack cannot recover them efficiently. Use the iterative <code class="inlineCode">find</code> shown above; the <code class="inlineCode">O(log n)</code> per find is fine.</p>
+    <p><b>Every unite pushes a history entry — even no-ops.</b> The case <code class="inlineCode">ra == rb</code> still pushes a dummy <code class="inlineCode">{-1, -1, -1, components}</code> entry. Without it, the count of entries in the stack does not match the number of <code class="inlineCode">unite</code> calls, and <code class="inlineCode">rollback(snap)</code> will undo a different boundary than the one we snapshotted.</p>
+    <p><b>Small ranges are answered separately.</b> If you tried to handle ranges shorter than <code class="inlineCode">B</code> in the main loop, you would end up with left and right pointers in the same block, and the "right pointer moves only forward" invariant would collapse.</p>
+    <p><b>Re-initialize the DSU between left-blocks.</b> Forgetting <code class="inlineCode">dsu.init(n)</code> at the start of each new left-block carries stale unions into the next block; answers will be too small.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- VARIANT 2 — 4D MO -->
+  <!-- ============================================================ -->
+
+  <section class="card" id="fd-intro">
+    <h2>🧩 Variant 2 — 4D Mo: Two Intervals at Once</h2>
+    <p>Some problems naturally involve two ranges per query, for example "given two subtrees, compare the multisets of their colors." The state of Mo doubles in dimension: instead of one pair <code class="inlineCode">(curL, curR)</code>, we maintain two pairs <code class="inlineCode">(cl1, cr1)</code> and <code class="inlineCode">(cl2, cr2)</code>. Each pair has its own four-loop movement block.</p>
+    <p>The comparator extends accordingly. The primary key is the block of <code class="inlineCode">l1</code>, the secondary is the block of <code class="inlineCode">r1</code>, the tertiary is the block of <code class="inlineCode">l2</code>, and the final key is <code class="inlineCode">r2</code>. Some authors use odd-even snakes on the inner keys to reduce constant factors; this is optional.</p>
+    <p>The answer structure has to tolerate additions and removals from both intervals. Most often the maintained state is two independent frequency tables, one per interval, plus whatever aggregate ties them together — for instance, the number of values whose counts differ between the two tables, or the Jaccard-style overlap of the two multisets.</p>
+  </section>
+
+  <!-- 4D TRACER -->
+  <section class="card" id="tracer-4d">
+    <h2>🎮 4D Mo Tracer</h2>
+    <p>The tracer below shows two intervals being moved to satisfy three queries. The first interval is highlighted in blue and the second in purple; cells that belong to both intervals (when the ranges overlap) get a stripe and a warning border. The maintained state is two separate frequency tables, and the aggregate is the number of values that appear in both ranges (multiset intersection size).</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <div class="diagramTitle">4D Mo · two intervals · intersection size</div>
+        <div class="diagramTools">
+          <button class="miniBtn" id="fdResetBtn">↩ Reset</button>
+          <button class="miniBtn" id="fdStepBtn">▶ Next</button>
+          <button class="miniBtn" id="fdAutoBtn">⏯ Auto</button>
+        </div>
+      </div>
+      <div class="arrRow" id="fdArr"></div>
+      <div class="queryRow" id="fdQueries"></div>
+      <div class="grid2" style="margin-top:14px;">
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">State (two intervals)</div>
+          <div class="dsBox" id="fdState"></div>
+        </div>
+        <div class="statusPanel">
+          <div style="font-weight:950;font-size:20px;margin-bottom:6px;">Description</div>
+          <div class="dsBox" id="fdDesc"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4D MASTER -->
+  <section class="card" id="fd-master">
+    <h2>📄 4D Mo — Movement Skeleton</h2>
+    <p>The skeleton below shows the generic shape. Plug in your own <code class="inlineCode">add1</code>/<code class="inlineCode">remove1</code> for the first interval and <code class="inlineCode">add2</code>/<code class="inlineCode">remove2</code> for the second. The maintained answer can read from both tables in <code class="inlineCode">get_answer()</code>.</p>
+<pre><code>struct Query4D {
+    int l1, r1, l2, r2, id;
+};
+
+int BLOCK;
+
+bool cmp4(const Query4D&amp; a, const Query4D&amp; b) {
+    int al1 = a.l1 / BLOCK, bl1 = b.l1 / BLOCK;
+    if (al1 != bl1) return al1 &lt; bl1;
+    int ar1 = a.r1 / BLOCK, br1 = b.r1 / BLOCK;
+    if (ar1 != br1) return ar1 &lt; br1;
+    int al2 = a.l2 / BLOCK, bl2 = b.l2 / BLOCK;
+    if (al2 != bl2) return al2 &lt; bl2;
+    return a.r2 &lt; b.r2;
+}
+
+// Maintained state, problem-specific.
+int cl1 = 0, cr1 = -1;
+int cl2 = 0, cr2 = -1;
+// freq1[], freq2[], current_answer ...
+
+void solve_4d(vector&lt;Query4D&gt;&amp; queries) {
+    BLOCK = max(1, (int)sqrt(n));
+    sort(queries.begin(), queries.end(), cmp4);
+
+    for (const Query4D&amp; q : queries) {
+        while (cl1 &gt; q.l1) add1(--cl1);
+        while (cr1 &lt; q.r1) add1(++cr1);
+        while (cl1 &lt; q.l1) remove1(cl1++);
+        while (cr1 &gt; q.r1) remove1(cr1--);
+
+        while (cl2 &gt; q.l2) add2(--cl2);
+        while (cr2 &lt; q.r2) add2(++cr2);
+        while (cl2 &lt; q.l2) remove2(cl2++);
+        while (cr2 &gt; q.r2) remove2(cr2--);
+
+        ans[q.id] = get_answer();
+    }
+}</code></pre>
+    <p>The complexity is harder to state cleanly because it depends on how the two intervals are correlated. In the worst case the total pointer travel scales as <code class="inlineCode">O(N · √N + Q · √N)</code> per dimension, multiplied across four axes — but the constant factors are large and the comparator tuning matters. Use 4D Mo only when no simpler reduction exists.</p>
+  </section>
+
+  <section class="card" id="fd-pitfalls">
+    <h2>⚠️ 4D Mo — Pitfalls</h2>
+    <p><b>Double counting on overlap.</b> If the two intervals can share cells, the add/remove hooks may credit the same element twice. Decide once whether the answer should treat the intervals as multisets (allow overlap) or as sets (deduplicate), and document the choice next to the maintained state.</p>
+    <p><b>Comparator order matters.</b> Different orderings of the four sort keys yield very different total pointer-travel constants. Start with <code class="inlineCode">(block_l1, block_r1, block_l2, r2)</code> and tune if necessary.</p>
+    <p><b>Memory is doubled.</b> Two frequency tables, two pointer pairs, two of every problem-specific scalar. Watch the memory budget — for <code class="inlineCode">n = 10⁵</code> with non-trivial answer states, 4D Mo can hit a few hundred MB without care.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- VARIANT 3 — ONLINE BLOCK-PRECOMPUTED -->
+  <!-- ============================================================ -->
+
+  <section class="card" id="ol-intro">
+    <h2>🧩 Variant 3 — Online Block-Precomputed</h2>
+    <p>Classic Mo's central trick is offline reordering. When the problem statement forbids reordering — when each query must be answered before the next one is read — Mo's amortization argument no longer applies. The online block-precomputed variant is the sqrt-decomposition workaround.</p>
+    <p>The idea is to precompute, for every full-block interval <code class="inlineCode">[i·B, (i+1)·B − 1]</code>, the answer structure needed by the problem. A query <code class="inlineCode">[l, r]</code> is then answered by combining the full-block structure spanning <code class="inlineCode">l</code>'s block to <code class="inlineCode">r</code>'s block with manual additions for the boundary elements on both sides.</p>
+    <p>If point updates are present, every update touches all precomputed structures whose block contains the updated position; with a block size of <code class="inlineCode">B</code>, that is <code class="inlineCode">N/B</code> structures, each costing <code class="inlineCode">O(B)</code> to patch, giving <code class="inlineCode">O(N)</code> per update — too slow for hard instances. In practice the online block-precomputed variant is best suited to problems with relatively few updates and many queries, or to settings where the per-block structure has a cheaper update path (e.g. Fenwick-per-block).</p>
+  </section>
+
+  <section class="card" id="ol-algo">
+    <h2>⚙️ Online Block-Precomputed — Algorithm</h2>
+
+    <h3>Block layout</h3>
+    <p>Split the array into <code class="inlineCode">N/B</code> blocks of size <code class="inlineCode">B</code>. For each pair of block indices <code class="inlineCode">(i, j)</code> with <code class="inlineCode">i ≤ j</code>, precompute the answer structure for the union of blocks <code class="inlineCode">i..j</code>. The naive precomputation is <code class="inlineCode">O((N/B)² · N)</code> — typically <code class="inlineCode">O(N²/B)</code> — and is the dominant preprocessing cost.</p>
+
+    <h3>Query handling</h3>
+    <p>Given <code class="inlineCode">[l, r]</code>, locate the inner full-block range <code class="inlineCode">[i, j]</code> where <code class="inlineCode">i = ⌈l/B⌉</code> and <code class="inlineCode">j = ⌊(r+1)/B⌋ − 1</code>. Read the precomputed answer for <code class="inlineCode">[i·B, (j+1)·B − 1]</code>. Then apply the boundary corrections: the prefix from <code class="inlineCode">l</code> to <code class="inlineCode">i·B − 1</code> and the suffix from <code class="inlineCode">(j+1)·B</code> to <code class="inlineCode">r</code>. Each correction touches at most <code class="inlineCode">B</code> elements, so the per-query work is <code class="inlineCode">O(B)</code> outside the precomputed lookup.</p>
+
+    <h3>Update handling</h3>
+    <p>If updates are allowed and inexpensive, each point update at position <code class="inlineCode">pos</code> touches every block structure whose interval contains <code class="inlineCode">pos</code>. There are <code class="inlineCode">N/B</code> such structures on each side of <code class="inlineCode">pos</code>'s own block. Patching a single structure costs whatever the structure costs to update — often <code class="inlineCode">O(log N)</code> if it is a Fenwick tree.</p>
+
+    <p>This variant is the right answer when the problem says "queries are interleaved with updates and must be processed online, but the answer is frequency-based with a clean block layout." That phrasing is rare in pure Mo problems but common in semi-online sqrt problems. The accepted-code section below for SPOJ-RACETIME is a worked-out version of exactly this pattern.</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- ADJACENT SQRT TECHNIQUES -->
+  <!-- ============================================================ -->
+
+  <section class="card" id="adj-racetime">
+    <h2>📐 Adjacent Technique — SPOJ RACETIME (Sorted Blocks)</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-RACETIME">https://vjudge.net/problem/SPOJ-RACETIME</a></p>
+    <p>The problem maintains an array under point updates and answers online "count values <code class="inlineCode">≤ x</code> in <code class="inlineCode">[l, r]</code>" queries. Each block keeps a sorted copy of its values; full blocks are answered via <code class="inlineCode">upper_bound</code>, and partial-block boundaries are scanned linearly. Updates re-sort the affected block. The query cost is <code class="inlineCode">O(√N · log N)</code> and the update cost is <code class="inlineCode">O(√N log √N)</code> or <code class="inlineCode">O(√N)</code> depending on insertion strategy. This is online, not Mo.</p>
+
+<pre><code>// Accepted submission - SPOJ-RACETIME (preserved verbatim, blank lines collapsed)
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int N = 1 &lt;&lt; 18, M = ceil(sqrt(N));
+
+int arr[N], n, q, sq;
+vector&lt;int&gt; blocks[M];
+
+int countLess(int s, int e, int x) {
+    int cnt = 0;
+    for (int i = s; i &lt;= e; i++)
+        cnt += (arr[i] &lt;= x);
+    return cnt;
+}
+
+int main() {
+    scanf("%d%d", &amp;n, &amp;q);
+    sq = sqrt(n);
+    for (int i = 0; i &lt; n; i++) {
+        scanf("%d", arr + i);
+        blocks[i / sq].push_back(arr[i]);
+    }
+    for (int i = 0; i &lt; n; i += sq)
+        sort(blocks[i / sq].begin(), blocks[i / sq].end());
+
+    while (q--) {
+        char c;
+        scanf(" %c", &amp;c);
+        if (c == 'C') {
+            int s, e, x;
+            scanf("%d%d%d", &amp;s, &amp;e, &amp;x);
+            s--, e--;
+            int cnt = 0;
+            if (s / sq == e / sq) cnt = countLess(s, e, x);
+            else {
+                cnt = countLess(s, (s / sq + 1) * sq - 1, x);
+                cnt += countLess(e / sq * sq, e, x);
+                for (int i = s / sq + 1; i &lt; e / sq; ++i)
+                    cnt += upper_bound(blocks[i].begin(), blocks[i].end(), x) - blocks[i].begin();
+            }
+            printf("%d\n", cnt);
+        }
+        else {
+            int p, x;
+            scanf("%d%d", &amp;p, &amp;x);
+            p--;
+            int b = p / sq;
+            auto it = lower_bound(blocks[b].begin(), blocks[b].end(), arr[p]);
+            *it = x;
+            sort(blocks[b].begin(), blocks[b].end());
+            arr[p] = x;
+        }
+    }
+    return 0;
+}</code></pre>
+    <p><b>Family relation:</b> shares the block-decomposition skeleton with Mo but does not reorder queries. The maintained "answer per block" is the sorted vector; the boundary scan is the partial-block correction.</p>
+  </section>
+
+  <section class="card" id="adj-swaps">
+    <h2>📐 Adjacent Technique — SPOJ SWAPS (Block + Fenwick Hybrid)</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/SPOJ-SWAPS">https://vjudge.net/problem/SPOJ-SWAPS</a></p>
+    <p>The problem maintains an array under point assignments and reports the total inversion count after each. Each block keeps a Fenwick tree indexed by value; counting inversions contributed by one index uses three pieces — left side of the same block (linear), right side of the same block (linear), and the full Fenwicks of the other blocks (one Fenwick query per block). Updates patch the single block's Fenwick and recompute the contribution of one index.</p>
+
+<pre><code>// Accepted submission - SPOJ-SWAPS (preserved verbatim from source; blank lines collapsed)
+#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+#define F first
+#define S second
+#define pb push_back
+#define ll long long
+#define all(x) x.begin() , x.end()
+#define rep(i,s,e) for (int i = s; i &lt; e; ++i)
+#define rev(i,s,e) for (int i = s; i &gt; e; --i)
+
+const int N = 5e4 + 12, M = 3e5;
+
+struct BIT {
+    int bit[N];
+    void init() { memset(bit, 0, sizeof bit); }
+    int f(int n) { return (n &amp; -n); }
+    void add(int idx, int val) {
+        for (++idx; idx &lt; N; idx += f(idx)) bit[idx] += val;
+    }
+    int sum(int idx) {
+        int ret = 0;
+        for (++idx; idx &gt; 0; idx -= f(idx)) ret += bit[idx];
+        return ret;
+    }
+};
+
+BIT bucket[515];
+BIT invBIT;
+
+int n, q, sq, mx, a[M];
+
+int countInversion(int idx) {
+    int curBucket = idx / sq;
+    int ret = 0;
+    for (int i = idx - 1; (i / sq) == curBucket and i &gt;= 0; --i) ret += (a[i] &gt; a[idx]);
+    for (int i = idx + 1; (i / sq) == curBucket and i &lt;  n; ++i) ret += (a[i] &lt; a[idx]);
+    for (int i = curBucket - 1; i &gt;= 0; --i) {
+        ret += bucket[i].sum(N - 5) - bucket[i].sum(a[idx]);
+    }
+    for (int i = curBucket + 1; i &lt;= mx; ++i) {
+        ret += bucket[i].sum(a[idx] - 1);
+    }
+    return ret;
+}
+
+int main() {
+    ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+    cin &gt;&gt; n;
+    if (n == 0) return 0;
+    sq = sqrt(n);
+    mx = (n / sq) + (n % sq ? 1 : 0);
+    rep(i, 0, mx + 1) bucket[i].init();
+
+    ll invCnt = 0;
+    rep(i, 0, n) {
+        cin &gt;&gt; a[i];
+        bucket[i / sq].add(a[i], 1);
+        invCnt += invBIT.sum(N - 5) - invBIT.sum(a[i]);
+        invBIT.add(a[i], 1);
+    }
+
+    cin &gt;&gt; q;
+    while (q--) {
+        int idx, val;
+        cin &gt;&gt; idx &gt;&gt; val; --idx;
+        invCnt -= countInversion(idx);
+        bucket[idx / sq].add(a[idx], -1);
+        a[idx] = val;
+        bucket[idx / sq].add(a[idx], +1);
+        invCnt += countInversion(idx);
+        cout &lt;&lt; invCnt &lt;&lt; "\n";
+    }
+    return 0;
+}</code></pre>
+    <p><b>Family relation:</b> sqrt-decomposition on positions with a Fenwick layer per block. Online and update-supportive — neither of which Mo gives you. The contribution computation in <code class="inlineCode">countInversion</code> is the "boundary plus block sweep" pattern at its purest.</p>
+  </section>
+
+  <section class="card" id="adj-chsqarr">
+    <h2>📐 Adjacent Technique — CodeChef CHSQARR (2-D Sliding Window)</h2>
+    <p><b>VJudge:</b> <a href="https://vjudge.net/problem/CodeChef-CHSQARR">https://vjudge.net/problem/CodeChef-CHSQARR</a></p>
+    <p>This problem is not Mo at all. It belongs here because it illustrates the same competitive-programming theme: "avoid recomputing every window from scratch by maintaining reusable local structure." A monotonic queue gives sliding maxima in <code class="inlineCode">O(1)</code> amortized; combining row-wise sliding windows with column-wise sliding windows answers each <code class="inlineCode">a × b</code> rectangle query in linear time per query.</p>
+
+<pre><code>// Accepted submission - CodeChef-CHSQARR (preserved verbatim from source; blank lines collapsed)
+#include "bits/stdc++.h"
+using namespace std;
+
+const int N = 1e3 + 5;
+int mat[N][N];
+pair&lt;int,int&gt; row[N][N];
+int n, m, q, a, b;
+
+struct mQueue {
+    deque&lt;int&gt; dq;
+    queue&lt;int&gt; q;
+
+    int size() { return q.size(); }
+    void push(int x) {
+        q.push(x);
+        while (dq.size() &amp;&amp; dq.back() &lt; x) {
+            dq.pop_back();
+        }
+        dq.push_back(x);
+    }
+    void pop() {
+        if (dq.front() == q.front()) {
+            dq.pop_front();
+        }
+        q.pop();
+    }
+    int&amp; front() { return q.front(); }
+    int getMax() { return dq.front(); }
+    bool empty() { return q.empty(); }
+};
+
+int main() {
+    scanf("%d %d", &amp;n, &amp;m);
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; m; j++) {
+            scanf("%d", &amp;mat[i][j]);
+        }
+    }
+    scanf("%d", &amp;q);
+    while (q--) {
+        scanf("%d %d", &amp;a, &amp;b);
+        int res = 2e9;
+        for (int i = 0; i &lt; n; i++) {
+            mQueue qe;
+            int sum = 0;
+            for (int j = 0; j &lt; b; j++) {
+                sum += mat[i][j];
+                qe.push(mat[i][j]);
+            }
+            row[i][0] = {sum, qe.getMax()};
+            for (int j = b; j &lt; m; j++) {
+                sum += mat[i][j] - mat[i][j - b];
+                qe.pop();
+                qe.push(mat[i][j]);
+                row[i][j - b + 1] = {sum, qe.getMax()};
+            }
+        }
+        for (int j = 0; j &lt;= m - b; j++) {
+            mQueue qe;
+            int sum = 0;
+            for (int i = 0; i &lt; a; i++) {
+                sum += row[i][j].first;
+                qe.push(row[i][j].second);
+            }
+            res = min(res, qe.getMax() * a * b - sum);
+            for (int i = a; i &lt; n; i++) {
+                sum += row[i][j].first - row[i - a][j].first;
+                qe.pop();
+                qe.push(row[i][j].second);
+                res = min(res, qe.getMax() * a * b - sum);
+            }
+        }
+        cout &lt;&lt; res &lt;&lt; endl;
+    }
+    return 0;
+}</code></pre>
+    <p><b>Family relation:</b> none, really. CHSQARR illustrates the "maintain reusable local structure as the window moves" mindset that Mo also embodies, but the algorithm itself is a textbook 2-D sliding window with monotonic queues and is faster than any sqrt approach would be for the same problem. It is included here as a contrast: not every sqrt-like problem deserves a sqrt-shaped solution.</p>
+  </section>
+
+  <!-- DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 Decision Guide — Pick the Right Variant</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Prefer</th></tr></thead>
+      <tbody>
+        <tr><td>Offline range queries, no updates, frequency-based answer</td><td>classic Mo (file 1).</td></tr>
+        <tr><td>Subtree or path queries on a tree</td><td>Mo on trees (file 2).</td></tr>
+        <tr><td>Offline range queries plus point updates</td><td>3D Mo (file 3).</td></tr>
+        <tr><td>Add easy, delete hard (e.g. DSU + edge ranges)</td><td><b>rollback Mo</b> (this file).</td></tr>
+        <tr><td>Query has two ranges, e.g. two subtree comparisons</td><td><b>4D Mo</b> (this file).</td></tr>
+        <tr><td>Online queries forbid reordering</td><td><b>online block-precomputed</b> (this file).</td></tr>
+        <tr><td>Online order-statistic queries with updates</td><td>sorted blocks (adjacent technique).</td></tr>
+        <tr><td>Online inversions / dynamic count comparisons</td><td>block + Fenwick hybrid (adjacent technique).</td></tr>
+        <tr><td>Fixed-size sliding window on a 1D / 2D array</td><td>monotonic queue / 2D sliding window — not Mo.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Hard reflex rules</h3>
+    <p>Use rollback Mo only when the data structure is add-only and add is genuinely <code class="inlineCode">O(α)</code> or <code class="inlineCode">O(log n)</code>; the overhead of snapshots is otherwise not worth it. Reach for 4D Mo only when the problem cannot be re-cast as a sequence of two 2D Mo passes; in many "two subtree" problems you can answer each subtree independently and combine at the end. Use the online block-precomputed variant when reordering is explicitly forbidden; if the problem is not online, prefer regular Mo because its constants are smaller.</p>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 Final Summary — End of the Family</h2>
+    <p>This series has now covered the entire Mo family: classic array Mo, Mo on trees, Mo with updates, rollback Mo, 4D Mo, and the online block-precomputed variant. The master template stayed structurally identical throughout; the variants are all controlled mutations of the same engine. Block size, comparator dimensionality, and the answer layer adapt; the four-loop pointer movement does not.</p>
+    <p>The three checkpoints to internalize before submitting any sqrt-decomposition solution:</p>
+    <pre><code>1. Can the data structure be both add'd to and removed from in O(F)?
+   No → rollback Mo (delete = rollback) or another sqrt technique.
+
+2. Are the queries offline and is reordering allowed?
+   No → online block-precomputed; do not use Mo.
+
+3. How many axes does the query state have?
+   1 axis (range)         → classic Mo (or Mo on trees if the data is a tree).
+   2 axes (range + time)  → 3D Mo.
+   2 ranges (4 endpoints) → 4D Mo.</code></pre>
+    <p>That decision tree, applied honestly, will pick the right tool every time.</p>
+  </section>
+
+  <div class="page-footer">
+    <div style="width:60px;height:60px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:32px;">🧬</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Mo's Algorithm Family · Other Variants · Rollback · 4D · Online · Adjacent</div>
+    <div class="footer-copy">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:18px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+// =============================================================
+// HELPERS
+// =============================================================
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+function clearEl(el){while(el.firstChild)el.removeChild(el.firstChild);}
+function makeSVG(tag, attrs={}){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+// =============================================================
+// THEME TOGGLE
+// =============================================================
+const savedTheme=localStorage.getItem('mo_other_theme');
+if(savedTheme) document.body.setAttribute('data-theme', savedTheme);
+$('#themeSwitch').onclick=()=>{
+  const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorage.setItem('mo_other_theme', next);
+  window.__rerenderTracers && window.__rerenderTracers();
+};
+
+// ============================================================
+// SIDEBAR TOGGLE — hamburger + overlay + Escape + auto-collapse
+// ============================================================
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (window.innerWidth > 1400) {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      } else {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && open && window.innerWidth <= 1400) {
+      setSidebar(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1400) {
+      setSidebar(true);
+    } else {
+      setSidebar(false);
+    }
+  });
+
+  setSidebar(open);
+})();
+// =============================================================
+// SCROLL NAV HIGHLIGHT
+// =============================================================
+const sections=$$('section[id]');
+const navLinks=$$('.nav a[href^="#"]');
+function updateNav(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<200) cur=s.id; });
+  navLinks.forEach(a=>{ a.classList.toggle('active', a.getAttribute('href')==='#'+cur); });
+}
+$('.content').addEventListener('scroll', updateNav);
+updateNav();
+
+// =============================================================
+// TRACER 1 — ROLLBACK MO (GERALD07 small instance)
+// =============================================================
+(function(){
+  // 5 vertices (1..5), 8 edges
+  const edges = [
+    null,            // 1-based
+    {u:1, v:2},      // 1
+    {u:2, v:3},      // 2
+    {u:1, v:3},      // 3 (forms cycle with 1,2)
+    {u:3, v:4},      // 4
+    {u:4, v:5},      // 5
+    {u:2, v:5},      // 6 (forms cycle)
+    {u:1, v:4},      // 7 (forms cycle)
+    {u:3, v:5},      // 8 (forms cycle)
+  ];
+  const numV = 5;
+  const M = 8;
+  const B = Math.max(1, Math.floor(Math.sqrt(M)));   // B = 2
+
+  // 4 queries: mix of small (≤B) and large
+  const rawQueries = [
+    {l:1, r:2, id:0},   // small (1 edge effectively from the small-path)
+    {l:1, r:5, id:1},   // large
+    {l:3, r:7, id:2},   // large
+    {l:6, r:8, id:3},   // small
+  ];
+
+  // Layout vertex positions for SVG
+  const pos = {
+    1:{x:130,y:80}, 2:{x:290,y:80}, 3:{x:450,y:80},
+    4:{x:200,y:280}, 5:{x:380,y:280},
+  };
+
+  // Rollback DSU implementation in JS
+  function makeDSU(n){
+    return {
+      parent:Array.from({length:n+1},(_,i)=>i),
+      sz:new Array(n+1).fill(1),
+      history:[],
+      components:n,
+      find(x){ while(this.parent[x]!==x) x=this.parent[x]; return x; },
+      snapshot(){ return this.history.length; },
+      rollback(snap){
+        while(this.history.length>snap){
+          const ch=this.history.pop();
+          if(ch.childRoot===-1){ this.components=ch.componentsBefore; continue; }
+          this.parent[ch.childRoot]=ch.childRoot;
+          this.sz[ch.parentRoot]=ch.sizeParentBefore;
+          this.components=ch.componentsBefore;
+        }
+      },
+      unite(a,b){
+        let ra=this.find(a), rb=this.find(b);
+        if(ra===rb){ this.history.push({childRoot:-1,parentRoot:-1,sizeParentBefore:-1,componentsBefore:this.components}); return; }
+        if(this.sz[ra]>this.sz[rb]){ [ra,rb]=[rb,ra]; }
+        this.history.push({childRoot:ra,parentRoot:rb,sizeParentBefore:this.sz[rb],componentsBefore:this.components});
+        this.parent[ra]=rb;
+        this.sz[rb]+=this.sz[ra];
+        this.components--;
+      }
+    };
+  }
+
+  // Build frames running the GERALD07 main loop
+  const frames=[];
+  const answers={};
+  const dsu = makeDSU(numV);
+  const doneIds=[];
+  // history annotations: per entry, the edge that triggered it and whether permanent/temporary
+  function snap(desc, curQid, opts={}){
+    frames.push({
+      parent:[...dsu.parent],
+      sz:[...dsu.sz],
+      historyLen:dsu.history.length,
+      // store an annotation of which step each history entry came from (permanent vs temporary, edge index)
+      historyMeta: frames.length ? [...frames[frames.length-1].historyMeta] : [],
+      components:dsu.components,
+      desc, curQid,
+      doneIds:[...doneIds],
+      currentInterval: opts.interval || null,   // {l, r} for highlighting
+      currentEdge: opts.edge || null,
+      addedEdges: opts.addedEdges ? [...opts.addedEdges] : (frames.length ? [...frames[frames.length-1].addedEdges] : []),
+      tempEdges: opts.tempEdges ? [...opts.tempEdges] : (frames.length ? [...frames[frames.length-1].tempEdges] : []),
+      lastBlock: opts.lastBlock !== undefined ? opts.lastBlock : (frames.length ? frames[frames.length-1].lastBlock : -1),
+      rightPtr: opts.rightPtr !== undefined ? opts.rightPtr : (frames.length ? frames[frames.length-1].rightPtr : 0),
+      blockRight: opts.blockRight !== undefined ? opts.blockRight : (frames.length ? frames[frames.length-1].blockRight : 0),
+      answers: {...answers}
+    });
+  }
+  function uniteAndRecord(e, kind){
+    dsu.unite(edges[e].u, edges[e].v);
+    // Annotate the new history entry with this edge
+    const meta = frames.length ? [...frames[frames.length-1].historyMeta] : [];
+    meta.push({edge:e, kind});
+    return meta;
+  }
+
+  // PHASE 1: small queries (handled in input order during read)
+  // Mimic the GERALD07 code: small queries handled inline; large ones queued
+  const bigQueries=[];
+  snap('Phase 1: Read queries. Handle small (length ≤ B) queries inline; queue large ones.', -1, {addedEdges:[], tempEdges:[]});
+  for(const qu of rawQueries){
+    if(qu.r - qu.l + 1 <= B){
+      const sshot = dsu.snapshot();
+      snap(`▶ Small query #${qu.id} [${qu.l},${qu.r}]: snapshot = ${sshot}.`, qu.id, {interval:{l:qu.l,r:qu.r}, addedEdges:[], tempEdges:[]});
+      const tempEdges=[];
+      for(let e=qu.l; e<=qu.r; e++){
+        const newMeta = uniteAndRecord(e, 'small-temp');
+        tempEdges.push(e);
+        frames[frames.length-1].historyMeta=newMeta;
+        snap(`  unite(edge ${e}: ${edges[e].u}-${edges[e].v}). components=${dsu.components}.`, qu.id, {interval:{l:qu.l,r:qu.r}, edge:e, tempEdges:[...tempEdges]});
+        frames[frames.length-1].historyMeta=newMeta;
+      }
+      answers[qu.id] = dsu.components;
+      doneIds.push(qu.id);
+      snap(`  ✓ ans[${qu.id}] = ${dsu.components}. Rolling back to snapshot ${sshot}.`, qu.id, {interval:{l:qu.l,r:qu.r}, tempEdges:[...tempEdges]});
+      dsu.rollback(sshot);
+      // Trim historyMeta accordingly
+      const prevMeta = frames[frames.length-1].historyMeta.slice(0, sshot);
+      frames[frames.length-1] = {...frames[frames.length-1], historyMeta: prevMeta, historyLen: dsu.history.length, parent:[...dsu.parent], sz:[...dsu.sz], components:dsu.components, tempEdges:[]};
+    } else {
+      bigQueries.push(qu);
+    }
+  }
+
+  // PHASE 2: large queries sorted by (block_l, r)
+  bigQueries.sort((a,b)=>{
+    const ba=Math.floor(a.l/B), bb=Math.floor(b.l/B);
+    if(ba!==bb) return ba-bb;
+    return a.r-b.r;
+  });
+
+  let lastBlock=-1, rightPtr=0, blockRight=0;
+  for(const qu of bigQueries){
+    const block = Math.floor(qu.l/B);
+    if(block !== lastBlock){
+      // Reset DSU
+      dsu.init = function(n){
+        this.parent=Array.from({length:n+1},(_,i)=>i);
+        this.sz=new Array(n+1).fill(1);
+        this.history=[];
+        this.components=n;
+      };
+      dsu.init(numV);
+      blockRight = Math.min(M, (block+1)*B - 1);
+      rightPtr = blockRight;
+      lastBlock = block;
+      // Initialize right side with all edges in [block*B .. blockRight]? No — the algorithm starts from rightPtr = blockRight and adds none yet.
+      // Wait, re-read the GERALD07 algorithm: it sets rightPtr = blockRight and does NOT add any edges yet.
+      // Then it advances rightPtr forward to qu.r, adding edges from blockRight+1..qu.r.
+      // Then snapshot, and add edges qu.l..blockRight as the "left part".
+      snap(`▶ New left-block ${block} for query #${qu.id}. Reset DSU. rightPtr = blockRight = ${blockRight}.`, qu.id, {interval:{l:qu.l,r:qu.r}, lastBlock:block, rightPtr:blockRight, blockRight, addedEdges:[], tempEdges:[]});
+    } else {
+      snap(`▶ Same left-block ${block} for query #${qu.id}: rightPtr stays at ${rightPtr}, blockRight=${blockRight}.`, qu.id, {interval:{l:qu.l,r:qu.r}, lastBlock:block, rightPtr, blockRight});
+    }
+    // Move right pointer forward permanently
+    const addedSoFar = frames[frames.length-1].addedEdges;
+    while(rightPtr < qu.r){
+      rightPtr++;
+      const newMeta = uniteAndRecord(rightPtr, 'permanent');
+      addedSoFar.push(rightPtr);
+      snap(`  Permanent right-add: unite(edge ${rightPtr}: ${edges[rightPtr].u}-${edges[rightPtr].v}). components=${dsu.components}.`, qu.id, {interval:{l:qu.l,r:qu.r}, edge:rightPtr, rightPtr, addedEdges:[...addedSoFar]});
+      frames[frames.length-1].historyMeta=newMeta;
+    }
+    // Snapshot
+    const sshot = dsu.snapshot();
+    snap(`  Snapshot at history length ${sshot}. Beginning temporary left-add of edges [${qu.l}..${blockRight}].`, qu.id, {interval:{l:qu.l,r:qu.r}, rightPtr, addedEdges:[...addedSoFar], tempEdges:[]});
+    const tempEdges=[];
+    for(let e=qu.l; e<=blockRight; e++){
+      const newMeta = uniteAndRecord(e, 'temp');
+      tempEdges.push(e);
+      snap(`  Temporary left-add: unite(edge ${e}: ${edges[e].u}-${edges[e].v}). components=${dsu.components}.`, qu.id, {interval:{l:qu.l,r:qu.r}, edge:e, rightPtr, addedEdges:[...addedSoFar], tempEdges:[...tempEdges]});
+      frames[frames.length-1].historyMeta=newMeta;
+    }
+    answers[qu.id] = dsu.components;
+    doneIds.push(qu.id);
+    snap(`  ✓ ans[${qu.id}] = ${dsu.components}. Rolling back temporary part to snapshot ${sshot}.`, qu.id, {interval:{l:qu.l,r:qu.r}, rightPtr, addedEdges:[...addedSoFar], tempEdges:[...tempEdges]});
+    dsu.rollback(sshot);
+    const prevMeta = frames[frames.length-1].historyMeta.slice(0, sshot);
+    frames[frames.length-1] = {...frames[frames.length-1], historyMeta: prevMeta, historyLen: dsu.history.length, parent:[...dsu.parent], sz:[...dsu.sz], components:dsu.components, tempEdges:[]};
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f = frames[step];
+
+    // GRAPH SVG
+    const svg = $('#rbGraphSvg'); clearEl(svg);
+    // edges first
+    for(let e=1; e<=M; e++){
+      const eo = edges[e];
+      const a = pos[eo.u], b = pos[eo.v];
+      const isPerm = f.addedEdges.includes(e);
+      const isTemp = f.tempEdges.includes(e);
+      const strokeColor = isTemp ? '#f59e0b' : (isPerm ? '#10b981' : cssVar('--border'));
+      const strokeW = (isTemp||isPerm) ? 5 : 2;
+      // Curve edges that overlap (between same nodes)
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const mx = (a.x + b.x)/2, my = (a.y + b.y)/2;
+      // Add slight curve based on edge index parity for visual separation
+      const off = (e * 3) % 17 - 8;
+      const len = Math.hypot(dx,dy)||1;
+      const nx = -dy/len, ny = dx/len;
+      const cx = mx + nx*off;
+      const cy = my + ny*off;
+      svg.appendChild(makeSVG('path',{
+        d:`M${a.x} ${a.y} Q${cx} ${cy} ${b.x} ${b.y}`,
+        fill:'none', stroke:strokeColor, 'stroke-width':strokeW,
+        opacity: (f.currentEdge===e ? 1 : 0.85)
+      }));
+      // Edge label
+      const lblBg = makeSVG('circle',{cx:cx, cy:cy, r:11, fill:cssVar('--panel'), stroke:strokeColor, 'stroke-width':2});
+      svg.appendChild(lblBg);
+      const lbl = makeSVG('text',{x:cx, y:cy+4, 'text-anchor':'middle','font-size':12,'font-weight':900, fill:cssVar('--text')});
+      lbl.textContent = e;
+      svg.appendChild(lbl);
+    }
+    // vertices
+    for(let u=1; u<=numV; u++){
+      const p = pos[u];
+      // group connected components by find()
+      const rootOf = (x)=>{ let cur=x; while(f.parent[cur]!==cur) cur=f.parent[cur]; return cur; };
+      const root = rootOf(u);
+      const palette = ['#3b82f6','#ef4444','#10b981','#f59e0b','#a855f7','#06b6d4'];
+      const fill = palette[(root-1) % palette.length];
+      svg.appendChild(makeSVG('circle',{cx:p.x, cy:p.y, r:28, fill, stroke:cssVar('--text'), 'stroke-width':3}));
+      const txt = makeSVG('text',{x:p.x, y:p.y+8, 'text-anchor':'middle','font-size':22,'font-weight':900,fill:'white','paint-order':'stroke','stroke':'rgba(0,0,0,.45)','stroke-width':3});
+      txt.textContent=u;
+      svg.appendChild(txt);
+    }
+
+    // EDGE ROW
+    const row = $('#rbEdgeRow'); clearEl(row);
+    for(let e=1; e<=M; e++){
+      const cell = document.createElement('div');
+      cell.className='edgeCell';
+      if(f.currentInterval && e>=f.currentInterval.l && e<=f.currentInterval.r) cell.classList.add('inRange');
+      if(f.addedEdges.includes(e)) cell.classList.add('added');
+      if(f.tempEdges.includes(e)) cell.classList.add('snapped');
+      cell.innerHTML = `e${e}<br/><span style="font-size:14px;">(${edges[e].u},${edges[e].v})</span><span class="idx">i=${e}</span>`;
+      row.appendChild(cell);
+    }
+
+    // QUERIES
+    const qr = $('#rbQueries'); clearEl(qr);
+    for(const qu of rawQueries){
+      const chip = document.createElement('div');
+      chip.className = 'queryChip';
+      chip.textContent = `#${qu.id}: [${qu.l},${qu.r}] (len ${qu.r-qu.l+1})${f.answers[qu.id]!==undefined ? ' ✓ ans='+f.answers[qu.id] : ''}`;
+      if(f.doneIds.includes(qu.id)) chip.classList.add('doneQ');
+      else if(f.curQid===qu.id) chip.classList.add('curQ');
+      qr.appendChild(chip);
+    }
+
+    // HISTORY
+    const hist = $('#rbHistory'); clearEl(hist);
+    for(let i=0; i<f.historyMeta.length; i++){
+      const meta = f.historyMeta[i];
+      const item = document.createElement('div');
+      item.className = 'histItem' + (meta.kind==='permanent' ? ' permanent' : ' snap');
+      item.textContent = `#${i}: edge ${meta.edge} (${edges[meta.edge].u}-${edges[meta.edge].v}) [${meta.kind}]`;
+      hist.appendChild(item);
+    }
+
+    // STATE
+    let s = '';
+    s += `components = ${f.components}\n`;
+    s += `history length = ${f.historyLen}\n`;
+    if(f.lastBlock>=0){
+      s += `last left-block = ${f.lastBlock}, blockRight = ${f.blockRight}, rightPtr = ${f.rightPtr}\n`;
+    }
+    s += `\nparent[] (1..5):\n`;
+    for(let v=1; v<=numV; v++) s += `  ${v} → ${f.parent[v]}\n`;
+    $('#rbState').textContent = s;
+
+    $('#rbDesc').textContent = `step ${step+1} / ${frames.length}\n\n${f.desc}`;
+  }
+  $('#rbResetBtn').onclick = ()=>{ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#rbAutoBtn').classList.remove('active');} render(); };
+  $('#rbStepBtn').onclick = ()=>{ if(step<frames.length-1){ step++; render(); } };
+  $('#rbAutoBtn').onclick = function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active'); autoTimer=setInterval(()=>{ if(step>=frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#rbAutoBtn').classList.remove('active');} else { step++; render(); } }, 900);}
+  };
+  window.__rb_render=render;
+  render();
+})();
+
+// =============================================================
+// TRACER 2 — 4D MO (two intervals, intersection size of multisets)
+// =============================================================
+(function(){
+  const arr=[3,1,2,3,1,4,2,5,3,1];   // length 10
+  const N = arr.length;
+  // Three queries: (l1,r1,l2,r2)
+  const queries = [
+    {l1:0, r1:3, l2:5, r2:8, id:0},   // disjoint
+    {l1:1, r1:5, l2:4, r2:8, id:1},   // overlapping
+    {l1:0, r1:6, l2:3, r2:9, id:2},   // overlapping
+  ];
+  const BLOCK = Math.max(1, Math.floor(Math.sqrt(N)));
+  const sorted = [...queries].sort((a,b)=>{
+    const al1=Math.floor(a.l1/BLOCK), bl1=Math.floor(b.l1/BLOCK);
+    if(al1!==bl1) return al1-bl1;
+    const ar1=Math.floor(a.r1/BLOCK), br1=Math.floor(b.r1/BLOCK);
+    if(ar1!==br1) return ar1-br1;
+    const al2=Math.floor(a.l2/BLOCK), bl2=Math.floor(b.l2/BLOCK);
+    if(al2!==bl2) return al2-bl2;
+    return a.r2-b.r2;
+  });
+
+  const frames=[];
+  let cl1=0, cr1=-1, cl2=0, cr2=-1;
+  const freq1=new Array(10).fill(0);
+  const freq2=new Array(10).fill(0);
+  let inter=0;
+  const doneIds=[];
+  function snap(desc, curQid, lastIdx=null, which=null){
+    frames.push({
+      cl1,cr1,cl2,cr2,
+      freq1:[...freq1], freq2:[...freq2],
+      inter, desc, curQid, doneIds:[...doneIds],
+      lastIdx, which
+    });
+  }
+  function add1(idx){
+    const x = arr[idx];
+    // before incrementing freq1[x], the contribution to intersection is min(freq1[x], freq2[x]).
+    // after, it's min(freq1[x]+1, freq2[x]). The delta is 1 iff freq1[x] < freq2[x].
+    if(freq1[x] < freq2[x]) inter++;
+    freq1[x]++;
+  }
+  function rem1(idx){
+    const x = arr[idx];
+    freq1[x]--;
+    if(freq1[x] < freq2[x]) inter--;
+  }
+  function add2(idx){
+    const x = arr[idx];
+    if(freq2[x] < freq1[x]) inter++;
+    freq2[x]++;
+  }
+  function rem2(idx){
+    const x = arr[idx];
+    freq2[x]--;
+    if(freq2[x] < freq1[x]) inter--;
+  }
+  snap('Initial: both intervals empty.', -1);
+  for(const q of sorted){
+    snap(`▶ Query #${q.id}: range1=[${q.l1},${q.r1}], range2=[${q.l2},${q.r2}].`, q.id);
+    while(cl1>q.l1){ cl1--; add1(cl1); snap(`Range1 expand left: add1(a[${cl1}]=${arr[cl1]}). inter=${inter}.`, q.id, cl1, 1); }
+    while(cr1<q.r1){ cr1++; add1(cr1); snap(`Range1 expand right: add1(a[${cr1}]=${arr[cr1]}). inter=${inter}.`, q.id, cr1, 1); }
+    while(cl1<q.l1){ rem1(cl1); snap(`Range1 shrink left: rem1(a[${cl1}]=${arr[cl1]}). inter=${inter}.`, q.id, cl1, 1); cl1++; }
+    while(cr1>q.r1){ rem1(cr1); snap(`Range1 shrink right: rem1(a[${cr1}]=${arr[cr1]}). inter=${inter}.`, q.id, cr1, 1); cr1--; }
+    while(cl2>q.l2){ cl2--; add2(cl2); snap(`Range2 expand left: add2(a[${cl2}]=${arr[cl2]}). inter=${inter}.`, q.id, cl2, 2); }
+    while(cr2<q.r2){ cr2++; add2(cr2); snap(`Range2 expand right: add2(a[${cr2}]=${arr[cr2]}). inter=${inter}.`, q.id, cr2, 2); }
+    while(cl2<q.l2){ rem2(cl2); snap(`Range2 shrink left: rem2(a[${cl2}]=${arr[cl2]}). inter=${inter}.`, q.id, cl2, 2); cl2++; }
+    while(cr2>q.r2){ rem2(cr2); snap(`Range2 shrink right: rem2(a[${cr2}]=${arr[cr2]}). inter=${inter}.`, q.id, cr2, 2); cr2--; }
+    doneIds.push(q.id);
+    snap(`✓ ans[${q.id}] = ${inter}.`, q.id);
+  }
+
+  let step=0, autoTimer=null;
+  function render(){
+    const f = frames[step];
+    const wrap = $('#fdArr'); clearEl(wrap);
+    for(let i=0; i<arr.length; i++){
+      const c = document.createElement('div');
+      c.className='arrCell';
+      const in1 = (i>=f.cl1 && i<=f.cr1);
+      const in2 = (i>=f.cl2 && i<=f.cr2);
+      if(in1 && in2) c.classList.add('both');
+      else if(in1) c.classList.add('r1');
+      else if(in2) c.classList.add('r2');
+      c.innerHTML = `${arr[i]}<span class="idx">i=${i}</span>`;
+      wrap.appendChild(c);
+    }
+    const qr = $('#fdQueries'); clearEl(qr);
+    for(const q of queries){
+      const chip = document.createElement('div');
+      chip.className='queryChip';
+      chip.textContent = `#${q.id}: r1=[${q.l1},${q.r1}] r2=[${q.l2},${q.r2}]`;
+      if(f.doneIds.includes(q.id)) chip.classList.add('doneQ');
+      else if(f.curQid===q.id) chip.classList.add('curQ');
+      qr.appendChild(chip);
+    }
+    let s='';
+    s += `cl1=${f.cl1}, cr1=${f.cr1}  →  range1 = `+(f.cr1<f.cl1?'(empty)':`[${f.cl1},${f.cr1}]`)+'\n';
+    s += `cl2=${f.cl2}, cr2=${f.cr2}  →  range2 = `+(f.cr2<f.cl2?'(empty)':`[${f.cl2},${f.cr2}]`)+'\n\n';
+    s += 'freq1 (non-zero):\n';
+    const f1=[];
+    for(let v=1; v<=6; v++) if(f.freq1[v]>0) f1.push(`  ${v} → ${f.freq1[v]}`);
+    s += f1.length ? f1.join('\n') : '  (empty)';
+    s += '\n\nfreq2 (non-zero):\n';
+    const f2=[];
+    for(let v=1; v<=6; v++) if(f.freq2[v]>0) f2.push(`  ${v} → ${f.freq2[v]}`);
+    s += f2.length ? f2.join('\n') : '  (empty)';
+    s += `\n\nintersection size = ${f.inter}`;
+    $('#fdState').textContent = s;
+    $('#fdDesc').textContent = `step ${step+1} / ${frames.length}\n\n${f.desc}`;
+  }
+  $('#fdResetBtn').onclick = ()=>{ step=0; if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('#fdAutoBtn').classList.remove('active');} render(); };
+  $('#fdStepBtn').onclick = ()=>{ if(step<frames.length-1){ step++; render(); } };
+  $('#fdAutoBtn').onclick = function(){
+    if(autoTimer){clearInterval(autoTimer);autoTimer=null;this.classList.remove('active');}
+    else{this.classList.add('active'); autoTimer=setInterval(()=>{ if(step>=frames.length-1){clearInterval(autoTimer);autoTimer=null;$('#fdAutoBtn').classList.remove('active');} else { step++; render(); } }, 700);}
+  };
+  window.__fd_render=render;
+  render();
+})();
+
+window.__rerenderTracers = function(){
+  if(window.__rb_render) window.__rb_render();
+  if(window.__fd_render) window.__fd_render();
+};
+</script>
+</body>
+</html>

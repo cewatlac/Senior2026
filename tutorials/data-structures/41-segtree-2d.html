@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Lesson 12 — 2D Segment Tree (Dense) · Segment Tree Course</title>
+<style>
+
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:24px; --fs-sm:21px;
+    --fs-h1:50px; --fs-h2:36px; --fs-h3:28px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.4;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:380px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:20px 16px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:24px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 16px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:26px;flex:0 0 auto;user-select:none;}
+  .brandTitle{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px;letter-spacing:.03em;}
+  .nav{padding:12px 4px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:14px 6px 8px;text-transform:uppercase;letter-spacing:.06em;font-size:16px;}
+  .nav a{display:block;padding:10px 12px;border-radius:12px;border:2px solid transparent;font-weight:800;color:var(--text);margin:4px 4px;background:rgba(0,0,0,0);font-size:18px;}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:14px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:14px;border-left:3px dashed rgba(37,99,235,.35);padding-left:6px;}
+  .sub a{font-weight:700;font-size:17px;padding:8px 10px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:700;font-size:22px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:12px 16px;border-radius:14px;font-weight:900;cursor:pointer;font-size:20px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .switch{width:60px;height:34px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 8px 18px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:31px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .card h4{margin:14px 0 8px;font-size:22px;color:var(--accent2);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:700;font-size:20px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:7px 11px;border-radius:999px;font-weight:900;font-size:16px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:16px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:950;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:18px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:14px 18px 18px;}
+  pre{margin:10px 0 0;background:var(--codebg);color:var(--codetext);border-radius:16px;padding:14px 16px;overflow:auto;border:2px solid rgba(255,255,255,.08);font-size:17px;line-height:1.45;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;margin:14px 0;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:23px;}
+  .diagramTools{display:flex;gap:8px;flex-wrap:wrap;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn:hover{transform:translateY(-1px)}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .miniBtn.danger{background:rgba(185,28,28,.10);border-color:rgba(185,28,28,.35);color:var(--bad);}
+  svg.treeSvg{width:100%;height:auto;border-radius:16px;background:rgba(0,0,0,0);display:block;}
+  .dsBox{background:var(--panel2);border:3px solid var(--border);border-radius:16px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;overflow-x:auto;white-space:pre-wrap;line-height:1.6;}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:3px solid var(--border);margin-top:10px;font-weight:800;font-size:19px;}
+  th,td{padding:10px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;text-align:left;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:44px;height:44px;border-radius:12px;border:2.5px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:20px;height:14px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+  .burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1);transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1;pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed;top:0;left:0;bottom:0;width:380px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0);opacity:1;pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:74px;}
+  .statusPanel{border:3px solid var(--border);border-radius:14px;padding:12px 14px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:800;}
+  .statusPanel h3{margin:0 0 8px;font-size:22px;color:var(--accent2);}
+  .page-footer{margin-top:40px;padding:24px 20px;border-top:3px solid var(--border);text-align:center;}
+  .footer-brand{font-weight:950;font-size:22px;color:var(--accent2);margin-bottom:4px;}
+  .footer-by{font-weight:800;font-size:16px;color:var(--muted);margin-bottom:8px;}
+  .footer-copy{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .sidebar-footer{margin-top:18px;padding-top:14px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:13px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:1px 7px;font-size:19px;font-weight:900;}
+  .hlCode{background:rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-weight:800;font-size:17px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;background:rgba(2,6,23,.04);padding:6px 10px;border-radius:999px;border:2px solid rgba(2,6,23,.08);}
+  [data-theme="dark"] .legend span{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);}
+  .swatch{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.3);}
+  .nodeCircle{transition:all .25s ease;}
+  .nodeLabel{font-weight:950;pointer-events:none;}
+  .edgeLine{transition:all .25s ease;}
+  .stepLabel{text-align:center;font-weight:900;font-size:18px;color:var(--muted);margin-top:8px;}
+  .arr{display:flex;flex-wrap:wrap;gap:6px;}
+  .arrCell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:48px;flex-direction:column;padding:4px 8px;border-radius:10px;border:2px solid var(--border);background:var(--panel);font-weight:950;font-family:ui-monospace,monospace;font-size:18px;}
+  .arrCell .idx{font-size:12px;color:var(--muted);font-weight:700;}
+  .arrCell.hl{border-color:var(--accent2);background:rgba(37,99,235,.15);box-shadow:0 4px 12px rgba(37,99,235,.18);}
+  .arrCell.upd{border-color:var(--warn);background:rgba(180,83,9,.15);color:var(--warn);}
+  .arrCell.done{border-color:var(--good);background:rgba(15,118,110,.15);color:var(--good);}
+  .kvLine{display:flex;align-items:center;gap:8px;font-family:ui-monospace,monospace;font-size:17px;margin:3px 0;}
+  .kvLine .k{font-weight:900;color:var(--accent2);min-width:80px;}
+  .kvLine .v{font-weight:700;}
+  .twoCol{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:flex-start;}
+  @media(max-width:1100px){.twoCol{grid-template-columns:1fr}}
+  .invariantBox{background:linear-gradient(180deg,rgba(15,118,110,.10),rgba(0,0,0,0));border:3px solid rgba(15,118,110,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .invariantBox h4{color:var(--good);margin:0 0 6px;font-size:21px;}
+  .pitfallBox{background:linear-gradient(180deg,rgba(185,28,28,.08),rgba(0,0,0,0));border:3px solid rgba(185,28,28,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .pitfallBox h4{color:var(--bad);margin:0 0 6px;font-size:21px;}
+  .proofBox{background:linear-gradient(180deg,rgba(180,83,9,.08),rgba(0,0,0,0));border:3px solid rgba(180,83,9,.30);border-radius:14px;padding:12px 16px;margin:10px 0;}
+  .proofBox h4{color:var(--warn);margin:0 0 6px;font-size:21px;}
+
+</style>
+</head>
+<body data-theme="light">
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">🌳</div>
+    <div class="brandTitle">
+      <div class="t1">Segment Tree · L12</div>
+      <div class="t2">2D · Dense grid</div>
+      <div class="by-line">Coach Academy</div>
+    </div>
+  </div>
+  <nav class="nav">
+  <div class="groupTitle">Foundations</div>
+  <a href="#problem">🧩 Problem Definition<small>Rectangle sum + cell update</small></a>
+  <a href="#intuition">💡 Intuition<small>Tree of trees</small></a>
+  <a href="#mental">🌳 Visual Mental Model<small>Outer rows × Inner columns</small></a>
+  <a href="#abstract">📐 Formal Abstraction<small>Nested structures</small></a>
+  <a href="#observations">🔬 Key Observations<small>Two-level decomposition</small></a>
+  <div class="groupTitle">Algorithm</div>
+  <a href="#algo">⚙️ Algorithm<small>build · update · query</small></a>
+  <div class="sub">
+  <a href="#trace-inner">Inner Column-Tree Tracer</a>
+  <a href="#trace-rect">Full Rectangle Tracer</a>
+  </div>
+  <a href="#invariants">🛡️ Invariants<small>Per-outer-node invariants</small></a>
+  <a href="#proof">🧮 Proof of Correctness<small>Why decomposition works</small></a>
+  <a href="#complexity">⏱ Complexity<small>Time · space</small></a>
+  <div class="groupTitle">Implementation</div>
+  <a href="#template-philosophy">🧰 Template Philosophy<small>Two segment trees in one</small></a>
+  <a href="#master-code">💻 Master Template<small>Full C++ code</small></a>
+  <a href="#explained">🔎 Line-by-Line<small>Every routine</small></a>
+  <div class="groupTitle">Variants</div>
+  <a href="#variants">🎛️ Variants & Extensions<small>Min/Max · Iterative</small></a>
+  <div class="groupTitle">Reference</div>
+  <a href="#edges">🧯 Edge Cases<small>Centralized audit</small></a>
+  <a href="#pitfalls">⚠️ Common Pitfalls<small>Memory and update cost</small></a>
+  <a href="#decision">🎯 Decision Guide<small>2D dense vs sparse vs BIT</small></a>
+  <a href="#problems">🚀 Practice Problems<small>VJudge links</small></a>
+  <a href="#summary">🏁 Final Summary<small>Wrap-up</small></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:42px;height:42px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:22px;color:white;">🎓</div>
+    <div class="sf-text">
+      Coach Academy<br/>
+      Prepared by The Coach (Dr. Wahab) &amp; Ashraf
+    </div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:12px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:32px;line-height:1;">🌳</span>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Segment Tree Course</div>
+        <h1>Lesson 12 — 2D Segment Tree (Dense)</h1>
+        <div class="subtitle">Outer over Rows · Inner over Columns · Rectangle Queries in O(log² n)</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:18px">🌙</span>
+        <div class="switch" id="themeSwitch" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <section class="card" id="problem">
+    <h2>🧩 Problem Definition</h2>
+
+    <p>Given a 2D grid <code>a[0..R-1][0..C-1]</code>, support:</p>
+    <div class="grid2">
+      <div class="statusPanel"><h3>Cell update</h3><p><code>set(r, c, v)</code>: replace <code>a[r][c]</code> with <code>v</code>.</p></div>
+      <div class="statusPanel"><h3>Rectangle sum</h3><p><code>sum(r1, c1, r2, c2)</code>: return the sum of <code>a[r][c]</code> for <code>r1 ≤ r ≤ r2, c1 ≤ c ≤ c2</code>.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px;">When <code>R</code> and <code>C</code> are both moderate (<code>≈ 10³</code>), a 2D segment tree gives <code>O(log R · log C)</code> per operation. For static problems, 2D prefix sums are O(1) per query; the 2D segment tree shines when updates are needed.</p>
+
+  </section>
+
+  <section class="card" id="intuition">
+    <h2>💡 Intuition from Scratch</h2>
+
+    <p>Build a segment tree over the <i>rows</i>. Each outer node corresponds to a contiguous range of rows. Inside that outer node, store a segment tree over the <i>columns</i>: the inner tree's leaves represent column indices, and its values aggregate the cells of the outer node's row range at that column.</p>
+    <p>So if outer node <code>O</code> covers rows <code>[r1, r2]</code> and inner node <code>I</code> within <code>O</code> covers columns <code>[c1, c2]</code>, then <code>I.sum = Σ a[r][c]</code> over <code>r ∈ [r1, r2], c ∈ [c1, c2]</code> — a rectangle sum.</p>
+    <p>A rectangle query <code>sum(r1, c1, r2, c2)</code> then runs the outer descent for the row range and, at each fully-covered outer node, makes an inner column-range query for <code>[c1, c2]</code>. Total: <code>O(log R)</code> outer nodes, each costing <code>O(log C)</code>, giving <code>O(log R · log C)</code>.</p>
+
+  </section>
+
+  <section class="card" id="mental">
+    <h2>🌳 Visual Mental Model</h2>
+
+    <p>Imagine the grid drawn as a rectangle. Slice it into row-bands by the outer segment tree: the root spans all rows; each level of the tree splits the band in half; leaves are single rows. For every band, the corresponding inner tree is built over the columns, with leaves being the sum of the band's cells in each column.</p>
+    <p>An outer-leaf's inner tree is the row's column tree. An outer-internal-node's inner tree is the elementwise sum of its two children's inner trees — same shape, summed values. The shape is identical across all outer nodes; only the values differ.</p>
+
+  </section>
+
+  <section class="card" id="abstract">
+    <h2>📐 Formal Abstraction</h2>
+
+    <p>Storage: a 2D array of segment-tree nodes. With both <code>R</code> and <code>C</code> rounded up to powers of two <code>baseR</code> and <code>baseC</code>, we allocate <code>tree[2·baseR][2·baseC]</code> — total <code>4 · baseR · baseC</code> nodes. For <code>R = C = 1024</code> this is <code>~4 · 10⁶</code> integers, which fits in memory.</p>
+    <p>An outer node at index <code>i</code> in the outer tree owns an inner array <code>tree[i][·]</code>. For an outer leaf <code>i</code> corresponding to row <code>r</code>, the inner array is a column segment tree over <code>a[r][·]</code>. For an outer internal node <code>i</code> with children <code>2i+1, 2i+2</code>, the inner array is the elementwise sum of <code>tree[2i+1][·]</code> and <code>tree[2i+2][·]</code>.</p>
+
+  </section>
+
+  <section class="card" id="observations">
+    <h2>🔬 Key Observations</h2>
+
+    <p><b>Observation 1 (rectangle as composition).</b> A rectangle <code>[r1, r2] × [c1, c2]</code> is the intersection of a row range and a column range. The outer descent over rows produces <code>O(log R)</code> fully-covered row sub-bands; for each, we ask the inner tree for the column range — <code>O(log C)</code>. Total <code>O(log R · log C)</code>.</p>
+    <p><b>Observation 2 (sum-of-inner-trees).</b> When two outer subtrees merge into a parent, their inner trees combine elementwise. Sum is associative and commutative, so this is well-defined; for min, max, gcd, xor, it works similarly. For non-additive composite states (like Lesson 2's max subarray sum), the merge is more delicate.</p>
+    <p><b>Observation 3 (update is O(log R · log C)).</b> A cell update <code>set(r, c, v)</code> must update the inner trees of every outer node whose row range contains <code>r</code> — that's <code>O(log R)</code> outer nodes, each requiring an <code>O(log C)</code> inner update. Total: <code>O(log R · log C)</code> per cell update.</p>
+
+  </section>
+
+  <section class="card" id="algo">
+    <h2>⚙️ Algorithm</h2>
+
+    <h3>build</h3>
+    <p>Build the inner column trees of all outer leaves first (one per row). Then build the outer-internal nodes bottom-up: each outer internal node's inner tree is the elementwise sum of its two children's inner trees. Total work: <code>O(R · C)</code> for the leaf trees, plus <code>O(R · C)</code> for the internal sums.</p>
+    <h3>cell update set(r, c, v)</h3>
+    <p>Compute the delta <code>d = v − a[r][c]</code>. Then for every outer node on the path from outer-root to outer-leaf-<code>r</code> (there are <code>O(log R)</code> such nodes), update column <code>c</code> in that node's inner tree by <code>+d</code>. Each inner update is <code>O(log C)</code>. Total: <code>O(log R · log C)</code>.</p>
+    <h3>rectangle query sum(r1, c1, r2, c2)</h3>
+    <p>Descend the outer tree as usual. For a fully-covered outer node <code>i</code>, ask its inner tree for <code>sum_inner([c1, c2])</code> and add to the answer. For partial overlap, recurse into both outer children. For no overlap, contribute 0.</p>
+
+  </section>
+
+  <section class="card" id="trace-inner">
+    <h2>🧪 Tracer 1 — Inner Column Tree of an Outer Node</h2>
+
+    <p>The grid is <code>4 × 8</code>. The outer tree has 7 nodes; the inner column tree at each outer node has 15 nodes. Pick an outer node (by clicking through), then run a column-range query on its inner tree to see the standard descent on the column axis.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Inner Column-Tree Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">outer node iv<input id="tiIv" type="number" min="0" max="6" value="0" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">c1<input id="tiC1" type="number" min="0" max="7" value="2" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">c2<input id="tiC2" type="number" min="0" max="7" value="5" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <button class="miniBtn primary" id="tiRun">⚡ Run</button>
+          <button class="miniBtn" id="tiReset">↺ Reset</button>
+          <button class="miniBtn" id="tiPrev">‹ Prev</button>
+          <button class="miniBtn" id="tiNext">Next ›</button>
+          <button class="miniBtn" id="tiAuto">▶ Auto</button>
+        </div>
+      </div>
+      <div class="twoCol">
+        <div>
+          <div class="diagramTitle" style="font-size:18px;text-align:center;margin-bottom:6px;">Grid (rows highlighted by outer node)</div>
+          <svg id="tiGridSvg" viewBox="0 0 460 280" class="treeSvg" style="background:transparent"></svg>
+        </div>
+        <div>
+          <div class="diagramTitle" style="font-size:18px;text-align:center;margin-bottom:6px;">Inner column tree (column query)</div>
+          <svg class="treeSvg" id="tiInnerSvg" viewBox="0 0 460 460"></svg>
+        </div>
+      </div>
+      <div class="statusPanel" style="margin-top:10px;"><h3>Step</h3><div id="tiStatus">–</div></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(37,99,235,.30)"></span>Current outer node / current inner node</span>
+        <span><span class="swatch" style="background:rgba(15,118,110,.20)"></span>Full overlap → return sum</span>
+        <span><span class="swatch" style="background:rgba(180,83,9,.18)"></span>Partial → recurse</span>
+      </div>
+      <div class="stepLabel" id="tiStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="trace-rect">
+    <h2>🧪 Tracer 2 — Full Rectangle Query</h2>
+
+    <p>For a chosen rectangle, the tracer animates the outer descent. At each outer node, the inner column query is triggered and its result added to the running total. The two-level descent shows the <code>O(log R · log C)</code> structure clearly.</p>
+    <div class="diagramWrap">
+      <div class="diagramHeader">
+        <span class="diagramTitle">Full Rectangle Query Tracer</span>
+        <div class="diagramTools">
+          <label class="pill">r1<input id="trR1" type="number" min="0" max="3" value="1" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">r2<input id="trR2" type="number" min="0" max="3" value="3" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">c1<input id="trC1" type="number" min="0" max="7" value="2" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <label class="pill">c2<input id="trC2" type="number" min="0" max="7" value="5" style="width:60px;border:none;outline:none;background:transparent;font-weight:900;font-size:18px;color:var(--text);text-align:center;"></label>
+          <button class="miniBtn primary" id="trRun">⚡ Run</button>
+          <button class="miniBtn" id="trReset">↺ Reset</button>
+          <button class="miniBtn" id="trPrev">‹ Prev</button>
+          <button class="miniBtn" id="trNext">Next ›</button>
+          <button class="miniBtn" id="trAuto">▶ Auto</button>
+        </div>
+      </div>
+      <div class="twoCol">
+        <div>
+          <div class="diagramTitle" style="font-size:18px;text-align:center;margin-bottom:6px;">Outer (row) tree</div>
+          <svg class="treeSvg" id="trOuterSvg" viewBox="0 0 460 280"></svg>
+        </div>
+        <div>
+          <div class="diagramTitle" style="font-size:18px;text-align:center;margin-bottom:6px;">Inner (column) tree for current outer node</div>
+          <svg class="treeSvg" id="trInnerSvg" viewBox="0 0 460 460"></svg>
+        </div>
+      </div>
+      <div class="twoCol" style="margin-top:10px;">
+        <div class="statusPanel"><h3>Step</h3><div id="trStatus">–</div></div>
+        <div class="statusPanel"><h3>Running Total</h3><div class="kvLine"><span class="k">sum</span><span class="v" id="trTotal">0</span></div></div>
+      </div>
+      <div class="stepLabel" id="trStep"></div>
+    </div>
+
+  </section>
+
+  <section class="card" id="invariants">
+    <h2>🛡️ Invariants</h2>
+
+<div class="invariantBox"><h4>✅ Invariant — Outer-inner consistency</h4><p>For every outer node <code>i</code> covering row range <code>[r1, r2]</code> and every inner node <code>j</code> in <code>i</code>'s inner tree covering column range <code>[c1, c2]</code>, <code>tree[i][j].sum</code> equals the sum of <code>a[r][c]</code> over <code>r ∈ [r1, r2], c ∈ [c1, c2]</code>.</p></div><div class="invariantBox"><h4>✅ Invariant — Outer-merge invariant</h4><p>For every outer internal node <code>i</code> with children <code>2i+1</code> and <code>2i+2</code>, the inner array <code>tree[i][·]</code> is the elementwise sum of <code>tree[2i+1][·]</code> and <code>tree[2i+2][·]</code>.</p></div><div class="invariantBox"><h4>✅ Invariant — Update path invariant</h4><p>After a cell update, every inner tree along the outer path has had its column <code>c</code> updated. No inner tree off the outer path is changed.</p></div>
+  </section>
+
+  <section class="card" id="proof">
+    <h2>🧮 Proof of Correctness</h2>
+<div class="proofBox"><h4>🧮 Proof — Why the two-level descent returns the correct rectangle sum</h4>
+    <p>The outer descent over rows decomposes <code>[r1, r2]</code> into <code>O(log R)</code> disjoint fully-covered sub-bands <code>S_1, S_2, ..., S_k</code>. Each <code>S_j</code> corresponds to an outer node with stored inner column tree representing the sum <code>Σ_{r ∈ S_j, c} a[r][c]</code> per column range.</p>
+    <p>For each <code>S_j</code>, the inner query over <code>[c1, c2]</code> returns <code>Σ_{r ∈ S_j, c ∈ [c1, c2]} a[r][c]</code> by the standard 1D segment tree proof. Summing over <code>j</code> gives the rectangle sum because the <code>S_j</code> partition <code>[r1, r2]</code>. ∎</p>
+    </div>
+  </section>
+
+  <section class="card" id="complexity">
+    <h2>⏱ Complexity Analysis</h2>
+
+    <table>
+      <tr><th>Operation</th><th>Time</th><th>Memory</th></tr>
+      <tr><td>Build</td><td>Θ(R · C)</td><td>Θ(R · C)</td></tr>
+      <tr><td>Cell update</td><td>Θ(log R · log C)</td><td>—</td></tr>
+      <tr><td>Rectangle sum</td><td>Θ(log R · log C)</td><td>—</td></tr>
+    </table>
+    <p class="note">Memory dominates. For <code>R = C = 1024</code>, the structure uses about <code>4 · 1024² = 4 · 10⁶</code> integers — fine for <code>long long</code>. For <code>R = C = 10⁴</code>, memory becomes infeasible (1.6 · 10⁹ integers); use 2D BIT or sparse 2D segment tree (Lesson 13).</p>
+
+  </section>
+
+  <section class="card" id="template-philosophy">
+    <h2>🧰 Core Template Philosophy</h2>
+
+    <p>A 2D segment tree is just &ldquo;a segment tree where each node holds a segment tree&rdquo;. The discipline is to write the outer routines in terms of inner-tree operations: outer build calls inner build for each leaf row, then outer build calls inner sum-merge for each internal outer node. Outer update calls inner update on every outer node on the row path. Outer query calls inner query on every fully-covered outer node.</p>
+    <p>The flat 2D array layout makes this straightforward: <code>tree[outer_idx][inner_idx]</code> with both indices using 0-based heap addressing.</p>
+
+  </section>
+
+  <section class="card" id="master-code">
+    <h2>💻 Master Template (C++)</h2>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct SegTree2D_Dense_Sum {
+    using T = long long;
+
+    int R = 0, C = 0;
+    int baseR = 1, baseC = 1;
+    vector&lt;vector&lt;T&gt;&gt; tree;  // tree[outer_idx][inner_idx]
+
+    void init(const vector&lt;vector&lt;T&gt;&gt;&amp; a) {
+        R = (int)a.size();
+        C = R ? (int)a[0].size() : 0;
+        baseR = 1; while (baseR &lt; max(1, R)) baseR &lt;&lt;= 1;
+        baseC = 1; while (baseC &lt; max(1, C)) baseC &lt;&lt;= 1;
+        tree.assign(2 * baseR, vector&lt;T&gt;(2 * baseC, 0));
+
+        for (int r = 0; r &lt; R; r++) {
+            int outer = baseR - 1 + r;
+            for (int c = 0; c &lt; C; c++) {
+                tree[outer][baseC - 1 + c] = a[r][c];
+            }
+            for (int j = baseC - 2; j &gt;= 0; j--) {
+                tree[outer][j] = tree[outer][2*j+1] + tree[outer][2*j+2];
+            }
+        }
+
+        for (int i = baseR - 2; i &gt;= 0; i--) {
+            int L = 2*i + 1, R2 = 2*i + 2;
+            for (int j = 0; j &lt; 2 * baseC; j++) {
+                tree[i][j] = tree[L][j] + tree[R2][j];
+            }
+        }
+    }
+
+    void set(int r, int c, T value) {
+        int outer = baseR - 1 + r;
+        T delta = value - read_leaf(outer, c);
+        for (int i = outer; ; i = (i - 1) / 2) {
+            // Update column c in tree[i][·]
+            int j = baseC - 1 + c;
+            tree[i][j] += delta;
+            while (j &gt; 0) {
+                j = (j - 1) / 2;
+                tree[i][j] = tree[i][2*j+1] + tree[i][2*j+2];
+            }
+            if (i == 0) break;
+        }
+    }
+
+    T read_leaf(int outer, int c) {
+        return tree[outer][baseC - 1 + c];
+    }
+
+    T rectangle_sum(int r1, int c1, int r2, int c2) {
+        return outer_query(0, 0, baseR - 1, r1, r2, c1, c2);
+    }
+
+    T outer_query(int i, int l, int r, int r1, int r2, int c1, int c2) {
+        if (r2 &lt; l || r &lt; r1) return 0;
+        if (r1 &lt;= l &amp;&amp; r &lt;= r2) {
+            return inner_query(i, 0, 0, baseC - 1, c1, c2);
+        }
+        int mid = l + (r - l) / 2;
+        return outer_query(2*i+1, l,      mid, r1, r2, c1, c2)
+             + outer_query(2*i+2, mid+1, r,   r1, r2, c1, c2);
+    }
+
+    T inner_query(int outer_i, int j, int l, int r, int c1, int c2) {
+        if (c2 &lt; l || r &lt; c1) return 0;
+        if (c1 &lt;= l &amp;&amp; r &lt;= c2) return tree[outer_i][j];
+        int mid = l + (r - l) / 2;
+        return inner_query(outer_i, 2*j+1, l,      mid, c1, c2)
+             + inner_query(outer_i, 2*j+2, mid+1, r,   c1, c2);
+    }
+};</code></pre>
+  </section>
+
+  <section class="card" id="explained">
+    <h2>🔎 Line-by-Line Explanation</h2>
+<details open>
+  <summary>init — build inner trees first, then merge them <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The build is two passes. The first pass builds the inner column tree for every outer leaf (one per row of <code>a</code>): place the row's values at column leaves, then sweep up the column tree. The second pass walks the outer tree bottom-up; for each outer internal node, set its inner array to the elementwise sum of its two outer children's inner arrays. Total <code>O(R · C)</code>.</p>
+  </div>
+</details>
+<details open>
+  <summary>set(r, c, v) — climb the outer path and update each inner tree <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>We compute the delta from the current leaf value. Then we walk from the outer leaf to the outer root, and at every outer node we apply a 1D segment tree point update at column <code>c</code> on the inner tree (climbing the column tree from leaf to root, adding <code>delta</code> at each step). Two nested 1D climbs: <code>O(log R)</code> outer · <code>O(log C)</code> inner.</p>
+  </div>
+</details>
+<details open>
+  <summary>rectangle_sum and outer_query / inner_query <span class="rightHint">click to expand/collapse</span></summary>
+  <div class="detailsBody">
+<p>The outer query is a standard 1D descent over rows. The novelty is what happens at full-overlap: instead of returning a precomputed scalar, we make a 1D column query <code>inner_query(i, ...)</code> on the inner tree of outer node <code>i</code>. The inner query is just Lesson 1's range-sum descent.</p>
+  </div>
+</details>
+
+  </section>
+
+  <section class="card" id="edges">
+    <h2>🧯 Edge Cases (Centralized)</h2>
+
+    <table>
+      <tr><th>Case</th><th>What happens</th><th>Why it works</th></tr>
+      <tr><td>R = 1 or C = 1</td><td>Inner or outer tree is a single leaf, queries collapse to 1D</td><td>Standard, no special case</td></tr>
+      <tr><td>Whole-grid query</td><td>Outer query stops at root, single inner query over all columns</td><td>One outer full-coverage</td></tr>
+      <tr><td>Single-cell query</td><td>Outer descent reaches one outer leaf, inner descent reaches one inner leaf</td><td>Single inner leaf returned</td></tr>
+      <tr><td>R, C not powers of 2</td><td>Padded leaves contain 0</td><td>Padded contributions are identity</td></tr>
+      <tr><td>R · C too large (> 10⁷ cells)</td><td>Memory blowup</td><td>Switch to sparse (Lesson 13) or 2D BIT</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="pitfalls">
+    <h2>⚠️ Common Pitfalls</h2>
+<div class="pitfallBox"><h4>⚠️ Pitfall — Confusing the two tree indices</h4><p>The outer and inner trees both use 0-based heap addressing, and it's easy to swap them. Conventional naming: use <code>i</code> for outer index and <code>j</code> for inner index, and always write <code>tree[outer][inner]</code>.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Forgetting to update the inner tree at every outer ancestor</h4><p>A cell update at <code>(r, c)</code> must update column <code>c</code> in the inner tree of <i>every</i> outer node on the row path. Forgetting any one of them leaves stale data in that node's inner tree — queries that hit that node return wrong sums.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Not initializing padded inner trees</h4><p>If <code>R</code> isn't a power of 2, the padded outer leaves' inner trees should be zero everywhere. The default <code>assign(...)</code> with 0 handles this, but if you replace it with manual initialization, remember to handle the padded portion.</p></div><div class="pitfallBox"><h4>⚠️ Pitfall — Trying to use 2D segment tree for sparse coordinates</h4><p>For grids where most cells are zero (or for huge coordinates like 10⁹), the dense version is wasteful. Switch to a 2D dynamic sparse segment tree (Lesson 13).</p></div>
+  </section>
+
+  <section class="card" id="decision">
+    <h2>🎯 Decision Guide</h2>
+
+    <table>
+      <tr><th>Symptom</th><th>Choice</th><th>Reason</th></tr>
+      <tr><td>Dense grid, cell updates + rectangle sums</td><td><b>2D segment tree (this lesson)</b></td><td>Standard tool</td></tr>
+      <tr><td>Dense grid, only cell updates + rectangle sums of <i>commutative</i> operation</td><td>2D BIT</td><td>Same asymptotic but tighter constant</td></tr>
+      <tr><td>Dense grid, no updates</td><td>2D prefix sums</td><td>O(1) per query, beats segment tree</td></tr>
+      <tr><td>Sparse coordinates (huge grid, few cells active)</td><td>2D Dynamic Sparse (Lesson 13)</td><td>Memory blows up otherwise</td></tr>
+      <tr><td>Rectangle updates (not just cell updates)</td><td>2D BIT with difference arrays, or KD-tree, or harder 2D lazy variants</td><td>Cell-only updates are the &ldquo;easy&rdquo; case</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="variants">
+    <h2>🎛️ Variants &amp; Extensions</h2>
+
+    <h3>Variant 1 — Min / Max / GCD / XOR</h3>
+    <p>Replace the elementwise sum-merge in the outer build with the appropriate operation. The inner tree's merge changes correspondingly. Identity values must be chosen carefully (LLONG_MAX for min, LLONG_MIN for max, 0 for gcd/xor).</p>
+    <h3>Variant 2 — Iterative inner tree</h3>
+    <p>Each inner tree can be an iterative segment tree (Lesson 3) for a faster constant. The outer tree usually stays recursive.</p>
+    <h3>Variant 3 — Row updates + column queries (special case)</h3>
+    <p>If updates are entire rows (not cells), only one inner tree needs updating per row update — just modify the row's inner tree, and the outer ancestors' inner trees automatically reflect via the build-time merging. (Not, however, after the fact — you must re-merge.)</p>
+    <h3>Variant 4 — Persistent 2D segment tree</h3>
+    <p>Apply path-copying to the outer tree, sharing inner trees that don't change. Memory <code>O(log R · log C)</code> per update version.</p>
+
+  </section>
+
+  <section class="card" id="problems">
+    <h2>🚀 Practice Problems (VJudge)</h2>
+
+    <table>
+      <tr><th>Level</th><th>Problem</th><th>Link</th><th>What it teaches</th></tr>
+      <tr><td>Medium</td><td>SPOJ — MATSUM</td><td><a href="https://vjudge.net/problem/SPOJ-MATSUM" target="_blank">SPOJ-MATSUM</a></td><td>Canonical 2D cell update + rectangle sum</td></tr>
+      <tr><td>Medium</td><td>UVa 11297 — Census</td><td><a href="https://vjudge.net/problem/UVA-11297" target="_blank">UVA-11297</a></td><td>2D min and max with cell updates</td></tr>
+      <tr><td>Medium</td><td>Codeforces 459D — Pashmak and Parmida's problem</td><td><a href="https://vjudge.net/problem/CodeForces-459D" target="_blank">CF-459D</a></td><td>2D counting (often solved with BIT but illustrates the idea)</td></tr>
+      <tr><td>Hard</td><td>SPOJ — KQUERY2D</td><td><a href="https://vjudge.net/problem/SPOJ-KQUERY2D" target="_blank">SPOJ-KQUERY2D</a></td><td>2D order statistic</td></tr>
+      <tr><td>Hard</td><td>Codeforces 19D — Points</td><td><a href="https://vjudge.net/problem/CodeForces-19D" target="_blank">CF-19D</a></td><td>2D point set with sparse coords (try L13)</td></tr>
+    </table>
+
+  </section>
+
+  <section class="card" id="summary">
+    <h2>🏁 Final Summary</h2>
+
+    <p>A 2D segment tree is a segment tree over rows whose every node holds a segment tree over columns. Rectangle queries decompose as an outer descent over rows; at each fully-covered outer node, an inner column query gives the rectangle sum for that row band. Total cost: <code>O(log R · log C)</code> per operation.</p>
+    <p>The structure is simple to write but memory-hungry: <code>O(R · C)</code> total. For sparse grids or huge coordinates, switch to the dynamic sparse 2D variant (Lesson 13), which materializes inner nodes on demand. The dense version is the right tool when both dimensions are moderate (≤ 10³) and updates are frequent.</p>
+
+  </section>
+
+
+  <div class="page-footer">
+    <div style="width:56px;height:56px;border-radius:14px;margin:0 auto 12px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:28px;color:white;">🎓</div>
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Segment Tree Course · Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">2D Segment Tree · Tree of Trees · O(log R · log C) per Operation</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:17px;text-decoration:none;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</main>
+</div><!-- .app -->
+
+<script>
+
+// ============================================================
+// DOM + SVG HELPERS
+// ============================================================
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+function clearEl(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function makeEl(tag, attrs={}, html=''){
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  if(html) el.innerHTML = html;
+  return el;
+}
+function makeSVG(tag, attrs={}){
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+function getCssVar(name){
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+// ============================================================
+// THEME TOGGLE (with localStorage persistence)
+// ============================================================
+(function(){
+  const KEY = 'segtree_theme';
+  const saved = localStorage.getItem(KEY);
+  if(saved) document.body.setAttribute('data-theme', saved);
+  else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.body.setAttribute('data-theme', 'dark');
+  }
+  const sw = $('#themeSwitch');
+  if(sw){
+    sw.setAttribute('role','switch');
+    sw.setAttribute('aria-checked', document.body.getAttribute('data-theme')==='dark' ? 'true':'false');
+    sw.onclick = () => {
+      const next = document.body.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      localStorage.setItem(KEY, next);
+      sw.setAttribute('aria-checked', next==='dark'?'true':'false');
+      // Notify any tree drawers to re-render colors
+      document.dispatchEvent(new CustomEvent('segtree:themechange'));
+    };
+  }
+})();
+
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+(function(){
+  const toggle = $('#sidebarToggle');
+  const sidebar = $('#sidebar');
+  const appEl = $('#app');
+  const overlay = $('#sidebarOverlay');
+  if(!toggle || !sidebar || !appEl) return;
+  let open = window.innerWidth > 1400;
+  function apply(){
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      sidebar.classList.remove('collapsed');
+      toggle.classList.add('open');
+      overlay.classList.remove('show');
+      if(window.innerWidth > 1400) appEl.classList.remove('sidebar-hidden');
+    } else {
+      appEl.classList.add('sidebar-hidden');
+      sidebar.classList.add('collapsed');
+      toggle.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+  }
+  if(!open) appEl.classList.add('sidebar-hidden');
+  apply();
+  toggle.setAttribute('aria-controls','sidebar');
+  toggle.onclick = () => {
+    open = !open;
+    if(open && window.innerWidth <= 1400){
+      sidebar.classList.remove('collapsed');
+      overlay.classList.add('show');
+      toggle.classList.add('open');
+      toggle.setAttribute('aria-expanded','true');
+    } else {
+      apply();
+    }
+  };
+  overlay.onclick = () => {
+    sidebar.classList.add('collapsed');
+    overlay.classList.remove('show');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+    open = false;
+  };
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      overlay.click();
+    }
+  });
+})();
+
+// ============================================================
+// SCROLL-BASED NAV HIGHLIGHTING
+// ============================================================
+(function(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  function update(){
+    let cur = '';
+    sections.forEach(s => {
+      if(s.getBoundingClientRect().top < 200) cur = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+    });
+  }
+  const contentEl = $('.content');
+  if(contentEl) contentEl.addEventListener('scroll', update);
+  update();
+})();
+
+// ============================================================
+// SEGMENT TREE LAYOUT (0-based heap indexing)
+//   left  = 2*i + 1
+//   right = 2*i + 2
+// Returns a list { x, y, r } for each node, plus tree dimensions.
+// ============================================================
+function computeSegTreeLayout(base, opts={}){
+  // base must be a power of 2. Tree has 2*base - 1 nodes.
+  const levels = Math.log2(base) + 1;
+  const W = opts.width || 880;
+  const H = opts.height || (levels * 95 + 30);
+  const radius = opts.radius || Math.max(18, Math.min(34, 280 / base));
+  const layout = [];
+  function rec(i, depth, l, r){
+    layout[i] = { i, depth, l, r };
+    if(l === r) return;
+    const left = 2*i + 1, right = left + 1;
+    const mid = l + ((r - l) >> 1);
+    rec(left, depth+1, l, mid);
+    rec(right, depth+1, mid+1, r);
+  }
+  rec(0, 0, 0, base-1);
+  // Now assign x coordinates using leaf positions
+  const leafCount = base;
+  const leafGap = (W - 40) / leafCount;
+  let leafIdx = 0;
+  function place(i){
+    const node = layout[i];
+    if(node.l === node.r){
+      node.x = 20 + leafGap * (leafIdx + 0.5);
+      leafIdx++;
+    } else {
+      const left = 2*i + 1, right = left + 1;
+      place(left); place(right);
+      node.x = (layout[left].x + layout[right].x) / 2;
+    }
+    node.y = 30 + node.depth * ((H - 60) / Math.max(1, levels - 1));
+    node.rad = radius;
+  }
+  place(0);
+  return { layout, width: W, height: H, levels, radius };
+}
+
+// ============================================================
+// SEGMENT TREE SVG DRAWER
+// Highlight categories:
+//   current      - the node we are currently processing (blue strong)
+//   visited      - already touched in this step (light blue)
+//   full         - fully covered by query (green - return)
+//   partial      - partial overlap (orange - recurse)
+//   none         - no overlap (red dashed - skip)
+//   updated      - just changed by an update (warn fill)
+//   lazyPending  - has pending lazy tag (yellow ring)
+//   cloned       - newly cloned node (purple fill)
+//   frozen       - belongs to an old persistent version (gray dashed)
+// ============================================================
+function drawSegTree(svgSel, opts){
+  const svg = (typeof svgSel === 'string') ? $(svgSel) : svgSel;
+  clearEl(svg);
+  const { base, nodes, highlights={}, queryRange=null, arrLabels=null } = opts;
+  const layoutOpts = { width: opts.width || 880, height: opts.height || 0, radius: opts.radius };
+  const L = computeSegTreeLayout(base, layoutOpts);
+  svg.setAttribute('viewBox', `0 0 ${L.width} ${L.height}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+  // Draw edges first
+  L.layout.forEach(nd => {
+    if(nd.l === nd.r) return;
+    const leftI = 2*nd.i + 1, rightI = leftI + 1;
+    [leftI, rightI].forEach(child => {
+      const c = L.layout[child];
+      const lineCol = getCssVar('--border');
+      const ln = makeSVG('line', {
+        x1: nd.x, y1: nd.y, x2: c.x, y2: c.y,
+        stroke: lineCol, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+        class: 'edgeLine'
+      });
+      svg.appendChild(ln);
+    });
+  });
+
+  // Draw nodes
+  L.layout.forEach(nd => {
+    const h = highlights[nd.i] || 'idle';
+    let fill = 'var(--panel)';
+    let stroke = getCssVar('--border');
+    let sw = 3;
+    let dasharray = '';
+    switch(h){
+      case 'current':  fill = 'rgba(37,99,235,.30)'; stroke = getCssVar('--accent2'); sw = 5; break;
+      case 'visited':  fill = 'rgba(37,99,235,.10)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'full':     fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 5; break;
+      case 'partial':  fill = 'rgba(180,83,9,.18)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'none':     fill = 'rgba(185,28,28,.12)'; stroke = getCssVar('--bad'); sw = 3; dasharray='6,5'; break;
+      case 'updated':  fill = 'rgba(180,83,9,.22)'; stroke = getCssVar('--warn'); sw = 5; break;
+      case 'lazyPending': fill='rgba(180,83,9,.10)'; stroke = getCssVar('--warn'); sw = 4; break;
+      case 'cloned':   fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 5; break;
+      case 'frozen':   fill = 'rgba(120,120,120,.12)'; stroke = getCssVar('--muted'); sw = 2.5; dasharray='4,4'; break;
+      case 'leaf':     fill = 'rgba(37,99,235,.08)'; stroke = getCssVar('--accent'); sw = 3; break;
+      case 'kth-left': fill = 'rgba(15,118,110,.20)'; stroke = getCssVar('--good'); sw = 4; break;
+      case 'kth-right':fill = 'rgba(139,92,246,.18)'; stroke = '#7c3aed'; sw = 4; break;
+    }
+    const attrs = {
+      cx: nd.x, cy: nd.y, r: nd.rad,
+      fill, stroke, 'stroke-width': sw,
+      class: 'nodeCircle'
+    };
+    if(dasharray) attrs['stroke-dasharray'] = dasharray;
+    svg.appendChild(makeSVG('circle', attrs));
+
+    // Index label (small, above)
+    const idxLab = makeSVG('text', {
+      x: nd.x, y: nd.y - nd.rad - 4,
+      'text-anchor':'middle','font-size':'11','font-weight':'700',
+      fill: getCssVar('--muted'), 'pointer-events':'none'
+    });
+    idxLab.textContent = `i=${nd.i}`;
+    svg.appendChild(idxLab);
+
+    // Interval label inside
+    const intervalLab = makeSVG('text', {
+      x: nd.x, y: nd.y - 3,
+      'text-anchor':'middle','font-size': nd.rad >= 26 ? '13' : '11', 'font-weight':'900',
+      fill: getCssVar('--text'), 'pointer-events':'none'
+    });
+    intervalLab.textContent = `[${nd.l},${nd.r}]`;
+    svg.appendChild(intervalLab);
+
+    // Node value (passed in nodes[i])
+    const v = nodes ? nodes[nd.i] : undefined;
+    if(v !== undefined && v !== null){
+      const valLab = makeSVG('text', {
+        x: nd.x, y: nd.y + 14,
+        'text-anchor':'middle','font-size': nd.rad >= 26 ? '15' : '12','font-weight':'950',
+        fill: h === 'current' ? getCssVar('--accent2') :
+              h === 'updated' ? getCssVar('--warn') :
+              h === 'full'    ? getCssVar('--good') :
+              getCssVar('--text'),
+        'pointer-events':'none'
+      });
+      valLab.textContent = (typeof v === 'object') ? JSON.stringify(v) : String(v);
+      svg.appendChild(valLab);
+    }
+  });
+
+  // Optional: query range bar at top
+  if(queryRange){
+    const [ql, qr] = queryRange;
+    const leafLayer = L.layout.filter(n => n.l === n.r);
+    if(leafLayer.length){
+      const lx = leafLayer[ql] ? leafLayer[ql].x : null;
+      const rx = leafLayer[qr] ? leafLayer[qr].x : null;
+      if(lx !== null && rx !== null){
+        const y = L.layout[L.layout.length-1].y + L.radius + 16;
+        svg.appendChild(makeSVG('line', {
+          x1: lx - L.radius, y1: y, x2: rx + L.radius, y2: y,
+          stroke: getCssVar('--accent2'), 'stroke-width': 5, 'stroke-linecap':'round'
+        }));
+        const t = makeSVG('text', {
+          x: (lx+rx)/2, y: y+20, 'text-anchor':'middle','font-size':'14','font-weight':'900',
+          fill: getCssVar('--accent2')
+        });
+        t.textContent = `query [${ql}, ${qr}]`;
+        svg.appendChild(t);
+      }
+    }
+  }
+
+  return L;
+}
+
+// ============================================================
+// HORIZONTAL ARRAY DRAWER
+// nodes: array of values; highlights: index -> class ('hl','upd','done')
+// ============================================================
+function drawArray(containerSel, values, opts={}){
+  const c = (typeof containerSel === 'string') ? $(containerSel) : containerSel;
+  if(!c) return;
+  clearEl(c);
+  c.classList.add('arr');
+  const highlights = opts.highlights || {};
+  const showIdx = opts.showIdx !== false;
+  values.forEach((v, i) => {
+    const cls = highlights[i] ? ('arrCell '+highlights[i]) : 'arrCell';
+    const cell = makeEl('div', { class: cls });
+    if(showIdx){
+      const idx = makeEl('span', { class: 'idx' });
+      idx.textContent = String(i);
+      cell.appendChild(idx);
+    }
+    const val = makeEl('span', {});
+    val.textContent = (v === null || v === undefined) ? '·' : String(v);
+    cell.appendChild(val);
+    c.appendChild(cell);
+  });
+}
+
+// ============================================================
+// COMMON STEP CONTROLLER (Reset / Prev / Next / Auto)
+// Pass: { ids:{reset,prev,next,auto,step,status}, totalFn, renderFn,
+//         interval(ms), startStep=0 }
+// ============================================================
+function makeStepController(cfg){
+  const { ids, totalFn, renderFn } = cfg;
+  let step = cfg.startStep || 0;
+  let timer = null;
+  function render(){
+    const total = totalFn();
+    if(step >= total) step = total - 1;
+    if(step < 0) step = 0;
+    renderFn(step);
+    if(ids.step){
+      const el = $(ids.step);
+      if(el) el.textContent = `Step ${step+1} / ${total}`;
+    }
+  }
+  function stopAuto(){
+    if(timer){ clearInterval(timer); timer = null; }
+    if(ids.auto){ const a = $(ids.auto); if(a) a.classList.remove('active'); }
+  }
+  function reset(){ step = 0; stopAuto(); render(); }
+  function prev(){ stopAuto(); step--; render(); }
+  function next(){ step++; render(); }
+  function autoToggle(){
+    if(timer){ stopAuto(); return; }
+    const a = $(ids.auto); if(a) a.classList.add('active');
+    timer = setInterval(() => {
+      const total = totalFn();
+      if(step >= total - 1){ stopAuto(); return; }
+      step++; render();
+    }, cfg.interval || 800);
+  }
+  if(ids.reset){ const e = $(ids.reset); if(e) e.onclick = reset; }
+  if(ids.prev) { const e = $(ids.prev);  if(e) e.onclick = prev;  }
+  if(ids.next) { const e = $(ids.next);  if(e) e.onclick = next;  }
+  if(ids.auto) { const e = $(ids.auto);  if(e) e.onclick = autoToggle; }
+  document.addEventListener('segtree:themechange', () => render());
+  render();
+  return { reset, prev, next, autoToggle, render, get step(){return step;}, set step(v){step=v;render();} };
+}
+
+
+// ============================================================
+// LESSON-SPECIFIC SCRIPT
+// ============================================================
+
+// 2D grid
+const GRID_L12 = [
+  [1, 2, 3, 4, 5, 6, 7, 8],
+  [2, 3, 4, 5, 6, 7, 8, 9],
+  [1, 1, 2, 3, 5, 8, 13, 21],
+  [4, 3, 2, 1, 1, 2, 3, 4]
+];
+const R_L12 = 4, C_L12 = 8;
+const BASE_R = 4, BASE_C = 8;
+
+// Inner trees, indexed by outer heap index
+// tree2d[outer_idx][inner_idx] = inner segment tree value
+const tree2d = [];
+for(let i = 0; i < 2 * BASE_R - 1; i++) tree2d.push(new Array(2 * BASE_C - 1).fill(0));
+
+// Build inner trees for outer leaves (row r)
+for(let r = 0; r < R_L12; r++){
+  const outer = BASE_R - 1 + r;
+  for(let c = 0; c < C_L12; c++){
+    tree2d[outer][BASE_C - 1 + c] = GRID_L12[r][c];
+  }
+  for(let j = BASE_C - 2; j >= 0; j--){
+    tree2d[outer][j] = tree2d[outer][2*j+1] + tree2d[outer][2*j+2];
+  }
+}
+// Build outer-internal inner trees by elementwise sum
+for(let i = BASE_R - 2; i >= 0; i--){
+  for(let j = 0; j < 2 * BASE_C - 1; j++){
+    tree2d[i][j] = tree2d[2*i+1][j] + tree2d[2*i+2][j];
+  }
+}
+
+// Render a single inner tree using drawSegTree on the column heap (BASE_C = 8)
+function drawInner(svgSel, outerIdx, hi){
+  const nodes = {};
+  for(let j = 0; j < 2 * BASE_C - 1; j++){
+    nodes[j] = String(tree2d[outerIdx][j]);
+  }
+  drawSegTree(svgSel, { base: BASE_C, nodes, highlights: hi || {},
+                        width: 460, height: 460 });
+}
+// Render grid: highlight rows belonging to outer node iv
+function drawGrid(svgSel, outerIv, hiCells, queryRect){
+  const svg = $(svgSel);
+  clearEl(svg);
+  svg.setAttribute('viewBox', '0 0 460 280');
+  const cellW = 50, cellH = 50, margin = 25;
+  // Determine which rows belong to outerIv. Heap node iv covers a range.
+  // depth = floor(log2(iv+1)) in heap; rows span = BASE_R / 2^depth
+  let depth = 0; { let t = outerIv + 1; while(t > 1){ t >>= 1; depth++; } }
+  const span = BASE_R >> depth;
+  // Index in the row of internal nodes at this depth:
+  const inRow = (outerIv + 1) - (1 << depth);
+  const r1 = inRow * span;
+  const r2 = r1 + span - 1;
+  for(let r = 0; r < R_L12; r++){
+    for(let c = 0; c < C_L12; c++){
+      const x = margin + c * cellW, y = margin + r * cellH;
+      const inOuter = r >= r1 && r <= r2;
+      let fill = 'var(--panel)';
+      if(inOuter) fill = 'rgba(37,99,235,.10)';
+      if(hiCells && hiCells.some(([rr,cc]) => rr === r && cc === c)){
+        fill = 'rgba(15,118,110,.30)';
+      }
+      const rect = makeSVG('rect', {
+        x, y, width: cellW, height: cellH,
+        fill, stroke: getCssVar('--border'), 'stroke-width': 1.5
+      });
+      svg.appendChild(rect);
+      const t = makeSVG('text', {
+        x: x + cellW/2, y: y + cellH/2 + 4, 'text-anchor':'middle',
+        'font-size':'13','font-weight':'800',
+        fill: getCssVar('--text')
+      });
+      t.textContent = String(GRID_L12[r][c]);
+      svg.appendChild(t);
+    }
+  }
+  // Optional rectangle outline
+  if(queryRect){
+    const [qr1, qc1, qr2, qc2] = queryRect;
+    const rect = makeSVG('rect', {
+      x: margin + qc1 * cellW - 2, y: margin + qr1 * cellH - 2,
+      width: (qc2 - qc1 + 1) * cellW + 4, height: (qr2 - qr1 + 1) * cellH + 4,
+      fill: 'none', stroke: getCssVar('--accent3'),
+      'stroke-width': 3, 'stroke-dasharray': '6 4'
+    });
+    svg.appendChild(rect);
+  }
+}
+
+// ----------------------------------------------------------------
+// Tracer 1: inner column tree query
+// ----------------------------------------------------------------
+(function(){
+  let frames = [];
+  function compute(){
+    let iv = parseInt($('#tiIv').value, 10);
+    let c1 = parseInt($('#tiC1').value, 10);
+    let c2 = parseInt($('#tiC2').value, 10);
+    if(!Number.isFinite(iv)) iv = 0;
+    if(!Number.isFinite(c1)) c1 = 0;
+    if(!Number.isFinite(c2)) c2 = C_L12 - 1;
+    iv = Math.max(0, Math.min(2*BASE_R - 2, iv));
+    c1 = Math.max(0, Math.min(C_L12 - 1, c1));
+    c2 = Math.max(0, Math.min(C_L12 - 1, c2));
+    if(c1 > c2) [c1, c2] = [c2, c1];
+    frames = [];
+    frames.push({ outerIv: iv, c1, c2, hi: { 0:'current' }, total: 0,
+                  note: `Outer node iv=${iv}: inspect its inner column tree. Will run inner_query on columns [${c1}, ${c2}].` });
+    let total = 0;
+    function rec(j, lo, hi){
+      if(c2 < lo || hi < c1){
+        frames.push({ outerIv: iv, c1, c2, hi: { [j]:'none' }, total,
+                      note: `j=${j} [${lo},${hi}]: NO overlap → 0.` });
+        return 0;
+      }
+      if(c1 <= lo && hi <= c2){
+        total += tree2d[iv][j];
+        frames.push({ outerIv: iv, c1, c2, hi: { [j]:'full' }, total,
+                      note: `j=${j} [${lo},${hi}]: FULL → return tree[${iv}][${j}]=${tree2d[iv][j]}. Total = ${total}.` });
+        return tree2d[iv][j];
+      }
+      frames.push({ outerIv: iv, c1, c2, hi: { [j]:'partial' }, total,
+                    note: `j=${j} [${lo},${hi}]: PARTIAL → recurse.` });
+      const mid = lo + ((hi - lo) >> 1);
+      const a = rec(2*j+1, lo, mid);
+      const b = rec(2*j+2, mid+1, hi);
+      frames.push({ outerIv: iv, c1, c2, hi: { [j]:'visited' }, total,
+                    note: `BACK at j=${j}: ${a}+${b}=${a+b}.` });
+      return a + b;
+    }
+    rec(0, 0, BASE_C - 1);
+    frames.push({ outerIv: iv, c1, c2, hi: {}, total,
+                  note: `Done. Inner sum on outer iv=${iv}, cols [${c1},${c2}] = ${total}.` });
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    drawGrid('#tiGridSvg', f.outerIv, null, null);
+    drawInner('#tiInnerSvg', f.outerIv, f.hi);
+    $('#tiStatus').textContent = f.note;
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#tiReset', prev:'#tiPrev', next:'#tiNext',
+           auto:'#tiAuto', step:'#tiStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#tiRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+// ----------------------------------------------------------------
+// Tracer 2: full rectangle query
+// ----------------------------------------------------------------
+(function(){
+  let frames = [];
+  function compute(){
+    let r1 = parseInt($('#trR1').value, 10);
+    let r2 = parseInt($('#trR2').value, 10);
+    let c1 = parseInt($('#trC1').value, 10);
+    let c2 = parseInt($('#trC2').value, 10);
+    if(!Number.isFinite(r1)) r1 = 0;
+    if(!Number.isFinite(r2)) r2 = R_L12 - 1;
+    if(!Number.isFinite(c1)) c1 = 0;
+    if(!Number.isFinite(c2)) c2 = C_L12 - 1;
+    r1 = Math.max(0, Math.min(R_L12 - 1, r1));
+    r2 = Math.max(0, Math.min(R_L12 - 1, r2));
+    c1 = Math.max(0, Math.min(C_L12 - 1, c1));
+    c2 = Math.max(0, Math.min(C_L12 - 1, c2));
+    if(r1 > r2) [r1, r2] = [r2, r1];
+    if(c1 > c2) [c1, c2] = [c2, c1];
+    frames = [];
+    let total = 0;
+    // outer nodes labels = sums per node
+    function outerNodes(){
+      const obj = {};
+      for(let i = 0; i < 2 * BASE_R - 1; i++){
+        // We can read the total of an outer node from its inner root
+        obj[i] = String(tree2d[i][0]);
+      }
+      return obj;
+    }
+    function pushFrame(outerHi, innerHi, innerOuterIv, note){
+      frames.push({ outerNodes: outerNodes(), outerHi,
+                    innerHi, innerOuterIv,
+                    total, r1, r2, c1, c2, note });
+    }
+    pushFrame({ 0: 'current' }, {}, 0,
+              `Start: rectangle_sum([${r1},${r2}] × [${c1},${c2}]).`);
+    function outer(i, l, r){
+      if(r2 < l || r < r1){
+        pushFrame({ [i]: 'none' }, {}, i,
+                  `Outer i=${i} [${l},${r}]: NO row overlap → contribute 0.`);
+        return 0;
+      }
+      if(r1 <= l && r <= r2){
+        pushFrame({ [i]: 'full' }, {0: 'current'}, i,
+                  `Outer i=${i} [${l},${r}]: FULL row overlap → run inner column query on its inner tree.`);
+        // run inner query
+        let innerTotal = 0;
+        function innerRec(j, lo, hi){
+          if(c2 < lo || hi < c1){
+            pushFrame({ [i]: 'full' }, { [j]: 'none' }, i,
+                      `inner j=${j} [${lo},${hi}]: NO overlap.`);
+            return 0;
+          }
+          if(c1 <= lo && hi <= c2){
+            innerTotal += tree2d[i][j];
+            pushFrame({ [i]: 'full' }, { [j]: 'full' }, i,
+                      `inner j=${j} [${lo},${hi}]: FULL → contribute ${tree2d[i][j]}. inner running = ${innerTotal}.`);
+            return tree2d[i][j];
+          }
+          pushFrame({ [i]: 'full' }, { [j]: 'partial' }, i,
+                    `inner j=${j} [${lo},${hi}]: PARTIAL → recurse.`);
+          const mid = lo + ((hi - lo) >> 1);
+          const a = innerRec(2*j+1, lo, mid);
+          const b = innerRec(2*j+2, mid+1, hi);
+          return a + b;
+        }
+        const innerSum = innerRec(0, 0, BASE_C - 1);
+        total += innerSum;
+        pushFrame({ [i]: 'visited' }, {}, i,
+                  `Outer i=${i}: inner column query returned ${innerSum}. running rectangle total = ${total}.`);
+        return innerSum;
+      }
+      pushFrame({ [i]: 'partial' }, {}, i,
+                `Outer i=${i} [${l},${r}]: PARTIAL row overlap → recurse into outer children.`);
+      const mid = l + ((r - l) >> 1);
+      const a = outer(2*i+1, l, mid);
+      const b = outer(2*i+2, mid+1, r);
+      return a + b;
+    }
+    outer(0, 0, BASE_R - 1);
+    pushFrame({}, {}, 0, `Done. rectangle sum = ${total}.`);
+  }
+  compute();
+  let ctrl;
+  function render(step){
+    const f = frames[step];
+    if(!f) return;
+    drawSegTree('#trOuterSvg', { base: BASE_R, nodes: f.outerNodes,
+                                 highlights: f.outerHi, width: 460, height: 280 });
+    drawInner('#trInnerSvg', f.innerOuterIv, f.innerHi);
+    $('#trStatus').textContent = f.note;
+    $('#trTotal').textContent = String(f.total);
+  }
+  ctrl = makeStepController({
+    ids: { reset:'#trReset', prev:'#trPrev', next:'#trNext',
+           auto:'#trAuto', step:'#trStep' },
+    totalFn: () => frames.length,
+    renderFn: render,
+    interval: 700
+  });
+  $('#trRun').onclick = () => { compute(); ctrl.step = 0; };
+})();
+
+</script>
+</body>
+</html>

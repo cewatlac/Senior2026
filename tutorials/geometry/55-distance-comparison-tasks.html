@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Coach Academy — Class 01 · Distance &amp; Comparison Tasks</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+    --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+    --accent:#1e40af; --accent2:#2563eb;
+    --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+    --codebg:#0b1220; --codetext:#e5e7eb;
+    --shadow:0 12px 30px rgba(2,6,23,.12);
+    --chip:#e8edff; --link:#1d4ed8;
+    --focus:0 0 0 6px rgba(37,99,235,.22);
+    --fs-base:26px; --fs-sm:22px;
+    --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+    --radius:18px;
+    --hl-node: rgba(37,99,235,.30);
+    --hl-edge: rgba(180,83,9,.30);
+    --hl-cell: rgba(15,118,110,.30);
+  }
+  [data-theme="dark"]{
+    --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+    --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+    --accent:#7aa2ff; --accent2:#4f8cff;
+    --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+    --codebg:#050812; --codetext:#e5e7eb;
+    --shadow:0 18px 40px rgba(0,0,0,.5);
+    --chip:#0f2347; --link:#93c5fd;
+    --focus:0 0 0 6px rgba(99,102,241,.28);
+    --hl-node: rgba(79,140,255,.25);
+    --hl-edge: rgba(251,191,36,.25);
+    --hl-cell: rgba(52,211,153,.20);
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+  a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+  .app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+  .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;transition:transform .45s cubic-bezier(.4,0,.2,1), opacity .35s ease;z-index:150;}
+  .content{overflow:auto;padding:26px 30px 90px;}
+  .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+  .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;user-select:none;overflow:hidden;padding:0;}
+  .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .brandTitle .t1{font-weight:900;font-size:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+  .by-line{font-size:15px; font-weight:800; color:var(--muted);margin-top:2px; letter-spacing:.03em;}
+  .nav{padding:14px 6px 0;}
+  .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+  .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;background:rgba(0,0,0,0);}
+  .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+  .nav a.active{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+  .sub{margin-left:18px;border-left:3px dashed rgba(37,99,235,.35);padding-left:8px;}
+  .sub a{font-weight:800;font-size:22px;padding:10px 12px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+  h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+  .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+  .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .btn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:14px 18px;border-radius:16px;font-weight:900;cursor:pointer;font-size:22px;box-shadow:0 10px 22px rgba(2,6,23,.08);user-select:none;}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+  .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;flex:0 0 auto;outline:none;}
+  .switch:focus-visible{box-shadow:var(--focus);}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;box-shadow:0 10px 22px rgba(37,99,235,.22);}
+  [data-theme="dark"] .switch::after{left:36px;}
+  .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+  .card h2{margin:0 0 10px;font-size:var(--fs-h2);letter-spacing:-.02em;}
+  .card h3{margin:18px 0 10px;font-size:var(--fs-h3);letter-spacing:-.01em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.app{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  .note{color:var(--muted);font-weight:750;font-size:22px;}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;}
+  .chip{background:var(--chip);border:2px solid rgba(37,99,235,.18);padding:8px 12px;border-radius:999px;font-weight:900;font-size:18px;}
+  .chip.good{background:rgba(15,118,110,.12);border-color:rgba(15,118,110,.30);color:var(--good);}
+  .chip.warn{background:rgba(180,83,9,.12);border-color:rgba(180,83,9,.30);color:var(--warn);}
+  .chip.bad{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.30);color:var(--bad);}
+  details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+  summary::-webkit-details-marker{display:none}
+  summary .rightHint{font-size:20px;color:var(--muted);font-weight:850;}
+  .detailsBody{padding:16px 18px 18px;}
+  pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:19px;line-height:1.5;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .inlineCode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--panel2);border:2px solid var(--border);border-radius:8px;padding:2px 8px;font-size:22px;font-weight:900;}
+  .diagramWrap{border-radius:18px;border:3px solid var(--border);background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));padding:14px;}
+  .diagramHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .diagramTitle{font-weight:950;font-size:24px;}
+  svg.graphsvg{width:100%;height:440px;border-radius:16px;background:rgba(0,0,0,0);}
+  table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:20px;}
+  th,td{padding:11px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+  th{background:rgba(37,99,235,.10);font-weight:950;}
+  tr:last-child td{border-bottom:none}
+  section{scroll-margin-top:16px}
+  .sidebar-toggle{position:fixed; top:18px; left:18px; z-index:200; width:48px; height:48px; border-radius:12px; border:2.5px solid var(--border); background:var(--panel); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.12); transition:all .35s cubic-bezier(.4,0,.2,1); user-select:none; padding:0;}
+  .sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+  .burger-icon{width:22px; height:16px; position:relative;display:flex; flex-direction:column; justify-content:space-between;}
+  .burger-icon span{display:block; height:2.5px; width:100%; background:currentColor; border-radius:2px; transition:all .35s cubic-bezier(.4,0,.2,1); transform-origin:center;}
+  .sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(6.75px) rotate(45deg);}
+  .sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0; transform:scaleX(0);}
+  .sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-6.75px) rotate(-45deg);}
+  .sidebar.collapsed{transform:translateX(-100%);opacity:0;pointer-events:none;}
+  .sidebar-overlay{position:fixed; inset:0; z-index:140;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);opacity:0; pointer-events:none;transition:opacity .35s ease;}
+  .sidebar-overlay.show{opacity:1; pointer-events:auto;}
+  .app.sidebar-hidden{grid-template-columns:1fr !important;}
+  .app.sidebar-hidden .sidebar{position:fixed; top:0; left:0; bottom:0; width:420px;border-right:3px solid var(--border);}
+  .app.sidebar-hidden .sidebar:not(.collapsed){transform:translateX(0); opacity:1; pointer-events:auto;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .app.sidebar-hidden .content{padding-top:80px;}
+  .sidebar-footer{margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;}
+  .sidebar-footer .sf-text{font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;}
+  .statusPanel{border:3px solid var(--border);border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,rgba(37,99,235,.06),rgba(0,0,0,0));font-weight:850;}
+  .callout{border-left:6px solid var(--accent2);background:rgba(37,99,235,.06);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0;font-weight:800;}
+  .callout.good{border-left-color:var(--good);background:rgba(15,118,110,.07);}
+  .callout.warn{border-left-color:var(--warn);background:rgba(180,83,9,.07);}
+  .callout.bad{border-left-color:var(--bad);background:rgba(185,28,28,.07);}
+  .twoCol{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media(max-width:1400px){.twoCol{grid-template-columns:1fr;}}
+  ul.checklist{list-style:none;padding:0;margin:0;}
+  ul.checklist li{padding:10px 12px;border-radius:12px;margin:6px 0;background:var(--panel2);border:2px solid var(--border);font-weight:800;}
+  ul.checklist li::before{content:"✓ ";color:var(--good);font-weight:950;margin-right:4px;}
+  .lineExp{display:grid;grid-template-columns:60px 1.4fr 2fr;gap:0;border:3px solid var(--border);border-radius:16px;overflow:hidden;margin-top:12px;font-size:18px;}
+  .lineExp > div{padding:10px 12px;border-bottom:2px solid var(--border);}
+  .lineExp .lh{background:rgba(37,99,235,.10);font-weight:950;}
+  .lineExp .lineNo{background:var(--codebg);color:var(--codetext);font-family:ui-monospace,monospace;font-weight:900;text-align:center;}
+  .lineExp .lineCode{background:var(--panel2);font-family:ui-monospace,monospace;font-weight:850;}
+  .lineExp .lineExpl{background:var(--panel);font-weight:750;}
+  .lineExp > div:last-child, .lineExp > div:nth-last-child(2), .lineExp > div:nth-last-child(3){border-bottom:none;}
+  .miniBtn{border:3px solid var(--border);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:12px;font-weight:950;cursor:pointer;font-size:18px;user-select:none;}
+  .miniBtn.active{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+  .contactBlock{margin-top:24px;padding:22px 20px;border-top:3px solid var(--border);text-align:center;}
+  .contactBlock .cb-brand{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:6px;}
+  .contactBlock .cb-by{font-weight:850;font-size:19px;color:var(--muted);margin-bottom:10px;}
+  .contactBlock .cb-mail{font-size:18px;font-weight:850;margin:4px 0;}
+  .contactBlock .cb-note{font-size:16px;font-weight:750;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body data-theme="light">
+
+<!-- Global SVG marker definitions (single source for arrow markers across all diagrams) -->
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+
+<button aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+  <div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">📐</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Class 01 · Distance &amp; Comparison</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="groupTitle">Setup</div>
+    <a href="#problem" id="nav-problem">🎯 Problem Definition<small>Why distance &amp; comparison</small></a>
+    <a href="#intuition" id="nav-intuition">🧠 Intuition from Scratch<small>Point, vector, distance</small></a>
+    <a href="#mental" id="nav-mental">👁 Visual Mental Model<small>Cartesian, lengths</small></a>
+    <div class="groupTitle">Abstraction</div>
+    <a href="#formal" id="nav-formal">🧮 Formal Abstraction<small>Types · EPS · cmp</small></a>
+    <a href="#observations" id="nav-observations">💡 Key Observations<small>Why == fails on doubles</small></a>
+    <a href="#method" id="nav-method">⚙ Algorithm / Method<small>cmp · safe wrappers</small></a>
+    <a href="#invariants" id="nav-invariants">🔒 Invariants<small>cmp · safe* contracts</small></a>
+    <a href="#proof" id="nav-proof">📜 Proof of Correctness<small>Dot &amp; cross derivations</small></a>
+    <a href="#complexity" id="nav-complexity">⏱ Complexity<small>O(1) per operation</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a href="#philosophy" id="nav-philosophy">📐 Template Philosophy<small>Compact · central cmp</small></a>
+    <a href="#master" id="nav-master">💻 Master Implementation<small>The full C++17 base</small></a>
+    <a href="#lbl" id="nav-lbl">🔎 Line-by-Line Walkthrough<small>Every helper explained</small></a>
+    <div class="groupTitle">Reliability</div>
+    <a href="#edges" id="nav-edges">🧷 Edge Cases<small>Centralized audit</small></a>
+    <a href="#pitfalls" id="nav-pitfalls">⚠ Common Pitfalls<small>Floating == · raw acos</small></a>
+    <a href="#decision" id="nav-decision">🧭 Decision Guide<small>Reflex rules</small></a>
+    <a href="#variants" id="nav-variants">🌿 Variants &amp; Extensions<small>Squared dist · __int128</small></a>
+    <a href="#problems" id="nav-problems">🚀 Problem Applications<small>UVA 10242 · Preview</small></a>
+    <a href="#summary" id="nav-summary">📝 Final Summary<small>One-screen recap</small></a>
+    <a href="#contact" id="nav-contact">📮 Footer / Contact<small>Validation · Contact</small></a>
+    <div class="sub">
+      <a href="#checklist">Runtime Validation Checklist</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="width:44px;height:44px;border-radius:12px;margin:0 auto 8px;background:#0B2D72;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px;">📐</div>
+    <div class="sf-text">Coach Academy · Geometry Class 01<br/>Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">coach@coach-academy.net</a>
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:13px;text-decoration:none;display:block;">a.ashraf@coach-academy.net</a>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <span style="font-size:34px;line-height:1;">📐</span>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;">Coach Academy · Computational Geometry 2D</div>
+        <h1>Class 01 — Distance &amp; Comparison Tasks</h1>
+        <div class="subtitle">The foundation class. We establish the type system, the <span class="inlineCode">cmp</span> gatekeeper, the safe math wrappers, and the dot/cross derivations that every later class depends on.</div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <label class="pill">
+        <span style="font-size:20px">🌙</span>
+        <div class="switch" id="themeSwitch" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0" title="Toggle dark mode"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- 1. PROBLEM DEFINITION -->
+  <section class="card" id="problem">
+    <h2>🎯 1 — Problem Definition</h2>
+    <p>Competitive programming geometry is not really about memorising formulas. It is about converting a visual statement into <b>reliable predicates and measurements</b> — answers to questions like:</p>
+    <div class="chips">
+      <span class="chip">How far is this point from that one?</span>
+      <span class="chip">Are these two values "equal enough"?</span>
+      <span class="chip">Is this number negative, zero, or positive?</span>
+      <span class="chip">Is one distance bigger than another?</span>
+    </div>
+    <p style="margin-top:16px;">This first class focuses on the two cheapest, most-used operations: <b>computing a distance</b> and <b>comparing two numeric values reliably</b>. Every other geometry class — segment intersection, polygon area, circle tangents, convex hull — leans on these two operations being correct.</p>
+    <div class="callout warn">
+      <b>The four classic CP geometry bugs.</b> Almost every wrong-answer geometry submission traces back to one of these:
+      <ol style="margin:8px 0 0 18px;">
+        <li>Using the wrong model — e.g. <span class="inlineCode">y = m·x + c</span> for a vertical line.</li>
+        <li>Comparing floating values with raw <span class="inlineCode">==</span>.</li>
+        <li>Forgetting degenerate cases — zero-length vectors, coincident points.</li>
+        <li>Mixing line, ray, and segment behavior under the same predicate.</li>
+      </ol>
+      Bugs <b>2</b> and <b>3</b> are entirely the responsibility of Class 01. Class 01 cures them at the root by introducing one comparison policy that every later predicate funnels through.
+    </div>
+  </section>
+
+  <!-- 2. INTUITION FROM SCRATCH -->
+  <section class="card" id="intuition">
+    <h2>🧠 2 — Intuition from Scratch</h2>
+
+    <h3>2.1 — A point is a location</h3>
+    <p>In 2D Cartesian coordinates a <b>point</b> is a place: an <span class="inlineCode">x</span> tells you how far right or left, a <span class="inlineCode">y</span> tells you how far up or down. We write it <span class="inlineCode">P = (x, y)</span>. A point is <i>not</i> an arrow; it only says <i>"where is the object?"</i></p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · A point on the Cartesian plane</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <g stroke="currentColor" stroke-width="2" fill="none">
+          <line x1="80" y1="300" x2="820" y2="300" marker-end="url(#arrow1)"/>
+          <line x1="120" y1="340" x2="120" y2="40"  marker-end="url(#arrow1)"/>
+        </g>
+        <text x="830" y="306" font-size="22" font-weight="900" fill="var(--muted)">x</text>
+        <text x="100" y="40"  font-size="22" font-weight="900" fill="var(--muted)">y</text>
+        <text x="106" y="324" font-size="18" font-weight="800" fill="var(--muted)">0</text>
+        <line x1="120" y1="300" x2="540" y2="300" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <line x1="540" y1="300" x2="540" y2="140" stroke="var(--accent2)" stroke-width="3" stroke-dasharray="6 6"/>
+        <line x1="120" y1="300" x2="540" y2="140" stroke="var(--accent)" stroke-width="4"/>
+        <circle cx="540" cy="140" r="11" fill="var(--accent2)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="552" y="130" font-size="24" font-weight="950" fill="var(--text)">P = (x, y)</text>
+        <text x="320" y="328" font-size="22" font-weight="900" fill="var(--accent2)">x</text>
+        <text x="552" y="228" font-size="22" font-weight="900" fill="var(--accent2)">y</text>
+      </svg>
+    </div>
+
+    <h3>2.2 — A vector is a displacement</h3>
+    <p>A <b>vector</b> is a movement. If we move from point <span class="inlineCode">A</span> to point <span class="inlineCode">B</span>, the vector is <span class="inlineCode">AB = B − A</span>. Concretely, if <span class="inlineCode">A = (x₁, y₁)</span> and <span class="inlineCode">B = (x₂, y₂)</span> then <span class="inlineCode">AB = (x₂ − x₁, y₂ − y₁)</span>.</p>
+    <div class="callout">
+      <b>Important distinction.</b> A <i>point</i> is a location; a <i>vector</i> is a movement. But both are stored as two numbers in code, so CP geometry uses <b>one C++ type for both</b> — typically <span class="inlineCode">complex&lt;long double&gt;</span> — and lets the operations distinguish them.
+    </div>
+
+    <h3>2.3 — Distance is "length of the displacement"</h3>
+    <p>The distance from <span class="inlineCode">A</span> to <span class="inlineCode">B</span> is the length of the vector <span class="inlineCode">B − A</span>. So once we know how to measure the length of a vector, we know how to measure distance.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Distance as the length of the displacement vector</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <g stroke="var(--muted)" stroke-width="2">
+          <line x1="80" y1="300" x2="820" y2="300"/>
+          <line x1="120" y1="320" x2="120" y2="60"/>
+        </g>
+        <line x1="200" y1="250" x2="640" y2="100" stroke="var(--accent2)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <circle cx="200" cy="250" r="11" fill="var(--good)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="170" y="280" font-size="26" font-weight="950" fill="var(--good)">A</text>
+        <circle cx="640" cy="100" r="11" fill="var(--bad)" stroke="var(--panel)" stroke-width="3"/>
+        <text x="654" y="94" font-size="26" font-weight="950" fill="var(--bad)">B</text>
+        <text x="380" y="156" font-size="22" font-weight="900" fill="var(--accent2)">B − A   ← length = dist(A, B)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 3. VISUAL MENTAL MODEL -->
+  <section class="card" id="mental">
+    <h2>👁 3 — Visual Mental Model</h2>
+    <h3>3.1 — The right triangle and Pythagoras</h3>
+    <p>If a vector is <span class="inlineCode">v = (x, y)</span>, then its length is the hypotenuse of a right triangle with legs <span class="inlineCode">|x|</span> and <span class="inlineCode">|y|</span>. By Pythagoras:</p>
+<pre><code>|v|² = x² + y²
+|v|  = √(x² + y²)</code></pre>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Length of (x, y) as a hypotenuse</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <polygon points="180,280 620,280 620,90" fill="rgba(37,99,235,.08)" stroke="var(--accent2)" stroke-width="3"/>
+        <line x1="180" y1="280" x2="620" y2="90" stroke="var(--accent)" stroke-width="5"/>
+        <text x="380" y="310" font-size="22" font-weight="900" fill="var(--muted)">x   (horizontal leg)</text>
+        <text x="634" y="200" font-size="22" font-weight="900" fill="var(--muted)">y   (vertical leg)</text>
+        <text x="320" y="170" font-size="24" font-weight="950" fill="var(--accent)">|v| = √(x² + y²)</text>
+        <rect x="600" y="260" width="20" height="20" fill="none" stroke="var(--accent2)" stroke-width="2"/>
+      </svg>
+    </div>
+
+    <h3>3.2 — Use <span class="inlineCode">hypot</span>, not <span class="inlineCode">sqrt(x*x + y*y)</span></h3>
+    <p>In code, prefer <span class="inlineCode">hypot(x, y)</span> over <span class="inlineCode">sqrt(x*x + y*y)</span>. The naive form overflows for huge values (when <span class="inlineCode">x²</span> already exceeds the floating type's range, even though <span class="inlineCode">|v|</span> would still fit) and underflows for tiny values. The standard library's <span class="inlineCode">hypot</span> rescales internally to avoid both ends.</p>
+
+    <h3>3.3 — Comparing two distances without taking a square root</h3>
+    <p>Square roots are slow and lossy. When we only need to <i>compare</i> two distances — "is A closer to me than B?" — we don't need the actual distance. We compare squared distances:</p>
+<pre><code>// "is dist(p, a) &lt;= dist(p, b)?"
+// equivalent to "is |p-a|² &lt;= |p-b|²?"
+dot(p - a, p - a)  vs  dot(p - b, p - b)</code></pre>
+    <p>Squared distance is monotone with distance for non-negative reals, so any ordering question reduces to an integer/rational comparison and avoids <span class="inlineCode">sqrt</span> entirely. This is the single most common optimisation in geometry contests.</p>
+  </section>
+
+  <!-- 4. FORMAL ABSTRACTION -->
+  <section class="card" id="formal">
+    <h2>🧮 4 — Formal Abstraction</h2>
+
+    <h3>4.1 — How floating numbers are stored</h3>
+    <p>Mathematical reals may have infinitely many digits (<span class="inlineCode">0.1</span>, <span class="inlineCode">1/3</span>, <span class="inlineCode">√2</span>, <span class="inlineCode">π</span>). A variable has finite memory, so floating types store an <i>approximation</i> in binary scientific notation:</p>
+<pre><code>number ≈ sign × mantissa × 2^exponent</code></pre>
+    <p>The exponent decides scale; the mantissa stores significant digits. The crucial consequence:</p>
+    <div class="callout">
+      <b>Floating-point keeps a fixed number of <i>significant</i> digits, not a fixed number of <i>decimal places</i>.</b> Near zero, representable numbers are densely packed. Around <span class="inlineCode">10¹⁸</span>, the gaps between neighbours are huge.
+    </div>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · Density of representable doubles</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 280" preserveAspectRatio="xMidYMid meet">
+        <line x1="60" y1="80" x2="840" y2="80" stroke="var(--muted)" stroke-width="3"/>
+        <text x="60"  y="46" font-size="20" font-weight="900" fill="var(--muted)">Near 0  ·  dense neighbours</text>
+        <g stroke="var(--accent2)" stroke-width="3">
+          <line x1="80"  y1="68" x2="80"  y2="92"/>
+          <line x1="100" y1="68" x2="100" y2="92"/>
+          <line x1="120" y1="68" x2="120" y2="92"/>
+          <line x1="140" y1="68" x2="140" y2="92"/>
+          <line x1="160" y1="68" x2="160" y2="92"/>
+          <line x1="180" y1="68" x2="180" y2="92"/>
+          <line x1="200" y1="68" x2="200" y2="92"/>
+          <line x1="220" y1="68" x2="220" y2="92"/>
+          <line x1="240" y1="68" x2="240" y2="92"/>
+          <line x1="260" y1="68" x2="260" y2="92"/>
+          <line x1="280" y1="68" x2="280" y2="92"/>
+          <line x1="300" y1="68" x2="300" y2="92"/>
+        </g>
+        <line x1="60" y1="220" x2="840" y2="220" stroke="var(--muted)" stroke-width="3"/>
+        <text x="60"  y="186" font-size="20" font-weight="900" fill="var(--muted)">Around 10¹⁸  ·  huge gaps</text>
+        <g stroke="var(--bad)" stroke-width="3">
+          <line x1="80"  y1="208" x2="80"  y2="232"/>
+          <line x1="280" y1="208" x2="280" y2="232"/>
+          <line x1="500" y1="208" x2="500" y2="232"/>
+          <line x1="720" y1="208" x2="720" y2="232"/>
+        </g>
+        <text x="120" y="260" font-size="18" font-weight="800" fill="var(--bad)">Adjacent doubles may differ by &gt; 100. So x + 1 == x.</text>
+      </svg>
+    </div>
+
+    <h3>4.2 — Type guide</h3>
+    <table>
+      <thead><tr><th>Type</th><th>Typical precision</th><th>When to use in CP geometry</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">float</span></td><td>≈ 6–7 digits</td><td>Almost never enough. Avoid.</td></tr>
+        <tr><td><span class="inlineCode">double</span></td><td>≈ 15–16 digits</td><td>Common, fast. OK for forgiving problems.</td></tr>
+        <tr><td><span class="inlineCode">long double</span></td><td>Implementation-dependent; often &gt; <span class="inlineCode">double</span> in g++.</td><td>Default for safe geometry templates.</td></tr>
+        <tr><td><span class="inlineCode">long long</span></td><td>exact 64-bit integer</td><td>Lattice geometry, exact orientation, Pick's theorem.</td></tr>
+        <tr><td><span class="inlineCode">__int128</span></td><td>exact 128-bit integer</td><td>Cross products of large integer coordinates without overflow.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout good"><b>Rule of thumb.</b> Use floating geometry for distances, angles, circles, rotations, projections. Use integer geometry for exact orientation, lattice geometry, and polygon area with integer coordinates.</div>
+
+    <h3>4.3 — The <span class="inlineCode">cmp</span> gatekeeper and EPS</h3>
+    <p>The single most important policy in this template family is: <b>never compare floating values with <span class="inlineCode">==</span>, <span class="inlineCode">&lt;</span>, or <span class="inlineCode">&gt;</span> directly. Every comparison goes through <span class="inlineCode">cmp</span>.</b> The function returns a tri-state sign:</p>
+<pre><code>cmp(a, b) = -1   if a is "definitely less"    than b
+cmp(a, b) =  0   if a is "indistinguishable"  from b
+cmp(a, b) = +1   if a is "definitely greater" than b</code></pre>
+    <p>For integer types the comparison is exact. For floating types, any difference inside an interval <span class="inlineCode">[−EPS, +EPS]</span> is treated as zero. We use <span class="inlineCode">EPS = 1e-12L</span> with <span class="inlineCode">long double</span> arithmetic as a practical default — see §8.2 for a discussion of when this is appropriate and when a different choice is needed.</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · The EPS band</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 240" preserveAspectRatio="xMidYMid meet">
+        <line x1="60" y1="140" x2="840" y2="140" stroke="var(--muted)" stroke-width="3" marker-end="url(#arrow1)"/>
+        <line x1="380" y1="120" x2="380" y2="160" stroke="var(--accent2)" stroke-width="4"/>
+        <line x1="520" y1="120" x2="520" y2="160" stroke="var(--accent2)" stroke-width="4"/>
+        <rect x="380" y="120" width="140" height="40" fill="rgba(15,118,110,.18)" stroke="var(--good)" stroke-width="3"/>
+        <text x="376" y="110" font-size="20" font-weight="950" fill="var(--accent2)">b − EPS</text>
+        <text x="500" y="110" font-size="20" font-weight="950" fill="var(--accent2)">b + EPS</text>
+        <text x="448" y="148" font-size="20" font-weight="950" fill="var(--good)" text-anchor="middle">cmp = 0</text>
+        <text x="180" y="148" font-size="22" font-weight="900" fill="var(--bad)" text-anchor="middle">cmp = −1</text>
+        <text x="710" y="148" font-size="22" font-weight="900" fill="var(--bad)" text-anchor="middle">cmp = +1</text>
+        <text x="450" y="200" font-size="18" font-weight="800" fill="var(--muted)" text-anchor="middle">Any value of `a` inside the green band is treated as equal to `b` for floating geometry.</text>
+      </svg>
+    </div>
+
+    <h3>4.4 — Safe wrappers for <span class="inlineCode">sqrt</span>, <span class="inlineCode">acos</span>, <span class="inlineCode">asin</span></h3>
+    <p>Geometry formulas often produce values that are mathematically inside a valid domain, but floating noise pushes them just outside. Classic failures:</p>
+<pre><code>sqrt(-0.00000000000000001)        // NaN
+acos(1.00000000000000002)         // NaN
+asin(-1.00000000000000002)        // NaN</code></pre>
+    <p>The fix is a thin clamping wrapper:</p>
+    <ul style="padding-left:24px;">
+      <li><b><span class="inlineCode">safeSqrt</span></b> uses <span class="inlineCode">cmp</span> to treat values inside the EPS band around zero as exactly zero (since the input <i>should</i> have been non-negative, and a tiny negative value is interpreted as numerical drift around zero).</li>
+      <li><b><span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span></b> clamp the argument directly to <span class="inlineCode">[−1, +1]</span> using raw <span class="inlineCode">&gt;</span> / <span class="inlineCode">&lt;</span> comparisons — <b>not</b> <span class="inlineCode">cmp</span>. The reason is precise: even an EPS-small overshoot like <span class="inlineCode">1 + EPS/2</span> falls inside the <span class="inlineCode">cmp</span>-equality band, so a <span class="inlineCode">cmp</span>-based clamp would let it through unchanged, and <span class="inlineCode">acosl(1 + EPS/2)</span> returns NaN. A raw-domain clamp catches every value outside the mathematical domain, including sub-EPS drift.</li>
+    </ul>
+    <p>These wrappers are not meant to hide truly invalid geometry — they protect against the <b>tiny numerical drift</b> that happens in every real formula.</p>
+  </section>
+
+  <!-- 5. KEY OBSERVATIONS -->
+  <section class="card" id="observations">
+    <h2>💡 5 — Key Observations</h2>
+    <ul style="padding-left:24px;margin:8px 0;">
+      <li><b>O1.</b> Equality on doubles is undefined behaviour in spirit. A mathematically zero quantity, computed by a chain of float operations, may be stored as <span class="inlineCode">0.00000000000000003</span>. So <span class="inlineCode">if (x == 0)</span> is a bug, not a check.</li>
+      <li><b>O2.</b> Floating-point addition is non-associative. <span class="inlineCode">(a + b) + c</span> can differ from <span class="inlineCode">a + (b + c)</span> by many ULPs. So computing the same geometric quantity by two different code paths can give two slightly different floats — and you cannot rely on <span class="inlineCode">==</span> to detect that they "should be" equal.</li>
+      <li><b>O3.</b> Around very large magnitudes, <span class="inlineCode">x + 1 == x</span> may be <i>true</i>. Demo: with <span class="inlineCode">double x = 1e18;</span> the comparison <span class="inlineCode">x == x + 1</span> evaluates to <span class="inlineCode">true</span>. The <span class="inlineCode">+1</span> is below the resolution at that scale.</li>
+      <li><b>O4.</b> <span class="inlineCode">hypot(x, y)</span> is not a luxury — it prevents catastrophic overflow for large <span class="inlineCode">|x|, |y|</span>, and catastrophic underflow for tiny ones. Even when both are well-behaved, it costs one extra rescale.</li>
+      <li><b>O5.</b> Squared distance is <i>better</i> than distance for ordering. Don't <span class="inlineCode">sqrt</span> just to compare.</li>
+      <li><b>O6.</b> The zero vector has <b>no direction</b>. So <span class="inlineCode">dot(0, b) = 0</span> and <span class="inlineCode">cross(0, b) = 0</span> do not mean "right angle" or "collinear" in any useful sense — they mean nothing at all. Every angle/orientation predicate must document that its inputs are non-zero.</li>
+    </ul>
+  </section>
+
+  <!-- 6. ALGORITHM / METHOD -->
+  <section class="card" id="method">
+    <h2>⚙ 6 — Algorithm / Method Explanation</h2>
+
+    <h3>6.1 — The <span class="inlineCode">cmp</span> family</h3>
+    <p>Three functions, one public face:</p>
+    <ol>
+      <li><b><span class="inlineCode">cmpInt(a, b)</span></b>. For integral types, returns exactly <span class="inlineCode">(a &gt; b) − (a &lt; b)</span>. This is the standard branchless sign-of-difference idiom.</li>
+      <li><b><span class="inlineCode">cmpFloat(a, b)</span></b>. For floating types, computes <span class="inlineCode">d = (long double)(a − b)</span> and returns <span class="inlineCode">(d &gt; EPS) − (d &lt; −EPS)</span>. Anything in the EPS band returns <span class="inlineCode">0</span>.</li>
+      <li><b><span class="inlineCode">cmp(a, b)</span></b>. The single user-facing wrapper. Uses <span class="inlineCode">if constexpr (is_floating_point_v&lt;U&gt;)</span> at compile time to dispatch to the correct sibling.</li>
+    </ol>
+    <p>Inside the geometry library, <i>every</i> sign question — "is this discriminant negative?", "is this orientation collinear?", "is this distance smaller?" — flows through <span class="inlineCode">cmp</span>. Outside the library, the user never calls <span class="inlineCode">cmpInt</span> or <span class="inlineCode">cmpFloat</span> directly.</p>
+
+    <h3>6.2 — The <span class="inlineCode">safe*</span> family</h3>
+    <p>Three wrappers that absorb tiny floating-point drift just before it crashes a domain check:</p>
+    <ul>
+      <li><b><span class="inlineCode">safeSqrt(x)</span></b>. If <span class="inlineCode">cmp(x) == 0</span>, return <span class="inlineCode">0</span>. Otherwise return <span class="inlineCode">sqrtl(x)</span>. This rescues formulas like <span class="inlineCode">h² = r² − x²</span> when the right-hand side computes to <span class="inlineCode">−1e-18</span>.</li>
+      <li><b><span class="inlineCode">safeAcos(x)</span></b>. Clamp <span class="inlineCode">x</span> raw to <span class="inlineCode">[−1, +1]</span> using direct <span class="inlineCode">&gt;</span> / <span class="inlineCode">&lt;</span> comparisons, then call <span class="inlineCode">acosl</span>. We deliberately do <i>not</i> route this clamp through <span class="inlineCode">cmp</span>: even tiny drift like <span class="inlineCode">1 + EPS/2</span> falls inside the <span class="inlineCode">cmp</span>-equality band and would otherwise reach <span class="inlineCode">acosl</span> unchanged, producing NaN.</li>
+      <li><b><span class="inlineCode">safeAsin(x)</span></b>. Same raw-domain clamp, then <span class="inlineCode">asinl</span>.</li>
+    </ul>
+
+    <h3>6.3 — Length and distance</h3>
+    <p>Length of a vector is just <span class="inlineCode">hypotl(x, y)</span>. Distance between two points is the length of their difference vector.</p>
+
+    <h3>6.4 — <span class="inlineCode">samePoint</span></h3>
+    <p>Two points are equal when both coordinates compare equal under <span class="inlineCode">cmp</span>. This is why we cannot rely on the default <span class="inlineCode">complex&lt;T&gt;::operator==</span> for floating geometry — that operator uses raw <span class="inlineCode">==</span> on each component.</p>
+  </section>
+
+  <!-- 7. INVARIANTS -->
+  <section class="card" id="invariants">
+    <h2>🔒 7 — Invariants</h2>
+    <h3>State invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I1 — Tri-state output.</b> <span class="inlineCode">cmp</span> never returns anything other than <span class="inlineCode">−1, 0, +1</span>. Downstream code can rely on switching on the sign.</li>
+      <li><b>I2 — Reflexivity.</b> <span class="inlineCode">cmp(a, a) == 0</span> for every value <span class="inlineCode">a</span>, integer or floating. Required for <span class="inlineCode">samePoint(p, p)</span> to be true.</li>
+      <li><b>I3 — Antisymmetry.</b> <span class="inlineCode">cmp(a, b) == −cmp(b, a)</span>. Required because predicates like <span class="inlineCode">orient(a, b, p)</span> get reversed by reversing the line direction.</li>
+      <li><b>I4 — Type-safe dispatch.</b> An integer comparison can never trigger the EPS branch. A floating comparison can never run the raw integer-difference branch. <span class="inlineCode">if constexpr</span> enforces this at compile time.</li>
+    </ul>
+    <h3>Transition invariants</h3>
+    <ul style="padding-left:24px;">
+      <li><b>I5 — <span class="inlineCode">safeSqrt</span> maps tiny negative noise to zero.</b> Any caller can safely compute <span class="inlineCode">safeSqrt(r² − x²)</span> when mathematics guarantees the result is real, even if floats have produced <span class="inlineCode">−1e-18</span>.</li>
+      <li><b>I6 — <span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span> output is in <span class="inlineCode">[0, π]</span> / <span class="inlineCode">[−π/2, π/2]</span>.</b> The raw-domain clamp guarantees this for every input: anything &gt; 1 becomes 1, anything &lt; −1 becomes −1, and <span class="inlineCode">acosl</span>/<span class="inlineCode">asinl</span> on those endpoints returns a real number, never NaN.</li>
+    </ul>
+    <h3>Termination invariants</h3>
+    <p>Every function in this class returns in <span class="inlineCode">O(1)</span> with no loops, no recursion, no I/O. Each operation is a constant number of arithmetic instructions.</p>
+    <div class="callout warn">
+      <b>Failure mode — applicability.</b> <span class="inlineCode">cmp</span>'s EPS branch is appropriate when the inputs are <i>differences of geometric quantities</i> of comparable magnitude. It is the <i>wrong</i> tool when the inputs span 10+ orders of magnitude — in that regime a relative tolerance is needed, not an absolute one. See <a href="#variants">§16 Variants</a> for <span class="inlineCode">cmpRel</span>.
+    </div>
+  </section>
+
+  <!-- 8. PROOF OF CORRECTNESS -->
+  <section class="card" id="proof">
+    <h2>📜 8 — Proof of Correctness</h2>
+
+    <h3>8.1 — Why <span class="inlineCode">(a &gt; b) − (a &lt; b)</span> is the right sign</h3>
+    <p>For integers, exactly one of three things is true: <span class="inlineCode">a &lt; b</span>, <span class="inlineCode">a = b</span>, <span class="inlineCode">a &gt; b</span>. The expression evaluates as:</p>
+<pre><code>a &lt; b   :  (0) - (1) = -1
+a == b  :  (0) - (0) =  0
+a &gt; b   :  (1) - (0) = +1</code></pre>
+    <p>Branchless, correct, and inlined by every compiler.</p>
+
+    <h3>8.2 — Why EPS = 1e-12L is a reasonable practical default</h3>
+    <p>This is a contest heuristic, not a formal bound. The C++ standard does not pin down the precision of <span class="inlineCode">long double</span>; in practice, on g++ for x86-64 Linux it is typically an 80-bit extended type with around 18–19 decimal digits of mantissa, but on MSVC or on ARM it may be the same as <span class="inlineCode">double</span>. So we cannot prove anything about EPS in a portable way.</p>
+    <p>As a working heuristic: each elementary floating operation typically introduces a relative error around <span class="inlineCode">10⁻¹⁸</span> to <span class="inlineCode">10⁻¹⁹</span> on a long-double system. A geometry formula chaining roughly 10 operations on operands bounded by <span class="inlineCode">10⁶</span> tends to accumulate absolute error around <span class="inlineCode">10⁻¹²</span>. So <span class="inlineCode">EPS = 1e-12L</span> is a workable starting point for problems with coordinates up to <span class="inlineCode">10⁶</span> and short formula chains. For larger coordinates, longer formula chains, or when sub-EPS distinctions actually decide the answer, switch to relative tolerance (§16) or rescale coordinates.</p>
+    <div class="callout warn"><b>Calibration rule.</b> Pick EPS by trying a tighter and a looser value on a few stress tests. If the verdict changes with EPS, the algorithm is on the edge — re-derive it on more stable predicates rather than nudging EPS.</div>
+
+    <h3>8.3 — Derivation of the dot product</h3>
+    <p>We give three derivations because each gives a different intuition about what dot product <i>means</i>.</p>
+
+    <h4>Coordinate form</h4>
+    <p>Define <span class="inlineCode">dot(a, b) := x₁·x₂ + y₁·y₂</span>. This is purely algebraic; no geometry yet.</p>
+
+    <h4>Complex form</h4>
+    <p>Let <span class="inlineCode">a = x₁ + y₁i</span> and <span class="inlineCode">b = x₂ + y₂i</span>. Then:</p>
+<pre><code>conj(a) · b
+= (x₁ - y₁i)(x₂ + y₂i)
+= (x₁x₂ + y₁y₂) + (x₁y₂ - y₁x₂)i</code></pre>
+    <p>So <span class="inlineCode">Re(conj(a) · b) = x₁x₂ + y₁y₂ = dot(a, b)</span>. This is why our code can compute the dot product with one complex multiplication: <span class="inlineCode">real(conj(a) * b)</span>.</p>
+
+    <h4>Polar form</h4>
+    <p>Write <span class="inlineCode">a = |a|(cos α, sin α)</span> and <span class="inlineCode">b = |b|(cos β, sin β)</span>. Then:</p>
+<pre><code>dot(a, b)
+= |a||b|(cos α cos β + sin α sin β)
+= |a||b| cos(α - β)
+= |a||b| cos θ
+</code></pre>
+    <p>So the dot product is <span class="inlineCode">|a||b|·cos θ</span> where <span class="inlineCode">θ</span> is the angle between <span class="inlineCode">a</span> and <span class="inlineCode">b</span>. This is why the <i>sign</i> of <span class="inlineCode">dot</span> tells you whether the angle is acute / right / obtuse:</p>
+    <div class="chips">
+      <span class="chip good">dot &gt; 0  ⇒  acute angle</span>
+      <span class="chip">dot = 0  ⇒  right angle</span>
+      <span class="chip warn">dot &lt; 0  ⇒  obtuse angle</span>
+    </div>
+
+    <h3>8.4 — Derivation of the cross product (2D)</h3>
+    <h4>Coordinate form</h4>
+    <p><span class="inlineCode">cross(a, b) := x₁·y₂ − y₁·x₂</span>.</p>
+    <h4>Complex form</h4>
+    <p>From the same complex expansion as above, <span class="inlineCode">Im(conj(a) · b) = x₁y₂ − y₁x₂ = cross(a, b)</span>. Our code reads <span class="inlineCode">imag(conj(a) * b)</span>.</p>
+    <h4>Polar form</h4>
+<pre><code>cross(a, b)
+= |a||b|(cos α sin β - sin α cos β)
+= |a||b| sin(β - α)
+= |a||b| sin θ</code></pre>
+    <p>So the <i>sign</i> of <span class="inlineCode">cross</span> tells you which side <span class="inlineCode">b</span> is on relative to <span class="inlineCode">a</span>:</p>
+    <div class="chips">
+      <span class="chip good">cross &gt; 0  ⇒  b is left/CCW from a</span>
+      <span class="chip">cross = 0  ⇒  a, b are collinear</span>
+      <span class="chip warn">cross &lt; 0  ⇒  b is right/CW from a</span>
+    </div>
+
+    <h4>3D lift (sanity check)</h4>
+    <p>If we lift <span class="inlineCode">a = (x₁, y₁)</span> and <span class="inlineCode">b = (x₂, y₂)</span> into 3D as <span class="inlineCode">(x, y, 0)</span>, their 3D cross product is <span class="inlineCode">(0, 0, x₁y₂ − y₁x₂)</span>. The <span class="inlineCode">z</span> component is exactly our 2D cross product. This confirms the geometric interpretation (signed area, turn direction).</p>
+
+    <div class="diagramWrap">
+      <div class="diagramHeader"><div class="diagramTitle">Diagram · dot vs cross signs (angle θ between a and b)</div></div>
+      <svg class="graphsvg" viewBox="0 0 900 360" preserveAspectRatio="xMidYMid meet">
+        <line x1="450" y1="320" x2="780" y2="320" stroke="var(--accent2)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="790" y="326" font-size="22" font-weight="900" fill="var(--accent2)">a</text>
+        <circle cx="450" cy="320" r="9" fill="var(--text)"/>
+        <line x1="450" y1="320" x2="660" y2="120" stroke="var(--good)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="670" y="116" font-size="22" font-weight="900" fill="var(--good)">b (cross &gt; 0, left)</text>
+        <line x1="450" y1="320" x2="200" y2="120" stroke="var(--bad)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="60" y="116" font-size="22" font-weight="900" fill="var(--bad)">b (cross &lt; 0, right)</text>
+        <line x1="450" y1="320" x2="450" y2="60" stroke="var(--warn)" stroke-width="5" marker-end="url(#arrow1)"/>
+        <text x="460" y="60" font-size="22" font-weight="900" fill="var(--warn)">b (dot = 0, right angle)</text>
+        <text x="450" y="350" font-size="16" font-weight="800" fill="var(--muted)" text-anchor="middle">sign(cross) = sign of sin θ        sign(dot) = sign of cos θ</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 9. COMPLEXITY -->
+  <section class="card" id="complexity">
+    <h2>⏱ 9 — Complexity Analysis</h2>
+    <table>
+      <thead><tr><th>Operation</th><th>Time</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">cmp(a, b)</span></td><td>O(1)</td><td>3 arithmetic ops; branchless.</td></tr>
+        <tr><td><span class="inlineCode">safeSqrt</span> / <span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span></td><td>O(1)</td><td>One library call + a clamp.</td></tr>
+        <tr><td><span class="inlineCode">dot(a, b)</span> / <span class="inlineCode">cross(a, b)</span></td><td>O(1)</td><td>One complex multiplication, real or imaginary part.</td></tr>
+        <tr><td><span class="inlineCode">len(p)</span> / <span class="inlineCode">dist(a, b)</span></td><td>O(1)</td><td><span class="inlineCode">hypotl</span>; one transcendental call.</td></tr>
+        <tr><td><span class="inlineCode">samePoint(a, b)</span></td><td>O(1)</td><td>Two <span class="inlineCode">cmp</span> calls.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px;">All operations are constant-time. The library itself adds zero asymptotic overhead to any algorithm that uses it.</p>
+  </section>
+
+  <!-- 10. TEMPLATE PHILOSOPHY -->
+  <section class="card" id="philosophy">
+    <h2>📐 10 — Core Template Philosophy</h2>
+    <ul style="padding-left:24px;">
+      <li><b>Compact.</b> No abstract base classes, no exception machinery, no <span class="inlineCode">struct Point { double x, y; … };</span> with hand-rolled operators. We use <span class="inlineCode">complex&lt;long double&gt;</span> and rely on the standard library to provide <span class="inlineCode">+</span>, <span class="inlineCode">−</span>, <span class="inlineCode">*</span>, <span class="inlineCode">/</span>, <span class="inlineCode">conj</span>, <span class="inlineCode">polar</span>, and <span class="inlineCode">norm</span>.</li>
+      <li><b>Central <span class="inlineCode">cmp</span>.</b> Every sign-of-quantity check funnels through <span class="inlineCode">cmp</span>. There is exactly one place in the codebase where EPS appears.</li>
+      <li><b>Const-reference inputs.</b> Geometry primitives are small but not free to copy. <span class="inlineCode">const Point&amp;</span> in every signature.</li>
+      <li><b>Documented preconditions.</b> Every helper that requires a non-zero vector or two distinct points says so in a comment. We trust callers; we do not add defensive checks that hide bugs.</li>
+      <li><b>No macro named <span class="inlineCode">rotate</span>.</b> It collides with <span class="inlineCode">std::rotate</span>. We use a small helper function named <span class="inlineCode">rot</span> instead — a typed function rather than a macro, which also avoids <span class="inlineCode">std::polar</span> mixed-type deduction issues.</li>
+      <li><b>Unified naming.</b> <span class="inlineCode">dist</span>, <span class="inlineCode">dot</span>, <span class="inlineCode">cross</span>, <span class="inlineCode">cmp</span> — short, memorable, consistent across every class in the family.</li>
+    </ul>
+  </section>
+
+  <!-- 11. MASTER IMPLEMENTATION -->
+  <section class="card" id="master">
+    <h2>💻 11 — Master / Base Implementation</h2>
+    <p>This is the geometry header that every later class in the family extends. It compiles standalone with <span class="inlineCode">g++ -std=c++17</span>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+using T     = long double;
+using Point = complex&lt;T&gt;;
+
+#define X real()
+#define Y imag()
+
+const long double EPS = 1e-12L;
+const T PI = acosl(-1.0L);
+
+// ---- rotation helper (typed function, not a macro) ----------------
+// A real function fixes the std::polar mixed-type deduction problem:
+// rot(Point(1,0), 0.5) coerces the double 0.5 to T before the call.
+Point rot(const Point&amp; v, T t) {
+    return v * polar((T)1, t);
+}
+
+// ---- comparison gatekeeper ----------------------------------------
+template&lt;class U&gt;
+int cmpInt(const U&amp; a, const U&amp; b = U(0)) {
+    return (a &gt; b) - (a &lt; b);
+}
+
+template&lt;class U&gt;
+int cmpFloat(const U&amp; a, const U&amp; b = U(0)) {
+    long double d = (long double)a - (long double)b;
+    return (d &gt; EPS) - (d &lt; -EPS);
+}
+
+template&lt;class U&gt;
+int cmp(const U&amp; a, const U&amp; b = U(0)) {
+    if constexpr (is_floating_point_v&lt;U&gt;) return cmpFloat(a, b);
+    else return cmpInt(a, b);
+}
+
+// ---- safe math wrappers -------------------------------------------
+T safeSqrt(T x) {
+    if (cmp(x) == 0) return 0;
+    return (T)sqrtl((long double)x);
+}
+
+// Raw-domain clamp: cmp's EPS band is too wide here.
+// 1 + EPS/2 is still mathematically out of the acos/asin domain
+// and would yield NaN if it reached the libm call unchanged.
+T safeAcos(T x) {
+    if (x &gt; (T) 1) x =  1;
+    if (x &lt; (T)-1) x = -1;
+    return (T)acosl((long double)x);
+}
+
+T safeAsin(T x) {
+    if (x &gt; (T) 1) x =  1;
+    if (x &lt; (T)-1) x = -1;
+    return (T)asinl((long double)x);
+}
+
+// ---- dot and cross via complex multiplication ---------------------
+T dot  (const Point&amp; a, const Point&amp; b) { return real(conj(a) * b); }
+T cross(const Point&amp; a, const Point&amp; b) { return imag(conj(a) * b); }
+
+// ---- length and distance ------------------------------------------
+T len (const Point&amp; a)                    { return (T)hypotl((long double)a.X, (long double)a.Y); }
+T dist(const Point&amp; a, const Point&amp; b)    { return len(a - b); }
+
+// ---- equality on points (uses cmp on each coordinate) -------------
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;
+}
+</code></pre>
+
+    <div class="callout">
+      <b>Two macros that look identical to fields but are not.</b> <span class="inlineCode">#define X real()</span> means <span class="inlineCode">p.X</span> expands to <span class="inlineCode">p.real()</span>. They are <i>method calls</i> dressed up as field access — pure CP convenience, never used in production C++.
+    </div>
+  </section>
+
+  <!-- 12. LINE-BY-LINE WALKTHROUGH -->
+  <section class="card" id="lbl">
+    <h2>🔎 12 — Line-by-Line Code Explanation</h2>
+
+    <details open><summary>cmpInt · cmpFloat · cmp <span class="rightHint">(click to collapse)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">int cmpInt(const U&amp; a, const U&amp; b = U(0))</div><div class="lineExpl">Integer-typed sign-of-difference. Default <span class="inlineCode">b = 0</span> so <span class="inlineCode">cmp(x)</span> tests sign of <span class="inlineCode">x</span> against zero.</div>
+        <div class="lineNo">2</div><div class="lineCode">return (a &gt; b) - (a &lt; b);</div><div class="lineExpl">The branchless tri-state idiom. Each comparison is <span class="inlineCode">0</span> or <span class="inlineCode">1</span>; their difference is <span class="inlineCode">-1, 0, +1</span>.</div>
+        <div class="lineNo">3</div><div class="lineCode">int cmpFloat(const U&amp; a, const U&amp; b = U(0))</div><div class="lineExpl">Same signature for floating types. Default to compare against zero.</div>
+        <div class="lineNo">4</div><div class="lineCode">long double d = (long double)a - (long double)b;</div><div class="lineExpl">Promote both operands to <span class="inlineCode">long double</span> before subtracting. Avoids a precision drop when caller passed <span class="inlineCode">double</span> or <span class="inlineCode">float</span>.</div>
+        <div class="lineNo">5</div><div class="lineCode">return (d &gt; EPS) - (d &lt; -EPS);</div><div class="lineExpl">Same tri-state idiom but with a tolerance band. Values inside <span class="inlineCode">[-EPS, +EPS]</span> return <span class="inlineCode">0</span>.</div>
+        <div class="lineNo">6</div><div class="lineCode">int cmp(const U&amp; a, const U&amp; b = U(0))</div><div class="lineExpl">The single user-facing wrapper.</div>
+        <div class="lineNo">7</div><div class="lineCode">if constexpr (is_floating_point_v&lt;U&gt;) …</div><div class="lineExpl">Compile-time branch. Picks the correct sibling at instantiation time. Zero runtime cost — the other branch is not generated.</div>
+      </div>
+    </div>
+    </details>
+
+    <details><summary>safeSqrt · safeAcos · safeAsin <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">T safeSqrt(T x)</div><div class="lineExpl">Square root that absorbs tiny negative noise.</div>
+        <div class="lineNo">2</div><div class="lineCode">if (cmp(x) == 0) return 0;</div><div class="lineExpl">If <span class="inlineCode">x</span> is inside the EPS band around zero (so possibly a small negative), short-circuit to zero. <span class="inlineCode">sqrt</span> of a tiny negative returns NaN — this prevents that. Here the EPS band is exactly what we want, because the caller expects a "should-be non-negative" value that may have drifted to slightly negative.</div>
+        <div class="lineNo">3</div><div class="lineCode">return (T)sqrtl((long double)x);</div><div class="lineExpl">Otherwise compute the genuine square root using the <span class="inlineCode">long double</span> overload <span class="inlineCode">sqrtl</span>.</div>
+        <div class="lineNo">4</div><div class="lineCode">T safeAcos(T x)</div><div class="lineExpl">Arc-cosine that clamps domain drift to the exact mathematical domain <span class="inlineCode">[-1, +1]</span>.</div>
+        <div class="lineNo">5</div><div class="lineCode">if (x &gt; (T) 1) x = 1;</div><div class="lineExpl">Raw-domain clamp. If <span class="inlineCode">x</span> exceeds 1 by <i>any</i> amount — even less than EPS — clamp it down. We use a direct comparison rather than <span class="inlineCode">cmp</span> because <span class="inlineCode">acosl</span> needs the operand to be a strictly valid input; <span class="inlineCode">cmp</span>'s equality band would let <span class="inlineCode">1 + EPS/2</span> through unchanged and <span class="inlineCode">acosl</span> would return NaN.</div>
+        <div class="lineNo">6</div><div class="lineCode">if (x &lt; (T)-1) x = -1;</div><div class="lineExpl">Symmetric clamp on the lower end. Same reasoning.</div>
+        <div class="lineNo">7</div><div class="lineCode">return (T)acosl((long double)x);</div><div class="lineExpl">Compute the inverse cosine on the safe operand.</div>
+        <div class="lineNo">8</div><div class="lineCode">T safeAsin(T x)</div><div class="lineExpl">Same raw-domain clamp idea, same domain <span class="inlineCode">[-1, +1]</span>, then <span class="inlineCode">asinl</span>.</div>
+      </div>
+      <div class="callout warn"><b>Why the asymmetry between <span class="inlineCode">safeSqrt</span> and <span class="inlineCode">safeAcos</span>?</b> Both are clamps, but they have different jobs. <span class="inlineCode">safeSqrt</span> is fixing an <i>identity</i>: "a value that should be ≥ 0 has drifted to slightly &lt; 0; pretend it's zero." That is exactly what <span class="inlineCode">cmp</span>'s EPS band expresses. <span class="inlineCode">safeAcos</span> is fixing a <i>domain</i> violation: <span class="inlineCode">acosl</span> needs <span class="inlineCode">|x| ≤ 1</span> as a hard precondition; any overshoot — sub-EPS or not — is fatal. So one uses <span class="inlineCode">cmp</span> and the other uses a raw comparison, deliberately.</div>
+    </div>
+    </details>
+
+    <details><summary>dot · cross <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">T dot(const Point&amp; a, const Point&amp; b)</div><div class="lineExpl"><span class="inlineCode">const Point&amp;</span> — small object but enough to favour reference semantics consistently across the family.</div>
+        <div class="lineNo">2</div><div class="lineCode">return real(conj(a) * b);</div><div class="lineExpl">From §8.3 — the real part of <span class="inlineCode">conj(a)·b</span> is exactly <span class="inlineCode">x₁x₂ + y₁y₂</span>. One complex multiplication. The standard library will compile this to four real multiplications and two additions.</div>
+        <div class="lineNo">3</div><div class="lineCode">T cross(const Point&amp; a, const Point&amp; b)</div><div class="lineExpl">Same setup.</div>
+        <div class="lineNo">4</div><div class="lineCode">return imag(conj(a) * b);</div><div class="lineExpl">From §8.4 — the imaginary part is <span class="inlineCode">x₁y₂ − y₁x₂</span>.</div>
+      </div>
+      <div class="callout"><b>Why we factor through <span class="inlineCode">conj(a)·b</span>.</b> Symmetry. The same complex multiplication delivers both dot and cross, and the same complex identity drives the proofs in §8. The code mirrors the maths.</div>
+    </div>
+    </details>
+
+    <details><summary>len · dist · samePoint <span class="rightHint">(click to expand)</span></summary>
+    <div class="detailsBody">
+      <div class="lineExp">
+        <div class="lh lineNo">#</div><div class="lh">Code</div><div class="lh">What &amp; why</div>
+        <div class="lineNo">1</div><div class="lineCode">T len(const Point&amp; a)</div><div class="lineExpl">Length of a vector (or distance of a point from origin).</div>
+        <div class="lineNo">2</div><div class="lineCode">return (T)hypotl(a.X, a.Y);</div><div class="lineExpl"><span class="inlineCode">hypotl</span> is the <span class="inlineCode">long double</span> overload of <span class="inlineCode">hypot</span>. Rescales internally to avoid overflow and underflow.</div>
+        <div class="lineNo">3</div><div class="lineCode">T dist(const Point&amp; a, const Point&amp; b)</div><div class="lineExpl">Distance is the length of the difference.</div>
+        <div class="lineNo">4</div><div class="lineCode">return len(a - b);</div><div class="lineExpl">Reads as plain mathematics; one subtraction, one length call.</div>
+        <div class="lineNo">5</div><div class="lineCode">bool samePoint(const Point&amp; a, const Point&amp; b)</div><div class="lineExpl">Point equality that respects EPS.</div>
+        <div class="lineNo">6</div><div class="lineCode">return cmp(a.X, b.X) == 0 &amp;&amp; cmp(a.Y, b.Y) == 0;</div><div class="lineExpl">Both coordinates must compare equal under <span class="inlineCode">cmp</span>. Notice we do <i>not</i> call <span class="inlineCode">cmp(dist(a, b))</span> — using component-wise EPS is faster and more predictable than building a distance and EPS-comparing it against zero.</div>
+      </div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 13. EDGE CASES -->
+  <section class="card" id="edges">
+    <h2>🧷 13 — Edge Cases (centralized)</h2>
+    <table>
+      <thead><tr><th>Case</th><th>What happens</th><th>How this class handles it</th></tr></thead>
+      <tbody>
+        <tr><td><span class="inlineCode">double x = 1e18; x == x + 1</span></td><td>Evaluates to <span class="inlineCode">true</span>.</td><td>Don't write that. Geometry coordinates that span <span class="inlineCode">10¹⁸</span> need integer types (<span class="inlineCode">long long</span>, <span class="inlineCode">__int128</span>).</td></tr>
+        <tr><td><span class="inlineCode">cmpFloat</span> at the EPS boundary</td><td>Values exactly at <span class="inlineCode">±EPS</span> return <span class="inlineCode">0</span> (since <span class="inlineCode">d &gt; EPS</span> is <i>strict</i>).</td><td>Documented. Choose EPS so that legitimate "small but non-zero" values stay outside the band.</td></tr>
+        <tr><td><span class="inlineCode">safeSqrt(-1e-18)</span></td><td>Would be NaN with raw <span class="inlineCode">sqrt</span>.</td><td>Returns <span class="inlineCode">0</span> because <span class="inlineCode">cmp(-1e-18) == 0</span>.</td></tr>
+        <tr><td><span class="inlineCode">safeAcos(1.000000002)</span></td><td>Would be NaN.</td><td>Clamped raw to <span class="inlineCode">acosl(1) = 0</span>.</td></tr>
+        <tr><td><span class="inlineCode">safeAcos(1.0L + EPS/2)</span></td><td>Sub-EPS overshoot. Would be NaN with raw <span class="inlineCode">acos</span> and also with a <span class="inlineCode">cmp</span>-based clamp.</td><td>Clamped raw to <span class="inlineCode">acosl(1) = 0</span>. This is exactly why the clamp does not go through <span class="inlineCode">cmp</span>.</td></tr>
+        <tr><td><span class="inlineCode">samePoint(p, p)</span></td><td>Must be <span class="inlineCode">true</span>.</td><td>Guaranteed by I2: <span class="inlineCode">cmp(a, a) == 0</span>.</td></tr>
+        <tr><td><span class="inlineCode">len((0, 0))</span></td><td>Should be exactly <span class="inlineCode">0</span>.</td><td><span class="inlineCode">hypotl(0, 0)</span> returns <span class="inlineCode">0</span> exactly.</td></tr>
+        <tr><td><span class="inlineCode">dot((0,0), b)</span></td><td>Returns <span class="inlineCode">0</span> — but this does <i>not</i> mean a right angle.</td><td>By policy (O6), the zero vector has no direction. Callers must guarantee non-zero inputs to angle/orientation predicates.</td></tr>
+        <tr><td>Very large coordinates (e.g. <span class="inlineCode">10⁹</span>) plus small ones (e.g. <span class="inlineCode">10⁻³</span>)</td><td>Absolute EPS may misclassify small differences.</td><td>Switch to <span class="inlineCode">cmpRel</span> (Variants §16) or rescale coordinates.</td></tr>
+        <tr><td>Integer coordinates near <span class="inlineCode">long long</span> limit, used with <span class="inlineCode">cross</span></td><td><span class="inlineCode">x₁y₂</span> can overflow.</td><td>Switch to <span class="inlineCode">__int128</span> for the cross product temporary.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. COMMON PITFALLS -->
+  <section class="card" id="pitfalls">
+    <h2>⚠ 14 — Common Pitfalls / Bugs</h2>
+    <ul style="padding-left:24px;">
+      <li><b>P1 — Comparing doubles with raw <span class="inlineCode">==</span> / <span class="inlineCode">&lt;</span>.</b> The single most common geometry bug. Funnel everything through <span class="inlineCode">cmp</span>.</li>
+      <li><b>P2 — Calling <span class="inlineCode">acos</span> / <span class="inlineCode">asin</span> on a raw formula result.</b> Even when the formula is mathematically inside <span class="inlineCode">[-1, 1]</span>, floats may push it out. Use <span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span>.</li>
+      <li><b>P3 — Routing the <span class="inlineCode">acos</span>/<span class="inlineCode">asin</span> clamp through <span class="inlineCode">cmp</span>.</b> The EPS-equality band swallows sub-EPS overshoots like <span class="inlineCode">1 + EPS/2</span>, which then crash <span class="inlineCode">acosl</span>. Use raw <span class="inlineCode">&gt;</span> / <span class="inlineCode">&lt;</span> against the literal endpoints.</li>
+      <li><b>P4 — Calling <span class="inlineCode">sqrt</span> on a "should be non-negative" expression.</b> Use <span class="inlineCode">safeSqrt</span>.</li>
+      <li><b>P5 — Using <span class="inlineCode">sqrt(double)</span> instead of <span class="inlineCode">sqrtl(long double)</span>.</b> Loses the entire benefit of <span class="inlineCode">long double</span>.</li>
+      <li><b>P6 — One EPS for all magnitudes.</b> <span class="inlineCode">1e-12</span> is fine for coordinates up to <span class="inlineCode">10⁶</span>. For coordinates near <span class="inlineCode">10⁹</span> consider <span class="inlineCode">1e-9</span> or use <span class="inlineCode">cmpRel</span>.</li>
+      <li><b>P7 — Computing a distance just to compare two distances.</b> Compare <span class="inlineCode">dot(v, v)</span> instead. Faster and exact when inputs are integer.</li>
+      <li><b>P8 — Treating <span class="inlineCode">dot((0,0), b) = 0</span> as "right angle".</b> The zero vector has no direction. Any angle predicate must guard against zero-length inputs.</li>
+      <li><b>P9 — Macro named <span class="inlineCode">rotate</span> instead of <span class="inlineCode">rot</span>.</b> Collides with <span class="inlineCode">std::rotate</span> from <span class="inlineCode">&lt;algorithm&gt;</span>. Class 02 enforces the <span class="inlineCode">rot</span> name.</li>
+      <li><b>P10 — Using <span class="inlineCode">complex&lt;T&gt;::operator==</span> for point equality.</b> That operator uses raw <span class="inlineCode">==</span> on each component. Use <span class="inlineCode">samePoint</span>.</li>
+      <li><b>P11 — Forgetting <span class="inlineCode">long double</span> promotion in <span class="inlineCode">cmpFloat</span>.</b> If <span class="inlineCode">a</span> and <span class="inlineCode">b</span> are <span class="inlineCode">double</span>, computing <span class="inlineCode">a - b</span> in <span class="inlineCode">double</span> can lose precision before the EPS test even runs. We explicitly cast to <span class="inlineCode">long double</span> first.</li>
+    </ul>
+  </section>
+
+  <!-- 15. DECISION GUIDE -->
+  <section class="card" id="decision">
+    <h2>🧭 15 — Decision / Recognition Guide</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reflex tool</th></tr></thead>
+      <tbody>
+        <tr><td>I need the <b>absolute</b> distance between two points.</td><td><span class="inlineCode">dist(a, b)</span></td></tr>
+        <tr><td>I only need to <b>compare</b> two distances.</td><td><span class="inlineCode">dot(v, v)</span> on each (squared distance)</td></tr>
+        <tr><td>I need the length of a vector.</td><td><span class="inlineCode">len(v)</span></td></tr>
+        <tr><td>I need to know "is this floating value zero?"</td><td><span class="inlineCode">cmp(x) == 0</span></td></tr>
+        <tr><td>I need a tri-state sign of a numeric expression.</td><td><span class="inlineCode">cmp(expr)</span> returning <span class="inlineCode">-1, 0, +1</span></td></tr>
+        <tr><td>I'm about to call <span class="inlineCode">sqrt</span> on a non-negative formula.</td><td><span class="inlineCode">safeSqrt</span></td></tr>
+        <tr><td>I'm about to call <span class="inlineCode">acos</span> / <span class="inlineCode">asin</span>.</td><td><span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span></td></tr>
+        <tr><td>I need to check two points are the same.</td><td><span class="inlineCode">samePoint(a, b)</span></td></tr>
+        <tr><td>Coordinates are integers ≤ <span class="inlineCode">10⁹</span> and I need exact orientation.</td><td>Use <span class="inlineCode">long long</span>; <span class="inlineCode">cmp</span> dispatches to <span class="inlineCode">cmpInt</span>.</td></tr>
+        <tr><td>Coordinates are integers near <span class="inlineCode">10⁹</span> and I'm forming a cross product.</td><td>Promote to <span class="inlineCode">__int128</span> for the temporary.</td></tr>
+        <tr><td>Coordinates span 10+ orders of magnitude.</td><td>Switch to relative tolerance — see §16 <span class="inlineCode">cmpRel</span>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Reflex rules (contest speed)</h3>
+    <div class="chips">
+      <span class="chip good">Every comparison goes through cmp.</span>
+      <span class="chip good">Every sqrt becomes safeSqrt.</span>
+      <span class="chip good">Every acos/asin becomes safeAcos/safeAsin.</span>
+      <span class="chip warn">No == on doubles, ever.</span>
+      <span class="chip warn">No sqrt just to compare.</span>
+      <span class="chip bad">No macro named "rotate".</span>
+    </div>
+
+    <h3>Common confusion</h3>
+    <div class="callout warn">
+      <b>"Why isn't my EPS catching this?"</b> Two usual causes: (a) you compared a quantity built by squaring (so the magnitudes are 10⁶ instead of 10³), and your absolute EPS is now too tight; (b) you called <span class="inlineCode">==</span> directly on a <span class="inlineCode">double</span> somewhere before <span class="inlineCode">cmp</span> got a chance to run. Search the file for raw <span class="inlineCode">==</span> on floating types — there should be none.
+    </div>
+  </section>
+
+  <!-- 16. VARIANTS -->
+  <section class="card" id="variants">
+    <h2>🌿 16 — Variants &amp; Extensions</h2>
+
+    <h3>16.1 — Squared distance for ordering</h3>
+    <p>The single most-used optimisation. Replace every <span class="inlineCode">dist(a, b)</span> by <span class="inlineCode">dot(a − b, a − b)</span> when the goal is comparison only. <b>What changes:</b> avoids <span class="inlineCode">sqrt</span>. <b>Why:</b> on integer coordinates, the comparison becomes exact. <b>When to use:</b> any closest-pair / farthest-pair / nearest-neighbour question.</p>
+<pre><code>// Compare distances p-a and p-b without sqrt
+bool closerToA(const Point&amp; p, const Point&amp; a, const Point&amp; b) {
+    return cmp( dot(p-a, p-a), dot(p-b, p-b) ) &lt; 0;
+}</code></pre>
+
+    <h3>16.2 — Relative tolerance <span class="inlineCode">cmpRel</span></h3>
+    <p>When operands range over many orders of magnitude, an absolute <span class="inlineCode">EPS = 1e-12</span> may be far too tight for the large end and far too loose for the small end. The fix is to scale the tolerance with the magnitudes:</p>
+<pre><code>template&lt;class U&gt;
+int cmpRel(const U&amp; a, const U&amp; b) {
+    long double d   = (long double)a - (long double)b;
+    long double scl = max((long double)1,
+                          max(fabsl((long double)a), fabsl((long double)b)));
+    long double eps = EPS * scl;
+    return (d &gt; eps) - (d &lt; -eps);
+}</code></pre>
+    <p><b>What changes:</b> the EPS adapts. <b>Why:</b> robust across many magnitudes. <b>When to use:</b> coordinates with huge dynamic range, or repeated multiplications that grow magnitudes.</p>
+
+    <h3>16.3 — Manhattan and Chebyshev distance</h3>
+    <p>Two common alternative metrics:</p>
+<pre><code>T distManhattan (const Point&amp; a, const Point&amp; b) { return fabsl(a.X-b.X) + fabsl(a.Y-b.Y); }
+T distChebyshev (const Point&amp; a, const Point&amp; b) { return max(fabsl(a.X-b.X), fabsl(a.Y-b.Y)); }</code></pre>
+    <p>The 45° rotation <span class="inlineCode">(x, y) ↦ (x + y, x − y)</span> converts Manhattan distance to Chebyshev distance — a classic trick for "rook moves on a tilted grid" problems.</p>
+
+    <h3>16.4 — <span class="inlineCode">__int128</span> for large integer cross products</h3>
+    <p>When integer coordinates are bounded by <span class="inlineCode">10⁹</span>, the product <span class="inlineCode">x₁·y₂</span> can reach <span class="inlineCode">10¹⁸</span>, just inside <span class="inlineCode">long long</span>; the <i>difference</i> <span class="inlineCode">x₁y₂ − y₁x₂</span> can overflow. Use <span class="inlineCode">__int128</span> for the intermediate, then read off the sign with <span class="inlineCode">cmpInt</span>.</p>
+  </section>
+
+  <!-- 17. PROBLEMS -->
+  <section class="card" id="problems">
+    <h2>🚀 17 — Problem-Based Applications</h2>
+
+    <details open><summary>UVA 10242 — Fourth Point <span class="rightHint">classic vector-arithmetic warm-up</span></summary>
+    <div class="detailsBody">
+      <p><b>Story.</b> You are given four points on input, three of which are the distinct vertices of a parallelogram (in some order) and the fourth being one of the three repeated — the repeated point names the <i>shared vertex</i> of the two edges that the input describes. Output the missing fourth vertex.</p>
+      <p><b>Abstraction.</b> A parallelogram has two pairs of parallel, equal-length edges. If <span class="inlineCode">shared, a, b</span> are the three distinct vertices with <span class="inlineCode">shared</span> being the vertex where the two given edges meet, the missing point is <span class="inlineCode">a + b − shared</span> — the vertex opposite to <span class="inlineCode">shared</span>.</p>
+      <p><b>Why this geometry model fits.</b> "Parallelogram" is the smallest possible setting in which point-as-location and vector-as-displacement need to coexist. The opposite-vertex identity is just <i>vector addition</i> in disguise.</p>
+      <p><b>Algorithm.</b> The four input points contain one repeat — that's the shared vertex. The other two are <span class="inlineCode">a</span> and <span class="inlineCode">b</span>. Apply <span class="inlineCode">a + b − shared</span>. Output uses 3 decimal places.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Point {
+    double x, y;
+};
+
+bool samePoint(const Point&amp; a, const Point&amp; b) {
+    return fabs(a.x - b.x) &lt; 1e-9 &amp;&amp; fabs(a.y - b.y) &lt; 1e-9;
+}
+
+Point missingPoint(Point p1, Point p2, Point p3, Point p4) {
+    Point shared, a, b;
+
+    if (samePoint(p1, p3)) {
+        shared = p1;
+        a = p2;
+        b = p4;
+    } else if (samePoint(p1, p4)) {
+        shared = p1;
+        a = p2;
+        b = p3;
+    } else if (samePoint(p2, p3)) {
+        shared = p2;
+        a = p1;
+        b = p4;
+    } else {
+        // p2 == p4
+        shared = p2;
+        a = p1;
+        b = p3;
+    }
+
+    return {a.x + b.x - shared.x, a.y + b.y - shared.y};
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    Point p1, p2, p3, p4;
+
+    while (cin &gt;&gt; p1.x &gt;&gt; p1.y &gt;&gt; p2.x &gt;&gt; p2.y
+               &gt;&gt; p3.x &gt;&gt; p3.y &gt;&gt; p4.x &gt;&gt; p4.y) {
+        Point ans = missingPoint(p1, p2, p3, p4);
+        cout &lt;&lt; fixed &lt;&lt; setprecision(3) &lt;&lt; ans.x &lt;&lt; ' ' &lt;&lt; ans.y &lt;&lt; '\n';
+    }
+
+    return 0;
+}</code></pre>
+      <p><b>Quick verification.</b></p>
+      <ul style="padding-left:22px;">
+        <li>Input <span class="inlineCode">0 0   1 0   0 0   0 1</span> → shared = <span class="inlineCode">(0,0)</span>, <span class="inlineCode">a = (1,0)</span>, <span class="inlineCode">b = (0,1)</span>, answer = <span class="inlineCode">(1,1)</span>.</li>
+        <li>Input <span class="inlineCode">1 1   2 3   4 5   2 3</span> → shared = <span class="inlineCode">(2,3)</span>, <span class="inlineCode">a = (1,1)</span>, <span class="inlineCode">b = (4,5)</span>, answer = <span class="inlineCode">(3,3)</span>.</li>
+      </ul>
+      <p><b>Complexity.</b> <span class="inlineCode">O(1)</span> per test case.</p>
+      <p><b>Pitfalls.</b> The four-point input format with one repeat is easy to misread. The same-point test must use a tolerance; using <span class="inlineCode">==</span> on <span class="inlineCode">double</span> would miss legitimate repeats that round differently. Output precision (3 decimals) is judge-strict.</p>
+      <p><b>VJudge link.</b> <a href="https://vjudge.net/problem/UVA-10242" target="_blank" rel="noopener">https://vjudge.net/problem/UVA-10242</a></p>
+    </div>
+    </details>
+
+    <details><summary>Closest-pair preview exercise — squared-distance comparison <span class="rightHint">pattern snippet, not a full worked problem</span></summary>
+    <div class="detailsBody">
+      <p>This is <b>not</b> a full contest solution in this class. It is a preview of the squared-distance comparison primitive that will be used later in closest-pair and nearest-neighbour problems. The intent is to show the pattern in isolation so it is recognisable when it reappears in a larger algorithm.</p>
+      <p><b>Source URL.</b> URL not provided in source.</p>
+      <p><b>Pattern.</b> Given many integer-coordinate points, find the smallest pairwise distance. The brute force is <span class="inlineCode">O(n²)</span> and is the right warm-up before Class 10 (closest pair in <span class="inlineCode">O(n log n)</span>). The inner loop only <i>compares</i> distances — so we compute squared distances on integers and avoid <span class="inlineCode">sqrt</span> entirely.</p>
+<pre><code>// Partial pattern snippet — not AC-ready code.
+// Assumes p is a vector&lt;pair&lt;long long, long long&gt;&gt; of n points.
+
+long long bestSq = LLONG_MAX;
+for (int i = 0; i &lt; n; ++i)
+    for (int j = i + 1; j &lt; n; ++j) {
+        long long dx = p[i].first  - p[j].first;
+        long long dy = p[i].second - p[j].second;
+        long long sq = dx*dx + dy*dy;
+        if (sq &lt; bestSq) bestSq = sq;
+    }
+// Only call sqrt at the very end if a distance is required as output.</code></pre>
+      <p><b>Pitfalls of the pattern.</b> <span class="inlineCode">dx*dx</span> can overflow <span class="inlineCode">int</span> — make sure all arithmetic happens in <span class="inlineCode">long long</span>. Use <span class="inlineCode">__int128</span> if coordinates reach <span class="inlineCode">10⁹</span>.</p>
+      <div class="callout"><b>Scope reminder.</b> For this Class 01 file, the only full worked contest solution is UVA 10242 above; later classes will provide full closest-pair solutions.</div>
+    </div>
+    </details>
+  </section>
+
+  <!-- 18. SUMMARY -->
+  <section class="card" id="summary">
+    <h2>📝 18 — Final Summary</h2>
+    <div class="twoCol">
+      <div>
+        <h3>The mental model</h3>
+        <ul style="padding-left:22px;">
+          <li><b>Point</b> = location.</li>
+          <li><b>Vector</b> = displacement.</li>
+          <li><b>Distance</b> = length of displacement.</li>
+          <li><b>dot</b> = projection / angle test (<span class="inlineCode">|a||b|cos θ</span>).</li>
+          <li><b>cross</b> = orientation / area test (<span class="inlineCode">|a||b|sin θ</span>).</li>
+          <li><b>cmp</b> = the single comparison policy.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The four hard rules</h3>
+        <ul style="padding-left:22px;">
+          <li>Every comparison goes through <span class="inlineCode">cmp</span>.</li>
+          <li>Every <span class="inlineCode">sqrt</span> becomes <span class="inlineCode">safeSqrt</span>.</li>
+          <li>Every <span class="inlineCode">acos</span> / <span class="inlineCode">asin</span> becomes <span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span> with a <i>raw-domain</i> clamp.</li>
+          <li>No macro named <span class="inlineCode">rotate</span> — use <span class="inlineCode">rot</span>.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:14px;">Class 01 is small but load-bearing. Everything from segment intersection through Welzl's minimum enclosing circle depends on the <span class="inlineCode">cmp</span> gate behaving exactly as described in §7 (Invariants) and §8 (Proof). If a later class produces a numerical bug, the very first place to audit is the EPS choice and the cmp dispatch.</p>
+    <div class="callout good">
+      <b>What's next.</b> Class 02 builds the orientation toolkit: <span class="inlineCode">perpCCW</span>, <span class="inlineCode">perpCW</span>, <span class="inlineCode">orient</span>, <span class="inlineCode">rotateAround</span>, the reflection helpers, and the heavy local-frame classifier <span class="inlineCode">ccwQuadrant</span>. Everything in Class 02 is built on top of the dot/cross/cmp substrate established here.
+    </div>
+  </section>
+
+  <!-- 19. FOOTER / CONTACT -->
+  <section class="card" id="contact">
+    <h2>📮 19 — Footer / Contact</h2>
+
+    <h3 id="checklist">Runtime Validation Checklist</h3>
+    <p>Before using this header in a contest solution, verify each item below. These are the failure modes specific to the numeric substrate of Class 01; later classes add their own subsections.</p>
+
+    <h4>Numeric substrate</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">cmp</span> is used for every geometry comparison (no raw <span class="inlineCode">==</span> / <span class="inlineCode">&lt;</span> / <span class="inlineCode">&gt;</span> on floating values).</li>
+      <li><span class="inlineCode">safeSqrt</span> wraps every <span class="inlineCode">sqrt</span> on a "should be non-negative" expression.</li>
+      <li><span class="inlineCode">safeAcos</span> / <span class="inlineCode">safeAsin</span> wrap every inverse-trigonometric call, with a <b>raw-domain</b> clamp.</li>
+      <li>No macro named <span class="inlineCode">rotate</span> exists in the translation unit (use <span class="inlineCode">rot</span>).</li>
+      <li><span class="inlineCode">EPS</span> chosen with respect to coordinate magnitude (default <span class="inlineCode">1e-12L</span> for coordinates ≤ <span class="inlineCode">10⁶</span> as a practical heuristic).</li>
+      <li>Integer coordinates use <span class="inlineCode">long long</span> (or <span class="inlineCode">__int128</span> for cross-product intermediates near the overflow boundary).</li>
+      <li><span class="inlineCode">samePoint</span> used for point equality — not <span class="inlineCode">operator==</span> on <span class="inlineCode">complex&lt;T&gt;</span>.</li>
+    </ul>
+
+    <h4>Spot checks (run mentally before submitting)</h4>
+    <ul class="checklist">
+      <li><span class="inlineCode">cmp(0.0)</span> returns <span class="inlineCode">0</span>.</li>
+      <li><span class="inlineCode">cmp(EPS / 2)</span> returns <span class="inlineCode">0</span>.</li>
+      <li><span class="inlineCode">cmp(2 * EPS)</span> returns <span class="inlineCode">+1</span>.</li>
+      <li><span class="inlineCode">safeSqrt(-EPS / 2)</span> returns <span class="inlineCode">0</span>.</li>
+      <li><span class="inlineCode">safeAcos(1.0L + EPS / 2)</span> returns <span class="inlineCode">0</span> (i.e. <span class="inlineCode">acosl(1)</span>) — the raw-domain clamp catches the sub-EPS overshoot.</li>
+      <li><span class="inlineCode">safeAcos(1.0L)</span> returns <span class="inlineCode">0</span>.</li>
+      <li><span class="inlineCode">dist(p, p)</span> returns <span class="inlineCode">0</span> exactly.</li>
+      <li><span class="inlineCode">dot(Point(1,0), Point(0,1))</span> returns <span class="inlineCode">0</span> (right angle).</li>
+      <li><span class="inlineCode">cross(Point(1,0), Point(0,1))</span> returns <span class="inlineCode">+1</span> (CCW from +x to +y).</li>
+    </ul>
+
+    <div class="contactBlock">
+      <div class="cb-brand">Coach Academy — Computational Geometry 2D · Class 01</div>
+      <div class="cb-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+      <div class="cb-mail"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a></div>
+      <div class="cb-mail"><a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></div>
+      <div class="cb-note">Distance &amp; comparison · The substrate every later class depends on.</div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+"use strict";
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+// -------------- THEME ---------------------------------------------
+(function themeModule(){
+  const themeKey = 'coach_geom_theme';
+  const sw = $('#themeSwitch');
+
+  function applyTheme(theme){
+    document.body.setAttribute('data-theme', theme);
+    if (sw) sw.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+  }
+
+  const saved = localStorage.getItem(themeKey);
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  function toggleTheme(){
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem(themeKey, next);
+  }
+
+  if (sw) {
+    sw.addEventListener('click', toggleTheme);
+    sw.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+})();
+
+// -------------- SIDEBAR + HAMBURGER -------------------------------
+(function sidebarModule(){
+  const sb  = $('#sidebar');
+  const tog = $('#sidebarToggle');
+  const ovl = $('#sidebarOverlay');
+  const app = $('#app');
+  if (!sb || !tog || !app) return;
+
+  let open = window.innerWidth > 1400;
+
+  function isNarrow(){
+    return window.innerWidth <= 1400;
+  }
+
+  function setSidebar(nextOpen){
+    open = nextOpen;
+
+    tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+    tog.classList.toggle('open', open);
+
+    if (open) {
+      sb.classList.remove('collapsed');
+
+      if (isNarrow()) {
+        app.classList.add('sidebar-hidden');
+        if (ovl) ovl.classList.add('show');
+      } else {
+        app.classList.remove('sidebar-hidden');
+        if (ovl) ovl.classList.remove('show');
+      }
+    } else {
+      sb.classList.add('collapsed');
+      app.classList.add('sidebar-hidden');
+      if (ovl) ovl.classList.remove('show');
+    }
+  }
+
+  tog.addEventListener('click', () => {
+    setSidebar(!open);
+  });
+
+  if (ovl) {
+    ovl.addEventListener('click', () => {
+      setSidebar(false);
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && open && isNarrow()) {
+      setSidebar(false);
+    }
+  });
+
+  document.querySelectorAll('.nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (isNarrow()) setSidebar(false);
+    });
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (isNarrow()) setSidebar(false);
+      else setSidebar(true);
+    }, 120);
+  });
+
+  setSidebar(open);
+})();
+
+// -------------- SCROLL-SPY ----------------------------------------
+(function scrollSpyModule(){
+  const sections = $$('section[id]');
+  const navLinks = $$('.nav a[href^="#"]');
+  const contentEl = $('.content');
+  if (!contentEl) return;
+
+  function updateNav() {
+    let cur = '';
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top < 180) cur = s.id;
+    }
+    for (const a of navLinks) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    }
+  }
+  contentEl.addEventListener('scroll', updateNav);
+  window.addEventListener('load', updateNav);
+  updateNav();
+})();
+</script>
+</body>
+</html>

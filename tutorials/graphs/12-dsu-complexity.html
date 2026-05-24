@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>DSU · Full Complexity Analysis</title>
+
+<style>
+:root{
+  --bg:#f7f8fb;--panel:#ffffff;--panel2:#f1f4ff;
+  --text:#0b1220;--muted:#334155;--border:#d6d9e6;
+  --accent:#1e40af;--accent2:#2563eb;
+  --good:#0f766e;--warn:#b45309;--bad:#b91c1c;
+  --codebg:#0b1220;--codetext:#e5e7eb;
+  --shadow:0 12px 30px rgba(2,6,23,.12);
+  --chip:#e8edff;--link:#1d4ed8;
+  --fs-base:26px;--fs-sm:22px;
+  --fs-h1:54px;--fs-h2:38px;--fs-h3:30px;
+  --radius:18px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--panel:#0c1220;--panel2:#0b162f;
+  --text:#f1f5ff;--muted:#cbd5ff;--border:#24304c;
+  --accent:#7aa2ff;--accent2:#4f8cff;
+  --good:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --codebg:#050812;--codetext:#e5e7eb;
+  --shadow:0 18px 40px rgba(0,0,0,.5);
+  --chip:#0f2347;--link:#93c5fd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+code,pre,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+/* Layout */
+.app{display:grid;grid-template-columns:420px 1fr;height:100vh;}
+.sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:0;overflow:auto;position:sticky;top:0;height:100vh;z-index:100;}
+.content{overflow:auto;padding:26px 30px 90px;}
+
+/* Sidebar */
+.brand{padding:22px 20px 18px;border-bottom:3px solid var(--border);background:linear-gradient(160deg,var(--panel2),var(--panel));}
+.brand-icon{width:62px;height:62px;border-radius:16px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:white;margin-bottom:10px;}
+.brand-title{font-size:24px;font-weight:900;letter-spacing:-.01em;}
+.brand-sub{font-size:var(--fs-sm);color:var(--muted);font-weight:700;margin-top:2px;}
+.nav{padding:14px 10px;}
+.nav-group{font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 10px 6px;}
+.nav a{display:block;padding:12px 14px;border-radius:14px;font-weight:800;font-size:20px;color:var(--text);text-decoration:none;margin:4px 6px;border:2px solid transparent;transition:all .15s ease;}
+.nav a:hover{background:var(--panel2)}
+.nav a.active{background:rgba(37,99,235,.10);border-color:rgba(37,99,235,.35);color:var(--accent2);box-shadow:0 8px 18px rgba(37,99,235,.12);}
+.nav a small{display:block;color:var(--muted);font-size:18px;font-weight:700;margin-top:2px;}
+.nav-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:800;background:var(--accent2);color:white;margin-left:6px;}
+
+/* Topbar */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+.page-title{font-size:var(--fs-h1);font-weight:700;letter-spacing:-.03em;line-height:1.05;}
+.page-title span{color:var(--accent2);}
+.page-sub{font-size:24px;color:var(--muted);font-weight:750;margin-top:8px;max-width:900px;}
+.theme-toggle{padding:12px 18px;border-radius:14px;border:3px solid var(--border);background:var(--panel);cursor:pointer;font-size:20px;font-weight:900;color:var(--text);white-space:nowrap;flex-shrink:0;box-shadow:0 10px 22px rgba(2,6,23,.08);}
+
+/* Cards */
+.card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:22px 22px 18px;box-shadow:var(--shadow);margin:18px 0;}
+.card-title{font-size:var(--fs-h2);font-weight:700;letter-spacing:-.02em;margin-bottom:12px;}
+.card-sub{font-size:var(--fs-h3);font-weight:700;margin:20px 0 8px;letter-spacing:-.01em;}
+
+/* Highlights */
+.hl-box{border-radius:14px;padding:16px 18px;margin:16px 0;font-weight:750;font-size:var(--fs-sm);}
+.hl-box.blue{background:rgba(37,99,235,.07);border:2px solid rgba(37,99,235,.2);border-left:5px solid var(--accent2);}
+.hl-box.green{background:rgba(15,118,110,.07);border:2px solid rgba(15,118,110,.2);border-left:5px solid var(--good);}
+.hl-box.warn{background:rgba(180,83,9,.07);border:2px solid rgba(180,83,9,.2);border-left:5px solid var(--warn);}
+.hl-box.bad{background:rgba(185,28,28,.07);border:2px solid rgba(185,28,28,.2);border-left:5px solid var(--bad);}
+.hl-box strong{display:block;margin-bottom:4px;font-size:var(--fs-base);}
+
+/* Complexity badges */
+.complexity{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:18px;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.complexity.on{background:rgba(185,28,28,.12);border:2px solid var(--bad);color:var(--bad);}
+.complexity.olog{background:rgba(180,83,9,.12);border:2px solid var(--warn);color:var(--warn);}
+.complexity.oa{background:rgba(15,118,110,.12);border:2px solid var(--good);color:var(--good);}
+
+/* Code */
+pre{background:var(--codebg);color:var(--codetext);border-radius:18px;padding:18px 20px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:20px;line-height:1.45;margin:16px 0;}
+.kw{color:#7aa2ff} .fn{color:#e0a065} .cm{color:#546a8c} .nm{color:#f97fa8} .st{color:#6ec68e}
+
+/* Array display */
+.array-container{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:16px;overflow-x:auto;margin:12px 0;}
+.array-row{display:flex;gap:0;border-radius:10px;overflow:hidden;border:3px solid var(--border);width:max-content;}
+.array-label{background:rgba(37,99,235,.12);font-size:17px;font-weight:800;color:var(--accent2);padding:8px 12px;display:flex;align-items:center;min-width:80px;border-right:3px solid var(--border);}
+.array-cell{min-width:58px;text-align:center;padding:8px 4px;border-right:2px solid var(--border);font-weight:800;font-size:20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;transition:background .25s,color .25s;}
+.array-cell:last-child{border-right:none}
+.array-cell.root{background:rgba(185,28,28,.15);color:var(--bad);}
+.array-cell.member{background:rgba(37,99,235,.1);color:var(--accent2);}
+.array-cell.highlight{background:rgba(251,191,36,.25);color:#b45309;box-shadow:inset 0 0 0 2px rgba(251,191,36,.5);}
+.array-cell.compressed{background:rgba(15,118,110,.2);color:var(--good);}
+.array-idx-row{display:flex;gap:0;width:max-content;}
+.array-idx{min-width:58px;text-align:center;font-size:15px;color:var(--muted);padding:3px 4px;border-right:1px solid transparent;}
+
+/* Interactive panels */
+.interactive{border:3px solid var(--accent2);border-radius:var(--radius);padding:20px;margin:20px 0;background:rgba(37,99,235,.03);}
+.interactive-title{font-size:18px;font-weight:800;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;}
+.btn{padding:12px 18px;border-radius:14px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:20px;cursor:pointer;transition:all .15s ease;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;box-shadow:0 10px 22px rgba(2,6,23,.08);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.btn:active{transform:none}
+.btn.primary{background:linear-gradient(180deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.18);}
+.btn.warn{background:rgba(180,83,9,.1);border-color:var(--warn);color:var(--warn);}
+.btn.good{background:rgba(15,118,110,.1);border-color:var(--good);color:var(--good);}
+.btn.bad{background:rgba(185,28,28,.1);border-color:var(--bad);color:var(--bad);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.status-box{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px 16px;font-size:20px;font-weight:750;line-height:1.45;min-height:60px;margin-top:10px;}
+
+/* Tree SVG */
+.tree-wrap{background:var(--panel2);border:3px solid var(--border);border-radius:14px;padding:14px;overflow-x:auto;margin:12px 0;}
+
+/* Table */
+table{width:100%;border-collapse:separate;border-spacing:0;border-radius:var(--radius);overflow:hidden;border:3px solid var(--border);margin:14px 0;font-size:22px;font-weight:850;}
+th,td{padding:12px 14px;border-bottom:2px solid var(--border);vertical-align:top;}
+th{background:rgba(37,99,235,.10);font-weight:950;font-size:18px;text-transform:uppercase;letter-spacing:.05em;}
+tr:last-child td{border-bottom:none}
+td code{font-size:18px;background:var(--panel2);padding:2px 8px;border-radius:6px;}
+
+/* Details */
+details{border:3px solid var(--border);border-radius:var(--radius);margin:14px 0;overflow:hidden;background:var(--panel);box-shadow:var(--shadow);}
+summary{padding:16px 18px;cursor:pointer;font-weight:950;font-size:var(--fs-h3);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));list-style:none;user-select:none;}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▸";font-size:20px;color:var(--muted);transition:transform .2s ease;}
+details[open] summary::after{transform:rotate(90deg)}
+.details-body{padding:18px;}
+
+/* Ackermann table */
+.ack-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:12px 0;}
+.ack-cell{background:var(--panel2);border:2px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18px;font-weight:800;transition:background .2s;}
+.ack-cell.header{background:rgba(37,99,235,.1);color:var(--accent2);font-size:16px;}
+.ack-cell.huge{background:rgba(185,28,28,.12);color:var(--bad);}
+.ack-cell.medium{background:rgba(180,83,9,.12);color:var(--warn);}
+.ack-cell.small{background:rgba(15,118,110,.12);color:var(--good);}
+
+/* Section */
+section{scroll-margin-top:20px;}
+
+/* Progress tracker */
+.progress-bar{height:5px;background:var(--panel2);border-radius:999px;margin:6px 0 16px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:999px;transition:width .4s ease;}
+
+/* Mobile */
+@media(max-width:1100px){.app{grid-template-columns:1fr}.sidebar{display:none}.content{padding:20px 18px 80px;}}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .35s ease forwards}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulsing{animation:pulse 1.5s ease infinite}
+
+/* Sidebar toggle — always visible, top-left */
+.sidebar-toggle{position:fixed;top:18px;left:18px;z-index:200;width:52px;height:52px;border-radius:14px;border:3px solid var(--border);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .35s cubic-bezier(.4,0,.2,1);user-select:none;padding:0;}
+.sidebar-toggle:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;border-color:rgba(255,255,255,.2);box-shadow:0 6px 24px rgba(37,99,235,.3);transform:scale(1.06);}
+.burger-icon{display:flex;flex-direction:column;gap:5px;width:22px;}
+.burger-icon span{display:block;height:2.5px;width:100%;background:currentColor;border-radius:2px;transition:all .3s ease;}
+.sidebar-toggle.open .burger-icon span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}
+.sidebar-toggle.open .burger-icon span:nth-child(2){opacity:0;transform:scaleX(0);}
+.sidebar-toggle.open .burger-icon span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}
+.app.sidebar-hidden .sidebar{display:none;}
+.app.sidebar-hidden{grid-template-columns:1fr;}
+
+.section-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent2);color:white;border-radius:999px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+
+.math{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;padding:2px 6px;}
+.big-math{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:28px;font-weight:800;display:block;text-align:center;padding:14px;margin:14px 0;color:var(--accent2);}
+
+/* Step indicators */
+.steps{counter-reset:step;display:flex;flex-direction:column;gap:18px;margin:18px 0;}
+.step{display:flex;gap:18px;align-items:flex-start;counter-increment:step;}
+.step-num{min-width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-body{padding-top:6px;font-size:var(--fs-sm);font-weight:600;}
+
+/* Node chips for DSU */
+.node-chips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0;}
+.node-chip{width:58px;height:58px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;cursor:pointer;border:3px solid var(--border);transition:all .15s ease;font-size:16px;}
+.node-chip.root-node{border-color:var(--bad);background:rgba(185,28,28,.1);}
+.node-chip.member-node{border-color:var(--accent2);background:rgba(37,99,235,.08);}
+.node-chip.selected-node{border-color:#f59e0b;background:rgba(245,158,11,.15);box-shadow:0 0 0 4px rgba(245,158,11,.3);}
+.node-chip .chip-id{font-size:22px;font-weight:900;}
+.node-chip .chip-par{font-size:13px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+/* Comparison table */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:18px 0;}
+.compare-card{border:3px solid var(--border);border-radius:14px;padding:18px;text-align:center;}
+.compare-card .cc-label{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;}
+.compare-card .cc-comp{font-size:30px;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-bottom:4px;}
+.compare-card .cc-note{font-size:16px;color:var(--muted);font-weight:600;}
+.compare-card.bad-card{border-color:var(--bad);background:rgba(185,28,28,.04)}.compare-card.bad-card .cc-comp{color:var(--bad)}
+.compare-card.warn-card{border-color:var(--warn);background:rgba(180,83,9,.04)}.compare-card.warn-card .cc-comp{color:var(--warn)}
+.compare-card.good-card{border-color:var(--good);background:rgba(15,118,110,.04)}.compare-card.good-card .cc-comp{color:var(--good)}
+
+/* Alpha lookup */
+.alpha-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;border:2px solid var(--border);margin:8px 0;font-size:var(--fs-sm);font-weight:750;}
+.alpha-val{min-width:38px;height:38px;border-radius:10px;background:var(--accent2);color:white;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="app" id="app">
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-icon">∑</div>
+    <div class="brand-title">DSU Complexity</div>
+    <div class="brand-sub">From Zero to O(α(n))</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-group">Foundations</div>
+    <a href="#s-what" class="active">① What is DSU?<small>The problem we're solving</small></a>
+    <a href="#s-repr">② The Parent Array<small>Negative-size encoding</small></a>
+    <a href="#s-naive">③ Naive Complexity<small>Why O(n) is bad</small></a>
+    <a href="#s-formal">③½ Formal Abstraction<small>Cost model, amortized vs worst-case</small></a>
+    <a href="#s-obs">③¾ Key Observations<small>Four insights that drive everything</small></a>
+
+    <div class="nav-group">Optimization 1</div>
+    <a href="#s-size">④ Union by Size<small>Proof: O(log n)</small></a>
+    <a href="#s-size-demo">⑤ Interactive: Union<small>Try it yourself</small></a>
+
+    <div class="nav-group">Optimization 2</div>
+    <a href="#s-path">⑥ Path Compression<small>The flattening trick</small></a>
+    <a href="#s-path-demo">⑦ Interactive: Compression<small>Watch paths flatten</small></a>
+
+    <div class="nav-group">The Inverse Ackermann</div>
+    <a href="#s-ack">⑧ Ackermann Function<small>How fast can a function grow?</small></a>
+    <a href="#s-inv">⑨ Inverse Ackermann α(n)<small>The slowest function</small></a>
+    <a href="#s-why">⑩ Why O(α(n))?<small>Intuition behind Tarjan's proof</small></a>
+
+    <div class="nav-group">Code &amp; Pitfalls</div>
+    <a href="#s-code-explain">⑪ Code: Line-by-Line<small>Every line explained</small></a>
+    <a href="#s-edge-cases">⑫ Edge Cases<small>Tricky details that bite</small></a>
+    <a href="#s-pitfalls">⑬ Common Pitfalls<small>Bugs &amp; misconceptions</small></a>
+
+    <div class="nav-group">DSU Family</div>
+    <a href="#s-variants">⑭ Variants &amp; Extensions<small>Rollback, weighted, parity</small></a>
+    <a href="#s-applications">⑮ CP Applications<small>Problems with links</small></a>
+    <a href="#s-advanced">⑯ Advanced Extensions<small>What comes next</small></a>
+
+    <div class="nav-group">Wrap-Up</div>
+    <a href="#s-summary">⑰ Full Summary<small>Complexity ladder</small></a>
+    <a href="#s-takeaways">⑱ Key Takeaways<small>Memory checklist</small></a>
+    <a href="#s-playground">⑲ Full Playground<small>Everything together</small></a>
+  </nav>
+</aside>
+
+<!-- ═══════════════ CONTENT ═══════════════ -->
+<main class="content" id="mainContent">
+  <div class="topbar">
+    <div>
+      <div class="page-title">DSU <span>Complexity</span> Analysis</div>
+      <div class="page-sub">A complete zero-to-hero guide: from O(n) naïve all the way to amortized O(α(n)) — with interactive examples at every step.</div>
+    </div>
+    <button class="theme-toggle" id="themeBtn">🌙 Dark Mode</button>
+  </div>
+
+  <div class="compare-grid" style="margin-bottom:32px">
+    <div class="compare-card bad-card"><div class="cc-label">No Optimization</div><div class="cc-comp">O(n)</div><div class="cc-note">Chains form, slow</div></div>
+    <div class="compare-card warn-card"><div class="cc-label">Union by Size</div><div class="cc-comp">O(log n)</div><div class="cc-note">Trees stay shallow</div></div>
+    <div class="compare-card good-card"><div class="cc-label">Both Together</div><div class="cc-comp">O(α(n))</div><div class="cc-note">Practically constant</div></div>
+  </div>
+
+  <!-- ═══ SECTION 1 ═══ -->
+  <section id="s-what">
+  <div class="card">
+    <div class="section-badge">① Foundation</div>
+    <div class="card-title">What is DSU?</div>
+    <p>DSU stands for <strong>Disjoint Set Union</strong>. It's also called <em>Union-Find</em>. Imagine you have a bunch of people, and you're tracking which people are in the same friend group. DSU answers two questions instantly:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;">
+      <div class="hl-box blue"><strong>find(x)</strong>Who is the representative (leader) of the group that x belongs to?</div>
+      <div class="hl-box green"><strong>unite(a, b)</strong>Merge the groups of a and b into one group.</div>
+    </div>
+
+    <p>Real uses: <strong>connected components</strong>, <strong>Kruskal's MST</strong>, <strong>cycle detection</strong>, <strong>grouping identical classes</strong>.</p>
+
+    <div class="card-sub">The Central Challenge</div>
+    <p>We need both operations to be as fast as possible. The entire story of this guide is about how clever data structure design takes us from <em>terrible</em> O(n) all the way down to <em>practically constant</em> O(α(n)).</p>
+
+    <div class="hl-box warn"><strong>Key idea to keep in mind:</strong> The "representative" of a group is just whichever node we designate as the root. Two nodes are in the same group if and only if they have the same root.</div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 2 ═══ -->
+  <section id="s-repr">
+  <div class="card">
+    <div class="section-badge">② Foundation</div>
+    <div class="card-title">The Parent Array — Negative Size Trick</div>
+    <p>We store everything in one integer array called <code>parent[]</code>. The rules are simple:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;">
+      <div class="hl-box bad"><strong>parent[x] &lt; 0 → x is a ROOT</strong>The group size is <code>-parent[x]</code>. So <code>parent[x] = -5</code> means x leads a group of 5.</div>
+      <div class="hl-box blue"><strong>parent[x] ≥ 0 → x is a MEMBER</strong><code>parent[x]</code> is the index of x's parent node. Follow parents upward to reach the root.</div>
+    </div>
+
+    <div class="card-sub">Concrete Example</div>
+    <p>Suppose we have 5 nodes. Start: everyone alone.</p>
+    <div class="array-container">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">Index</div>
+      <div class="array-idx-row">
+        <div class="array-idx" style="margin-left:0;min-width:72px;"></div>
+        <div class="array-idx">0</div><div class="array-idx">1</div><div class="array-idx">2</div><div class="array-idx">3</div><div class="array-idx">4</div>
+      </div>
+      <div class="array-row">
+        <div class="array-label">parent</div>
+        <div class="array-cell root">-1</div>
+        <div class="array-cell root">-1</div>
+        <div class="array-cell root">-1</div>
+        <div class="array-cell root">-1</div>
+        <div class="array-cell root">-1</div>
+      </div>
+    </div>
+    <p style="margin-top:8px;font-size:14px;color:var(--muted);">Red = root. All nodes are roots of size 1 (because -(-1) = 1).</p>
+
+    <p style="margin-top:14px;">Now suppose we've done some merges. The array becomes:</p>
+    <div class="array-container">
+      <div class="array-idx-row">
+        <div class="array-idx" style="margin-left:0;min-width:72px;"></div>
+        <div class="array-idx">0</div><div class="array-idx">1</div><div class="array-idx">2</div><div class="array-idx">3</div><div class="array-idx">4</div>
+      </div>
+      <div class="array-row">
+        <div class="array-label">parent</div>
+        <div class="array-cell root">-4</div>
+        <div class="array-cell member">0</div>
+        <div class="array-cell member">0</div>
+        <div class="array-cell member">2</div>
+        <div class="array-cell root">-1</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:14px;line-height:1.8;">
+      • <code>parent[0] = -4</code> → node 0 is a root of a group of <strong>4</strong><br>
+      • <code>parent[1] = 0</code> → node 1's parent is node 0<br>
+      • <code>parent[2] = 0</code> → node 2's parent is node 0<br>
+      • <code>parent[3] = 2</code> → node 3's parent is node 2 (so path: 3→2→0)<br>
+      • <code>parent[4] = -1</code> → node 4 is its own root of size 1
+    </div>
+
+    <div class="card-sub">The find() Operation</div>
+    <pre><span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+    <span class="kw">if</span> (parent[x] < <span class="nm">0</span>) <span class="kw">return</span> x;  <span class="cm">// x is a root</span>
+    <span class="kw">return</span> <span class="fn">find</span>(parent[x]);        <span class="cm">// climb to parent</span>
+}</pre>
+    <p>Time = depth of node x in the tree. If trees are deep → slow. If trees are shallow → fast. <strong>Everything we do is about keeping trees shallow.</strong></p>
+
+    <div class="card-sub">The unite() Operation</div>
+    <pre><span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+    a = <span class="fn">find</span>(a); b = <span class="fn">find</span>(b);  <span class="cm">// get roots</span>
+    <span class="kw">if</span> (a == b) <span class="kw">return false</span>;    <span class="cm">// already same group</span>
+    parent[b] = a;               <span class="cm">// attach b's tree under a</span>
+    <span class="kw">return true</span>;
+}</pre>
+    <p>This is the <strong>naïve version</strong>. It works, but the trees can become very tall chains. We'll fix that next.</p>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 3 ═══ -->
+  <section id="s-naive">
+  <div class="card">
+    <div class="section-badge">③ Foundation</div>
+    <div class="card-title">Naïve Complexity — O(n) Worst Case</div>
+    <p>Without any smart choices, naïve DSU can degrade badly. Watch what happens with a specific sequence:</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">Start: nodes 0,1,2,3,4,5,6,7 — all singletons.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">unite(0,1) → parent[1]=0. Tree: 1→0</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">unite(1,2) → find(1)=0, so parent[2]=0. But if we do it naïvely attaching right to left...</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">...after 7 operations, we get a chain: 7→6→5→4→3→2→1→0</div></div>
+    </div>
+
+    <div class="array-container">
+      <div class="array-idx-row">
+        <div class="array-idx" style="margin-left:0;min-width:72px;"></div>
+        <div class="array-idx">0</div><div class="array-idx">1</div><div class="array-idx">2</div><div class="array-idx">3</div><div class="array-idx">4</div><div class="array-idx">5</div><div class="array-idx">6</div><div class="array-idx">7</div>
+      </div>
+      <div class="array-row">
+        <div class="array-label">parent</div>
+        <div class="array-cell root">-8</div>
+        <div class="array-cell member">0</div>
+        <div class="array-cell member">1</div>
+        <div class="array-cell member">2</div>
+        <div class="array-cell member">3</div>
+        <div class="array-cell member">4</div>
+        <div class="array-cell member">5</div>
+        <div class="array-cell member">6</div>
+      </div>
+    </div>
+
+    <div class="hl-box bad" style="margin-top:14px;"><strong>Now find(7) must walk:</strong> 7 → 6 → 5 → 4 → 3 → 2 → 1 → 0. That's 7 steps! With n nodes, find() costs O(n).</div>
+
+    <p>For competitive programming with n=10⁵ and 10⁵ queries, that's 10¹⁰ operations. <strong>Way too slow.</strong></p>
+
+    <div class="compare-grid">
+      <div class="compare-card bad-card"><div class="cc-label">find</div><div class="cc-comp">O(n)</div><div class="cc-note">Walks the whole chain</div></div>
+      <div class="compare-card bad-card"><div class="cc-label">unite</div><div class="cc-comp">O(n)</div><div class="cc-note">Two finds + O(1)</div></div>
+      <div class="compare-card bad-card"><div class="cc-label">n=10⁵ queries</div><div class="cc-comp">~10¹⁰</div><div class="cc-note">TLE</div></div>
+    </div>
+
+    <div class="hl-box blue"><strong>The fix:</strong> We need two smart tricks. First, always attach the <em>smaller tree under the larger tree</em> (union by size). This alone brings us to O(log n). Then, additionally use <em>path compression</em> to flatten paths as we go. Together, these give the amazing O(α(n)) amortized bound.</div>
+  </div>
+  </section>
+
+  <!-- ═══ FORMAL ABSTRACTION ═══ -->
+  <section id="s-formal">
+  <div class="card">
+    <div class="section-badge">③½ Formal Abstraction</div>
+    <div class="card-title">Formal Cost Model — What Are We Bounding?</div>
+
+    <div class="card-sub">Operation Definitions</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;">
+      <div class="hl-box blue"><strong>find(x):</strong> Returns the canonical representative (root) of the component containing x. May modify parent pointers as a side effect (path compression).</div>
+      <div class="hl-box blue"><strong>unite(a, b):</strong> Merges the component of a and the component of b. Returns false if already same component. Internally calls find() twice.</div>
+    </div>
+
+    <div class="card-sub">The Cost Model</div>
+    <p>We count <strong>the number of parent-pointer traversals</strong> — how many times we follow a parent[] link. This is the bottleneck operation in both find() and unite().</p>
+    <div class="hl-box green">
+      <strong>What Tarjan's theorem actually says:</strong><br><br>
+      Let n = number of elements. Let m = total number of find() and unite() operations (m ≥ n).<br><br>
+      Then the total number of parent-pointer traversals over all m operations is at most <strong>O(m · α(n))</strong>.<br><br>
+      This gives an amortized cost of <strong>O(α(n)) per operation</strong>.
+    </div>
+
+    <div class="card-sub">Three Distinct Complexity Notions</div>
+    <table>
+      <thead><tr><th>Type</th><th>Meaning</th><th>For DSU</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Worst-case per operation</strong></td>
+          <td>Upper bound on any single operation in isolation</td>
+          <td>O(log n) — a single find() can still walk O(log n) steps</td>
+        </tr>
+        <tr>
+          <td><strong>Amortized per operation</strong></td>
+          <td>Upper bound on average cost per operation over a sequence</td>
+          <td><strong>O(α(n))</strong> — Tarjan's result</td>
+        </tr>
+        <tr>
+          <td><strong>Practical / contest</strong></td>
+          <td>Observed behavior on real inputs</td>
+          <td>Effectively O(1). α(n) ≤ 4 for all real inputs.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="hl-box warn"><strong>Do not confuse these:</strong> Writing "each find() is O(α(n))" is technically correct (amortized sense) but is dangerous if you then argue a worst-case bound depends on it. A single cold find() before any compression can still cost O(log n).</div>
+  </div>
+  </section>
+
+  <!-- ═══ KEY OBSERVATIONS ═══ -->
+  <section id="s-obs">
+  <div class="card">
+    <div class="section-badge">③¾ Key Observations</div>
+    <div class="card-title">Four Key Observations That Drive Everything</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Naive chains are the enemy.</strong><br>
+          Without any optimization, repeated unite() calls that always attach the current root under the last root create a linear chain. find() on the tail must traverse the entire chain: O(n) per call.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Union by size limits rank growth logarithmically.</strong><br>
+          By always attaching the smaller tree under the larger, every time a node's depth increases by 1, the group it belongs to at least doubles in size. Since the group can never exceed n, depth is bounded by log₂n. This gives O(log n) find() without any path compression at all.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Path compression makes previously expensive paths cheap forever.</strong><br>
+          After find(x) traverses a path of length k, every node on that path is rewired directly to the root. Future find() calls on these nodes cost O(1). The "expensive" call buys cheapness for all future calls — this is the amortized trade-off.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>The combination gives Ackermann-level savings.</strong><br>
+          With union by size bounding how tall trees can get, and path compression aggressively flattening whatever height exists, the combined effect is so powerful that Tarjan could prove the total work is bounded using the inverse Ackermann function — growing so slowly it is constant for all practical purposes.
+        </div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 4 ═══ -->
+  <section id="s-size">
+  <div class="card">
+    <div class="section-badge">④ Optimization 1</div>
+    <div class="card-title">Union by Size — Proof that depth ≤ log₂ n</div>
+    <p>The rule: <strong>always attach the smaller tree under the larger tree.</strong></p>
+    <pre><span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+    a = <span class="fn">find</span>(a); b = <span class="fn">find</span>(b);
+    <span class="kw">if</span> (a == b) <span class="kw">return false</span>;
+
+    <span class="kw">if</span> (-parent[a] < -parent[b]) swap(a, b); <span class="cm">// a = larger root</span>
+
+    parent[a] += parent[b];  <span class="cm">// sum the (negative) sizes</span>
+    parent[b] = a;            <span class="cm">// attach smaller under larger</span>
+    <span class="kw">return true</span>;
+}</pre>
+
+    <div class="card-sub">Why parent[a] += parent[b] works</div>
+    <p>Both are roots, so both values are negative. If a has size 5 and b has size 3:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;">
+      <div class="hl-box blue">Before:<br>parent[a] = -5<br>parent[b] = -3</div>
+      <div class="hl-box green">After:<br>parent[a] = -5 + (-3) = -8 ✓<br>parent[b] = a (now points to a)</div>
+    </div>
+
+    <div class="card-sub">The Key Insight (One Sentence)</div>
+    <div class="hl-box green" style="font-size:16px;"><strong>Every time a node's depth increases by 1, the size of its group at least doubles.</strong></div>
+
+    <div class="card-sub">Full Proof</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">Take any node x. Initially it's alone: <strong>size = 1, depth = 0</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">x's depth only increases when x's root is attached under a bigger root. By union-by-size, that other tree has size ≥ current size. So new size ≥ size + size = <strong>2 × old size</strong>.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">Build the chain: depth 0 → size ≥ 1 &nbsp;|&nbsp; depth 1 → size ≥ 2 &nbsp;|&nbsp; depth 2 → size ≥ 4 &nbsp;|&nbsp; depth d → size ≥ 2<sup>d</sup></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">But no group can have more than n nodes. So: 2<sup>d</sup> ≤ n &nbsp;→&nbsp; <strong>d ≤ log₂ n</strong>. QED.</div></div>
+    </div>
+
+    <div class="card-sub">Doubling Chain for n=8</div>
+    <table>
+      <thead><tr><th>Depth of node x</th><th>Minimum set size</th><th>Because</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>1 = 2⁰</td><td>Starts alone</td></tr>
+        <tr><td>1</td><td>2 = 2¹</td><td>Merged with size ≥ 1 tree</td></tr>
+        <tr><td>2</td><td>4 = 2²</td><td>Merged with size ≥ 2 tree</td></tr>
+        <tr><td>3</td><td>8 = 2³</td><td>Merged with size ≥ 4 tree</td></tr>
+        <tr><td>4</td><td>Would need 16 &gt; n=8</td><td style="color:var(--bad)">❌ Impossible! Max depth = 3 = log₂(8)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="compare-grid">
+      <div class="compare-card warn-card"><div class="cc-label">find</div><div class="cc-comp">O(log n)</div><div class="cc-note">Depth ≤ log₂n</div></div>
+      <div class="compare-card warn-card"><div class="cc-label">unite</div><div class="cc-comp">O(log n)</div><div class="cc-note">Two finds + O(1)</div></div>
+      <div class="compare-card warn-card"><div class="cc-label">n=10⁵ queries</div><div class="cc-comp">~1.7M</div><div class="cc-note">Fast enough!</div></div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 5 ═══ -->
+  <section id="s-size-demo">
+  <div class="card">
+    <div class="section-badge">⑤ Interactive</div>
+    <div class="card-title">Try Union by Size</div>
+    <p>Click two nodes to merge them. Watch how the parent array changes and how depth is controlled.</p>
+
+    <div class="interactive">
+      <div class="interactive-title">🧪 Union by Size Sandbox</div>
+      <div id="ubsNodes" class="node-chips"></div>
+
+      <div class="array-container" style="margin-top:12px;">
+        <div id="ubsArrayWrap"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="ubsFindMode">🔍 Run find()</button>
+        <button class="btn warn" id="ubsReset">↺ Reset</button>
+      </div>
+      <div class="status-box" id="ubsStatus">Click two nodes to merge them. Red nodes are roots; their label shows group size.</div>
+
+      <details style="margin-top:12px;">
+        <summary>📊 Show depth analysis</summary>
+        <div class="details-body" id="ubsDepthAnalysis">Press reset or do a merge to see analysis.</div>
+      </details>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 6 ═══ -->
+  <section id="s-path">
+  <div class="card">
+    <div class="section-badge">⑥ Optimization 2</div>
+    <div class="card-title">Path Compression — Flattening on the Way Up</div>
+    <p>Even with union by size (giving O(log n)), we can do better. <strong>Path compression</strong> is a one-line change to find():</p>
+    <pre><span class="cm">// Without path compression:</span>
+<span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+    <span class="kw">if</span> (parent[x] < <span class="nm">0</span>) <span class="kw">return</span> x;
+    <span class="kw">return</span> <span class="fn">find</span>(parent[x]);
+}
+
+<span class="cm">// With path compression (one extra assignment):</span>
+<span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+    <span class="kw">if</span> (parent[x] < <span class="nm">0</span>) <span class="kw">return</span> x;
+    <span class="kw">return</span> parent[x] = <span class="fn">find</span>(parent[x]); <span class="cm">// ← CHANGED</span>
+}</pre>
+
+    <p>The difference: after finding the root, we <strong>directly set every visited node's parent to the root</strong>. The path is flattened.</p>
+
+    <div class="card-sub">Step by Step Example</div>
+    <p>Suppose the tree is: <code>4→3→2→1→0</code> (node 0 is root)</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;">BEFORE find(4):</div>
+        <div class="array-container">
+          <div class="array-row">
+            <div class="array-label">parent</div>
+            <div class="array-cell root">-5</div>
+            <div class="array-cell member">0</div>
+            <div class="array-cell member">1</div>
+            <div class="array-cell member">2</div>
+            <div class="array-cell member">3</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--muted);">Depths: 0→0, 1→1, 2→2, 3→3, 4→4</p>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--good);margin-bottom:8px;">AFTER find(4):</div>
+        <div class="array-container">
+          <div class="array-row">
+            <div class="array-label">parent</div>
+            <div class="array-cell root">-5</div>
+            <div class="array-cell compressed">0</div>
+            <div class="array-cell compressed">0</div>
+            <div class="array-cell compressed">0</div>
+            <div class="array-cell compressed">0</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--good);">All nodes now point directly to root 0!</p>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body">find(4) → parent[4]=3, so recurse: find(3)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body">find(3) → parent[3]=2, so recurse: find(2)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body">find(2) → parent[2]=1, so recurse: find(1)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body">find(1) → parent[1]=0, so recurse: find(0)</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body">find(0) → parent[0]=-5 &lt; 0 → return 0. Now <strong>unwind</strong>: set parent[1]=0, parent[2]=0, parent[3]=0, parent[4]=0.</div></div>
+    </div>
+
+    <div class="hl-box green"><strong>Key insight:</strong> One expensive find(4) that cost 4 steps just made every future find on 1,2,3,4 cost only 1 step each. The expensive operation <em>pays forward</em> to make future operations cheap. This is what "amortized" means.</div>
+
+    <div class="card-sub">What is Amortized Complexity?</div>
+    <p>Amortized does <strong>not</strong> mean every operation is fast. It means:</p>
+    <div class="hl-box blue"><strong>Over a long sequence of operations, the average cost per operation is small.</strong><br><br>Example: 10 operations with costs [8, 1, 1, 1, 1, 1, 1, 1, 1, 1] → total=17, average=1.7. The one expensive operation "donated" speed to the future ones.</div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 7 ═══ -->
+  <section id="s-path-demo">
+  <div class="card">
+    <div class="section-badge">⑦ Interactive</div>
+    <div class="card-title">Watch Path Compression in Action</div>
+
+    <div class="interactive">
+      <div class="interactive-title">🗜️ Path Compression Visualizer</div>
+      <p style="font-size:14px;margin-bottom:12px;">Build a chain using unions, then call find() on a deep node to see compression happen in real time.</p>
+
+      <div id="pcNodes" class="node-chips"></div>
+      <div class="array-container" style="margin-top:10px;">
+        <div id="pcArrayWrap"></div>
+      </div>
+      <canvas id="pcCanvas" width="600" height="200" style="width:100%;border-radius:10px;background:var(--panel2);margin-top:10px;border:1.5px solid var(--border);"></canvas>
+
+      <div class="btn-row">
+        <button class="btn primary" id="pcFindMode">🔍 Activate find() mode</button>
+        <button class="btn warn" id="pcReset">↺ Reset</button>
+      </div>
+      <div class="status-box" id="pcStatus">Click two nodes to merge. Try creating a chain first, then use find() to see compression.</div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 8 ═══ -->
+  <section id="s-ack">
+  <div class="card">
+    <div class="section-badge">⑧ The Ackermann Function</div>
+    <div class="card-title">How Fast Can a Function Grow?</div>
+    <p>To understand <em>why</em> the complexity is O(α(n)) and not O(log n), we need to understand the Ackermann function — <strong>the fastest-growing function in mathematics</strong> that you can actually write a formula for.</p>
+
+    <div class="card-sub">The Recursive Definition</div>
+    <div class="hl-box blue">
+      <code class="math">A(m, n) = n + 1</code> &nbsp;&nbsp;&nbsp; if m = 0<br>
+      <code class="math">A(m, n) = A(m−1, 1)</code> &nbsp;&nbsp;&nbsp; if m &gt; 0 and n = 0<br>
+      <code class="math">A(m, n) = A(m−1, A(m, n−1))</code> &nbsp;&nbsp;&nbsp; if m &gt; 0 and n &gt; 0
+    </div>
+    <p>Think of <strong>m</strong> as a "growth level" and <strong>n</strong> as "how far into that level". Let's compute each level by hand.</p>
+
+    <div class="card-sub">Level m=0: Just Adding 1</div>
+    <div class="hl-box blue"><code>A(0, n) = n + 1</code><br>A(0,0)=1, A(0,1)=2, A(0,5)=6. <em>Boring.</em></div>
+
+    <div class="card-sub">Level m=1: Adding 2</div>
+    <details>
+      <summary>Show step-by-step derivation of A(1, n)</summary>
+      <div class="details-body">
+        <div class="steps">
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(1,0) = A(0,1) = 2</code> &nbsp; (m&gt;0, n=0 rule)</div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(1,1) = A(0, A(1,0)) = A(0, 2) = 3</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(1,2) = A(0, A(1,1)) = A(0, 3) = 4</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(1,3) = A(0, A(1,2)) = A(0, 4) = 5</code></div></div>
+        </div>
+        <div class="hl-box green">Pattern: <strong>A(1, n) = n + 2</strong> — Still very slow growth.</div>
+      </div>
+    </details>
+    <div class="hl-box blue"><code>A(1, n) = n + 2</code> &nbsp; — Still boring.</div>
+
+    <div class="card-sub">Level m=2: Linear Growth</div>
+    <details>
+      <summary>Show step-by-step derivation of A(2, n)</summary>
+      <div class="details-body">
+        <div class="steps">
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(2,0) = A(1,1) = 3</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(2,1) = A(1, A(2,0)) = A(1, 3) = 5</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(2,2) = A(1, A(2,1)) = A(1, 5) = 7</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(2,3) = A(1, 7) = 9</code></div></div>
+        </div>
+        <div class="hl-box green">Pattern: <strong>A(2, n) = 2n + 3</strong></div>
+      </div>
+    </details>
+    <div class="hl-box blue"><code>A(2, n) = 2n + 3</code> &nbsp; — Linear. Getting interesting.</div>
+
+    <div class="card-sub">Level m=3: Exponential! 🚀</div>
+    <details>
+      <summary>Show step-by-step derivation of A(3, n)</summary>
+      <div class="details-body">
+        <div class="steps">
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(3,0) = A(2,1) = 5</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(3,1) = A(2, A(3,0)) = A(2, 5) = 13</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(3,2) = A(2, A(3,1)) = A(2, 13) = 29</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(3,3) = A(2, 29) = 61</code></div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body"><code>A(3,4) = A(2, 61) = 125</code></div></div>
+        </div>
+        <div class="hl-box green">Pattern: <strong>A(3, n) = 2<sup>n+3</sup> − 3</strong> — Exponential growth!</div>
+      </div>
+    </details>
+    <div class="hl-box warn"><code>A(3, n) = 2<sup>n+3</sup> − 3</code> &nbsp; — Exponential. Now things get scary.</div>
+
+    <div class="card-sub">Level m=4: Beyond Comprehension 🤯</div>
+    <div class="hl-box bad">
+      <code>A(4, 0) = A(3, 1) = 13</code><br>
+      <code>A(4, 1) = A(3, 13) = 2<sup>16</sup> − 3 = 65,533</code><br>
+      <code>A(4, 2) = A(3, 65533) = 2<sup>65536</sup> − 3</code><br>
+      <br>
+      A(4,2) has more than 19,000 digits. The universe has ~10⁸⁰ atoms. This number is <em>astronomically</em> beyond that.
+    </div>
+
+    <div class="card-sub">Visual Growth Comparison</div>
+    <div id="ackGrowthViz" style="margin:12px 0;"></div>
+
+    <div class="card-sub">Interactive Ackermann Calculator</div>
+    <div class="interactive">
+      <div class="interactive-title">🧮 Compute A(m, n)</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <label style="font-weight:700;font-size:14px;">m = <input type="number" id="ackM" value="2" min="0" max="4" style="width:60px;padding:6px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;font-size:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;"></label>
+        <label style="font-weight:700;font-size:14px;">n = <input type="number" id="ackN" value="3" min="0" max="10" style="width:60px;padding:6px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;font-size:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;"></label>
+        <button class="btn primary" id="ackCalc">Compute</button>
+      </div>
+      <div class="status-box" id="ackResult" style="margin-top:10px;">Enter m and n, then press Compute. (Keep m ≤ 4 and n ≤ 6 to avoid huge numbers.)</div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 9 ═══ -->
+  <section id="s-inv">
+  <div class="card">
+    <div class="section-badge">⑨ Inverse Ackermann</div>
+    <div class="card-title">The Inverse Ackermann Function α(n)</div>
+    <p>We just saw that Ackermann grows insanely fast. Its <strong>inverse</strong> must therefore grow insanely <em>slowly</em>.</p>
+
+    <div class="card-sub">Definition Used in DSU Analysis</div>
+    <div class="hl-box blue" style="font-size:15px;">
+      <strong>α(n) = the smallest m ≥ 1 such that A(m, 4) ≥ n</strong><br><br>
+      In plain English: "How many Ackermann levels do I need before the value, even at the fixed input 4, first reaches at least n?"
+    </div>
+
+    <p>Let's compute this concretely. We need to know <code>A(m, 4)</code> for each m:</p>
+    <table>
+      <thead><tr><th>m</th><th>A(m, 4)</th><th>How big?</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>6</td><td>Tiny</td></tr>
+        <tr><td>2</td><td>11</td><td>Tiny</td></tr>
+        <tr><td>3</td><td>125</td><td>Small</td></tr>
+        <tr><td>4</td><td>2<sup>65536</sup> − 3</td><td style="color:var(--bad)">Astronomically huge</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card-sub">α(n) for Every Practical n</div>
+
+    <div class="alpha-row"><div class="alpha-val">1</div><div><strong>n ≤ 6</strong> — A(1,4)=6 is already enough. This covers basically trivial inputs.</div></div>
+    <div class="alpha-row"><div class="alpha-val">2</div><div><strong>7 ≤ n ≤ 11</strong> — A(2,4)=11 is needed. α(7)=α(10)=α(11)=2.</div></div>
+    <div class="alpha-row"><div class="alpha-val">3</div><div><strong>12 ≤ n ≤ 125</strong> — A(3,4)=125 is needed. α(100)=3.</div></div>
+    <div class="alpha-row"><div class="alpha-val" style="background:var(--good);">4</div><div><strong>126 ≤ n ≤ A(4,4)</strong> — And A(4,4) is 2<sup>65536</sup> − 3. This range covers <em>every single practical input ever</em>. α(10⁹)=α(10¹⁸)=α(10¹⁰⁰)=<strong>4</strong>.</div></div>
+    <div class="alpha-row"><div class="alpha-val" style="background:var(--muted);">5</div><div><strong>Only if n &gt; A(4,4)</strong> — A number with 19,000+ digits. You will never encounter this in computing.</div></div>
+
+    <div class="hl-box green" style="margin-top:16px;font-size:15px;"><strong>For every input you will ever encounter in competitive programming or any real system:</strong><br>α(n) ≤ 4.<br>It is effectively a constant.</div>
+
+    <div class="card-sub">Compare log n vs α(n)</div>
+    <table>
+      <thead><tr><th>n</th><th>log₂(n)</th><th>α(n)</th></tr></thead>
+      <tbody>
+        <tr><td>100</td><td>≈ 6.6</td><td>3</td></tr>
+        <tr><td>10,000</td><td>≈ 13.3</td><td>4</td></tr>
+        <tr><td>1,000,000</td><td>≈ 20</td><td>4</td></tr>
+        <tr><td>10<sup>18</sup></td><td>≈ 60</td><td>4</td></tr>
+        <tr><td>10<sup>100</sup></td><td>≈ 332</td><td>4</td></tr>
+        <tr><td>2<sup>65536</sup></td><td>= 65,536</td><td>4</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card-sub">Interactive α(n) Lookup</div>
+    <div class="interactive">
+      <div class="interactive-title">🔬 Compute α(n)</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <label style="font-weight:700;font-size:14px;">n = <input type="number" id="alphaInput" value="1000000" style="width:130px;padding:6px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;font-size:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;"></label>
+        <button class="btn primary" id="alphaCalc">Find α(n)</button>
+      </div>
+      <div class="status-box" id="alphaResult" style="margin-top:10px;">Enter any n and see what α(n) is.</div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 10 ═══ -->
+  <section id="s-why">
+  <div class="card">
+    <div class="section-badge">⑩ The Big Question</div>
+    <div class="card-title">Why Does Path Compression Lead to O(α(n))?</div>
+
+    <p>This is the hardest conceptual part. We'll build the intuition step by step without going through Tarjan's full formal proof.</p>
+
+    <div class="card-sub">Step 1 — Union by size already limits heights to O(log n)</div>
+    <p>We proved this. Without path compression, trees are never deeper than log₂(n). So the raw structure is already pretty good.</p>
+
+    <div class="card-sub">Step 2 — Path compression is more than just "preventing height growth"</div>
+    <div class="hl-box blue">Path compression doesn't just stop trees from getting taller. It <em>actively rewires</em> nodes much closer to the root. So a node that was expensive once <em>cannot keep being expensive forever</em>.</div>
+
+    <div class="card-sub">Step 3 — The bucket grouping insight</div>
+    <p>Here is the core of Tarjan's argument in simple language:</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">A</div><div class="step-body"><strong>Assign each node a "rank"</strong> (roughly = the maximum tree height it was ever a root of). Ranks grow slowly with n.</div></div>
+      <div class="step"><div class="step-num">B</div><div class="step-body"><strong>Group ranks into "buckets"</strong> — but not ordinary buckets. The boundaries between buckets grow using Ackermann-like speeds:<br><br>Bucket 1: ranks 0–1<br>Bucket 2: ranks 2–3<br>Bucket 3: ranks 4–... (up to A(3,4) = 125)<br>Bucket 4: ranks 126–... (up to A(4,4) = unimaginably large)<br>Bucket 5: ...never encountered in practice</div></div>
+      <div class="step"><div class="step-num">C</div><div class="step-body"><strong>Count the buckets:</strong> Because the bucket boundaries grow at Ackermann speed, the number of buckets up to rank n is only α(n).</div></div>
+      <div class="step"><div class="step-num">D</div><div class="step-body"><strong>When path compression moves a node upward,</strong> its parent jumps to a node of much higher rank. This means the node crosses into a higher bucket. Since there are only α(n) buckets total, this crossing can only happen α(n) times per node.</div></div>
+      <div class="step"><div class="step-num">E</div><div class="step-body"><strong>Therefore</strong> the total work done across all path compressions over m operations is bounded by O(m · α(n)).</div></div>
+    </div>
+
+    <div class="card-sub">Simplest Mental Picture</div>
+    <div class="hl-box green">
+      <strong>Think of it this way:</strong><br><br>
+      Without path compression: each find() cost is proportional to depth. Depth is O(log n). So every find = O(log n). This measures progress in "doubling steps" — log₂(n) of them.<br><br>
+      With path compression: nodes jump upward in their tree so aggressively that Tarjan can measure progress using <em>Ackermann-sized jumps</em> instead. These are so enormous that the total number of "levels" to traverse is only α(n) — not log n.
+    </div>
+
+    <div class="card-sub">Why Not Just Say O(1)?</div>
+    <p>Mathematically, α(n) is not a constant. As n → ∞, α(n) → ∞ as well (just incredibly slowly). The precise statement is:</p>
+    <div class="hl-box bad"><strong>α(n) is not O(1).</strong> It is a well-defined function that grows, just absurdly slowly. We write O(α(n)) to be mathematically correct.</div>
+    <div class="hl-box green"><strong>In practice:</strong> α(n) ≤ 4 for any n you'll ever see. So it <em>behaves</em> like a constant, but we don't say it <em>is</em> a constant.</div>
+
+    <div class="card-sub">The Critical Correctness Point</div>
+    <div class="hl-box warn"><strong>This is AMORTIZED O(α(n)), not worst-case per operation.</strong><br><br>A single find() call can still visit many nodes (if the path hasn't been compressed yet). What Tarjan proved is that over any sequence of m operations, the <em>total</em> time is O(m · α(n)), so the <em>average</em> time per operation is O(α(n)).</div>
+  </div>
+  </section>
+
+  <!-- ═══ CODE LINE-BY-LINE ═══ -->
+  <section id="s-code-explain">
+  <div class="card">
+    <div class="section-badge">⑪ Code Deep-Dive</div>
+    <div class="card-title">The Final DSU Template — Line by Line</div>
+    <p>Here is the full, production-grade DSU template. Below the code every non-trivial line is explained with the invariant it maintains and why it is written the way it is.</p>
+    <pre><span class="kw">struct</span> <span class="fn">DSU</span> {
+    vector&lt;<span class="kw">int</span>&gt; parent;               <span class="cm">// [1]</span>
+
+    <span class="fn">DSU</span>(<span class="kw">int</span> n) {                       <span class="cm">// [2]</span>
+        parent.assign(n + <span class="nm">1</span>, <span class="nm">-1</span>);    <span class="cm">// [3]</span>
+    }
+
+    <span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+        <span class="kw">if</span> (parent[x] < <span class="nm">0</span>) <span class="kw">return</span> x;            <span class="cm">// [4]</span>
+        <span class="kw">return</span> parent[x] = <span class="fn">find</span>(parent[x]);    <span class="cm">// [5]</span>
+    }
+
+    <span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+        a = <span class="fn">find</span>(a); b = <span class="fn">find</span>(b);              <span class="cm">// [6]</span>
+        <span class="kw">if</span> (a == b) <span class="kw">return false</span>;               <span class="cm">// [7]</span>
+        <span class="kw">if</span> (-parent[a] < -parent[b]) swap(a, b); <span class="cm">// [8]</span>
+        parent[a] += parent[b];                  <span class="cm">// [9]</span>
+        parent[b] = a;                           <span class="cm">// [10]</span>
+        <span class="kw">return true</span>;
+    }
+
+    <span class="kw">int</span>  <span class="fn">size</span>(<span class="kw">int</span> x) { <span class="kw">return</span> -parent[<span class="fn">find</span>(x)]; }  <span class="cm">// [11]</span>
+    <span class="kw">bool</span> <span class="fn">same</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) { <span class="kw">return</span> <span class="fn">find</span>(a) == <span class="fn">find</span>(b); } <span class="cm">// [12]</span>
+};</pre>
+
+    <div class="card-sub">Line-by-Line Explanations</div>
+
+    <details open>
+      <summary>[1] <code>vector&lt;int&gt; parent</code> — The entire data structure in one array</summary>
+      <div class="details-body">
+        <p>A single integer array encodes <em>two</em> things using the sign of each entry:</p>
+        <div class="hl-box blue"><strong>parent[x] &lt; 0</strong> → x is a root. <code>−parent[x]</code> is the group size.<br><strong>parent[x] ≥ 0</strong> → x is an internal node. <code>parent[x]</code> is x's parent index.</div>
+        <p>This "negative-size encoding" avoids a second array for sizes, halving memory usage and improving cache locality. The invariant is: every root's entry is negative; every non-root's entry is a valid index into the array.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[2] <code>DSU(int n)</code> — Constructor takes the number of elements</summary>
+      <div class="details-body">
+        <p>n is the count of elements. The array is sized <code>n+1</code> to allow 1-indexed usage (nodes 1…n). If you use 0-indexed nodes (0…n-1), pass n and use <code>parent.assign(n, -1)</code> instead. This is a frequent indexing bug — see the pitfalls section.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[3] <code>parent.assign(n + 1, -1)</code> — Initialize all as singleton roots of size 1</summary>
+      <div class="details-body">
+        <p>Starting with <code>−1</code> means every node is a root of size <code>−(−1) = 1</code>. This is the correct initial state: n disjoint singletons. Common mistake: initializing with 0 or with the node's own index — both break the negative-size invariant and will produce silent wrong answers.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[4] <code>if (parent[x] &lt; 0) return x</code> — Base case: x is a root</summary>
+      <div class="details-body">
+        <p>The invariant says a root has a negative parent entry. This is the recursion's base case. Note: this also handles the case where x is its own singleton — after initialization, every node satisfies this check immediately, returning itself.</p>
+        <div class="hl-box warn"><strong>Invariant maintained:</strong> At any point in the algorithm, if <code>parent[x] &lt; 0</code>, then x is exactly the canonical representative of its group.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>[5] <code>return parent[x] = find(parent[x])</code> — Path compression (the magic line)</summary>
+      <div class="details-body">
+        <p>This is the entire path-compression mechanism in one assignment. The recursion climbs up to the root, and on the way <em>back down</em> (due to how recursive return works in C++), each node's parent pointer is updated to point directly to the root that was just returned.</p>
+        <div class="steps">
+          <div class="step"><div class="step-num">→</div><div class="step-body">Without this assignment: <code>return find(parent[x])</code> — just climbs up. No side effects.</div></div>
+          <div class="step"><div class="step-num">→</div><div class="step-body">With assignment: the recursive call returns the root r. Then <code>parent[x] = r</code> fires before returning r upward. Every node on the path gets rewired to r in this single call.</div></div>
+        </div>
+        <div class="hl-box green"><strong>Why it's safe:</strong> Setting <code>parent[x] = root</code> doesn't change which group x belongs to — root is still the representative. It only changes how quickly we reach it next time.</div>
+        <div class="hl-box warn"><strong>Stack depth concern:</strong> On very deep trees before any compression, recursion depth can reach O(log n) (with union by size). For n ≤ 10⁶ this is roughly 20 levels — safe. For extremely large n or repeated calls on uncompressed paths in adversarial inputs, consider an iterative two-pass implementation.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>[6] <code>a = find(a); b = find(b)</code> — Get the canonical representatives first</summary>
+      <div class="details-body">
+        <p>We never unite arbitrary nodes — we always unite their <em>roots</em>. This is crucial: if you forget these lines and pass a and b directly, you may attach a non-root as a parent of another non-root, corrupting the tree structure and breaking the invariant. After this line, both a and b are roots (parent entries are negative).</p>
+        <p>These two find() calls also trigger path compression on both paths — a welcome side effect.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[7] <code>if (a == b) return false</code> — Same group: nothing to do</summary>
+      <div class="details-body">
+        <p>If both roots are identical, a and b were already connected. We return false to signal "no merge happened." This allows callers to count the number of distinct merge operations, which equals the number of edges that reduce the component count — useful for Kruskal's algorithm. Without this check, you'd corrupt the data structure by self-merging a root.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[8] <code>if (-parent[a] &lt; -parent[b]) swap(a, b)</code> — Union by size</summary>
+      <div class="details-body">
+        <p>Since parent[a] and parent[b] are both negative, <code>-parent[a]</code> is the size of group a. We want a to be the larger group. If a is currently smaller, we swap so that after the swap, a is the larger one.</p>
+        <div class="hl-box blue"><strong>Why size and not rank?</strong> Union by size and union by rank both give O(log n) depth. This template uses size because it is directly available in the negative-size encoding — no extra tracking needed. The complexity theorem holds for both variants.</div>
+        <div class="hl-box warn"><strong>Note on union by rank:</strong> "Rank" is an upper bound on tree height that never decreases, even after path compression flattens the tree. Ranks are thus more conservative than actual heights. Union by rank is slightly more elegant theoretically but uses a second encoding. In contests, union by size is standard.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>[9] <code>parent[a] += parent[b]</code> — Update the new root's size</summary>
+      <div class="details-body">
+        <p>Both values are negative. Adding them gives the correct (negative) total size:</p>
+        <div class="hl-box blue">parent[a] = −size_a, parent[b] = −size_b<br>parent[a] + parent[b] = −(size_a + size_b) = −new_total_size ✓</div>
+        <p>After this line, parent[a] correctly encodes that a is a root of group size <code>size_a + size_b</code>. This is the only line that modifies the root's own entry — root entries are otherwise never touched except during this merge.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[10] <code>parent[b] = a</code> — Attach the smaller root under the larger</summary>
+      <div class="details-body">
+        <p>This makes b a non-root. Its parent entry is now a (a non-negative index), so the invariant is maintained. The smaller tree is now a subtree of the larger tree. Because of line [8], a is guaranteed to be the larger tree, so depth of existing members of a's tree is unchanged — only members of b's tree get their depth increased by 1.</p>
+        <p>This single-pointer change is why union is O(1) after the two find() calls.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>[11] <code>size(x)</code> and [12] <code>same(a, b)</code> — Convenience helpers</summary>
+      <div class="details-body">
+        <p><code>size(x)</code> calls find(x) to get the root, then negates the root's parent value. Note this triggers path compression on x's path — a useful side effect.<br><br><code>same(a,b)</code> just compares roots. Two nodes are in the same component if and only if their root is the same canonical representative.</p>
+      </div>
+    </details>
+  </div>
+  </section>
+
+  <!-- ═══ EDGE CASES ═══ -->
+  <section id="s-edge-cases">
+  <div class="card">
+    <div class="section-badge">⑫ Edge Cases</div>
+    <div class="card-title">Tricky Edge Cases You Must Know</div>
+
+    <details open>
+      <summary>0-indexing vs 1-indexing</summary>
+      <div class="details-body">
+        <div class="hl-box warn"><strong>The bug:</strong> Constructor called with n for 1-indexed nodes (1…n), but array sized to n. Node n accesses <code>parent[n]</code> which is out of bounds.</div>
+        <p>Fix: always pass n+1 to the constructor when nodes are 1-indexed, or explicitly document your convention. A safe idiom: always use <code>parent.assign(n + 1, -1)</code> and index from 1.</p>
+        <pre><span class="cm">// 1-indexed (nodes 1..n): use assign(n+1, -1)</span>
+<span class="fn">DSU</span>(<span class="kw">int</span> n) { parent.assign(n + <span class="nm">1</span>, <span class="nm">-1</span>); }
+
+<span class="cm">// 0-indexed (nodes 0..n-1): use assign(n, -1)</span>
+<span class="fn">DSU</span>(<span class="kw">int</span> n) { parent.assign(n, <span class="nm">-1</span>); }</pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>find() called on an out-of-range node</summary>
+      <div class="details-body">
+        <div class="hl-box bad">If your graph reads edges as 1-indexed but you initialize DSU as 0-indexed, find(n) accesses undefined memory. This is not caught at compile time and produces silent wrong answers or crashes.</div>
+        <p>Always add an assertion in debug builds: <code>assert(x &gt;= 0 &amp;&amp; x &lt; (int)parent.size());</code> at the top of find().</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>unite(x, x) — Merging a node with itself</summary>
+      <div class="details-body">
+        <p>find(x) == find(x) is always true, so the check <code>if (a == b) return false</code> handles this correctly — nothing happens. This edge case comes up when reading self-loops in graphs (an edge u–u). The template handles it safely.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Negative-size encoding: reading size correctly</summary>
+      <div class="details-body">
+        <div class="hl-box warn"><strong>Wrong:</strong> <code>int sz = parent[x];</code> — this gives a negative number if x is a root.<br><strong>Wrong:</strong> <code>int sz = parent[find(x)];</code> — still negative.<br><strong>Correct:</strong> <code>int sz = -parent[find(x)];</code></div>
+        <p>The helper <code>size(x)</code> exists precisely to avoid this mistake. Use it.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Path compression changes parent[] entries of non-roots</summary>
+      <div class="details-body">
+        <p>After path compression, <code>parent[x]</code> for a non-root x may jump past several levels directly to the root. This means <code>parent[x]</code> no longer necessarily encodes x's original structural parent. This is intentional and correct for find()/unite(), but it means you <strong>cannot use parent[] to traverse the original tree structure</strong> after operations begin.</p>
+        <div class="hl-box warn">If your algorithm needs to remember which nodes were merged in which order (e.g., for rollback), path compression is incompatible. Use rollback DSU (without path compression) instead.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Amortized vs worst-case: a single find() can still be O(log n)</summary>
+      <div class="details-body">
+        <p>On a freshly initialized DSU with union-by-size, the very first find() on the deepest node of a tall tree costs O(log n). The O(α(n)) guarantee is <em>amortized</em> over a sequence of operations — not a per-operation guarantee. In practice, after a warm-up phase of operations, nearly all find() calls become O(1). But for complexity proofs, write O(α(n)) amortized, not O(1).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Recursive find() and stack overflow for large n</summary>
+      <div class="details-body">
+        <p>With union by size, max tree depth before compression is O(log n). For n = 10⁶ that's ~20 recursive calls — safe. However, if you use path compression alone without union by size, a worst case input can create O(n) deep trees, causing stack overflow on the first find(). Using both optimizations together avoids this.</p>
+        <p>For ultra-safe code, use the iterative two-pass find():</p>
+        <pre><span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+    <span class="kw">int</span> root = x;
+    <span class="kw">while</span> (parent[root] >= <span class="nm">0</span>) root = parent[root];  <span class="cm">// find root</span>
+    <span class="kw">while</span> (parent[x] >= <span class="nm">0</span>) {                         <span class="cm">// compress path</span>
+        <span class="kw">int</span> nxt = parent[x];
+        parent[x] = root;
+        x = nxt;
+    }
+    <span class="kw">return</span> root;
+}</pre>
+      </div>
+    </details>
+  </div>
+  </section>
+
+  <!-- ═══ PITFALLS ═══ -->
+  <section id="s-pitfalls">
+  <div class="card">
+    <div class="section-badge">⑬ Common Pitfalls</div>
+    <div class="card-title">Bugs, Misconceptions, and Contest Traps</div>
+
+    <details open>
+      <summary>🐛 Pitfall: Forgetting to call find() before merging</summary>
+      <div class="details-body">
+        <div class="hl-box bad"><strong>Wrong:</strong><br><code>parent[b] = a;</code> // directly attaching arbitrary nodes<br><br><strong>Why it breaks:</strong> If a and b are not roots, you link non-roots to non-roots, creating cycles or multiple parents. The union-by-size logic also fails because <code>-parent[a]</code> is a positive index, not a negative size.</div>
+        <div class="hl-box green"><strong>Always:</strong> call <code>a = find(a); b = find(b);</code> first.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: Writing O(1) instead of O(α(n)) in a proof</summary>
+      <div class="details-body">
+        <div class="hl-box warn">α(n) is <em>not</em> a constant. Mathematically, α(n) → ∞ as n → ∞. Writing "O(1) per operation" is incorrect and will lose marks in formal analysis. The correct statement is: <strong>O(α(n)) amortized per operation</strong>, which means O(m · α(n)) for m operations on n elements.</div>
+        <p>In competitive programming commentary, "effectively O(1)" is acceptable as informal shorthand. In formal proofs or theoretical computer science, always write O(α(n)).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: Assuming path compression alone gives O(α(n))</summary>
+      <div class="details-body">
+        <p>Path compression without union by size (or rank) gives amortized O(log n) per operation, <em>not</em> O(α(n)). Both optimizations are required together for the O(α(n)) bound. Tarjan's theorem applies to the combination.</p>
+        <table>
+          <thead><tr><th>What you have</th><th>Amortized bound</th></tr></thead>
+          <tbody>
+            <tr><td>Neither</td><td>O(n)</td></tr>
+            <tr><td>Union by size only</td><td>O(log n) worst-case</td></tr>
+            <tr><td>Path compression only</td><td>O(log n) amortized</td></tr>
+            <tr><td>Both together</td><td><strong>O(α(n)) amortized</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: Using rollback + path compression together</summary>
+      <div class="details-body">
+        <div class="hl-box bad"><strong>Fatal combination:</strong> Path compression modifies many parent[] entries in a single find() call. If you need to roll back operations (e.g., for offline divide-and-conquer algorithms), you cannot efficiently undo these side effects. You would need to remember every single parent[] change, not just the two entries modified by unite().</div>
+        <p>The standard fix: rollback DSU uses union by rank (not size) and <strong>no path compression</strong>. This gives O(log n) per operation — worse than O(α(n)), but supports rollback. See the Variants section.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: Forgetting that size() calls find()</summary>
+      <div class="details-body">
+        <p><code>size(x)</code> calls <code>find(x)</code>, which may compress x's path. This is a beneficial side effect, but be aware: if you rely on <code>parent[x]</code> being a specific value right after calling <code>size(x)</code>, it may have changed due to path compression.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: Initializing with i instead of -1</summary>
+      <div class="details-body">
+        <div class="hl-box bad">Some tutorials write <code>parent[i] = i</code> (node is its own parent) instead of <code>parent[i] = -1</code>. This requires a different find() implementation. If you mix these conventions — one for find and one for the other — you get silent wrong answers. Stick to one convention consistently throughout your code.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>🐛 Pitfall: DSU on Trees (small-to-large) is NOT the same concept</summary>
+      <div class="details-body">
+        <div class="hl-box warn">"DSU on tree" or "small-to-large merging" is a completely different algorithmic technique for tree DP problems. It happens to use similar size-based reasoning but has nothing to do with the Union-Find data structure or the O(α(n)) bound. Do not confuse them in analysis or conversation.</div>
+      </div>
+    </details>
+  </div>
+  </section>
+
+  <!-- ═══ VARIANTS ═══ -->
+  <section id="s-variants">
+  <div class="card">
+    <div class="section-badge">⑭ DSU Family</div>
+    <div class="card-title">DSU Variants &amp; Extensions — How Complexity Changes</div>
+    <p>The basic DSU is a foundation. Real problems often require augmented versions. Here is how the complexity analysis applies to each variant.</p>
+
+    <details open>
+      <summary>Basic DSU (this tutorial)</summary>
+      <div class="details-body">
+        <div class="hl-box green">Union by size + path compression → <strong>O(α(n)) amortized</strong> per operation. The full theorem applies. This is the standard CP template.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Rollback DSU (DSU with undo)</summary>
+      <div class="details-body">
+        <p><strong>Use case:</strong> Dynamic connectivity with edge deletions offline; divide-and-conquer on time segments.</p>
+        <p><strong>Key change:</strong> Path compression is <em>disabled</em>. Instead, union by rank is used, and a stack records every parent[] change. To roll back, pop the stack and restore old values.</p>
+        <div class="hl-box warn"><strong>Complexity:</strong> O(log n) per operation (no path compression means no α(n) magic). This is acceptable because rollback DSU is used in situations where each edge appears for a contiguous time interval, and the total number of roll-backs is bounded.</div>
+        <pre><span class="cm">// Rollback DSU — no path compression!</span>
+<span class="kw">struct</span> <span class="fn">RollbackDSU</span> {
+    vector&lt;<span class="kw">int</span>&gt; par, rnk;
+    vector&lt;pair&lt;<span class="kw">int</span>*,<span class="kw">int</span>&gt;&gt; history; <span class="cm">// pointer + old value</span>
+
+    <span class="fn">RollbackDSU</span>(<span class="kw">int</span> n) : par(n+<span class="nm">1</span>,-<span class="nm">1</span>), rnk(n+<span class="nm">1</span>,<span class="nm">0</span>) {}
+
+    <span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {                         <span class="cm">// NO compression</span>
+        <span class="kw">while</span> (par[x] >= <span class="nm">0</span>) x = par[x];
+        <span class="kw">return</span> x;
+    }
+
+    <span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+        a = <span class="fn">find</span>(a); b = <span class="fn">find</span>(b);
+        <span class="kw">if</span> (a == b) <span class="kw">return false</span>;
+        <span class="kw">if</span> (rnk[a] < rnk[b]) swap(a, b);    <span class="cm">// union by rank</span>
+        history.push_back({&amp;par[b], par[b]});
+        history.push_back({&amp;rnk[a], rnk[a]});
+        par[b] = a;
+        <span class="kw">if</span> (rnk[a] == rnk[b]) rnk[a]++;
+        <span class="kw">return true</span>;
+    }
+
+    <span class="kw">void</span> <span class="fn">rollback</span>() {             <span class="cm">// undo last unite</span>
+        *history.back().first = history.back().second; history.pop_back();
+        *history.back().first = history.back().second; history.pop_back();
+    }
+};</pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>Parity DSU (bipartite / XOR relation DSU)</summary>
+      <div class="details-body">
+        <p><strong>Use case:</strong> Determining if a graph is bipartite, detecting odd cycles, XOR difference constraints between nodes.</p>
+        <p><strong>Key change:</strong> Each node x carries a "parity" value (0 or 1) representing its relationship to its parent. Find() returns both the root and the XOR-parity of the path. Unite() combines parities.</p>
+        <div class="hl-box green"><strong>Complexity:</strong> Same O(α(n)) amortized. The parity field is maintained alongside the parent pointer, adding O(1) per operation. Path compression compresses the parity information as well.</div>
+        <pre><span class="kw">struct</span> <span class="fn">ParityDSU</span> {
+    vector&lt;<span class="kw">int</span>&gt; par, dist; <span class="cm">// dist[x] = XOR parity to parent</span>
+
+    <span class="fn">ParityDSU</span>(<span class="kw">int</span> n) : par(n+<span class="nm">1</span>,-<span class="nm">1</span>), dist(n+<span class="nm">1</span>,<span class="nm">0</span>) {}
+
+    pair&lt;<span class="kw">int</span>,<span class="kw">int</span>&gt; <span class="fn">find</span>(<span class="kw">int</span> x) {
+        <span class="kw">if</span> (par[x] < <span class="nm">0</span>) <span class="kw">return</span> {x, <span class="nm">0</span>};
+        <span class="kw">auto</span> [root, d] = <span class="fn">find</span>(par[x]);
+        par[x] = root;
+        dist[x] ^= d;          <span class="cm">// compress parity too</span>
+        <span class="kw">return</span> {root, dist[x]};
+    }
+
+    <span class="cm">// unite(a, b, w): declare parity(a) XOR parity(b) = w</span>
+    <span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b, <span class="kw">int</span> w) {
+        <span class="kw">auto</span> [ra, da] = <span class="fn">find</span>(a);
+        <span class="kw">auto</span> [rb, db] = <span class="fn">find</span>(b);
+        <span class="kw">if</span> (ra == rb) <span class="kw">return</span> (da ^ db) == w; <span class="cm">// consistency check</span>
+        <span class="kw">if</span> (-par[ra] < -par[rb]) swap(ra, rb), swap(da, db);
+        par[ra] += par[rb]; par[rb] = ra;
+        dist[rb] = da ^ db ^ w;
+        <span class="kw">return true</span>;
+    }
+};</pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>Weighted DSU (relation/potential DSU)</summary>
+      <div class="details-body">
+        <p><strong>Use case:</strong> "The weight of node a minus the weight of node b is exactly d" — generalized weighted difference constraints; modular relations; union with fractional / integer offsets.</p>
+        <p><strong>Key change:</strong> Each node carries a "potential" (weight offset relative to its parent). Find() accumulates the potential on the way up. Path compression sums potentials correctly.</p>
+        <div class="hl-box green"><strong>Complexity:</strong> O(α(n)) amortized. The extra potential field adds O(1) per operation, so the asymptotic bound is unchanged.</div>
+        <div class="hl-box warn"><strong>Caveat:</strong> Path compression with potentials requires careful accumulation — you must propagate the potential sum up during the recursive unwinding. Missing this step produces wrong answers that can be very hard to debug.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Path Compression Variants (halving, splitting)</summary>
+      <div class="details-body">
+        <p>Besides full path compression (every node on path → root), there are milder variants:</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;">
+          <div class="hl-box blue"><strong>Path halving:</strong> every other node on the path skips one level. Easier to implement iteratively, same O(α(n)) bound.</div>
+          <div class="hl-box blue"><strong>Path splitting:</strong> every node points to its grandparent. Also O(α(n)), easier to implement correctly than full compression in iterative style.</div>
+        </div>
+        <p>All three variants achieve the same O(α(n)) amortized complexity when combined with union by size or rank. Full path compression (as in the template) is standard in competitive programming.</p>
+      </div>
+    </details>
+  </div>
+  </section>
+
+  <!-- ═══ APPLICATIONS ═══ -->
+  <section id="s-applications">
+  <div class="card">
+    <div class="section-badge">⑮ CP Applications</div>
+    <div class="card-title">Competitive Programming Applications</div>
+    <p>DSU appears in many problem categories. Here is a selection of representative applications, showing how the complexity analysis connects to each.</p>
+
+    <details open>
+      <summary>📌 Connectivity Queries (Static)</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> Given n cities and m roads, answer q queries: "Are cities a and b connected?"</p>
+        <p><strong>Abstraction:</strong> Each city is a node. Each road is a unite(). Each query is a same(). After building the DSU in O(m·α(n)), each query is O(α(n)).</p>
+        <div class="hl-box green"><strong>Why DSU:</strong> If the graph is static (no edge deletions), DSU is optimal. Total complexity O((m+q)·α(n)).</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://vjudge.net/problem/POJ-1611" style="color:var(--link);font-weight:700;" target="_blank">POJ 1611 — The Suspects (VJudge)</a> &nbsp;|&nbsp;
+          <a href="https://vjudge.net/problem/HDU-1213" style="color:var(--link);font-weight:700;" target="_blank">HDU 1213 — How Many Tables</a>
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>📌 Kruskal's MST Algorithm</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> Find the minimum spanning tree of a weighted graph.</p>
+        <p><strong>Abstraction:</strong> Sort edges by weight. Iterate: for each edge (u,v,w), if same(u,v) is false, call unite(u,v) and add the edge to the MST. Stop after n−1 edges are added.</p>
+        <div class="hl-box green"><strong>Why DSU:</strong> The "is adding this edge a cycle?" check is exactly same(). Total time: O(m log m) for sorting + O(m·α(n)) for DSU operations = O(m log m).</div>
+        <div class="hl-box blue"><strong>Complexity relevance:</strong> The α(n) term is completely dominated by the O(m log m) sort. DSU is not the bottleneck — but correctness and speed of the unite/same operations matter for large m.</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://vjudge.net/problem/POJ-1287" style="color:var(--link);font-weight:700;" target="_blank">POJ 1287 — Networking (VJudge)</a> &nbsp;|&nbsp;
+          <a href="https://cses.fi/problemset/task/1675" style="color:var(--link);font-weight:700;" target="_blank">CSES — Road Reparation</a>
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>📌 Dynamic Connectivity (Offline)</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> Edges are added and removed over time. For each query at time t, are nodes a and b connected?</p>
+        <p><strong>Abstraction:</strong> Offline divide-and-conquer on the time axis. Each edge [l,r] in time contributes to a segment tree of time. At each segment tree node, process edges using rollback DSU.</p>
+        <div class="hl-box warn"><strong>Complexity:</strong> O((m + q) log² n) using rollback DSU (O(log n) per operation) on O(log q) segment tree levels. Path compression must be disabled — this is why rollback DSU cannot use O(α(n)).</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://codeforces.com/problemset/problem/566/D" style="color:var(--link);font-weight:700;" target="_blank">CF 566D — Restructuring Company</a> &nbsp;|&nbsp;
+          <a href="https://codeforces.com/gym/100551/problem/A" style="color:var(--link);font-weight:700;" target="_blank">CF Gym — Dynamic Connectivity (classic)</a>
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>📌 Bipartite Check / Parity Contradiction Detection</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> Given an undirected graph, determine if it is bipartite. Equivalently: color nodes 2-colorably so that no edge connects same-colored nodes.</p>
+        <p><strong>Abstraction:</strong> Use Parity DSU. For each edge (u,v), unite(u,v, 1) meaning "u and v must differ in color." If unite() returns false (same component), check that parity(u) XOR parity(v) == 1. If not, there is an odd cycle → not bipartite.</p>
+        <div class="hl-box green"><strong>Complexity:</strong> O(m·α(n)) — same as standard DSU. The parity overhead is O(1) per operation.</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://vjudge.net/problem/POJ-1986" style="color:var(--link);font-weight:700;" target="_blank">POJ 1986 — Distance Queries (weighted DSU)</a> &nbsp;|&nbsp;
+          <a href="https://codeforces.com/problemset/problem/277/A" style="color:var(--link);font-weight:700;" target="_blank">CF 277A — Learning Languages</a>
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>📌 Cycle Detection in Undirected Graphs</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> Given a graph, does it contain a cycle? (Classic pre-check before running tree algorithms.)</p>
+        <p><strong>Abstraction:</strong> For each edge (u,v): if same(u,v) → cycle found. If not: unite(u,v). If we process all m edges without a same() returning true → no cycle (the graph is a forest).</p>
+        <div class="hl-box blue">This is the backbone of Kruskal's MST: each edge that creates a cycle is discarded, each that doesn't is added.</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://cses.fi/problemset/task/1676" style="color:var(--link);font-weight:700;" target="_blank">CSES — Building Roads</a> &nbsp;|&nbsp;
+          <a href="https://vjudge.net/problem/HDU-1233" style="color:var(--link);font-weight:700;" target="_blank">HDU 1233 — Still Another Warcraft (Kruskal + DSU)</a>
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>📌 Weighted/Potential DSU — Difference Constraints</summary>
+      <div class="details-body">
+        <p><strong>Story:</strong> "The salary of employee A is exactly d more than employee B." Given many such relations, answer queries: "What is the salary difference between X and Y?" or detect contradictions.</p>
+        <p><strong>Abstraction:</strong> Weighted DSU where each node stores a potential (offset from its root). unite(a, b, d) means potential(a) - potential(b) = d. find() returns the root and the accumulated offset.</p>
+        <div class="hl-box green"><strong>Complexity:</strong> O(α(n)) amortized — same as standard DSU.</div>
+        <p>
+          <strong>Try it:</strong>
+          <a href="https://vjudge.net/problem/POJ-1986" style="color:var(--link);font-weight:700;" target="_blank">POJ 1986 — Distance Queries</a> &nbsp;|&nbsp;
+          <a href="https://codeforces.com/problemset/problem/1850/H" style="color:var(--link);font-weight:700;" target="_blank">CF 1850H — The Third Generation (weighted DSU)</a>
+        </p>
+      </div>
+    </details>
+  </div>
+  </section>
+
+  <!-- ═══ ADVANCED EXTENSIONS ═══ -->
+  <section id="s-advanced">
+  <div class="card">
+    <div class="section-badge">⑯ Advanced</div>
+    <div class="card-title">Advanced Extensions &amp; What Comes Next</div>
+
+    <div class="card-sub">When Does the O(α(n)) Theorem Stop Applying?</div>
+    <p>The theorem requires:</p>
+    <div class="hl-box blue">
+      1. <strong>Static elements:</strong> The n elements are fixed throughout all operations.<br>
+      2. <strong>Both optimizations together:</strong> Union by size (or rank) <em>and</em> path compression.<br>
+      3. <strong>Amortized analysis context:</strong> You are counting total work over a sequence, not bounding individual operations.<br>
+      4. <strong>No rollback:</strong> Path compression is not undone.
+    </div>
+    <p>Any of the following invalidate the exact O(α(n)) bound:</p>
+    <div class="hl-box warn">
+      • Path compression disabled (rollback DSU): O(log n) per operation.<br>
+      • Online dynamic edge deletions: standard DSU doesn't support this at all. Need Link-Cut Trees or offline techniques.<br>
+      • Persistent DSU (copying the structure): O(log n) per operation using persistent arrays or fat nodes.
+    </div>
+
+    <div class="card-sub">Link-Cut Trees</div>
+    <p>The natural "what comes next" after DSU is the <strong>Link-Cut Tree</strong> (LCT), which supports dynamic connectivity with both edge insertions <em>and</em> deletions in O(log n) per operation. LCTs use a completely different representation (splay trees of access paths) and are significantly more complex to implement. DSU's elegance — a single array, ~10 lines — has no equivalent in LCTs.</p>
+
+    <div class="card-sub">Persistent DSU</div>
+    <p>Using a persistent array (functional tree of arrays), we can make DSU persistent: maintain multiple "versions" of the DSU simultaneously. Each unite() creates a new version in O(log n). Find() on any historical version costs O(log n). Path compression is typically disabled for clean persistence semantics. This is useful for offline queries that need to "branch" the state of connectivity.</p>
+
+    <div class="card-sub">Offline vs Online</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;">
+      <div class="hl-box green"><strong>DSU (offline-friendly):</strong> All queries known in advance. Process in any order. Ideal for sorting edges by weight (Kruskal), time-segment tricks (rollback), or sorting queries by some parameter.</div>
+      <div class="hl-box warn"><strong>Online connectivity:</strong> Queries arrive in real time, can't reorder. Need LCT or other data structures. O(log n) per operation, much harder to code.</div>
+    </div>
+
+    <div class="card-sub">Formal Proof Reference</div>
+    <div class="hl-box blue">
+      <strong>Tarjan (1975):</strong> "Efficiency of a Good But Not Linear Set Union Algorithm." Journal of the ACM, 22(2), 215–225.<br><br>
+      <strong>Tarjan &amp; van Leeuwen (1984):</strong> Extended the result to path splitting and path halving variants.<br><br>
+      <strong>Fredman &amp; Saks (1989):</strong> Proved that Ω(α(n)) is also a lower bound — no union-find data structure can be asymptotically faster.<br><br>
+      This means DSU with union by size + path compression is <em>asymptotically optimal</em>.
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ TAKEAWAYS ═══ -->
+  <section id="s-takeaways">
+  <div class="card">
+    <div class="section-badge">⑱ Key Takeaways</div>
+    <div class="card-title">Memory Checklist &amp; Summary</div>
+
+    <div class="card-sub">🎯 What You Must Know Cold</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Naïve DSU: O(n) per operation. Chains form when you always attach arbitrarily.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Union by size alone: O(log n) per operation. Proof: depth increase requires size to double; size ≤ n; so depth ≤ log₂n.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Path compression alone: O(log n) amortized per operation.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Both together: <strong>O(α(n)) amortized</strong> per operation. This is the optimal bound (Fredman-Saks lower bound matches).</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">α(n) ≤ 4 for all practical n. It is effectively constant but mathematically NOT O(1).</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">The negative-size encoding: parent[root] = -(group size). Clean, cache-friendly, single array.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Path compression: <code>return parent[x] = find(parent[x]);</code> — entire compression in one line.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Union by size: compare -parent[a] vs -parent[b], attach smaller under larger.</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Rollback DSU: no path compression, union by rank, O(log n) — but supports undo().</div></div>
+      <div class="step"><div class="step-num">✓</div><div class="step-body">Path compression + rollback is INCOMPATIBLE. Choose one or the other.</div></div>
+    </div>
+
+    <div class="card-sub">🚨 Common Mistakes Summary</div>
+    <table>
+      <thead><tr><th>Mistake</th><th>Effect</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Forget find() before unite()</td><td>Corrupted tree, wrong answers</td><td>Always: <code>a=find(a); b=find(b);</code></td></tr>
+        <tr><td>Write O(1) in proofs</td><td>Lose marks, incorrect</td><td>Write <strong>O(α(n)) amortized</strong></td></tr>
+        <tr><td>Path compression + rollback</td><td>Rollback misses changes</td><td>Use rollback DSU (no compression)</td></tr>
+        <tr><td>Init with 0 or index</td><td>find() loops forever or wrong root</td><td>Init all entries to -1</td></tr>
+        <tr><td>Confuse DSU on Tree with DSU</td><td>Wrong algorithm for problem</td><td>They are different techniques</td></tr>
+        <tr><td>Compression only, no union by size</td><td>O(log n), not O(α(n))</td><td>Both optimizations required</td></tr>
+        <tr><td>1-indexed nodes, 0-based array</td><td>Out-of-bounds crash</td><td>Use assign(n+1, -1)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card-sub">📐 Complexity Ladder (Final Reference)</div>
+    <table>
+      <thead><tr><th>Variant</th><th>Per operation</th><th>m operations total</th></tr></thead>
+      <tbody>
+        <tr><td>No optimization</td><td><span class="complexity on">O(n)</span></td><td>O(mn)</td></tr>
+        <tr><td>Union by size only</td><td><span class="complexity olog">O(log n)</span></td><td>O(m log n)</td></tr>
+        <tr><td>Path compression only</td><td><span class="complexity olog">O(log n) amortized</span></td><td>O(m log n)</td></tr>
+        <tr><td>Rollback DSU (no compression)</td><td><span class="complexity olog">O(log n)</span></td><td>O(m log n)</td></tr>
+        <tr><td><strong>Both optimizations</strong></td><td><span class="complexity oa">O(α(n)) amortized</span></td><td>O(m·α(n)) ≈ O(m)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card-sub">🧠 Big Picture</div>
+    <div class="hl-box green">
+      <strong>DSU is a masterclass in amortized analysis.</strong><br><br>
+      The reason O(α(n)) is achievable is that the two optimizations cooperate: union by size prevents the tree from getting taller (so there is a finite amount of "depth budget"), and path compression rapidly spends that budget by flattening. Once a path is flattened, it costs almost nothing forever after. Tarjan proved that the <em>rate</em> at which this flattening budget is exhausted is governed by the Ackermann function — the fastest-growing computable function — and therefore the inverse Ackermann governs how slowly the budget runs out.
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 11 ═══ -->
+  <section id="s-summary">
+  <div class="card">
+    <div class="section-badge">⑰ Summary</div>
+    <div class="card-title">Full Complexity Summary</div>
+
+    <table>
+      <thead><tr><th>Variant</th><th>find()</th><th>unite()</th><th>Why?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>No optimization</td>
+          <td><span class="complexity on">O(n)</span></td>
+          <td><span class="complexity on">O(n)</span></td>
+          <td>Trees can form chains of length n</td>
+        </tr>
+        <tr>
+          <td>Union by size only</td>
+          <td><span class="complexity olog">O(log n)</span></td>
+          <td><span class="complexity olog">O(log n)</span></td>
+          <td>Every depth increase doubles size → depth ≤ log₂n</td>
+        </tr>
+        <tr>
+          <td>Path compression only</td>
+          <td><span class="complexity olog">O(log n)</span></td>
+          <td><span class="complexity olog">O(log n)</span></td>
+          <td>Helps amortized but worst case stays without size</td>
+        </tr>
+        <tr>
+          <td><strong>Both together</strong></td>
+          <td><span class="complexity oa">O(α(n)) amortized</span></td>
+          <td><span class="complexity oa">O(α(n)) amortized</span></td>
+          <td>Tarjan 1975: total m ops = O(m·α(n))</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card-sub">α(n) in Practice</div>
+    <div class="hl-box green">For every n you'll encounter: <strong>α(n) ≤ 4</strong>. DSU is essentially O(1) per operation in practice — the fastest you can reasonably hope for with a union-find structure.</div>
+
+    <div class="card-sub">Complete DSU Template</div>
+    <pre><span class="kw">struct</span> <span class="fn">DSU</span> {
+    vector&lt;<span class="kw">int</span>&gt; parent;
+
+    <span class="fn">DSU</span>(<span class="kw">int</span> n) { parent.assign(n + <span class="nm">1</span>, <span class="nm">-1</span>); }
+
+    <span class="kw">int</span> <span class="fn">find</span>(<span class="kw">int</span> x) {
+        <span class="kw">if</span> (parent[x] < <span class="nm">0</span>) <span class="kw">return</span> x;
+        <span class="kw">return</span> parent[x] = <span class="fn">find</span>(parent[x]); <span class="cm">// path compression</span>
+    }
+
+    <span class="kw">bool</span> <span class="fn">unite</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) {
+        a = <span class="fn">find</span>(a); b = <span class="fn">find</span>(b);
+        <span class="kw">if</span> (a == b) <span class="kw">return false</span>;
+        <span class="kw">if</span> (-parent[a] < -parent[b]) swap(a, b); <span class="cm">// union by size</span>
+        parent[a] += parent[b];
+        parent[b] = a;
+        <span class="kw">return true</span>;
+    }
+
+    <span class="kw">int</span> <span class="fn">size</span>(<span class="kw">int</span> x) { <span class="kw">return</span> -parent[<span class="fn">find</span>(x)]; }
+    <span class="kw">bool</span> <span class="fn">same</span>(<span class="kw">int</span> a, <span class="kw">int</span> b) { <span class="kw">return</span> <span class="fn">find</span>(a) == <span class="fn">find</span>(b); }
+};</pre>
+  </div>
+  </section>
+
+  <!-- ═══ SECTION 12 ═══ -->
+  <section id="s-playground">
+  <div class="card">
+    <div class="section-badge">⑲ Full Playground</div>
+    <div class="card-title">Everything Together — Full DSU Simulator</div>
+    <p>This playground runs the <strong>complete</strong> DSU with both union by size AND path compression. Watch the parent array, see groups form, and observe path compression shrink paths.</p>
+
+    <div class="interactive">
+      <div class="interactive-title">🚀 Full DSU Playground (12 nodes)</div>
+      <div id="pgNodes" class="node-chips"></div>
+      <div class="array-container" style="margin-top:12px;"><div id="pgArrayWrap"></div></div>
+      <canvas id="pgCanvas" width="700" height="220" style="width:100%;border-radius:10px;background:var(--panel2);border:1.5px solid var(--border);margin-top:10px;"></canvas>
+      <div class="btn-row">
+        <button class="btn primary" id="pgFindMode">🔍 find() with compression</button>
+        <button class="btn good" id="pgUnionRandom">🎲 Random union</button>
+        <button class="btn warn" id="pgReset">↺ Reset</button>
+      </div>
+      <div class="status-box" id="pgStatus">Click two nodes to unite them (union by size). Use find() to compress paths.</div>
+
+      <div style="margin-top:16px;border-top:1.5px solid var(--border);padding-top:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px;">OPERATION LOG</div>
+        <div id="pgLog" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;max-height:150px;overflow-y:auto;background:var(--codebg);color:var(--codetext);border-radius:8px;padding:10px;"></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section id="s-contact">
+  <div class="card" style="border-color:var(--accent2);background:linear-gradient(160deg,rgba(37,99,235,.04),var(--panel));">
+    <div class="section-badge" style="background:var(--good);">Contact</div>
+    <div class="card-title">Get in Touch — Coach Academy</div>
+    <p>Have questions about this material, spotted an error, or want to suggest improvements? Reach out directly:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;">
+      <div style="border:3px solid var(--border);border-radius:var(--radius);padding:20px;background:var(--panel2);text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">👤</div>
+        <div style="font-size:16px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Instructor</div>
+        <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:20px;text-decoration:none;word-break:break-all;">a.ashraf@coach-academy.net</a>
+      </div>
+      <div style="border:3px solid var(--border);border-radius:var(--radius);padding:20px;background:var(--panel2);text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">🏫</div>
+        <div style="font-size:16px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Coach Academy</div>
+        <a href="mailto:coach@coach-academy.net" style="color:var(--accent2);font-weight:800;font-size:20px;text-decoration:none;word-break:break-all;">coach@coach-academy.net</a>
+      </div>
+    </div>
+    <div class="hl-box blue" style="font-size:18px;">This tutorial is part of the <strong>Coach Academy DSU Series</strong>. Other modules in the series cover DSU variants, tree algorithms, and advanced data structures for competitive programming.</div>
+  </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer style="border-top:3px solid var(--border);margin-top:40px;padding:32px 0 20px;text-align:center;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:white;">∑</div>
+      <div style="text-align:left;">
+        <div style="font-size:20px;font-weight:900;letter-spacing:-.01em;">Coach Academy</div>
+        <div style="font-size:15px;color:var(--muted);font-weight:700;">Competitive Programming — DSU Series</div>
+      </div>
+    </div>
+    <div style="color:var(--muted);font-size:15px;font-weight:600;margin-bottom:8px;">
+      © 2025 Coach Academy. All rights reserved.
+    </div>
+    <div style="color:var(--muted);font-size:14px;font-weight:600;">
+      DSU Complexity Tutorial · Module 12 · α(n) ≤ 4 for all practical n · Tarjan 1975
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+      <a href="mailto:a.ashraf@coach-academy.net" style="color:var(--link);font-size:14px;font-weight:700;text-decoration:none;">a.ashraf@coach-academy.net</a>
+      <span style="color:var(--border);">|</span>
+      <a href="mailto:coach@coach-academy.net" style="color:var(--link);font-size:14px;font-weight:700;text-decoration:none;">coach@coach-academy.net</a>
+    </div>
+  </footer>
+</main>
+</div>
+
+<button aria-label="Toggle sidebar" class="sidebar-toggle" id="sidebarToggle" title="Toggle Menu">
+<div class="burger-icon"><span></span><span></span><span></span></div>
+</button>
+
+<script>
+// ═══════════════════════════════════
+// THEME
+// ═══════════════════════════════════
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const d = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', d ? 'light' : 'dark');
+  themeBtn.textContent = d ? '🌙 Dark Mode' : '☀️ Light Mode';
+  [pcDraw, pgDraw].forEach(fn => { try { fn(); } catch(e){} });
+};
+
+// ═══════════════════════════════════
+// SIDEBAR TOGGLE
+// ═══════════════════════════════════
+const appEl = document.getElementById('app');
+const toggleBtn = document.getElementById('sidebarToggle');
+toggleBtn.onclick = () => {
+  appEl.classList.toggle('sidebar-hidden');
+  toggleBtn.classList.toggle('open');
+};
+
+// ═══════════════════════════════════
+// NAV ACTIVE STATE
+// ═══════════════════════════════════
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav a');
+function updateNav() {
+  let current = '';
+  sections.forEach(s => { if (document.getElementById('mainContent').scrollTop >= s.offsetTop - 80) current = s.id; });
+  navLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+}
+document.getElementById('mainContent').addEventListener('scroll', updateNav);
+
+// ═══════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════
+function make(tag, attrs, text) {
+  const el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'style') el.style.cssText = v;
+    else el.setAttribute(k, v);
+  });
+  if (text != null) el.textContent = text;
+  return el;
+}
+function $(sel) { return document.querySelector(sel); }
+function getCSSVar(v) { return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+
+function renderArray(container, parent, n, highlights) {
+  container.innerHTML = '';
+  const idxRow = make('div', {style:'display:flex;gap:0;width:max-content;margin-bottom:4px;'});
+  const spacer = make('div', {style:'min-width:72px;'});
+  idxRow.appendChild(spacer);
+  for (let i = 0; i < n; i++) {
+    const idx = make('div', {style:'min-width:52px;text-align:center;font-size:11px;color:var(--muted);padding:2px 4px;'}, String(i));
+    idxRow.appendChild(idx);
+  }
+  container.appendChild(idxRow);
+
+  const row = make('div', {style:'display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);width:max-content;'});
+  const lbl = make('div', {style:'background:rgba(42,92,246,.12);font-size:12px;font-weight:700;color:var(--accent2);padding:6px 10px;display:flex;align-items:center;min-width:72px;border-right:1.5px solid var(--border);'}, 'parent[]');
+  row.appendChild(lbl);
+  for (let i = 0; i < n; i++) {
+    const v = parent[i];
+    let cls = v < 0 ? 'root' : 'member';
+    if (highlights && highlights[i]) cls = highlights[i];
+    const cell = make('div', {style:'min-width:52px;text-align:center;padding:6px 4px;border-right:1.5px solid var(--border);font-weight:700;font-size:15px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;transition:background .25s,color .25s;'}, String(v));
+    cell.className = 'array-cell ' + cls;
+    if (i === n-1) cell.style.borderRight = 'none';
+    row.appendChild(cell);
+  }
+  container.appendChild(row);
+}
+
+// ═══════════════════════════════════
+// UNION BY SIZE DEMO (#s-size-demo)
+// ═══════════════════════════════════
+const UBS_N = 8;
+let ubsPar = Array(UBS_N).fill(-1);
+let ubsSel = -1, ubsFindMode = false;
+
+function ubsGetRoot(x) {
+  while (ubsPar[x] >= 0) x = ubsPar[x];
+  return x;
+}
+
+function ubsDepth(x) {
+  let d = 0;
+  while (ubsPar[x] >= 0) { x = ubsPar[x]; d++; }
+  return d;
+}
+
+const UBS_COLORS = ['#e64a4a','#2a7cf6','#0a8c6a','#d97706','#7c3aed','#db2777','#059669','#0369a1'];
+
+function ubsRender() {
+  const wrap = $('#ubsNodes');
+  wrap.innerHTML = '';
+  for (let i = 0; i < UBS_N; i++) {
+    const isRoot = ubsPar[i] < 0;
+    const root = ubsGetRoot(i);
+    const color = UBS_COLORS[root % UBS_COLORS.length];
+    const card = make('div', {style:`
+      width:72px;border-radius:12px;padding:10px 6px 8px;text-align:center;cursor:pointer;
+      border:2px solid ${ubsSel===i?'#f59e0b':isRoot?'rgba(192,25,42,.5)':'rgba(42,92,246,.4)'};
+      background:${ubsSel===i?'rgba(245,158,11,.15)':isRoot?'rgba(192,25,42,.08)':'rgba(42,92,246,.07)'};
+      box-shadow:${ubsSel===i?'0 0 0 3px rgba(245,158,11,.3)':'none'};
+      transition:all .15s ease;user-select:none;
+    `});
+    const circle = make('div', {style:`
+      width:40px;height:40px;border-radius:50%;margin:0 auto 6px;
+      background:${color};display:flex;align-items:center;justify-content:center;
+      font-weight:800;font-size:18px;color:white;border:2px solid ${ubsSel===i?'#f59e0b':'rgba(255,255,255,.25)'};
+    `}, String(i));
+    card.appendChild(circle);
+    card.appendChild(make('div', {style:'font-size:10px;font-weight:700;color:'+(isRoot?'var(--bad)':'var(--accent2)')}, isRoot?'ROOT':'↑'+ubsPar[i]));
+    card.appendChild(make('div', {style:'font-family:monospace;font-size:12px;font-weight:700;margin-top:2px'}, 'par='+ubsPar[i]));
+    if (isRoot) card.appendChild(make('div', {style:'font-size:11px;color:var(--muted)'}, 'sz='+(-ubsPar[i])));
+    card.addEventListener('click', () => ubsFindMode ? ubsDoFind(i) : ubsClick(i));
+    wrap.appendChild(card);
+  }
+  renderArray($('#ubsArrayWrap'), ubsPar, UBS_N);
+
+  // Depth analysis
+  let maxD = 0;
+  for (let i = 0; i < UBS_N; i++) { maxD = Math.max(maxD, ubsDepth(i)); }
+  const log2n = Math.log2(UBS_N);
+  const da = $('#ubsDepthAnalysis');
+  if (da) {
+    da.innerHTML = `
+      <div style="font-size:14px;font-weight:600;">
+        <div style="margin-bottom:6px;">Max observed depth: <strong style="color:var(--accent2)">${maxD}</strong></div>
+        <div style="margin-bottom:6px;">Theoretical max (log₂ ${UBS_N}): <strong>${log2n.toFixed(2)}</strong></div>
+        <div style="color:var(--good);font-weight:700;">✓ Depth (${maxD}) ≤ log₂n (${log2n.toFixed(1)}). The proof holds!</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--muted);">Depths: ${Array.from({length:UBS_N},(_,i)=>i+':'+ubsDepth(i)).join('  ')}</div>
+      </div>`;
+  }
+}
+
+function ubsClick(i) {
+  if (ubsSel === -1) {
+    ubsSel = i; ubsRender();
+    const isRoot = ubsPar[i] < 0;
+    $('#ubsStatus').innerHTML = `<b>Selected node ${i}</b>. ${isRoot ? 'Root of size '+(-ubsPar[i])+'.' : 'Member, parent='+ubsPar[i]+'.'} Now click another node to merge.`;
+    return;
+  }
+  if (ubsSel === i) { ubsSel = -1; ubsRender(); $('#ubsStatus').innerHTML = 'Deselected.'; return; }
+  const a = ubsSel, b = i; ubsSel = -1;
+  const ra = ubsGetRoot(a), rb = ubsGetRoot(b);
+  if (ra === rb) { ubsRender(); $('#ubsStatus').innerHTML = `<b>Already same group!</b> Both lead to root ${ra}. No change.`; return; }
+  const szA = -ubsPar[ra], szB = -ubsPar[rb];
+  let big = ra, small = rb;
+  if (ubsPar[big] > ubsPar[small]) { let t = big; big = small; small = t; }
+  const oldBig = ubsPar[big];
+  ubsPar[big] += ubsPar[small];
+  ubsPar[small] = big;
+  ubsRender();
+  $('#ubsStatus').innerHTML = `<b>Merged!</b> Roots: ${ra} (size ${szA}) + ${rb} (size ${szB}). `+
+    `Larger root ${big} absorbs ${small}. `+
+    `<span style="color:var(--bad)">par[${big}]: ${oldBig} → ${ubsPar[big]} (size now ${-ubsPar[big]})</span>  `+
+    `<span style="color:var(--accent2)">par[${small}]: now ${big}</span>`;
+}
+
+function ubsDoFind(start) {
+  ubsFindMode = false; $('#ubsFindMode').textContent = '🔍 Run find()';
+  let u = start, path = [];
+  while (ubsPar[u] >= 0) { path.push(u); u = ubsPar[u]; }
+  const root = u;
+  ubsRender();
+  if (path.length === 0) { $('#ubsStatus').innerHTML = `<b>find(${start})</b>: ${start} is already a root.`; return; }
+  $('#ubsStatus').innerHTML = `<b>find(${start})</b>: path = ${[...path,root].join(' → ')}. Depth = ${path.length}. (No path compression in this demo — use the Path Compression sandbox for that.)`;
+}
+
+$('#ubsFindMode').onclick = () => {
+  ubsFindMode = !ubsFindMode;
+  $('#ubsFindMode').textContent = ubsFindMode ? '❌ Cancel find()' : '🔍 Run find()';
+  if (ubsFindMode) $('#ubsStatus').innerHTML = 'Click any node to trace its path to the root (no compression here).';
+};
+$('#ubsReset').onclick = () => { ubsPar = Array(UBS_N).fill(-1); ubsSel = -1; ubsFindMode = false; $('#ubsFindMode').textContent = '🔍 Run find()'; ubsRender(); $('#ubsStatus').innerHTML = 'Reset! All singletons.'; };
+ubsRender();
+
+
+// ═══════════════════════════════════
+// PATH COMPRESSION DEMO (#s-path-demo)
+// ═══════════════════════════════════
+const PC_N = 8;
+let pcPar = Array(PC_N).fill(-1);
+let pcSel = -1, pcFindModeOn = false;
+
+function pcGetRoot(x) { while (pcPar[x] >= 0) x = pcPar[x]; return x; }
+const PC_COLORS = ['#e64a4a','#2a7cf6','#0a8c6a','#d97706','#7c3aed','#db2777','#059669','#0369a1'];
+
+function pcRender() {
+  const wrap = $('#pcNodes');
+  wrap.innerHTML = '';
+  for (let i = 0; i < PC_N; i++) {
+    const isRoot = pcPar[i] < 0;
+    const root = pcGetRoot(i);
+    const color = PC_COLORS[root % PC_COLORS.length];
+    const card = make('div', {style:`
+      width:68px;border-radius:12px;padding:8px 4px 6px;text-align:center;cursor:pointer;
+      border:2px solid ${pcSel===i?'#f59e0b':isRoot?'rgba(192,25,42,.5)':'rgba(42,92,246,.4)'};
+      background:${pcSel===i?'rgba(245,158,11,.15)':isRoot?'rgba(192,25,42,.08)':'rgba(42,92,246,.07)'};
+      box-shadow:${pcSel===i?'0 0 0 3px rgba(245,158,11,.3)':'none'};transition:all .15s;
+    `});
+    const circle = make('div', {style:`width:36px;height:36px;border-radius:50%;margin:0 auto 4px;background:${color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:white;`}, String(i));
+    card.appendChild(circle);
+    card.appendChild(make('div', {style:'font-size:10px;font-weight:700;color:'+(isRoot?'var(--bad)':'var(--accent2)')}, isRoot?'ROOT':'↑'+pcPar[i]));
+    card.addEventListener('click', () => pcFindModeOn ? pcDoFind(i) : pcClick(i));
+    wrap.appendChild(card);
+  }
+  renderArray($('#pcArrayWrap'), pcPar, PC_N);
+  pcDraw();
+}
+
+function pcDraw() {
+  const canvas = $('#pcCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth * devicePixelRatio || 600;
+  const H = canvas.clientHeight * devicePixelRatio || 200;
+  canvas.width = W; canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  const dark = document.body.getAttribute('data-theme') === 'dark';
+  const BG = dark ? '#0a1428' : '#eef1fb';
+  const EDGE_CLR = dark ? '#2a3d60' : '#c0cce8';
+  const NODE_TEXT = '#fff';
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  // Build tree structure
+  const children = Array.from({length: PC_N}, () => []);
+  const roots = [];
+  for (let i = 0; i < PC_N; i++) {
+    if (pcPar[i] < 0) roots.push(i);
+    else children[pcPar[i]].push(i);
+  }
+
+  // Layout using BFS per root
+  const pos = Array(PC_N).fill(null);
+  let xOff = 30;
+  const R = Math.min(W, H) * 0.09;
+  const yLevels = [H*0.22, H*0.55, H*0.85];
+
+  function layoutTree(root) {
+    const queue = [[root, 0]];
+    const levelNodes = {};
+    while (queue.length) {
+      const [node, level] = queue.shift();
+      if (!levelNodes[level]) levelNodes[level] = [];
+      levelNodes[level].push(node);
+      children[node].forEach(c => queue.push([c, level + 1]));
+    }
+    const maxLevel = Math.max(...Object.keys(levelNodes).map(Number));
+    const treeWidth = (Math.max(...Object.values(levelNodes).map(a => a.length)) * (R*2.5));
+    Object.entries(levelNodes).forEach(([lvl, nodes]) => {
+      nodes.forEach((nd, idx) => {
+        const y = yLevels[Math.min(Number(lvl), 2)] || H * 0.85;
+        const xSpan = nodes.length * R * 2.5;
+        const x = xOff + xSpan / 2 - (nodes.length - 1) * R * 1.25 + idx * R * 2.5;
+        pos[nd] = {x: Math.min(x, W - R*1.5), y};
+      });
+    });
+    xOff += treeWidth + R * 3;
+  }
+  roots.forEach(r => layoutTree(r));
+
+  // Draw edges
+  for (let i = 0; i < PC_N; i++) {
+    if (pcPar[i] >= 0 && pos[i] && pos[pcPar[i]]) {
+      ctx.beginPath();
+      ctx.moveTo(pos[i].x, pos[i].y);
+      ctx.lineTo(pos[pcPar[i]].x, pos[pcPar[i]].y);
+      ctx.strokeStyle = EDGE_CLR;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  // Draw nodes
+  for (let i = 0; i < PC_N; i++) {
+    if (!pos[i]) continue;
+    const root = pcGetRoot(i);
+    const isRoot = pcPar[i] < 0;
+    ctx.beginPath();
+    ctx.arc(pos[i].x, pos[i].y, R, 0, Math.PI * 2);
+    ctx.fillStyle = PC_COLORS[root % PC_COLORS.length];
+    ctx.fill();
+    if (isRoot) { ctx.strokeStyle = dark?'rgba(255,255,255,.4)':'rgba(255,255,255,.6)'; ctx.lineWidth = 3; ctx.stroke(); }
+    ctx.fillStyle = NODE_TEXT;
+    ctx.font = `bold ${R*0.85}px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i), pos[i].x, pos[i].y);
+  }
+}
+
+function pcClick(i) {
+  if (pcSel === -1) { pcSel = i; pcRender(); $('#pcStatus').innerHTML = `Selected node ${i}. Click another to merge.`; return; }
+  if (pcSel === i) { pcSel = -1; pcRender(); return; }
+  const a = pcSel, b = i; pcSel = -1;
+  const ra = pcGetRoot(a), rb = pcGetRoot(b);
+  if (ra === rb) { pcRender(); $('#pcStatus').innerHTML = `Already same group!`; return; }
+  const szA = -pcPar[ra], szB = -pcPar[rb];
+  let big = ra, small = rb;
+  if (pcPar[big] > pcPar[small]) { let t = big; big = small; small = t; }
+  pcPar[big] += pcPar[small]; pcPar[small] = big;
+  pcRender();
+  $('#pcStatus').innerHTML = `Merged groups: ${ra}(sz=${szA}) + ${rb}(sz=${szB}). Root=${big}, new size=${-pcPar[big]}.`;
+}
+
+function pcDoFind(start) {
+  pcFindModeOn = false; $('#pcFindMode').textContent = '🔍 Activate find() mode';
+  let u = start, path = [];
+  while (pcPar[u] >= 0) { path.push(u); u = pcPar[u]; }
+  const root = u;
+  const oldPath = [...path, root].join(' → ');
+  if (path.length === 0) { pcRender(); $('#pcStatus').innerHTML = `find(${start}): already root!`; return; }
+  for (const nd of path) pcPar[nd] = root;
+  pcRender();
+  $('#pcStatus').innerHTML = `<b style="color:var(--accent2)">find(${start}) with PATH COMPRESSION:</b><br>
+    Old path: ${oldPath}<br>
+    <span style="color:var(--good)">✓ Nodes [${path.join(', ')}] now point directly to root ${root}!</span><br>
+    Future find() on any of these nodes costs just 1 step.`;
+}
+
+$('#pcFindMode').onclick = () => { pcFindModeOn = !pcFindModeOn; $('#pcFindMode').textContent = pcFindModeOn ? '❌ Cancel' : '🔍 Activate find() mode'; if (pcFindModeOn) $('#pcStatus').innerHTML = 'Click any node to run find() with path compression.'; };
+$('#pcReset').onclick = () => { pcPar = Array(PC_N).fill(-1); pcSel = -1; pcFindModeOn = false; $('#pcFindMode').textContent = '🔍 Activate find() mode'; pcRender(); $('#pcStatus').innerHTML = 'Reset!'; };
+pcRender();
+
+// ═══════════════════════════════════
+// ACKERMANN GROWTH VISUALIZATION
+// ═══════════════════════════════════
+function buildAckViz() {
+  const wrap = $('#ackGrowthViz');
+  if (!wrap) return;
+  const data = [
+    {m:0, label:'A(0,n) = n+1', vals:[1,2,3,4,5,6,7,8], color:'var(--good)', note:'Adding 1'},
+    {m:1, label:'A(1,n) = n+2', vals:[2,3,4,5,6,7,8,9], color:'#059669', note:'Adding 2'},
+    {m:2, label:'A(2,n) = 2n+3', vals:[3,5,7,9,11,13,15,17], color:'var(--warn)', note:'Linear'},
+    {m:3, label:'A(3,n) = 2^(n+3)−3', vals:[5,13,29,61,125], color:' #dc2626', note:'Exponential!'},
+  ];
+  wrap.innerHTML = '';
+  const title = make('div', {style:'font-size:14px;font-weight:700;color:var(--muted);margin-bottom:10px;'}, 'Values of A(m, n) for n = 0,1,2,...');
+  wrap.appendChild(title);
+  data.forEach(row => {
+    const r = make('div', {style:'display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap;'});
+    r.appendChild(make('div', {style:'min-width:180px;font-size:13px;font-weight:700;color:'+row.color}, row.label));
+    row.vals.slice(0,8).forEach((v,i) => {
+      const chip = make('div', {style:`
+        padding:4px 10px;border-radius:7px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:700;
+        background:rgba(0,0,0,.04);border:1.5px solid var(--border);color:${row.color};
+      `}, `n=${i}:${v}`);
+      r.appendChild(chip);
+    });
+    if (row.m === 3) { r.appendChild(make('div', {style:'font-size:13px;color:var(--bad);font-weight:700;'}, '...grows to 2^65536 at n=4 level!')); }
+    wrap.appendChild(r);
+  });
+}
+buildAckViz();
+
+// ═══════════════════════════════════
+// ACKERMANN CALCULATOR
+// ═══════════════════════════════════
+function ackermann(m, n, depth=0) {
+  if (depth > 10000) return '∞ (too deep)';
+  if (m === 0) return n + 1;
+  if (n === 0) return ackermann(m-1, 1, depth+1);
+  const inner = ackermann(m, n-1, depth+1);
+  if (typeof inner === 'string') return inner;
+  if (inner > 100000) return '> 100,000 (huge!)';
+  return ackermann(m-1, inner, depth+1);
+}
+
+$('#ackCalc').onclick = () => {
+  const m = parseInt($('#ackM').value), n = parseInt($('#ackN').value);
+  if (isNaN(m)||isNaN(n)||m<0||n<0) { $('#ackResult').innerHTML = 'Please enter valid non-negative integers.'; return; }
+  if (m > 4) { $('#ackResult').innerHTML = 'm > 4 grows absurdly fast. Try m ≤ 4.'; return; }
+  const result = ackermann(m, n);
+  const log2 = (typeof result === 'number') ? `(log₂ = ${Math.log2(result).toFixed(1)})` : '';
+  const growthNotes = {0:'Just n+1 — adds 1',1:'n+2 — adds 2',2:'2n+3 — linear',3:'2^(n+3)−3 — exponential!',4:'Absurdly huge tower power'};
+  $('#ackResult').innerHTML = `<b>A(${m}, ${n}) = ${result}</b> ${log2}<br><span style="color:var(--muted);font-size:13px;">${growthNotes[m]||''}</span>`;
+};
+
+// ═══════════════════════════════════
+// ALPHA CALCULATOR
+// ═══════════════════════════════════
+$('#alphaCalc').onclick = () => {
+  const n = Number($('#alphaInput').value);
+  if (isNaN(n) || n < 1) { $('#alphaResult').innerHTML = 'Enter a positive integer.'; return; }
+  const A1_4 = 6, A2_4 = 11, A3_4 = 125;
+  let alpha, range;
+  if (n <= A1_4)      { alpha = 1; range = `n ≤ ${A1_4}`; }
+  else if (n <= A2_4) { alpha = 2; range = `${A1_4+1} ≤ n ≤ ${A2_4}`; }
+  else if (n <= A3_4) { alpha = 3; range = `${A2_4+1} ≤ n ≤ ${A3_4}`; }
+  else                { alpha = 4; range = `${A3_4+1} ≤ n ≤ A(4,4) ≈ 2^65536`; }
+  const log2n = Math.log2(n).toFixed(1);
+  $('#alphaResult').innerHTML = `
+    <b style="font-size:18px;color:var(--accent2)">α(${n.toLocaleString()}) = ${alpha}</b><br>
+    Range: ${range}<br>
+    Compare: log₂(${n.toLocaleString()}) ≈ ${log2n}<br>
+    <span style="color:var(--good);font-weight:700;">DSU with n=${n.toLocaleString()} elements runs in effectively O(${alpha}) per operation!</span>
+  `;
+};
+
+// ═══════════════════════════════════
+// FULL PLAYGROUND (#s-playground)
+// ═══════════════════════════════════
+const PG_N = 12;
+let pgPar = Array(PG_N).fill(-1);
+let pgSel = -1, pgFindModeOn = false;
+let pgLog = [];
+
+function pgGetRoot(x) { while (pgPar[x] >= 0) x = pgPar[x]; return x; }
+function pgFindCompress(x) {
+  if (pgPar[x] < 0) return x;
+  return pgPar[x] = pgFindCompress(pgPar[x]);
+}
+const PG_COLORS = ['#e64a4a','#2a7cf6','#0a8c6a','#d97706','#7c3aed','#db2777','#059669','#0369a1','#c2410c','#0e7490','#65a30d','#9333ea'];
+
+function pgRender() {
+  const wrap = $('#pgNodes');
+  wrap.innerHTML = '';
+  for (let i = 0; i < PG_N; i++) {
+    const isRoot = pgPar[i] < 0;
+    const root = pgGetRoot(i);
+    const color = PG_COLORS[root % PG_COLORS.length];
+    const card = make('div', {style:`
+      width:62px;border-radius:10px;padding:8px 4px 6px;text-align:center;cursor:pointer;
+      border:2px solid ${pgSel===i?'#f59e0b':isRoot?'rgba(192,25,42,.5)':'rgba(42,92,246,.4)'};
+      background:${pgSel===i?'rgba(245,158,11,.15)':isRoot?'rgba(192,25,42,.08)':'rgba(42,92,246,.07)'};
+      box-shadow:${pgSel===i?'0 0 0 3px rgba(245,158,11,.3)':'none'};transition:all .15s;
+    `});
+    const circle = make('div', {style:`width:34px;height:34px;border-radius:50%;margin:0 auto 4px;background:${color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:white;`}, String(i));
+    card.appendChild(circle);
+    card.appendChild(make('div', {style:'font-size:9px;font-weight:700;color:'+(isRoot?'var(--bad)':'var(--accent2)')}, isRoot?`ROOT sz=${-pgPar[i]}`:'↑'+pgPar[i]));
+    card.addEventListener('click', () => pgFindModeOn ? pgDoFind(i) : pgClick(i));
+    wrap.appendChild(card);
+  }
+  renderArray($('#pgArrayWrap'), pgPar, PG_N);
+  pgDraw();
+}
+
+function pgDraw() {
+  const canvas = $('#pgCanvas');
+  if (!canvas) return;
+  const W = canvas.clientWidth * devicePixelRatio || 700;
+  const H = canvas.clientHeight * devicePixelRatio || 220;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const dark = document.body.getAttribute('data-theme') === 'dark';
+  ctx.fillStyle = dark ? '#0a1428' : '#eef1fb';
+  ctx.fillRect(0, 0, W, H);
+
+  const children = Array.from({length: PG_N}, () => []);
+  const roots = [];
+  for (let i = 0; i < PG_N; i++) {
+    if (pgPar[i] < 0) roots.push(i);
+    else children[pgPar[i]].push(i);
+  }
+
+  const pos = Array(PG_N).fill(null);
+  const R = Math.min(W / PG_N * 0.75, H * 0.14);
+  let xOff = R * 1.5;
+
+  function pgLayout(root) {
+    const queue = [[root, 0]];
+    const levelNodes = {};
+    while (queue.length) {
+      const [node, level] = queue.shift();
+      if (!levelNodes[level]) levelNodes[level] = [];
+      levelNodes[level].push(node);
+      children[node].forEach(c => queue.push([c, level + 1]));
+    }
+    const maxWidth = Math.max(...Object.values(levelNodes).map(a => a.length));
+    const treeW = maxWidth * R * 2.8;
+    const yBase = [H*0.22, H*0.58, H*0.88];
+    Object.entries(levelNodes).forEach(([lvl, nodes]) => {
+      const y = yBase[Math.min(Number(lvl), 2)] || H*0.88;
+      nodes.forEach((nd, idx) => {
+        const x = xOff + (idx - (nodes.length-1)/2) * R * 2.6 + treeW/2;
+        pos[nd] = {x: Math.max(R*1.2, Math.min(x, W-R*1.2)), y};
+      });
+    });
+    xOff += treeW + R * 2.5;
+  }
+  roots.forEach(r => pgLayout(r));
+
+  // Edges
+  ctx.strokeStyle = dark ? '#1e2d50' : '#c0cce8';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < PG_N; i++) {
+    if (pgPar[i] >= 0 && pos[i] && pos[pgPar[i]]) {
+      ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[pgPar[i]].x, pos[pgPar[i]].y); ctx.stroke();
+    }
+  }
+  // Nodes
+  for (let i = 0; i < PG_N; i++) {
+    if (!pos[i]) continue;
+    const root = pgGetRoot(i);
+    const isRoot = pgPar[i] < 0;
+    ctx.beginPath(); ctx.arc(pos[i].x, pos[i].y, R, 0, Math.PI*2);
+    ctx.fillStyle = PG_COLORS[root % PG_COLORS.length];
+    ctx.fill();
+    if (isRoot) { ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth=2.5; ctx.stroke(); }
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${R*0.8}px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(i), pos[i].x, pos[i].y);
+  }
+}
+
+function pgAddLog(msg) {
+  pgLog.unshift(msg);
+  if (pgLog.length > 30) pgLog.pop();
+  const logEl = document.getElementById('pgLog');
+  logEl.innerHTML = pgLog.map((l,i) => `<div style="padding:2px 0;color:${i===0?'#7aa2ff':'#546a8c'}">${l}</div>`).join('');
+}
+
+function pgClick(i) {
+  if (pgSel === -1) { pgSel = i; pgRender(); $('#pgStatus').innerHTML = `Selected node ${i}. Click another to merge (union by size).`; return; }
+  if (pgSel === i) { pgSel = -1; pgRender(); return; }
+  const a = pgSel, b = i; pgSel = -1;
+  const ra = pgGetRoot(a), rb = pgGetRoot(b);
+  if (ra === rb) { pgRender(); $('#pgStatus').innerHTML = `Nodes ${a} and ${b} are already in the same group (root=${ra}).`; return; }
+  const szA = -pgPar[ra], szB = -pgPar[rb];
+  let big = ra, small = rb;
+  if (pgPar[big] > pgPar[small]) { let t=big; big=small; small=t; }
+  pgPar[big] += pgPar[small]; pgPar[small] = big;
+  pgAddLog(`unite(${a},${b}): roots ${ra}(sz=${szA}) + ${rb}(sz=${szB}) → root=${big}, newSize=${-pgPar[big]}`);
+  pgRender();
+  $('#pgStatus').innerHTML = `<b>Merged!</b> ${ra}(sz=${szA}) + ${rb}(sz=${szB}) → new group size ${-pgPar[big]}, root=${big}. Smaller tree attached under larger (union by size).`;
+}
+
+function pgDoFind(start) {
+  pgFindModeOn = false; $('#pgFindMode').textContent = '🔍 find() with compression';
+  let u = start, path = [];
+  while (pgPar[u] >= 0) { path.push(u); u = pgPar[u]; }
+  const root = u, oldPath = [...path,root].join('→');
+  for (const nd of path) pgPar[nd] = root;
+  pgAddLog(`find(${start}): path=${oldPath} → compressed ${path.length} node(s) to root ${root}`);
+  pgRender();
+  if (path.length===0) { $('#pgStatus').innerHTML = `find(${start}): already a root!`; return; }
+  $('#pgStatus').innerHTML = `<b style="color:var(--accent2)">find(${start}) + PATH COMPRESSION:</b> ${oldPath} → nodes [${path.join(',')}] now point directly to root ${root}. <span style="color:var(--good)">Compressed ${path.length} nodes.</span>`;
+}
+
+$('#pgFindMode').onclick = () => { pgFindModeOn = !pgFindModeOn; $('#pgFindMode').textContent = pgFindModeOn?'❌ Cancel':'🔍 find() with compression'; if(pgFindModeOn) $('#pgStatus').innerHTML='Click a node to run find() with path compression.'; };
+
+$('#pgUnionRandom').onclick = () => {
+  let tries = 0;
+  while (tries++ < 20) {
+    const a = Math.floor(Math.random()*PG_N), b = Math.floor(Math.random()*PG_N);
+    if (pgGetRoot(a) !== pgGetRoot(b)) {
+      const ra = pgGetRoot(a), rb = pgGetRoot(b);
+      const szA = -pgPar[ra], szB = -pgPar[rb];
+      let big=ra, small=rb;
+      if(pgPar[big]>pgPar[small]){let t=big;big=small;small=t;}
+      pgPar[big]+=pgPar[small]; pgPar[small]=big;
+      pgAddLog(`random unite(${a},${b}): roots ${ra}+${rb} → root=${big}, size=${-pgPar[big]}`);
+      pgRender();
+      $('#pgStatus').innerHTML = `Random: merged ${a}(root=${ra},sz=${szA}) + ${b}(root=${rb},sz=${szB}).`;
+      return;
+    }
+  }
+  $('#pgStatus').innerHTML = 'All nodes are already connected! Reset to start fresh.';
+};
+
+$('#pgReset').onclick = () => { pgPar=Array(PG_N).fill(-1); pgSel=-1; pgFindModeOn=false; pgLog=[]; document.getElementById('pgLog').innerHTML=''; $('#pgFindMode').textContent='🔍 find() with compression'; pgRender(); $('#pgStatus').innerHTML='Reset! All 12 nodes are singletons.'; };
+
+pgRender();
+
+// Initial render
+window.addEventListener('resize', () => { try{pcDraw();pgDraw();}catch(e){} });
+</script>
+</body>
+</html>

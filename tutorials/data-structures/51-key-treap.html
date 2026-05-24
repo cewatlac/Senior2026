@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coach Academy — Key Treap with Rotations</title>
+  <style>
+    :root{
+      --bg:#f7f8fb; --panel:#ffffff; --panel2:#f1f4ff;
+      --text:#0b1220; --muted:#334155; --border:#d6d9e6;
+      --accent:#1e40af; --accent2:#2563eb;
+      --good:#0f766e; --warn:#b45309; --bad:#b91c1c;
+      --codebg:#0b1220; --codetext:#e5e7eb;
+      --shadow:0 12px 30px rgba(2,6,23,.12);
+      --link:#1d4ed8;
+      --fs-base:26px; --fs-sm:22px;
+      --fs-h1:54px; --fs-h2:38px; --fs-h3:30px;
+      --radius:18px;
+      --node-blue:#2563eb; --node-green:#0f766e; --node-amber:#b45309; --node-red:#b91c1c; --node-purple:#7c3aed;
+    }
+    [data-theme="dark"]{
+      --bg:#070a12; --panel:#0c1220; --panel2:#0b162f;
+      --text:#f1f5ff; --muted:#cbd5ff; --border:#24304c;
+      --accent:#7aa2ff; --accent2:#4f8cff;
+      --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --codebg:#050812; --codetext:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.5);
+      --link:#93c5fd;
+      --node-blue:#4f8cff; --node-green:#34d399; --node-amber:#fbbf24; --node-red:#fb7185; --node-purple:#a78bfa;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:var(--fs-base);line-height:1.35;background:var(--bg);color:var(--text);}
+    a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+    .sidebar{background:linear-gradient(180deg,var(--panel2),var(--panel));border-right:3px solid var(--border);padding:22px 18px;overflow:auto;position:fixed;top:0;left:0;height:100vh;z-index:160;width:420px;transform:translateX(-100%);transition:transform .3s ease;}
+    .sidebar.open{transform:translateX(0);}
+    .content{overflow:auto;padding:26px 30px 90px;padding-top:80px;}
+    .brand{display:flex;align-items:center;gap:14px;padding:10px 10px 18px;border-bottom:3px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--panel2),var(--panel));z-index:5;}
+    .logoBox{width:72px;height:72px;border-radius:18px;background:#0B2D72;box-shadow:var(--shadow);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:28px;flex:0 0 auto;}
+    .brandTitle{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    .brandTitle .t1{font-weight:900;font-size:30px;}
+    .brandTitle .t2{font-size:var(--fs-sm);color:var(--muted);font-weight:700;}
+    .by-line{font-size:15px;font-weight:800;color:var(--muted);margin-top:2px;}
+    .nav{padding:14px 6px 0;}
+    .nav .groupTitle{font-weight:900;color:var(--muted);margin:16px 8px 10px;text-transform:uppercase;letter-spacing:.06em;font-size:18px;}
+    .nav a{display:block;padding:12px 14px;border-radius:14px;border:2px solid transparent;font-weight:800;color:var(--text);margin:6px 6px;cursor:pointer;}
+    .nav a small{display:block;font-weight:700;color:var(--muted);font-size:18px;margin-top:2px;}
+    .nav a.active,.nav a:hover{border-color:rgba(37,99,235,.35);background:rgba(37,99,235,.10);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:4px 0 0;font-size:var(--fs-h1);letter-spacing:-.02em;line-height:1.05;}
+    .subtitle{color:var(--muted);font-weight:750;font-size:24px;margin-top:8px;max-width:1200px;}
+    .btnRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--border);background:var(--panel);padding:10px 14px;border-radius:999px;font-weight:900;font-size:20px;}
+    .switch{width:72px;height:40px;border-radius:999px;border:3px solid var(--border);background:var(--panel2);position:relative;cursor:pointer;}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,var(--accent2),var(--accent));transition:all .2s ease;}
+    [data-theme="dark"] .switch::after{left:36px;}
+    .card{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);margin:18px 0;}
+    .card h2{margin:0 0 10px;font-size:var(--fs-h2);}
+    .card h3{margin:18px 0 10px;font-size:var(--fs-h3);}
+    .note{color:var(--muted);font-weight:750;font-size:22px;}
+    details{border-radius:var(--radius);border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);margin:18px 0;overflow:hidden;}
+    summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:950;font-size:28px;background:linear-gradient(180deg,rgba(37,99,235,.10),rgba(37,99,235,.02));}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:"▼";float:right;font-size:20px;transition:transform .3s ease;color:var(--accent2);}
+    details[open] summary::after{transform:rotate(-180deg);}
+    .detailsBody{padding:16px 18px 18px;}
+    pre{margin:12px 0 0;background:var(--codebg);color:var(--codetext);border-radius:18px;padding:16px;overflow:auto;border:2px solid rgba(255,255,255,.10);font-size:17px;line-height:1.45;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .k{color:#93c5fd} .c{color:#a7f3d0} .s{color:#fca5a5}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:18px;border:3px solid var(--border);margin-top:10px;font-weight:850;font-size:22px;}
+    th,td{padding:12px 12px;border-bottom:2px solid var(--border);vertical-align:top;}
+    th{background:rgba(37,99,235,.10);font-weight:950;}
+    tr:last-child td{border-bottom:none}
+    .formula{background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:var(--accent2);margin:18px 0;white-space:pre;}
+    .tipBox{margin-top:12px;padding:16px 18px;border-radius:var(--radius);background:rgba(37,99,235,.08);border:2px solid rgba(37,99,235,.18);font-weight:850;font-size:22px;line-height:1.4;}
+    .warnRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;background:rgba(180,83,9,.08);}
+    .wLabel{font-weight:950;font-size:24px;color:var(--warn);margin-bottom:6px;}
+    .wDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .goodRow{margin:12px 0;padding:14px 16px;border-left:5px solid var(--good);border-radius:0 var(--radius) var(--radius) 0;background:rgba(15,118,110,.08);}
+    .gLabel{font-weight:950;font-size:24px;color:var(--good);margin-bottom:6px;}
+    .gDesc{font-weight:800;font-size:22px;color:var(--muted);line-height:1.35;}
+    .checklist{list-style:none;padding:0;margin:14px 0;}
+    .checklist li{padding:10px 0 10px 38px;position:relative;font-weight:850;font-size:22px;line-height:1.35;}
+    .checklist li:before{content:"✓";position:absolute;left:6px;top:8px;font-weight:950;font-size:24px;color:var(--good);}
+    .contactSection{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin:18px 0;}
+    .contactEmail{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:12px 16px;border-radius:14px;font-weight:900;font-size:22px;color:var(--accent2);margin-right:8px;margin-bottom:8px;}
+    .page-footer{margin-top:60px;padding:30px 20px;text-align:center;border-top:3px solid var(--border);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(37,99,235,.04));}
+    .footer-brand{font-weight:950;font-size:32px;margin-bottom:8px;}
+    .footer-by{font-weight:800;font-size:20px;color:var(--muted);margin-bottom:6px;}
+    .footer-copy{font-weight:750;font-size:18px;color:var(--muted);line-height:1.5;}
+    .sidebarOverlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .sidebarOverlay.show{opacity:1;pointer-events:auto;}
+    .sidebarToggle{position:fixed;top:20px;left:20px;z-index:180;width:54px;height:54px;border-radius:14px;border:3px solid var(--border);background:var(--panel);box-shadow:var(--shadow);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .sidebarToggle span{width:28px;height:3px;background:var(--text);border-radius:3px;transition:all .3s ease;}
+    .sidebarToggle.open span:nth-child(1){transform:rotate(45deg) translate(7px,7px);}
+    .sidebarToggle.open span:nth-child(2){opacity:0;}
+    .sidebarToggle.open span:nth-child(3){transform:rotate(-45deg) translate(7px,-7px);}
+    @media(max-width:1400px){.content{padding-left:90px}}
+    .scroll-reveal{opacity:0;transform:translateY(20px);transition:all .5s ease;}
+    .scroll-reveal.revealed{opacity:1;transform:translateY(0);}
+    .decisionBox{background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(15,118,110,.12));border:4px solid var(--accent2);border-radius:var(--radius);padding:20px 24px;margin:20px 0;}
+    .decisionBox h3{margin:0 0 16px;font-size:32px;color:var(--accent2);text-align:center;}
+    .ruleBox{background:var(--panel2);border:3px solid var(--accent2);border-radius:var(--radius);padding:16px 20px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:19px;font-weight:800;line-height:1.6;}
+    .ruleBox .cond{color:var(--accent2);}
+    .ruleBox .arrow{color:var(--good);font-weight:950;}
+    .plink{display:inline-block;background:rgba(37,99,235,.10);border:2px solid rgba(37,99,235,.25);padding:8px 12px;border-radius:12px;font-weight:900;font-size:18px;color:var(--accent2);margin-top:6px;}
+    .stepper{background:var(--panel);border:3px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;margin:18px 0;box-shadow:var(--shadow);}
+    .stepper-title{font-weight:950;font-size:24px;color:var(--accent2);margin-bottom:10px;}
+    .stepper-svg{width:100%;height:auto;display:block;background:var(--panel2);border-radius:14px;border:2px solid var(--border);}
+    .stepper-desc{margin-top:14px;padding:14px 18px;background:var(--panel2);border-left:5px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0;font-weight:800;font-size:21px;line-height:1.4;color:var(--text);min-height:70px;}
+    .stepper-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+    .stepper-btn{padding:10px 18px;border-radius:12px;border:3px solid var(--border);background:var(--panel);color:var(--text);font-weight:900;font-size:18px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .stepper-btn:hover:not(:disabled){border-color:var(--accent2);background:rgba(37,99,235,.08);}
+    .stepper-btn:disabled{opacity:.35;cursor:not-allowed;}
+    .stepper-btn.primary{background:var(--accent2);color:white;border-color:var(--accent2);}
+    .stepper-btn.primary:hover:not(:disabled){background:var(--accent);}
+    .stepper-counter{font-weight:900;font-size:20px;color:var(--muted);min-width:120px;text-align:center;}
+    .tree-edge{stroke:var(--muted);stroke-width:2.5;fill:none;transition:all .35s ease;}
+    .tree-edge.path{stroke:var(--accent2);stroke-width:5;}
+    .tree-edge.new{stroke:var(--good);stroke-width:5;}
+    .tree-edge.faded{stroke:var(--border);stroke-width:2;opacity:.4;}
+    .tree-node circle{stroke:var(--panel);stroke-width:3;transition:all .35s ease;}
+    .tree-node text{fill:white;text-anchor:middle;font-family:system-ui,sans-serif;font-weight:900;dominant-baseline:central;}
+    .tree-node.highlight circle{stroke:var(--accent2);stroke-width:6;}
+    .tree-node.target circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.doomed circle{stroke:var(--bad);stroke-width:6;stroke-dasharray:5,3;}
+    .tree-node.new-node circle{stroke:var(--good);stroke-width:6;}
+    .tree-node.faded{opacity:.4;}
+    .tree-label{fill:var(--text);text-anchor:middle;font-weight:800;font-size:18px;font-family:system-ui,sans-serif;}
+    .tree-caption{fill:var(--muted);text-anchor:middle;font-weight:750;font-size:14px;font-family:system-ui,sans-serif;}
+  </style>
+</head>
+<body>
+
+<div class="sidebarOverlay" id="sidebarOverlay"></div>
+<div class="sidebarToggle" id="sidebarToggle"><span></span><span></span><span></span></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logoBox">CA</div>
+    <div class="brandTitle">
+      <div class="t1">Coach Academy</div>
+      <div class="t2">Key Treap with Rotations &amp; frq</div>
+      <div class="by-line">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav">
+    <div class="groupTitle">Foundations</div>
+    <a class="navlink active" onclick="navTo('problem')">01 · Problem Definition<small>Ordered multiset</small></a>
+    <a class="navlink" onclick="navTo('intuition')">02 · Intuition from Scratch<small>BST + heap = treap</small></a>
+    <a class="navlink" onclick="navTo('visual')">03 · Visual Mental Model<small>Two invariants at once</small></a>
+    <a class="navlink" onclick="navTo('formal')">04 · Formal Abstraction<small>Key, priority, frq, sz</small></a>
+    <a class="navlink" onclick="navTo('observations')">05 · Key Observations<small>Random priority defeats adversary</small></a>
+    <div class="groupTitle">Algorithm</div>
+    <a class="navlink" onclick="navTo('algorithm')">06 · Algorithm<small>insert / erase / kth</small></a>
+    <a class="navlink" onclick="navTo('invariants')">07 · Invariants<small>State / transition / termination</small></a>
+    <a class="navlink" onclick="navTo('proof')">08 · Proof of Correctness<small>BST + heap + sz</small></a>
+    <a class="navlink" onclick="navTo('complexity')">09 · Complexity<small>Expected O(log n)</small></a>
+    <div class="groupTitle">Implementation</div>
+    <a class="navlink" onclick="navTo('philosophy')">10 · Template Philosophy<small>rotate(child) style</small></a>
+    <a class="navlink" onclick="navTo('master')">11 · Master Template<small>Full ready-to-submit code</small></a>
+    <a class="navlink" onclick="navTo('lineByLine')">12 · Line-by-Line<small>Code walkthrough</small></a>
+    <div class="groupTitle">Mastery</div>
+    <a class="navlink" onclick="navTo('edges')">13 · Edge Cases<small>Audit</small></a>
+    <a class="navlink" onclick="navTo('pitfalls')">14 · Common Pitfalls<small>The frq trap</small></a>
+    <a class="navlink" onclick="navTo('decision')">15 · Decision Guide<small>When key treap fits</small></a>
+    <a class="navlink" onclick="navTo('variants')">16 · Variants<small>Persistent, split/merge</small></a>
+    <a class="navlink" onclick="navTo('problems')">17 · Problem Set<small>VJudge-ready</small></a>
+    <a class="navlink" onclick="navTo('summary')">18 · Final Summary<small>One-page recap</small></a>
+    <a class="navlink" onclick="navTo('contact')">19 · Contact<small>Reach the team</small></a>
+  </nav>
+  <div style="margin-top:20px;padding-top:16px;border-top:3px solid var(--border);text-align:center;">
+    <div style="font-size:14px;font-weight:800;color:var(--muted);line-height:1.7;">
+      Coach Academy<br>Prepared by The Coach (Dr. Wahab) &amp; Ashraf<br>
+      <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a><br>
+      <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a><br>© 2026 All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<main class="content" id="content">
+  <div class="topbar">
+    <div>
+      <h1>Key Treap with Rotations and frq</h1>
+      <div class="subtitle">A randomized balanced BST in fewer than 250 lines. Combine the BST invariant on values with a heap invariant on random priorities, and you get expected O(log n) for insert, erase, count, kth, and order_of_key, all without AVL or Red-Black logic.</div>
+    </div>
+    <div class="btnRow">
+      <div class="pill">Theme<div class="switch" id="themeSwitch" role="switch" aria-checked="false" tabindex="0"></div></div>
+    </div>
+  </div>
+
+  <div id="sec-problem" class="section">
+  <section id="problem" class="card scroll-reveal">
+    <h2>📌 01 · Problem Definition</h2>
+    <p class="note">Maintain an ordered multiset of integers under arbitrary update sequences and answer rich order-statistic queries in expected logarithmic time. The data structure must support insertion of a new element, removal of one occurrence of an element, membership test, count of occurrences of a specific value, k-th smallest extraction, the rank query <code>order_of_key(x)</code> giving the number of elements strictly less than x, and predecessor and successor lookups. Every operation must run in expected O(log n) time, where n is the current cardinality of the multiset, and the structure must remain robust against adversarial input orders such as monotonically sorted insertions.</p>
+    <p class="note">A plain BST collapses to a chain on sorted input. A strict balanced BST like AVL or Red-Black is correct but cumbersome to write under contest pressure. The key treap with rotations is the middle path: it gives the same expected bounds with far less code, and a single random priority per node replaces all of the height bookkeeping or color logic.</p>
+  </section>
+  </div>
+
+  <div id="sec-intuition" class="section">
+  <section id="intuition" class="card scroll-reveal">
+    <h2>🧠 02 · Intuition from Scratch</h2>
+    <p class="note">A classical result on random BSTs says that if n keys are inserted into an initially empty BST in a uniformly random order, the expected height of the resulting tree is O(log n) and the expected depth of any individual key is about 2 ln n. The problem with the plain BST in practice is not the structure itself but the fact that the user controls the insertion order, and an adversarial order such as a monotonically increasing sequence produces a chain. The treap turns this around: it gives each node a random priority the moment the node is created, and then maintains an additional invariant that the tree is also a max-heap on priorities. Because the priorities are random, the shape of the tree depends only on the random priorities, not on the order in which keys arrived.</p>
+
+    <h3>The name</h3>
+    <p class="note">The word treap is a portmanteau of tree and heap. Each node has a key value <code>v</code> obeying the BST order on values, and a priority <code>pri</code> obeying the max-heap order on priorities. The same node sits in the same tree under two simultaneous orderings.</p>
+
+    <h3>Why two invariants pin down the shape uniquely</h3>
+    <p class="note">Given a set of (key, priority) pairs with all priorities distinct, exactly one binary tree satisfies both orderings simultaneously. The proof is constructive: the node with the highest priority must be the root by the heap property, and the BST property then partitions the remaining nodes into those with smaller keys (left subtree) and those with larger keys (right subtree). Recursing into each side produces a unique tree. If we pick the priorities uniformly at random, this unique tree is exactly the tree we would get by inserting the keys into a plain BST in the order of decreasing priority, which is a uniformly random order. Hence the expected height is O(log n) regardless of the order the user provided.</p>
+  </section>
+  </div>
+
+  <div id="sec-visual" class="section">
+  <section id="visual" class="card scroll-reveal">
+    <h2>🎨 03 · Visual Mental Model</h2>
+    <p class="note">Visualise each node as a labelled circle carrying two numbers: the key on top and the priority below it. The BST invariant orders the keys left-to-right along the inorder direction. The heap invariant orders the priorities top-to-bottom along the parent-child direction. Both invariants live in the same tree at the same time.</p>
+
+    <div class="stepper" id="treap-shape">
+      <div class="stepper-title">A treap for values 3, 5, 8 with priorities 30, 50, 80</div>
+      <svg class="stepper-svg" viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <p class="note">A key treap stores each distinct value as one node and uses an integer field <code>frq</code> to remember how many copies of that value the multiset contains. Inserting 5 three times produces a single node with <code>v = 5</code> and <code>frq = 3</code>. The subtree-size field <code>sz</code> sums frequencies of all descendants, so <code>kth</code> continues to work correctly because it locates the k-th occurrence rather than the k-th distinct value.</p>
+  </section>
+  </div>
+
+  <div id="sec-formal" class="section">
+  <section id="formal" class="card scroll-reveal">
+    <h2>📐 04 · Formal Abstraction</h2>
+
+    <h3>Node fields</h3>
+    <p class="note">Each node carries six pieces of information that together encode both invariants and enable order-statistic queries. The value <code>v</code> is the key stored at this node. The priority <code>pri</code> is a random integer drawn once at creation and never changed. The frequency <code>frq</code> counts how many copies of <code>v</code> exist in the multiset and is at least one for every live node. The subtree size <code>sz</code> sums frequencies across all descendants by the rule <code>sz = sz(left) + frq + sz(right)</code>. The parent pointer <code>p</code> and child pointers <code>ch[0]</code>, <code>ch[1]</code> wire the tree together; missing pointers reference a single static <code>EMPTY</code> sentinel rather than null.</p>
+
+    <h3>The three invariants</h3>
+    <div class="formula">BST invariant:   for every node u, every node in ch[0]'s subtree has v < u.v
+                                          every node in ch[1]'s subtree has v > u.v
+
+heap invariant:  for every node u, u.pri >= ch[0].pri  AND  u.pri >= ch[1].pri
+
+size invariant:  for every node u, u.sz = ch[0].sz + u.frq + ch[1].sz</div>
+
+    <h3>Sentinel design</h3>
+    <p class="note">Rather than checking for nullptr everywhere, we use a single static <code>EMPTY</code> node whose children point to itself, whose <code>sz</code> and <code>frq</code> are zero, and whose <code>pri</code> is zero. Every leaf points its children at <code>EMPTY</code>, so reads like <code>u-&gt;ch[L]-&gt;sz</code> are always safe and we never branch on a null check.</p>
+  </section>
+  </div>
+
+  <div id="sec-observations" class="section">
+  <section id="observations" class="card scroll-reveal">
+    <h2>🔍 05 · Key Observations</h2>
+    <div class="goodRow"><div class="gLabel">Random priority defeats adversarial input</div><div class="gDesc">The user controls the keys but not the priorities. Since the shape of the unique valid treap depends only on the priorities, the user cannot craft a worst-case input, and the expected height is O(log n) for any input order.</div></div>
+    <div class="goodRow"><div class="gLabel">Rotations preserve inorder</div><div class="gDesc">Repair after insert and during erase happens through left or right rotations, which we already proved preserve inorder in the BST tutorial. The BST invariant survives every rotation automatically.</div></div>
+    <div class="goodRow"><div class="gLabel">frq is a compression trick</div><div class="gDesc">Storing one node per distinct value rather than one per occurrence keeps the tree small when duplicates are common. The sz field counts occurrences (frequency-weighted) so kth still locates the k-th occurrence, not the k-th distinct value.</div></div>
+    <div class="goodRow"><div class="gLabel">Locality of rebalancing</div><div class="gDesc">After inserting a new node, only nodes on the path from that node to the root can possibly violate the heap invariant. We rotate the new node upward until its parent's priority dominates or until it becomes the root, performing at most O(h) rotations.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-algorithm" class="section">
+  <section id="algorithm" class="card scroll-reveal">
+    <h2>⚙️ 06 · Algorithm</h2>
+
+    <h3>Insert: walk down, plant, rotate up</h3>
+    <p class="note">To insert a value <code>x</code>, we walk down the tree following BST descent. If we encounter a node whose value equals <code>x</code>, we increment that node's <code>frq</code> and update <code>sz</code> on the ancestors. If we walk off the tree without finding <code>x</code>, we create a new node with a freshly drawn random priority and link it in place of the null pointer we reached. The new node is at the correct leaf position for the BST invariant but may violate the heap invariant if its priority is larger than its parent's. To repair, we rotate the new node upward repeatedly: while the new node's priority exceeds its parent's, we perform a rotation that lifts the new node one level. Each rotation preserves the BST invariant (as shown in tutorial 26) and reduces the heap violation by one level. We stop when the parent's priority is at least the child's or when the child has no parent.</p>
+
+    <div class="stepper" id="treap-insert">
+      <div class="stepper-title">Inserting value 5 with priority 80 into a tree whose root has priority 50</div>
+      <svg class="stepper-svg" viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>Erase: rotate the doomed node down to a leaf, then detach</h3>
+    <p class="note">To erase one occurrence of <code>x</code>, we walk down to find the node carrying <code>x</code>. If that node has <code>frq &gt; 1</code> we simply decrement <code>frq</code> and update <code>sz</code> on the ancestors. If <code>frq</code> equals one, we cannot simply splice up a child because the doomed node may have two children, and splicing either up would break the heap invariant at the other side. The treap trick: rotate the doomed node downward until it becomes a leaf. At each step, the rotation chooses the child with the higher priority so that the heap invariant is restored in the local subtree after the doomed node moves down. Once the doomed node has no children, we detach it from its parent. The descent and the rotation chain together still take O(h) work.</p>
+
+    <div class="stepper" id="treap-erase">
+      <div class="stepper-title">Erasing the root by rotating it down to a leaf, then detaching</div>
+      <svg class="stepper-svg" viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>kth: descend using subtree sizes</h3>
+    <p class="note">To find the k-th smallest occurrence (k is one-indexed), we descend from the root maintaining the convention that <code>k</code> is the rank we are still looking for within the current subtree. At each node we compare <code>k</code> against the size of the left subtree. If <code>k ≤ sz(left)</code> we descend into the left subtree with <code>k</code> unchanged. If <code>sz(left) &lt; k ≤ sz(left) + frq</code> the answer is the current node's value. Otherwise we subtract <code>sz(left) + frq</code> from <code>k</code> and descend into the right subtree. The descent is O(h) and uses only one comparison per level.</p>
+
+    <div class="stepper" id="treap-kth">
+      <div class="stepper-title">kth descent using subtree sizes</div>
+      <svg class="stepper-svg" viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="stepper-desc"></div>
+      <div class="stepper-controls">
+        <button class="stepper-btn" data-act="reset">⟲ Reset</button>
+        <button class="stepper-btn" data-act="prev">◀ Prev</button>
+        <span class="stepper-counter"></span>
+        <button class="stepper-btn primary" data-act="next">Next ▶</button>
+      </div>
+    </div>
+
+    <h3>order_of_key, first_ge, last_le</h3>
+    <p class="note">The order_of_key query for a value <code>x</code> returns the number of multiset elements strictly less than <code>x</code>. We descend from the root: at each node, if <code>x ≤ u.v</code> we descend left without accumulating anything; if <code>x &gt; u.v</code> we add <code>sz(left) + frq</code> to the running total and descend right. The descent is O(h) and the running total at the end is the answer. The lower-bound queries <code>first_ge(x)</code> and <code>last_le(x)</code> are analogous BST descents that remember the most recent candidate that satisfies the inequality.</p>
+  </section>
+  </div>
+
+  <div id="sec-invariants" class="section">
+  <section id="invariants" class="card scroll-reveal">
+    <h2>📊 07 · Invariants and Transitions</h2>
+
+    <h3>State invariants</h3>
+    <p class="note">At every quiescent moment the treap satisfies the three invariants of section 4. The BST invariant constrains the relative order of values, the heap invariant constrains the relative order of priorities, and the size invariant says <code>sz</code> aggregates frequencies along subtrees. Any algorithm that mutates the tree must restore all three by the time it returns.</p>
+
+    <h3>Transition: a single rotation</h3>
+    <p class="note">A rotation at a node is a local rewiring of three child pointers (and the matching parent pointers, plus a child slot update at the grandparent). The transition preserves the BST invariant globally because inorder is unchanged. The transition preserves the size invariant locally if we call a <code>pull(u)</code> recomputation on the two affected nodes (the one that descended and the one that rose) in the correct order: first <code>pull</code> the node that descended, then <code>pull</code> the node that rose. The transition may temporarily break the heap invariant at the new local root if its parent's priority is smaller; that violation is what insert chases up the tree until it disappears.</p>
+
+    <h3>Termination of insert</h3>
+    <p class="note">The insert procedure rotates the new node upward as long as the new node has a parent whose priority is strictly smaller. Each rotation reduces the new node's depth by one. The depth is bounded below by zero (root), so insert performs at most <code>h</code> rotations, where <code>h</code> is the height of the tree at the moment of insertion. The expected height is O(log n), so the expected number of rotations is O(log n).</p>
+
+    <h3>Termination of erase</h3>
+    <p class="note">The erase procedure rotates the doomed node downward as long as the doomed node has at least one child whose priority is strictly larger. Each rotation increases the doomed node's depth by one and either leaves the number of its children unchanged or reduces it by one. Eventually the doomed node has no children and is detached. The total number of rotations is again bounded by the height of the original tree, giving expected O(log n) work.</p>
+  </section>
+  </div>
+
+  <div id="sec-proof" class="section">
+  <section id="proof" class="card scroll-reveal">
+    <h2>📜 08 · Proof of Correctness</h2>
+
+    <h3>Insert preserves the BST invariant</h3>
+    <p class="note">The descent phase of insert places the new leaf at a position consistent with the BST invariant by the same argument used in the plain BST: we go left on strict-less-than and right on strict-greater-than, so the new leaf is smaller than every ancestor we went right from and larger than every ancestor we went left from. The rotation phase preserves the BST invariant by the inorder-preservation property of rotations.</p>
+
+    <h3>Insert restores the heap invariant</h3>
+    <p class="note">After the descent, the only place the heap invariant might be violated is at the new node and its parent. The rotate-up loop rotates the new node above any parent whose priority is smaller. After each rotation, the new node has a new parent (its grandparent before the rotation) and the loop continues. The loop terminates when the parent's priority is at least the new node's or when the new node has no parent. At termination, the heap invariant holds at the new node. The heap invariant elsewhere in the tree is unchanged because the rotation only affected the two nodes involved.</p>
+
+    <h3>Erase preserves all three invariants</h3>
+    <p class="note">If the doomed node had <code>frq &gt; 1</code> before erase, decrementing <code>frq</code> and pulling <code>sz</code> up the ancestors preserves everything. If <code>frq</code> dropped to zero, the rotate-down loop rotates the doomed node toward the higher-priority child at each step. The rotation preserves BST and reduces the local heap violation: the higher-priority child rises above the doomed node, which means the heap invariant is restored at the rising node (because its other child still has lower priority by the heap invariant at the higher-priority child before rotation). The doomed node now sits in the position where the rising child was, with possibly a new subtree to descend into. After O(h) rotations the doomed node becomes a leaf and is detached.</p>
+
+    <h3>kth, order_of_key, first_ge, last_le are correct by structural induction</h3>
+    <p class="note">Each of these descents uses only the BST invariant and the size invariant. The kth descent's case analysis exactly mirrors the inorder layout of the subtree (left subtree first, then the current node's <code>frq</code> occurrences, then the right subtree). The order_of_key descent counts every occurrence of a value strictly less than <code>x</code> by accumulating <code>sz(left) + frq</code> whenever the descent goes right and ignoring elements on the right whenever the descent goes left. The first_ge and last_le descents remember the most recent candidate and update it when crossing the comparison boundary.</p>
+  </section>
+  </div>
+
+  <div id="sec-complexity" class="section">
+  <section id="complexity" class="card scroll-reveal">
+    <h2>⏱️ 09 · Complexity Analysis</h2>
+    <p class="note">The expected height of a treap on n nodes is O(log n) when priorities are chosen uniformly at random. The expected depth of any specific key is approximately 2 ln n, the same bound as for a random BST. From this single fact every operation cost follows: each operation walks one root-to-leaf path (possibly with a chain of rotations along it), so its expected cost is O(log n).</p>
+
+    <table>
+      <tr><th>Operation</th><th>Expected time</th><th>Worst case</th><th>What happens</th></tr>
+      <tr><td>insert(x)</td><td>O(log n)</td><td>O(n)</td><td>BST descent then rotate-up</td></tr>
+      <tr><td>erase(x)</td><td>O(log n)</td><td>O(n)</td><td>BST descent then rotate-down to leaf</td></tr>
+      <tr><td>count(x)</td><td>O(log n)</td><td>O(n)</td><td>BST descent</td></tr>
+      <tr><td>kth(k)</td><td>O(log n)</td><td>O(n)</td><td>size-driven descent</td></tr>
+      <tr><td>order_of_key(x)</td><td>O(log n)</td><td>O(n)</td><td>BST descent accumulating</td></tr>
+      <tr><td>first_ge(x), last_le(x)</td><td>O(log n)</td><td>O(n)</td><td>BST descent remembering candidate</td></tr>
+      <tr><td>inorder traversal</td><td>O(n)</td><td>O(n)</td><td>visit every node once</td></tr>
+    </table>
+
+    <p class="note">The worst case occurs with vanishing probability and only when an adversary somehow learns the priority sequence in advance. In contest contexts this is impossible; the priorities come from a thread-local random source seeded by the system clock. The amortised constants in the expected case are small enough that the key treap competes with red-black trees on real workloads.</p>
+  </section>
+  </div>
+
+  <div id="sec-philosophy" class="section">
+  <section id="philosophy" class="card scroll-reveal">
+    <h2>🧱 10 · Template Philosophy</h2>
+    <p class="note">The template style we adopt has four design choices that make the code short and bug-resistant.</p>
+
+    <h3>Choice 1: single static sentinel <code>EMPTY</code></h3>
+    <p class="note">Rather than checking for nullptr at every pointer dereference, we maintain a single static <code>EMPTY</code> node whose children point to itself, with <code>sz = 0</code>, <code>frq = 0</code>, <code>pri = 0</code>. Every leaf points its children at <code>EMPTY</code>. Reads like <code>u-&gt;ch[L]-&gt;sz</code> are always safe and produce zero on an empty subtree, which is exactly what the size formulas need. Writes still must avoid <em>mutating</em> <code>EMPTY</code>; the only invariant is that its fields stay at their zero values.</p>
+
+    <h3>Choice 2: rotate(child) instead of rotate(parent, direction)</h3>
+    <p class="note">The classical formulation rotates at a parent and asks for a direction. We use the alternative formulation: <code>rotate(c)</code> rotates the child <code>c</code> above its parent without passing an explicit direction. The direction is recovered from the parent's child slots. This eliminates one source of bugs (passing the wrong direction) and makes the rotate-up loop in insert read like <code>while (c-&gt;p-&gt;pri &lt; c-&gt;pri) rotate(c);</code> which is one of the shortest possible expressions of the rotate-up phase.</p>
+
+    <h3>Choice 3: parent pointers</h3>
+    <p class="note">We maintain a parent pointer on every node. The cost is one extra word per node and a few extra assignments per rotation; the benefit is that the rotate-up loop in insert and the rotate-down loop in erase become straightforward without an explicit stack. Implicit treaps (tutorial 28) drop parent pointers because the rebalance logic there is structurally different; for the key treap, parent pointers are the right trade-off.</p>
+
+    <h3>Choice 4: a <code>link(p, c, dir)</code> helper that pulls automatically</h3>
+    <p class="note">Every pointer mutation goes through <code>link(p, c, dir)</code>, which sets <code>p-&gt;ch[dir] = c</code>, sets <code>c-&gt;p = p</code> if <code>c</code> is not the sentinel, and finally calls <code>pull(p)</code> to recompute <code>p-&gt;sz</code>. By funneling all writes through one helper, we cannot forget to maintain parent pointers or to refresh subtree sizes. The whole class becomes nearly write-correct by construction.</p>
+  </section>
+  </div>
+
+  <div id="sec-master" class="section">
+  <section id="master" class="card scroll-reveal">
+    <h2>🎯 11 · Master Template — Ready to Submit</h2>
+    <p class="note">The complete key treap with rotations and frequency-counted duplicates, written in the rotate(child) / link(p,c,dir) style described above. Around 220 lines including I/O scaffolding. Drop into a contest and the only thing you may need to change is the type of the value (templated on a single integer-comparable type).</p>
+    <pre><code><span class="c">// Key Treap with frq and rotations &mdash; rotate(child) style</span>
+<span class="k">#include</span> <span class="s">&lt;bits/stdc++.h&gt;</span>
+<span class="k">using namespace</span> std;
+
+mt19937 rng(<span class="k">chrono</span>::steady_clock::now().time_since_epoch().count());
+
+<span class="k">struct</span> node {
+    <span class="k">int</span> v;        <span class="c">// the key stored here</span>
+    <span class="k">int</span> pri;      <span class="c">// random priority drawn once at creation</span>
+    <span class="k">int</span> sz;       <span class="c">// sum of frq in subtree</span>
+    <span class="k">int</span> frq;      <span class="c">// number of occurrences of v (key treap of multiset)</span>
+    node *p, *ch[2]; <span class="c">// parent, left child (0), right child (1)</span>
+};
+
+<span class="k">static</span> node EMPTY_STORAGE;
+node* <span class="k">const</span> EMPTY = &amp;EMPTY_STORAGE;
+
+<span class="k">void</span> init_empty(){
+    EMPTY-&gt;v = 0; EMPTY-&gt;pri = 0; EMPTY-&gt;sz = 0; EMPTY-&gt;frq = 0;
+    EMPTY-&gt;p = EMPTY; EMPTY-&gt;ch[0] = EMPTY; EMPTY-&gt;ch[1] = EMPTY;
+}
+
+<span class="k">struct</span> KeyTreap {
+    node* root;
+    KeyTreap() : root(EMPTY) { init_empty(); }
+
+    node* make_node(<span class="k">int</span> v){
+        <span class="c">// Real-node priorities live in [1, INT_MAX] so they always strictly beat the</span>
+        <span class="c">// sentinel's pri=0. Casting raw rng() to int risks negative priorities, which</span>
+        <span class="c">// would let EMPTY beat a real child during the erase rotate-down loop.</span>
+        <span class="k">static</span> uniform_int_distribution&lt;<span class="k">int</span>&gt; dist(1, INT_MAX);
+        node* u = <span class="k">new</span> node{v, dist(rng), 1, 1, EMPTY, {EMPTY, EMPTY}};
+        <span class="k">return</span> u;
+    }
+
+    <span class="c">// Recompute sz from children plus own frq.</span>
+    <span class="k">void</span> pull(node* u){
+        <span class="k">if</span> (u == EMPTY) <span class="k">return</span>;
+        u-&gt;sz = u-&gt;ch[0]-&gt;sz + u-&gt;frq + u-&gt;ch[1]-&gt;sz;
+    }
+
+    <span class="c">// Set p's child slot dir to c, set c's parent to p (if c isn't EMPTY), refresh p's sz.</span>
+    <span class="k">void</span> link(node* p, node* c, <span class="k">int</span> dir){
+        p-&gt;ch[dir] = c;
+        <span class="k">if</span> (c != EMPTY) c-&gt;p = p;
+        pull(p);
+    }
+
+    <span class="c">// Recover the child slot index (0 or 1) that c occupies in its parent.</span>
+    <span class="k">int</span> getDir(node* c){
+        <span class="k">return</span> c-&gt;p-&gt;ch[1] == c ? 1 : 0;
+    }
+
+    <span class="c">// Rotate child c above its parent. The direction is inferred from c's slot.</span>
+    <span class="k">void</span> rotate(node* c){
+        node* p = c-&gt;p;
+        node* g = p-&gt;p;
+        <span class="k">int</span> dir = getDir(c);
+        <span class="k">int</span> other = dir ^ 1;
+        <span class="c">// Save p's old direction under g BEFORE rewiring. After link(c, p, other)</span>
+        <span class="c">// fires below, p is no longer a child of g, so getDir(p) would report</span>
+        <span class="c">// p's new slot under c instead of its original slot under g &mdash; the bug.</span>
+        <span class="k">int</span> pdir = (g == EMPTY ? -1 : getDir(p));
+        <span class="c">// c's other-side child becomes p's dir-side child.</span>
+        link(p, c-&gt;ch[other], dir);
+        <span class="c">// p becomes c's other-side child.</span>
+        link(c, p, other);
+        <span class="c">// c takes p's old slot under g; or becomes root if p was root.</span>
+        <span class="k">if</span> (g == EMPTY) { root = c; c-&gt;p = EMPTY; }
+        <span class="k">else</span> link(g, c, pdir);
+    }
+
+    <span class="c">// Insert one occurrence of v into the treap.</span>
+    <span class="k">void</span> insert(<span class="k">int</span> v){
+        <span class="k">if</span> (root == EMPTY) { root = make_node(v); <span class="k">return</span>; }
+        node* u = root;
+        node* parent = EMPTY;
+        <span class="k">int</span> dir = 0;
+        <span class="k">while</span> (u != EMPTY){
+            <span class="k">if</span> (u-&gt;v == v){ u-&gt;frq++; <span class="k">for</span> (node* w = u; w != EMPTY; w = w-&gt;p) pull(w); <span class="k">return</span>; }
+            parent = u; dir = v &gt; u-&gt;v;
+            u = u-&gt;ch[dir];
+        }
+        node* x = make_node(v);
+        link(parent, x, dir);
+        <span class="c">// rotate x up while x's priority beats its parent's priority.</span>
+        <span class="k">while</span> (x-&gt;p != EMPTY &amp;&amp; x-&gt;pri &gt; x-&gt;p-&gt;pri) rotate(x);
+        <span class="c">// after rotation, root may have changed; refresh sz on the spine above x.</span>
+        <span class="k">for</span> (node* w = x-&gt;p; w != EMPTY; w = w-&gt;p) pull(w);
+    }
+
+    <span class="c">// Erase one occurrence of v from the treap (no-op if v is not present).</span>
+    <span class="k">void</span> erase(<span class="k">int</span> v){
+        node* u = root;
+        <span class="k">while</span> (u != EMPTY &amp;&amp; u-&gt;v != v) u = u-&gt;ch[v &gt; u-&gt;v];
+        <span class="k">if</span> (u == EMPTY) <span class="k">return</span>;
+        <span class="k">if</span> (u-&gt;frq &gt; 1){ u-&gt;frq--; <span class="k">for</span> (node* w = u; w != EMPTY; w = w-&gt;p) pull(w); <span class="k">return</span>; }
+        <span class="c">// rotate u down until it becomes a leaf, choosing the higher-priority child to rotate up.</span>
+        <span class="k">while</span> (u-&gt;ch[0] != EMPTY || u-&gt;ch[1] != EMPTY){
+            <span class="k">int</span> dir = u-&gt;ch[0]-&gt;pri &gt; u-&gt;ch[1]-&gt;pri ? 0 : 1;
+            rotate(u-&gt;ch[dir]);
+        }
+        node* par = u-&gt;p;
+        <span class="k">if</span> (par == EMPTY) root = EMPTY;
+        <span class="k">else</span> link(par, EMPTY, getDir(u));
+        <span class="k">for</span> (node* w = par; w != EMPTY; w = w-&gt;p) pull(w);
+        <span class="k">delete</span> u;
+    }
+
+    <span class="c">// Number of occurrences of v.</span>
+    <span class="k">int</span> count(<span class="k">int</span> v){
+        node* u = root;
+        <span class="k">while</span> (u != EMPTY &amp;&amp; u-&gt;v != v) u = u-&gt;ch[v &gt; u-&gt;v];
+        <span class="k">return</span> u == EMPTY ? 0 : u-&gt;frq;
+    }
+
+    <span class="c">// Number of multiset elements strictly less than v.</span>
+    <span class="k">int</span> order_of_key(<span class="k">int</span> v){
+        node* u = root; <span class="k">int</span> ans = 0;
+        <span class="k">while</span> (u != EMPTY){
+            <span class="k">if</span> (v &lt;= u-&gt;v) u = u-&gt;ch[0];
+            <span class="k">else</span> { ans += u-&gt;ch[0]-&gt;sz + u-&gt;frq; u = u-&gt;ch[1]; }
+        }
+        <span class="k">return</span> ans;
+    }
+
+    <span class="c">// k-th smallest occurrence, 1-indexed; UB if k is out of range.</span>
+    <span class="k">int</span> kth(<span class="k">int</span> k){
+        node* u = root;
+        <span class="k">while</span> (<span class="k">true</span>){
+            <span class="k">int</span> ls = u-&gt;ch[0]-&gt;sz;
+            <span class="k">if</span> (k &lt;= ls) u = u-&gt;ch[0];
+            <span class="k">else if</span> (k &lt;= ls + u-&gt;frq) <span class="k">return</span> u-&gt;v;
+            <span class="k">else</span> { k -= ls + u-&gt;frq; u = u-&gt;ch[1]; }
+        }
+    }
+
+    <span class="c">// Smallest value &gt;= q, or INT_MAX if none.</span>
+    <span class="k">int</span> first_ge(<span class="k">int</span> q){
+        node* u = root; <span class="k">int</span> ans = INT_MAX;
+        <span class="k">while</span> (u != EMPTY){
+            <span class="k">if</span> (u-&gt;v &gt;= q){ ans = u-&gt;v; u = u-&gt;ch[0]; }
+            <span class="k">else</span> u = u-&gt;ch[1];
+        }
+        <span class="k">return</span> ans;
+    }
+
+    <span class="c">// Largest value &lt;= q, or INT_MIN if none.</span>
+    <span class="k">int</span> last_le(<span class="k">int</span> q){
+        node* u = root; <span class="k">int</span> ans = INT_MIN;
+        <span class="k">while</span> (u != EMPTY){
+            <span class="k">if</span> (u-&gt;v &lt;= q){ ans = u-&gt;v; u = u-&gt;ch[1]; }
+            <span class="k">else</span> u = u-&gt;ch[0];
+        }
+        <span class="k">return</span> ans;
+    }
+
+    <span class="k">int</span> size(){ <span class="k">return</span> root-&gt;sz; }
+
+    <span class="k">void</span> inorder_rec(node* u, vector&lt;<span class="k">int</span>&gt;&amp; out){
+        <span class="k">if</span> (u == EMPTY) <span class="k">return</span>;
+        inorder_rec(u-&gt;ch[0], out);
+        <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; u-&gt;frq; ++i) out.push_back(u-&gt;v);
+        inorder_rec(u-&gt;ch[1], out);
+    }
+    vector&lt;<span class="k">int</span>&gt; inorder(){ vector&lt;<span class="k">int</span>&gt; out; inorder_rec(root, out); <span class="k">return</span> out; }
+};</code></pre>
+  </section>
+  </div>
+
+  <div id="sec-lineByLine" class="section">
+  <section id="lineByLine" class="card scroll-reveal">
+    <h2>📝 12 · Line-by-Line Walkthrough</h2>
+
+    <h3>The sentinel block</h3>
+    <p class="note">The static <code>EMPTY_STORAGE</code> and the pointer <code>EMPTY</code> together implement the single sentinel. The function <code>init_empty</code> sets the six fields explicitly: value zero (never compared), priority zero (never beats any real node's priority), size zero (so addition on the size invariant gives the right answer for missing children), frequency zero (so the kth descent never selects this node), parent pointing at itself, and both children pointing at itself. Any read of <code>EMPTY-&gt;ch[d]</code> returns <code>EMPTY</code> again, which means a descent that walks past a leaf simply stays on the sentinel forever instead of crashing on a null dereference.</p>
+    <p class="note">For the priority-zero sentinel to be safe, every real node must receive a priority of at least one. The erase routine rotates the doomed node downward by repeatedly choosing whichever child has the larger priority and rotating it up; if the only real child somehow ended up with a priority less than the sentinel's zero, the comparison would pick <code>EMPTY</code> as the larger one and the rotate-down loop would try to rotate the sentinel, which corrupts the treap or hangs. That is exactly why <code>make_node</code> generates priorities from <code>[1, INT_MAX]</code> with a <code>uniform_int_distribution&lt;int&gt;</code> instead of casting raw <code>rng()</code> output directly to <code>int</code>: the cast can produce negative numbers and would silently break the invariant <code>real_pri &gt; EMPTY-&gt;pri</code>.</p>
+
+    <h3>pull and link</h3>
+    <p class="note">The <code>pull</code> function recomputes the subtree size of one node from its children's subtree sizes plus its own frequency. The <code>link</code> function performs the only mutation of child pointers in the entire class. By routing every assignment through <code>link</code>, we guarantee three things: the parent pointer of the child gets updated, the child slot of the parent gets updated, and the subtree size of the parent gets refreshed. This eliminates a whole category of bugs where one of these three actions is forgotten.</p>
+
+    <h3>The rotate function</h3>
+    <p class="note">The rotate function takes the child <code>c</code> that should rise above its parent. We read the parent <code>p</code> and the grandparent <code>g</code>. The direction <code>dir</code> is recovered from which slot <code>c</code> currently occupies in <code>p</code>. Before any rewiring happens, we also save <code>pdir</code>, which is the slot <code>p</code> currently occupies under <code>g</code> (or <code>-1</code> if <code>g</code> is <code>EMPTY</code>). This save is essential, and the order matters: the second <code>link</code> call below relinks <code>p</code> to sit as a child of <code>c</code>, so by the time we want to reattach <code>c</code> under <code>g</code>, calling <code>getDir(p)</code> would no longer return <code>p</code>'s original slot under <code>g</code> — it would return <code>p</code>'s new slot under <code>c</code>. Reading the grandparent attachment direction <em>after</em> the rewiring is logically wrong and can attach the rotated subtree to the wrong side of the grandparent, breaking the BST invariant. Saving <code>pdir</code> up front avoids the issue entirely.</p>
+    <p class="note">The three pointer updates are then written as three <code>link</code> calls in the correct order: first the middle subtree (c's other-side child) moves to become p's dir-side child, then p moves to become c's other-side child, then c takes p's old place under g using the saved <code>pdir</code>. The final step has two cases: if there was no grandparent, c becomes the new root; otherwise c slots into <code>pdir</code> under g, which is the direction p originally occupied.</p>
+
+    <h3>The insert function</h3>
+    <p class="note">The insert descent walks down the tree comparing the incoming value <code>v</code> with the current node's value. If we find a match, we increment the frequency and pull up the spine; the insert is done. Otherwise we keep walking until we hit <code>EMPTY</code>, remembering the parent and the direction. We create a new node, link it in, and then rotate it up. The rotate-up loop is just <code>while (x-&gt;p != EMPTY &amp;&amp; x-&gt;pri &gt; x-&gt;p-&gt;pri) rotate(x);</code> which is two lines including the brace. After the loop terminates, the spine above <code>x</code> may have changed (because <code>x</code> climbed), so we pull <code>sz</code> on every ancestor of <code>x</code> just to be safe; in fact <code>link</code> already pulled most of them, but the cost is logarithmic and the correctness is worth the extra write.</p>
+
+    <h3>The erase function</h3>
+    <p class="note">Erase walks the tree to find the node carrying <code>v</code>. If not found, we return. If found and the frequency is greater than one, we just decrement and pull the spine. Otherwise we rotate the doomed node downward: at each step we choose the higher-priority child and rotate it up. This pushes the doomed node down by one level, and the higher-priority child takes over as the parent. When the doomed node has neither child left, we detach it by linking <code>EMPTY</code> into the parent's slot. Memory is freed with <code>delete</code>. The pulls along the spine are again just to ensure size correctness.</p>
+
+    <h3>Query functions</h3>
+    <p class="note">The <code>count</code> function is a plain BST descent that returns the frequency at the matching node or zero if the value is absent. The <code>order_of_key</code> function counts everything strictly less than <code>v</code>: it adds <code>sz(left) + frq</code> whenever the descent crosses to the right, because everything on the left and at the current node is less than <code>v</code> in that case. The <code>kth</code> function compares the running rank <code>k</code> against <code>sz(left)</code> to decide whether to descend left, stop at the current node's run of frequencies, or descend right after subtracting. The <code>first_ge</code> and <code>last_le</code> descents are symmetric: each remembers the most recent candidate that satisfies the inequality and refines it by descending on the side that might give a tighter candidate.</p>
+  </section>
+  </div>
+
+  <div id="sec-edges" class="section">
+  <section id="edges" class="card scroll-reveal">
+    <h2>🧩 13 · Edge Cases (Centralized Audit)</h2>
+    <ul class="checklist">
+      <li><b>Empty tree.</b> Both <code>root == EMPTY</code> and any descent terminates immediately at <code>EMPTY</code>. count, order_of_key, first_ge, last_le return their natural empty results.</li>
+      <li><b>Insert into empty tree.</b> Special-cased at the top of insert: the new node becomes the root and we return without rotating.</li>
+      <li><b>Insert a duplicate.</b> The descent finds the matching node, increments <code>frq</code>, pulls the spine. No rotation is required because the tree shape is unchanged.</li>
+      <li><b>Erase a value that is absent.</b> The descent reaches <code>EMPTY</code> and we return immediately. The tree is unchanged.</li>
+      <li><b>Erase a value with frq &gt; 1.</b> We decrement and pull. The tree shape is unchanged.</li>
+      <li><b>Erase the root.</b> Handled uniformly by the rotate-down loop; once the root has no children, we set <code>root = EMPTY</code>.</li>
+      <li><b>kth(k) with k = 0 or k &gt; size.</b> Behavior is undefined; assert at the top in debug builds or document the precondition.</li>
+      <li><b>Reading sz on EMPTY.</b> Always returns 0 by initialization, so it composes correctly in the size formula.</li>
+      <li><b>Rotation when c's parent is the root.</b> Handled inside <code>rotate</code> by checking <code>g == EMPTY</code> and updating <code>root</code> directly.</li>
+      <li><b>Tied priorities.</b> 32-bit random integers from mt19937 are practically distinct on contest sizes (≤ 10^6); on n &gt; 10^9 use 64-bit priorities.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div id="sec-pitfalls" class="section">
+  <section id="pitfalls" class="card scroll-reveal">
+    <h2>🪲 14 · Common Pitfalls and Bugs</h2>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 1 — Forgetting that frq counts occurrences, not nodes</div><div class="wDesc">The size formula must be <code>sz = sz(left) + frq + sz(right)</code>, with the frequency as the contribution of the current node, not the constant one. If you write the plain-BST formula <code>sz = sz(left) + 1 + sz(right)</code>, then kth and order_of_key silently return the wrong answers on any input with duplicates.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 2 — Mutating the EMPTY sentinel</div><div class="wDesc">If you accidentally write to <code>EMPTY-&gt;p</code> or to one of <code>EMPTY-&gt;ch[i]</code> during a rotation, every future descent will misbehave. The <code>link</code> helper guards against this by checking <code>if (c != EMPTY) c-&gt;p = p;</code>; the rotate function similarly avoids reading the grandparent slot when <code>g == EMPTY</code>.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 3 — Wrong rotation direction in rotate-down for erase</div><div class="wDesc">The doomed node must rotate so that the higher-priority child rises. If you accidentally choose the lower-priority child, the heap invariant breaks at that step and never recovers. Read <code>u-&gt;ch[0]-&gt;pri &gt; u-&gt;ch[1]-&gt;pri ? 0 : 1</code> as "pick the side whose priority is larger; that child should be the new local root".</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 4 — Forgetting to pull sz after a rotation</div><div class="wDesc">The two affected nodes (the one that descended and the one that rose) must have their <code>sz</code> recomputed in the correct order. The <code>link</code> helper bakes this in: every link call ends with a <code>pull</code>, and rotate is just three link calls, so sizes are always correct as long as you go through link.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 5 — Comparing pointers when you meant priorities</div><div class="wDesc">The expression <code>x-&gt;p-&gt;pri &lt; x-&gt;pri</code> compares priorities; <code>x-&gt;p &lt; x</code> compares raw pointer addresses, which is undefined and almost certainly wrong. Use a <code>-Wshadow</code> or careful pair programming pass to catch this.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 6 — Returning a stale root after the rotate-up loop</div><div class="wDesc">When the new node climbs to the top, the root pointer must be updated. Our <code>rotate</code> function handles this inside the <code>if (g == EMPTY)</code> branch; if you write a different rotate, double-check that the root pointer is reassigned at the right moment.</div></div>
+
+    <div class="warnRow"><div class="wLabel">Pitfall 7 — Drawing priorities with rand() instead of mt19937</div><div class="wDesc">The classic <code>rand()</code> has only 15 bits on Windows, which means tied priorities are extremely likely on n &gt; 30000 and the treap degenerates. Always use <code>mt19937</code> seeded by <code>chrono::steady_clock</code>.</div></div>
+  </section>
+  </div>
+
+  <div id="sec-decision" class="section">
+  <section id="decision" class="card scroll-reveal">
+    <h2>🧭 15 · Decision Guide</h2>
+    <div class="decisionBox">
+      <h3>When the key treap is the right tool</h3>
+      <div class="ruleBox">
+        <div><span class="cond">need k-th smallest or order_of_key</span> <span class="arrow">⇒</span> key treap or PBDS</div>
+        <div><span class="cond">need k-th occurrence with duplicates (frq)</span> <span class="arrow">⇒</span> key treap (PBDS is strictly distinct)</div>
+        <div><span class="cond">need to set-merge two ordered sets</span> <span class="arrow">⇒</span> key treap with split/merge</div>
+        <div><span class="cond">need persistence (historical versions)</span> <span class="arrow">⇒</span> persistent treap (tutorial 29)</div>
+        <div><span class="cond">need sequence operations (insert at position, range reverse)</span> <span class="arrow">⇒</span> implicit treap (tutorial 28)</div>
+        <div><span class="cond">no order-statistic queries needed</span> <span class="arrow">⇒</span> std::multiset is shorter</div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div id="sec-variants" class="section">
+  <section id="variants" class="card scroll-reveal">
+    <h2>🎭 16 · Variants and Extensions</h2>
+
+    <h3>Variant A — split and merge primitives</h3>
+    <p class="note">Instead of rotate-up and rotate-down, the treap family admits an alternative formulation in terms of two primitives: <code>split(root, x)</code> separates a treap into two treaps, one holding values strictly less than <code>x</code> and one holding values greater-or-equal to <code>x</code>; <code>merge(a, b)</code> combines two treaps where every value in <code>a</code> is strictly less than every value in <code>b</code>. Insert becomes <code>split, build leaf, merge, merge</code>; erase becomes <code>split, split, merge</code> dropping the middle. The split/merge style does not need parent pointers and generalises directly to the implicit treap and to persistent treaps.</p>
+
+    <h3>Variant B — distinct-only (no frq)</h3>
+    <p class="note">If duplicates are forbidden by the problem statement, drop the <code>frq</code> field and replace <code>sz(left) + frq + sz(right)</code> with <code>sz(left) + 1 + sz(right)</code>. Insert refuses to add a duplicate; erase finds at most one matching node and rotates it down to a leaf.</p>
+
+    <h3>Variant C — augment with subtree sum</h3>
+    <p class="note">Add an integer field <code>sum</code> to every node that stores the sum of values in the subtree (weighted by <code>frq</code>). The pull function becomes <code>sum = sum(left) + frq * v + sum(right)</code>. With this augmentation, the treap can answer the sum of the k smallest values via a kth-style descent that accumulates sums. Any commutative-associative aggregate works the same way.</p>
+
+    <h3>Variant D — finger search</h3>
+    <p class="note">Caching a pointer to the last accessed node enables amortised faster lookups when accesses are spatially close. The descent starts from the cached finger, walks up only as far as necessary, and then descends. Useful in offline workflows where consecutive queries are correlated.</p>
+
+    <h3>Variant E — tagged augmentation (sum, min, count of a predicate)</h3>
+    <p class="note">Generalise <code>sum</code> to any aggregate. The pull function combines the left, current, and right aggregates with the operator. For weighted counts, store <code>(weight, count)</code> pairs and pull as componentwise addition. The order-statistic queries adapt to "find the smallest value such that the prefix aggregate satisfies a condition" by a kth-style descent on the aggregate.</p>
+  </section>
+  </div>
+
+  <div id="sec-problems" class="section">
+  <section id="problems" class="card scroll-reveal">
+    <h2>🏆 17 · Problem-Based Applications</h2>
+
+    <details open>
+      <summary>P1 · Order Statistic Set — SPOJ ORDERSET</summary>
+      <div class="detailsBody">
+        <p>The canonical four-operation problem: insert, delete, k-th, and count-less-than. Every line of the master template earns its keep here. Submit and verify before moving on.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ORDERSET" target="_blank" rel="noopener">VJudge — SPOJ ORDERSET</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P2 · Count Inversions — SPOJ INVCNT</summary>
+      <div class="detailsBody">
+        <p>Classic inversion-counting problem. Insert each value left-to-right into a treap and add <code>size - order_of_key(v + 1)</code> at each step to count elements already inserted that are strictly greater than the current value.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-INVCNT" target="_blank" rel="noopener">VJudge — SPOJ INVCNT</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P3 · Ghost Busters — SPOJ GHOSTS</summary>
+      <div class="detailsBody">
+        <p>Coordinate-compressed events that require fast kth and order_of_key on a multiset of doubles. The key treap handles the floating-point comparisons directly without compression.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-GHOSTS" target="_blank" rel="noopener">VJudge — SPOJ GHOSTS</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P4 · Ada and Aphids — SPOJ ADAAPHID</summary>
+      <div class="detailsBody">
+        <p>Maintain a multiset with sum and kth queries. The augmentation in Variant C of section 16 applies directly.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-ADAAPHID" target="_blank" rel="noopener">VJudge — SPOJ ADAAPHID</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P5 · Koi Line — SPOJ KOILINE</summary>
+      <div class="detailsBody">
+        <p>People joining and leaving a line at specific positions; queries ask who is at a given position. Implicit treap is the natural fit (forward reference to tutorial 28), but key treap with order-statistic queries also solves it after coordinate compression.</p>
+        <a class="plink" href="https://vjudge.net/problem/SPOJ-KOILINE" target="_blank" rel="noopener">VJudge — SPOJ KOILINE</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P6 · Black Box — UVA 501</summary>
+      <div class="detailsBody">
+        <p>A black box maintains a sequence and answers a stream of kth-smallest queries with an advancing rank. Insert each element and answer one kth per query when the rank advances; classic single-application exercise.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-501" target="_blank" rel="noopener">VJudge — UVA 501</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P7 · Ultra-QuickSort — UVA 10810</summary>
+      <div class="detailsBody">
+        <p>Inversion count, same setup as SPOJ INVCNT. Listed separately because the I/O scaffolding differs; useful as a second submission to make sure the template is robust.</p>
+        <a class="plink" href="https://vjudge.net/problem/UVA-10810" target="_blank" rel="noopener">VJudge — UVA 10810</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P8 · Salary Queries — CSES 1144</summary>
+      <div class="detailsBody">
+        <p>Employees with salaries; updates change a salary, range queries ask how many salaries lie in a band. The band count is <code>order_of_key(b+1) - order_of_key(a)</code>.</p>
+        <a class="plink" href="https://vjudge.net/problem/CSES-1144" target="_blank" rel="noopener">VJudge — CSES 1144</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P9 · Pickled Cucumbers — Codeforces 295E</summary>
+      <div class="detailsBody">
+        <p>Maintain a multiset of points on a line under three operations: shift a point, add a point, query the sum of pairwise distances. Augment the treap with subtree sum to answer the distance query in O(log n).</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-295E" target="_blank" rel="noopener">VJudge — Codeforces 295E</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P10 · Kindergarten — Codeforces 702F</summary>
+      <div class="detailsBody">
+        <p>Customers with budgets, items with prices; greedy matching by descending price. A key treap or sorted structure with deletions models the active set of budgets.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-702F" target="_blank" rel="noopener">VJudge — Codeforces 702F</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P11 · Two Hundred Twenty One — Codeforces 762E</summary>
+      <div class="detailsBody">
+        <p>Counting problem reducible to ordered-set range queries; the key treap with order_of_key reaches a clean solution.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-762E" target="_blank" rel="noopener">VJudge — Codeforces 762E</a>
+      </div>
+    </details>
+
+    <details>
+      <summary>P12 · Mushroom Strife — Codeforces 167C</summary>
+      <div class="detailsBody">
+        <p>Order-statistic queries over a dynamic set; the master template applies after light wrapping.</p>
+        <a class="plink" href="https://vjudge.net/problem/CodeForces-167C" target="_blank" rel="noopener">VJudge — Codeforces 167C</a>
+      </div>
+    </details>
+  </section>
+  </div>
+
+  <div id="sec-summary" class="section">
+  <section id="summary" class="card scroll-reveal">
+    <h2>🎯 18 · Final Summary</h2>
+    <p class="note" style="font-size:24px"><b>One sentence:</b> a treap is a BST plus a random priority heap; the heap invariant breaks the user's ability to make the tree degenerate, giving expected O(log n) for the whole ordered-set menu in fewer than 250 lines of code.</p>
+
+    <h3>Five things to remember</h3>
+    <p class="note">First, the treap satisfies two invariants at once: BST on values and max-heap on random priorities. Given distinct priorities, the tree shape is uniquely determined by the priorities alone, so random priorities mean random shape, which means expected O(log n) height. Second, insertion does a BST descent and then rotates the new node up while its priority exceeds its parent's. Third, deletion rotates the doomed node down to a leaf, always choosing the higher-priority child to rotate up, and then detaches the leaf. Fourth, the size field <code>sz</code> aggregates frequencies, not node counts, so kth and order_of_key handle multisets directly. Fifth, the rotate(child) style with parent pointers and a single <code>link</code> helper produces the shortest correct code; all mutations route through one function that maintains both pointers and sizes.</p>
+
+    <h3>Mastery checklist</h3>
+    <ul class="checklist">
+      <li>I can write the entire 220-line master template from memory in under 30 minutes.</li>
+      <li>I can hand-trace insert and erase on a small example, showing each rotation.</li>
+      <li>I know why the random priority breaks adversarial input order.</li>
+      <li>I can derive kth and order_of_key from the BST invariant plus the size formula.</li>
+      <li>I can extend the template with subtree sum and use it for sum-of-smallest queries.</li>
+    </ul>
+
+    <h3>What is next</h3>
+    <div class="tipBox">Tutorial 28 — Implicit Treap. We replace the value key with implicit position-as-key and gain a sequence container with O(log n) split, merge, insert-at-position, erase-at-position, range update, range query, and range reverse.</div>
+  </section>
+  </div>
+
+  <div id="sec-contact" class="section">
+  <section id="contact" class="contactSection scroll-reveal">
+    <h2 style="margin:0 0 10px;font-size:var(--fs-h2);">📬 Contact Coach Academy</h2>
+    <p class="note" style="margin-bottom:18px">Questions, feedback, or collaboration? Reach the team directly.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;">
+      <a class="contactEmail" href="mailto:coach@coach-academy.net">✉ coach@coach-academy.net</a>
+      <a class="contactEmail" href="mailto:a.ashraf@coach-academy.net">✉ a.ashraf@coach-academy.net</a>
+    </div>
+    <p class="note">Coach Academy: competitive programming education from first principles to contest mastery.</p>
+  </section>
+  </div>
+
+  <div class="section">
+  <section class="card scroll-reveal">
+    <h2>🛠️ Runtime Validation Checklist</h2>
+    <ul class="checklist">
+      <li>Sidebar opens and closes on hamburger click; overlay dismisses on click outside.</li>
+      <li>Theme toggle switches dark and light and persists in localStorage.</li>
+      <li>Escape key closes an open sidebar on mobile widths.</li>
+      <li>Active nav link highlights as the user scrolls.</li>
+      <li>All mailto links are plain (no Cloudflare obfuscation).</li>
+      <li>All VJudge problem links open in new tabs.</li>
+      <li>No duplicate id attributes; HTML validates with no JS console errors.</li>
+      <li>Every stepper responds to Next, Prev, and Reset; SVG redraws cleanly between frames.</li>
+      <li>Scroll-reveal animations trigger on intersection; a 300 ms fallback reveals all content if IntersectionObserver does not fire.</li>
+    </ul>
+  </section>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-brand">Coach Academy</div>
+    <div class="footer-by">Prepared by The Coach (Dr. Wahab) &amp; Ashraf</div>
+    <div class="footer-copy">© 2026 All rights reserved. All content is the intellectual property of Coach Academy.<br>
+      <span style="font-size:14px;"><a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a> &nbsp;·&nbsp; <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a></span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function nodeColor(c){
+  const map = { blue:'var(--node-blue)', green:'var(--node-green)', amber:'var(--node-amber)', red:'var(--node-red)', purple:'var(--node-purple)', dark:'#1f2937', black:'#0f172a' };
+  return map[c] || map.blue;
+}
+function makeStepper(containerId, frames){
+  const root    = document.getElementById(containerId);
+  const svg     = root.querySelector('.stepper-svg');
+  const desc    = root.querySelector('.stepper-desc');
+  const counter = root.querySelector('.stepper-counter');
+  const prevBtn = root.querySelector('[data-act="prev"]');
+  const nextBtn = root.querySelector('[data-act="next"]');
+  const resetBtn= root.querySelector('[data-act="reset"]');
+  let idx = 0;
+  function el(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function render(){
+    const f = frames[idx];
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    (f.edges || []).forEach(e => {
+      const a = f.nodes.find(n => n.id === e.from);
+      const b = f.nodes.find(n => n.id === e.to);
+      if (!a || !b) return;
+      const line = el('line', {x1:a.x, y1:a.y, x2:b.x, y2:b.y});
+      let cls = 'tree-edge';
+      if (e.state) cls += ' ' + e.state;
+      line.setAttribute('class', cls);
+      svg.appendChild(line);
+    });
+    (f.nodes || []).forEach(n => {
+      const g = el('g', {});
+      let cls = 'tree-node';
+      if (n.state) cls += ' ' + n.state;
+      g.setAttribute('class', cls);
+      const r = n.r || 28;
+      g.appendChild(el('circle', {cx:n.x, cy:n.y, r:r, fill:nodeColor(n.color)}));
+      const labelY = n.sub ? n.y - 6 : n.y;
+      const t1 = el('text', {x:n.x, y:labelY, 'font-size':n.fs || 16});
+      t1.textContent = n.label;
+      g.appendChild(t1);
+      if (n.sub){
+        const t2 = el('text', {x:n.x, y:n.y + 10, 'font-size':11});
+        t2.textContent = n.sub;
+        g.appendChild(t2);
+      }
+      svg.appendChild(g);
+    });
+    (f.labels || []).forEach(l => {
+      const t = el('text', {x:l.x, y:l.y, 'font-size':l.fs || 18, class:l.caption ? 'tree-caption' : 'tree-label'});
+      t.textContent = l.text;
+      svg.appendChild(t);
+    });
+    desc.textContent = f.desc;
+    counter.textContent = 'Step ' + (idx + 1) + ' / ' + frames.length;
+    prevBtn.disabled  = idx === 0;
+    nextBtn.disabled  = idx === frames.length - 1;
+  }
+  prevBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < frames.length - 1) { idx++; render(); } });
+  resetBtn.addEventListener('click', () => { idx = 0; render(); });
+  render();
+}
+
+// --- A small treap holding values 3, 5, 8 with priorities 30, 50, 80 ---
+// The unique tree that satisfies both BST-on-value and max-heap-on-priority
+// places 8/pri=80 at the root, 5/pri=50 as its left child, and 3/pri=30
+// as 5's left child. Inorder gives 3, 5, 8 (BST property) while priorities
+// strictly decrease top-down (heap property).
+const TREAP_SHAPE_FRAMES = [
+  {
+    desc: 'Every node carries a value v on top and a priority pri below. The BST reads inorder as 3, 5, 8 (values increase left to right), while the heap reads top-down as 80, 50, 30 (priorities decrease parent to child).',
+    nodes: [
+      {id:'r', x:350, y:80,  label:'v=8',  sub:'pri=80', color:'blue',  r:32},
+      {id:'l', x:240, y:200, label:'v=5',  sub:'pri=50', color:'amber', r:32},
+      {id:'ll',x:140, y:280, label:'v=3',  sub:'pri=30', color:'green', r:32}
+    ],
+    edges: [{from:'r',to:'l'},{from:'l',to:'ll'}]
+  }
+];
+
+// --- Inserting value 5 with priority 80 into a tree { value 3 / pri 50 } ---
+// We descend the BST, attach the new leaf, then rotate it up because its
+// priority exceeds its parent's. The end state has the new node at the
+// root with the old root as its left child.
+const TREAP_INSERT_FRAMES = [
+  {
+    desc: 'Starting tree: one node with value 3 and priority 50 sits at the root. We are about to insert a node with value 5 and priority 80.',
+    nodes: [
+      {id:'a', x:300, y:90,  label:'v=3', sub:'pri=50', color:'blue', r:32}
+    ],
+    edges: []
+  },
+  {
+    desc: 'Descend the BST. Since 5 > 3 we walk right from the root and find an empty pointer there, so 5 attaches as the right child. BST invariant satisfied, heap invariant violated (parent priority 50 < new child priority 80).',
+    nodes: [
+      {id:'a', x:300, y:90,  label:'v=3', sub:'pri=50', color:'blue', state:'highlight', r:32},
+      {id:'b', x:420, y:200, label:'v=5', sub:'pri=80', color:'red',  state:'new-node', r:32}
+    ],
+    edges: [{from:'a', to:'b', state:'new'}]
+  },
+  {
+    desc: 'Heap violation detected: parent has pri=50, child has pri=80. We rotate the child up. After the rotation, value 5 will be the new root and value 3 will be its left child (because 3 < 5 in BST order).',
+    nodes: [
+      {id:'a', x:300, y:90,  label:'v=3', sub:'pri=50', color:'blue', state:'doomed', r:32},
+      {id:'b', x:420, y:200, label:'v=5', sub:'pri=80', color:'red',  state:'target', r:32}
+    ],
+    edges: [{from:'a', to:'b', state:'path'}]
+  },
+  {
+    desc: 'After the left rotation. Value 5 is the new root; value 3 is its left child. BST invariant: 3 < 5 (correct). Heap invariant: 80 > 50 (correct). Both invariants now satisfied.',
+    nodes: [
+      {id:'b', x:300, y:90,  label:'v=5', sub:'pri=80', color:'green', r:32},
+      {id:'a', x:200, y:200, label:'v=3', sub:'pri=50', color:'blue',  r:32}
+    ],
+    edges: [{from:'b', to:'a', state:'new'}]
+  }
+];
+
+
+// --- Erase: rotate the doomed root down to a leaf, then detach ---
+// We start with a treap whose root carries value 5 and priority 90.
+// The root has two children: value 3 / priority 70 on the left, value 8
+// / priority 60 on the right. We delete the root. Because both children
+// exist, we rotate the doomed node down toward the higher-priority child
+// at each step (left child first, since 70 > 60), then once the doomed
+// node has only one child it rotates down again, becomes a leaf, and we
+// detach it.
+const TREAP_ERASE_FRAMES = [
+  {
+    desc: 'Starting treap. The root (value 5, priority 90) is the doomed node. It has two children, so we cannot simply splice one of them up without violating the heap invariant elsewhere.',
+    nodes: [
+      {id:'r',  x:350, y:90,  label:'v=5', sub:'pri=90', color:'red',   state:'doomed', r:32},
+      {id:'l',  x:230, y:200, label:'v=3', sub:'pri=70', color:'blue',  r:32},
+      {id:'rr', x:470, y:200, label:'v=8', sub:'pri=60', color:'blue',  r:32}
+    ],
+    edges: [{from:'r',to:'l'},{from:'r',to:'rr'}]
+  },
+  {
+    desc: 'Compare the children\u2019s priorities. Left child has pri=70, right child has pri=60. The left child wins, so we rotate the left child up to take the doomed node\u2019s place.',
+    nodes: [
+      {id:'r',  x:350, y:90,  label:'v=5', sub:'pri=90', color:'red',   state:'doomed', r:32},
+      {id:'l',  x:230, y:200, label:'v=3', sub:'pri=70', color:'blue',  state:'target', r:32},
+      {id:'rr', x:470, y:200, label:'v=8', sub:'pri=60', color:'blue',  state:'faded', r:32}
+    ],
+    edges: [{from:'r',to:'l',state:'path'},{from:'r',to:'rr',state:'faded'}]
+  },
+  {
+    desc: 'After the right rotation. Value 3 is now the root. The doomed node (value 5) has descended to become 3\u2019s right child. Value 8 is still in the tree as 5\u2019s right child.',
+    nodes: [
+      {id:'l',  x:350, y:90,  label:'v=3', sub:'pri=70', color:'green', r:32},
+      {id:'r',  x:470, y:200, label:'v=5', sub:'pri=90', color:'red',   state:'doomed', r:32},
+      {id:'rr', x:560, y:290, label:'v=8', sub:'pri=60', color:'blue',  r:32}
+    ],
+    edges: [{from:'l',to:'r',state:'new'},{from:'r',to:'rr'}]
+  },
+  {
+    desc: 'The doomed node now has only a right child. Rotate that child up. Value 8 will rise; the doomed node will fall to become 8\u2019s left child.',
+    nodes: [
+      {id:'l',  x:350, y:90,  label:'v=3', sub:'pri=70', color:'green', r:32},
+      {id:'r',  x:470, y:200, label:'v=5', sub:'pri=90', color:'red',   state:'doomed', r:32},
+      {id:'rr', x:560, y:290, label:'v=8', sub:'pri=60', color:'blue',  state:'target', r:32}
+    ],
+    edges: [{from:'l',to:'r',state:'path'},{from:'r',to:'rr',state:'path'}]
+  },
+  {
+    desc: 'After the left rotation at 5. Value 8 has risen; the doomed node is now a leaf hanging off 8\u2019s left side. It has no children, so we can safely detach it from its parent.',
+    nodes: [
+      {id:'l',  x:350, y:90,  label:'v=3', sub:'pri=70', color:'green', r:32},
+      {id:'rr', x:470, y:200, label:'v=8', sub:'pri=60', color:'blue',  r:32},
+      {id:'r',  x:420, y:300, label:'v=5', sub:'pri=90', color:'red',   state:'doomed', r:32}
+    ],
+    edges: [{from:'l',to:'rr',state:'new'},{from:'rr',to:'r',state:'path'}]
+  },
+  {
+    desc: 'After detaching the leaf. The treap now holds two nodes: value 3 / pri=70 at the root and value 8 / pri=60 as its right child. Both invariants satisfied.',
+    nodes: [
+      {id:'l',  x:350, y:90,  label:'v=3', sub:'pri=70', color:'blue', r:32},
+      {id:'rr', x:470, y:200, label:'v=8', sub:'pri=60', color:'blue', r:32}
+    ],
+    edges: [{from:'l',to:'rr'}]
+  }
+];
+
+// --- kth descent demonstration ---
+// We use a treap with five distinct values, all with frq = 1, and we
+// search for the 4th smallest. The tree (organised by value) reads
+// 2, 3, 5, 7, 8 inorder. Asking for kth(4) should locate value 7.
+// We highlight which node the descent is currently at, the rank k we
+// are still looking for, and the running comparison against sz(left)
+// and sz(left) + frq at each step.
+const TREAP_KTH_FRAMES = [
+  {
+    desc: 'Treap with five distinct values. Each node shows its value v on top and its subtree size sz below. Inorder reads 2, 3, 5, 7, 8 with total size 5. We will compute kth(4) = the 4th smallest occurrence.',
+    nodes: [
+      {id:'r',  x:380, y:80,  label:'v=5', sub:'sz=5', color:'blue', r:32},
+      {id:'l',  x:240, y:190, label:'v=3', sub:'sz=2', color:'blue', r:32},
+      {id:'rr', x:520, y:190, label:'v=7', sub:'sz=2', color:'blue', r:32},
+      {id:'ll', x:160, y:290, label:'v=2', sub:'sz=1', color:'blue', r:32},
+      {id:'rrr',x:600, y:290, label:'v=8', sub:'sz=1', color:'blue', r:32}
+    ],
+    edges: [{from:'r',to:'l'},{from:'r',to:'rr'},{from:'l',to:'ll'},{from:'rr',to:'rrr'}]
+  },
+  {
+    desc: 'At the root (value 5). sz(left) = 2, frq = 1, so this node covers ranks 3 and 3 (the third smallest). We are looking for rank 4, which is > 3. Subtract sz(left) + frq = 3 from k. Now k = 1 and we descend right.',
+    nodes: [
+      {id:'r',  x:380, y:80,  label:'v=5', sub:'sz=5', color:'red', state:'highlight', r:32},
+      {id:'l',  x:240, y:190, label:'v=3', sub:'sz=2', color:'blue', state:'faded', r:32},
+      {id:'rr', x:520, y:190, label:'v=7', sub:'sz=2', color:'blue', r:32},
+      {id:'ll', x:160, y:290, label:'v=2', sub:'sz=1', color:'blue', state:'faded', r:32},
+      {id:'rrr',x:600, y:290, label:'v=8', sub:'sz=1', color:'blue', r:32}
+    ],
+    edges: [{from:'r',to:'l',state:'faded'},{from:'r',to:'rr',state:'path'},{from:'l',to:'ll',state:'faded'},{from:'rr',to:'rrr'}],
+    labels: [{x:380, y:330, text:'k = 4 \u2192 4 > sz(left)+frq = 3, so k becomes 4-3 = 1, descend right', fs:16, caption:true}]
+  },
+  {
+    desc: 'At node value 7. sz(left) = 0 (no left child), frq = 1. We are looking for k = 1. Since k <= sz(left) + frq = 1, this node is the answer. Return value 7.',
+    nodes: [
+      {id:'r',  x:380, y:80,  label:'v=5', sub:'sz=5', color:'blue', state:'faded', r:32},
+      {id:'l',  x:240, y:190, label:'v=3', sub:'sz=2', color:'blue', state:'faded', r:32},
+      {id:'rr', x:520, y:190, label:'v=7', sub:'sz=2', color:'green', state:'target', r:32},
+      {id:'ll', x:160, y:290, label:'v=2', sub:'sz=1', color:'blue', state:'faded', r:32},
+      {id:'rrr',x:600, y:290, label:'v=8', sub:'sz=1', color:'blue', state:'faded', r:32}
+    ],
+    edges: [{from:'r',to:'l',state:'faded'},{from:'r',to:'rr',state:'path'},{from:'l',to:'ll',state:'faded'},{from:'rr',to:'rrr',state:'faded'}],
+    labels: [{x:380, y:330, text:'k = 1, sz(left)+frq = 1, answer = 7', fs:16, caption:true}]
+  }
+];
+
+// ===== Wiring =====
+const themeSwitch = document.getElementById('themeSwitch');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
+}
+applyTheme(localStorage.getItem('ca-theme') || 'light');
+themeSwitch.addEventListener('click', () => {
+  const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('ca-theme', next);
+});
+themeSwitch.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); themeSwitch.click(); }
+});
+
+function navTo(id) {
+  const target = document.getElementById('sec-' + id);
+  if (!target) return;
+  if (window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay   = document.getElementById('sidebarOverlay');
+const sidebarEl        = document.getElementById('sidebar');
+
+function checkDesktop() {
+  if (window.innerWidth > 1400) {
+    sidebarEl.classList.add('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  } else {
+    sidebarEl.classList.remove('open');
+  }
+}
+checkDesktop();
+window.addEventListener('resize', checkDesktop);
+
+sidebarToggleBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = sidebarEl.classList.toggle('open');
+  sidebarOverlay.classList.toggle('show', isOpen);
+  sidebarToggleBtn.classList.toggle('open', isOpen);
+});
+sidebarOverlay.addEventListener('click', () => {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('show');
+  sidebarToggleBtn.classList.remove('open');
+});
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.innerWidth <= 1400) {
+    sidebarEl.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+    sidebarToggleBtn.classList.remove('open');
+  }
+});
+
+const sectionIds = ['problem','intuition','visual','formal','observations','algorithm','invariants','proof','complexity','philosophy','master','lineByLine','edges','pitfalls','decision','variants','problems','summary','contact'];
+const navLinks = {};
+sectionIds.forEach(id => {
+  const a = document.querySelector('.navlink[onclick*="\'' + id + '\'"]');
+  if (a) navLinks[id] = a;
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const id = entry.target.id.replace('sec-', '');
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.navlink').forEach(a => a.classList.remove('active'));
+      if (navLinks[id]) navLinks[id].classList.add('active');
+    }
+  });
+}, { threshold: 0.15 });
+sectionIds.forEach(id => {
+  const el = document.getElementById('sec-' + id);
+  if (el) observer.observe(el);
+});
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('revealed'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.scroll-reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('revealed')); }, 300);
+
+function safeInit(id, frames){
+  try { makeStepper(id, frames); }
+  catch(e){ console.error('stepper init failed for ' + id, e); }
+}
+safeInit('treap-shape',  TREAP_SHAPE_FRAMES);
+safeInit('treap-insert', TREAP_INSERT_FRAMES);
+safeInit('treap-erase',  TREAP_ERASE_FRAMES);
+safeInit('treap-kth',    TREAP_KTH_FRAMES);
+</script>
+</body>
+</html>
