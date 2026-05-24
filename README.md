@@ -90,7 +90,7 @@ tools/validation-report.json
 
 LinkedIn:
 
-- Ashraf / Coach Academy: https://www.linkedin.com/in/cewatlac/
+- Ashraf: https://www.linkedin.com/in/cewatlac/
 - Coach Abdelwahab: https://www.linkedin.com/in/mohamed-mahmoud-abd-el-wahab-mohamed-abd-el-moneim-mahmoud-6944152/
 
 ## Rights

@@ -255,7 +255,7 @@ function footer(prefix) {
           <div class="footer-links">
             <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a>
             <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a>
-            <a href="https://www.linkedin.com/in/cewatlac/">Ashraf / Coach Academy LinkedIn</a>
+            <a href="https://www.linkedin.com/in/cewatlac/">Ashraf LinkedIn</a>
             <a href="https://www.linkedin.com/in/mohamed-mahmoud-abd-el-wahab-mohamed-abd-el-moneim-mahmoud-6944152/">Coach Abdelwahab LinkedIn</a>
           </div>
         </div>
@@ -490,7 +490,7 @@ function buildAbout() {
           <div class="footer-links">
             <a href="mailto:coach@coach-academy.net">coach@coach-academy.net</a>
             <a href="mailto:a.ashraf@coach-academy.net">a.ashraf@coach-academy.net</a>
-            <a href="https://www.linkedin.com/in/cewatlac/">Ashraf / Coach Academy LinkedIn</a>
+            <a href="https://www.linkedin.com/in/cewatlac/">Ashraf LinkedIn</a>
             <a href="https://www.linkedin.com/in/mohamed-mahmoud-abd-el-wahab-mohamed-abd-el-moneim-mahmoud-6944152/">Coach Abdelwahab LinkedIn</a>
           </div>
         </div>
